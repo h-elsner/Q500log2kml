@@ -6,6 +6,8 @@ For a proper analysis the whole FlightLog directory with all sub directories nee
 Only directories will be opened by the application, not files. The only exception are sensor files from Typhoon H Plus which needs to be opened as single file.
 
 Features (short description):
+-----------------------------
+
 Archive: Rename the FlightLog directory by using a time stamp to avoid overwriting older data. This should be the first action if you move the FlightLog data from ST10 to your PC.
 
 Convert: Convert telemetry data from copter to KML- or KMZ-files (flight path for Google Earth), GPX for other map services, for import to DashWare in order to get telemetry data in videos, as CSV file for RaceRender or as CCC waypoint file.
