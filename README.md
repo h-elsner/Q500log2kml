@@ -5,6 +5,8 @@ The FlightLog data are available on RC-Controller or smart device used to contro
 For a proper analysis the whole FlightLog directory with all sub directories needs to be copied unchanged to your PC.
 Only directories will be opened by the application, not files. The only exception are sensor files from Typhoon H Plus which needs to be opened as single file.
 
+![Ongoing analysis](Auswertung.JPG)
+
 Features (short description):
 -----------------------------
 
