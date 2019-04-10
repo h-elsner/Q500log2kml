@@ -126,7 +126,7 @@ resourcestring                                     {english}
   rsSmart='Smart mode';
   rsManual='Manual mode';
   rsRTH='RTH';
-  rsComing='coming';
+  rsComing='go home';
   rsLanding='landing';
   rsMotorStarting='Motor starting';
   rsEmergency='Emergency, motors killed';

@@ -126,7 +126,7 @@ resourcestring                                     {deutsch}
   rsSmart='Smart Mode';
   rsManual='Manual Mode';
   rsRTH='RTH';
-  rsComing='Anflug';
+  rsComing='Heimflug';
   rsLanding='Landung';
   rsMotorStarting='Motor Start';
   rsEmergency='Emergency, Motor blockiert';

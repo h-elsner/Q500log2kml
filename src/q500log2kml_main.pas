@@ -44,6 +44,7 @@ wenn man in die ST10 eine Speicherkarte einlegt:
 
 Datenformat siehe Benutzerhandbuch, Anhang
 ------------------------------------------
+Source ST10+      https://github.com/azvampyre/st10-v01b31c
 
 KML file generation: https://developers.google.com/kml/documentation/
 YTH waypoints: http://www.eegalmc2.com/us/typhoonh/
@@ -176,6 +177,7 @@ History:
 2019-03-05       Keep default behaviour in selected cells of a table.
 2019-03-27       Time label at cursor in additional chart.
 2019-04-07       Colors in Elevation chart for PX4 logs.
+2019-04-10       Wording updated. Text message added to CSV file.
 
 *)
 
@@ -1497,12 +1499,12 @@ begin
        8: result:=rsMotorStarting;
        9: result:='Temperature'+rsCali;
       10: result:='Pressure'+rsCali;
-      11: result:='Accelerator'+rsCali;
+      11: result:='Accelerometer bias'+rsCali;
       12: result:=rsEmergency;
       13: result:=rsRTH+tab1+rsComing;
       14: result:=rsRTH+tab1+rsLanding;
       15: result:=rsBinding;
-      16: result:=rsInitializing;
+      16: result:=rsInitializing;                  {Ready to start}
       17: result:=rsWaitRC;
       18: result:=rsMagCali+rsCali;
       19: result:=rsUnknown;
@@ -1579,8 +1581,12 @@ begin
       result:='';                                  {unbekannt, nichts ausgeben}
       if (u and 1)=0 then
         result:=result+'IMU fail ';
+      if (u and 2)=0 then
+        result:=result+'Baro fail ';
       if (u and 4)=0 then
         result:=result+'Compass fail ';
+      if (u and 8)=0 then
+        result:=result+'Compass2 fail ';
       if (u and 16)=0 then
         result:=result+'Sonar off ';
       if (u and 32)=0 then
@@ -3539,10 +3545,11 @@ var dsbuf: array[0..YTHPcols] of byte;
 
   procedure TextAusgabe;                           {Ausgabe als Text in Zeile zl}
   var i: integer;
-      st, tm: string;
+      st, tm, ch: string;
       splitlist: TStringList;
 //      wx: uint64;
   begin
+    ch:=csvarr[posChan];                  {ursprünglichen Wert zwischenspeichern}
     st:=Format('%6d', [zhl])+tab2+
         FormatDateTime(zzf, bg)+tab2+
         MAVseverity(dsbuf[lenfix])+suff+'''';
@@ -3552,6 +3559,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       StringGrid1.Cells[i+1, zhl]:=Char(dsbuf[i-1]); {Rest Payload als Text}
       tm:=tm+Char(dsbuf[i-1]);                     {Textmessage zusammenstellen}
     end;
+    csvarr[posChan]:='"'+tm+'"';
     st:=st+tm;
     for i:=len+lenfixP-11 to len+lenfixP-2 do      {8 Byte Sig + 2 CRC}
       StringGrid1.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
@@ -3570,6 +3578,8 @@ var dsbuf: array[0..YTHPcols] of byte;
         splitlist.Free;
       end;
     end;
+    SenCSVAusgabe;
+    csvarr[posChan]:=ch;
   end;
 
 {https://github.com/mavlink/c_library_v2/blob/master/common/mavlink_msg_gps_raw_int.h
@@ -3805,7 +3815,6 @@ var dsbuf: array[0..YTHPcols] of byte;
 
   procedure vfr_hud;                               {Msg VFR_HUD (74)}
   var wrt: float;
-
   begin
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
@@ -4043,17 +4052,21 @@ begin
         StringGrid1.BeginUpdate;
       SynEdit1.BeginUpdate(false);                 {Without UnDo Block}
       while inf.Position<(inf.Size-lenfixP) do begin {bis zum Ende der Datei}
+        len:=0;                                    {Reset for error detection}
         try
           repeat
             b:=inf.ReadByte;
-          until (b=dsIDP) or (inf.Position>=inf.Size-lenfixP);
+          until (b=dsIDP) or (inf.Position>inf.Size-lenfixP);
           len:=inf.ReadByte;                       {Länge Payload mit CRC}
-          inf.ReadBuffer(dsbuf, len+lenfixP-2);    {Länge Rest-Datensatz mit FixPart}
+          inf.ReadBuffer(dsbuf, len+lenfixP-2);    {Länge Rest-Datensatz mit
+                                    FixPart, aber ohne $FD und Längen-Byte (-2)}
           AusgabeSensor;                           {alles anzeigen, ohne Filter}
         except
-          SynEdit1.Lines.Add(fn+suff+'''Buffer overflow'''+', Record No'+suff+
-                             IntToStr(zhl)+', Byte'+suff+IntToHex(b, 2)+
+          SynEdit1.Lines.Add('''Broken record No'''+suff+
+                             IntToStr(zhl+1)+{', Byte'+suff+IntToHex(b, 2)+}
                              ', Payload length'+suff+IntToStr(len));
+{Usually the last record in a tlog file is too short compared to payload length,
+ thus this exception will be raised for each file at the end.}
         end;
       end;
       SynEdit1.EndUpdate;
