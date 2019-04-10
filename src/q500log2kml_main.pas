@@ -4594,6 +4594,7 @@ begin
   Image3.Visible:=false;
   if not Timer1.Enabled then Screen.Cursor:=crHourGlass;
   with TFPHttpClient.Create(Nil) do try
+    IOTimeout:=6000;                               {Timeout if cam disconnected}
     try
       SynEdit1.Lines.Add('');                      {Leerzeile im Protokoll}
       if CGO3cmd<>'' then begin                    {opt. Kommando ausführen}
