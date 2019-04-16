@@ -63,7 +63,7 @@ History:
                   Breeze telemetry.
 2018-07-19        Sensor YTH Plus updated. Message ID and text messages
                   decoded.
-                  Bug fix für menu item "Go to datapoint".
+                  Bug fix fÃ¼r menu item "Go to datapoint".
 2018-07-24  V3.8  AppLog added, Text messages from Sensor files listed there.
                   MAV-Link Message IDs updated, Severity added to text messages.
 2018-08-15        Typhoon H Plus Smart Mode and Manual Mode added.
@@ -101,5 +101,4 @@ History:
 2019-03-05       Keep default behaviour in selected cells of a table.
 2019-03-27       Time label at cursor in additional chart.
 2019-04-07       Colors in Elevation chart for PX4 logs.
-
-
+2019-04-16       MAV Message PARAM_VALUE added.
