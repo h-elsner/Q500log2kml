@@ -27,11 +27,12 @@ object Form1: TForm1
     Height = 552
     Top = 96
     Width = 838
-    ActivePage = TabSheet2
+    ActivePage = TabSheet3
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
-    TabIndex = 2
+    ShowHint = True
+    TabIndex = 1
     TabOrder = 1
     OnChange = PageControl1Change
     Options = [nboKeyboardTabSwitch]

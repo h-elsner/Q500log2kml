@@ -761,6 +761,7 @@ const
   idtrue='true';
   sep=',';                                         {Datenseperator im CSV file}
   suff=': ';                                       {Suffix zur Datenausgabe}
+  kma=', ';                                        {Kommaausgabe}
   bind=' - ';                                      {von/bis ID}
   ziff=['0'..'9'];                                 {gültige Ziffern}
   anzsp=20;                                        {Mindestanzahl Spalten}
@@ -922,32 +923,30 @@ function TForm1.GetFlightLogDir(fn: string): string; {FlightLog Verzeichnis find
 var i, k: integer;
     splitlist: TStringList;
 begin
-  result:=fn;
+  result:=fn;                                      {default: Ganzes Verzeichnis}
   splitlist:=TStringList.Create;
-  try                                            {letzten Pfadnamen finden}
+  try                                              {letzten Pfadnamen finden}
     splitlist.Delimiter:=PathDelim;
     splitlist.StrictDelimiter:=True;
-    splitlist.DelimitedText:=fn;                 {dazu Pfad splitten}
-    if splitlist.Count>0 then begin
+    splitlist.DelimitedText:=fn;                   {dazu Pfad splitten}
+    if splitlist.Count>1 then begin
 
-      for i:=splitlist.Count-1 downto 0 do       {FlightLog von hinten suchen}
-        if pos(mndir, splitlist[i])>0 then
-          break;
-      if i>0 then begin                          {FlightLog gefunden}
-        result:='';                              {Pfad zusammenbauen}
-        for k:=0 to i do
-          result:=result+splitlist[k]+Pathdelim;
-
-      end else begin                             {YTH Plus probieren}
-        for i:=splitlist.Count-1 downto 0 do     {FlightLog von hinten suchen}
-          if pos(mndirp, splitlist[i])>0 then break;
-        if i>0 then begin                        {FlightLog gefunden}
-          result:='';                            {Pfad zusammenbauen}
+      for i:=splitlist.Count-2 downto 0 do         {YTH Plus probieren}
+        if pos(mndirp, splitlist[i])=1 then begin
+          result:='';                              {Pfad zusammenbauen}
           SpinEdit3.Tag:=YTHPid;
           for k:=0 to i do
             result:=result+splitlist[k]+Pathdelim;
+          exit;
         end;
-      end;
+
+      for i:=splitlist.Count-2 downto 0 do         {FlightLog von hinten suchen}
+        if pos(mndir, splitlist[i])=1 then begin
+          result:='';                              {Pfad zusammenbauen}
+          for k:=0 to i do
+            result:=result+splitlist[k]+Pathdelim;
+          exit;
+        end;
 
     end;
     if ExtractFileExt(fn)=bext then
@@ -2630,12 +2629,12 @@ var e: integer;
   begin
     s:='';
     if (sp=0) or (sp=1) then begin                 {Fix=/1}
-      s:=rsRecordNo+IntToStr(zl)+', '+DefaultHnt;
+      s:=rsRecordNo+IntToStr(zl)+kma+DefaultHnt;
     end;
     if sp=lenfix-6 then begin                      {Sequenz number}
       try
         e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl]); {dezimal}
-        s:=rsRecordNo+IntToStr(zl)+', '+
+        s:=rsRecordNo+IntToStr(zl)+kma+
            StringGrid1.Cells[sp, 0]+'='+IntToStr(e);
       except
         s:='';                                     {bei Fehler Standardausgabe}
@@ -2650,8 +2649,16 @@ var e: integer;
       end;
     if (sp=lenfix-1) or
        (sp=lenfix-2) or
-       (sp=lenfix-3) then                          {Message ID 3 Byte}
-      s:=StringGrid1.Cells[lenfix, zl];
+       (sp=lenfix-3) then begin                    {Message ID 3 Byte}
+      try
+        e:=Hex2Dec('$'+StringGrid1.Cells[lenfix-1, zl]+
+                       StringGrid1.Cells[lenfix-2, zl]+
+                       StringGrid1.Cells[lenfix-3, zl]);
+        s:=IntToStr(e)+suff+StringGrid1.Cells[lenfix, zl];
+      except
+        s:=StringGrid1.Cells[lenfix, zl];
+      end;
+    end;
     if sp>lenfix-1 then
       Payload;                                     {Payload anzeigen}
     if sp=lenfix then
@@ -2733,14 +2740,14 @@ var e: integer;
     if sp=0 then begin                             {Sequenz number}
       try
         e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl]); {dezimal}
-        s:=rsRecordNo+IntToStr(zl)+', '+
+        s:=rsRecordNo+IntToStr(zl)+kma+
            StringGrid1.Cells[sp, 0]+'='+IntToStr(e);
       except
         s:='';                                     {bei Fehler Standardausgabe}
       end;
     end;
     if (sp=1) or (sp=2) then begin                 {SysID/CompID}
-      s:=rsRecordNo+IntToStr(zl)+', '+DefaultHnt;
+      s:=rsRecordNo+IntToStr(zl)+kma+DefaultHnt;
     end;
     if sp>lenfix-2 then
       PayLoad;                                     {Payload anzeigen}
@@ -2795,7 +2802,7 @@ var e: integer;
             then s:='Dual Band Control Redundancy (5.8G WiFi)';
        2: s:=rsRest+' ~'+IntToStr(VtoProz(SpinEdit3.Tag,  {Voltage in %}
                    StrToFloatN(StringGrid1.Cells[sp, zl])))+'%'+
-                   ', '+VperCell(SpinEdit3.Tag,    {V per cell}
+                   kma+VperCell(SpinEdit3.Tag,    {V per cell}
                    StrToFloatN(StringGrid1.Cells[sp, zl]));
        3: if SpinEdit3.Tag=1 then begin            {H920: Current}
             try
@@ -3595,7 +3602,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     distp:=0;
     dists:=0;
-    lat:=GetIntFromBuf(8, 4);
+    lat:=GetIntFromBuf(8, 4);                      {uint32}
     lon:=GetIntFromBuf(12, 4);
     tme:=GetIntFromBuf(0, 8);                      {in mysec}
     bg:=tme/(Secpd*1000000);                       {Zeitstempel überall verfügbar}
@@ -3768,7 +3775,7 @@ var dsbuf: array[0..YTHPcols] of byte;
   begin
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
-      tme:=GetIntFromBuf(0, 8);                    {in mysec}
+      tme:=GetIntFromBuf(0, 8);                    {in mysec, uint64}
       bg:=tme/(Secpd*1000000);                     {Zeitstempel überall verfügbar}
       for i:=0 to 11 do begin
         wrt:=GetFloatFromBuf((i*4)+8);             {12 Werte ab [m/s/s] X acceleration}
@@ -3926,6 +3933,33 @@ var dsbuf: array[0..YTHPcols] of byte;
     end;
   end;
 
+  procedure ParamValue;                            {PARAM_VALUE (22)}
+  var i: integer;
+      num, idx: uint16;
+      paramID: string;
+      wrt: float;
+  begin
+    StandardAusgabe;                               {Hex values in CSV table}
+    num:=GetIntFromBuf(4, 2);                      {Total number of onboard parameters}
+    idx:=GetIntFromBuf(6, 2);                      {Index of this onboard parameter}
+    wrt:=GetFloatFromBuf(0);                       {Onboard paramaeter value}
+    paramID:='';
+    for i:=8 to 23 do begin                        {Onboard parameter ID}
+      if dsbuf[lenfix+i]=0 then                    {Terminated by NULL}
+        break;
+      paramID:=paramID+Char(dsbuf[lenfix+i]);
+    end;
+    csvarr[57]:=paramID;
+    csvarr[58]:=FloatToStr(wrt);
+    SynEdit1.Lines.Add(Format('%6d', [zhl])+tab2+  {Onboard parameter value}
+                       FormatDateTime(zzf, bg)+tab2+paramID+suff+
+                       'Type'+suff+IntToStr(dsbuf[lenfix+24])+kma+
+                       'Index'+suff+IntToStr(idx)+kma+
+                       'Count'+suff+IntToStr(num)+kma+
+                       'Value'+suff+FloatToStr(wrt));
+    SenCSVAusgabe;                                 {CSV Datensatz schreiben}
+  end;
+
   procedure AusgabeSensor;                         {Datenausgabe abh. von MsgID}
   var i, e: integer;
   begin
@@ -3938,6 +3972,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       case e of                                    {Ausgabe bekannter Messages}
         0:   Heartbeat;                            {HEARTBEAT (0) ohne Zeitstempel}
         1:   SensorStatus;                         {MAV_SYS_STATUS}
+        $16: ParamValue;                           {PARAM_VALUE (22)}
         $18: GPSAusgabe;                           {GPS_RAW_INT (24) auswerten}
         $1E: Attitude;                             {ATTITUDE (30)}
         $20: LocalPosNed;                          {LOCAL_POSITION_NED (32)}
@@ -4164,7 +4199,8 @@ begin
               'xSpeed'+sep+'ySpeed'+sep+'zSpeed'+sep+
               csvCOG+sep+csvIMUtemp+sep+csvCap+sep+
               csvSWload+sep+'Climb rate'+sep+'49'+sep+'50'+sep+'51'+sep+
-              '52'+sep+'53'+sep+'54'+sep+'55'+sep+'56'+sep+'57'+sep+'58'+sep+
+              '52'+sep+'53'+sep+'54'+sep+'55'+sep+'56'+sep+
+              'Onboard paramater name'+sep+'Parameter value'+sep+
               csvMsgID+sep+'CH used';
           for i:=1 to 18 do
             s:=s+sep+'CH'+IntToStr(i);
@@ -4578,8 +4614,8 @@ end;
  INDEX_PAGE aufgerufen und alle Anzeigen werden aktualisiert. SHARPNESS muss
  extra abgefragt werden, weil es in CGO3+ nicht mehr in INDEX_PAGE/GET_STATUS
  drin ist - siehe Procedure Sharpness.
- CGO3act: 0..nichts tun
-          1..CheckBox4 abfragen und ggf. Dateilioste im Browser anzeigen,
+ CGO3act: 0..nichts zusätzliches tun
+          1..CheckBox4 abfragen und ggf. Dateiliste im Browser anzeigen,
              nur bei Set Speed.
           2..CheckBox5 abfragen und ggf. RTSP-Stream an Browser senden,
              nur bei Start Video.
@@ -6591,7 +6627,7 @@ procedure TForm1.FormDropFiles(Sender: TObject; const FileNames: array of String
 begin                                              {Drop Directory to App Window}
   Application.BringToFront;
   ComboBox2.Text:=GetFlightLogDir(FileNames[0]);
-  SelDirAct(FileNames[0]);
+  SelDirAct(ComboBox2.Text);
 end;
 
 procedure TForm1.FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -6626,7 +6662,7 @@ begin
     try
       Application.BringToFront;
       ComboBox2.Text:=GetFlightLogDir(ParamstrUTF8(1));
-      SelDirAct(ParamstrUTF8(1));
+      SelDirAct(ComboBox2.Text);
     except
       SelDirAct('');
     end;
@@ -7543,10 +7579,10 @@ var inlist, splitlist: TStringList;
     he:=StrToFloatN(splitlist[10])/100;          {Höhe Ende}
     emax:=0;
     if ha>he+hsw then begin                      {Sinken}
-      an:=an+rsDescend+tab1+vms(dur, ha-he)+', ';
+      an:=an+rsDescend+tab1+vms(dur, ha-he)+kma;
     end;
     if he>ha+hsw then begin                      {Steigen}
-      an:=an+rsAscend+tab1+vms(dur, he-ha)+', ';
+      an:=an+rsAscend+tab1+vms(dur, he-ha)+kma;
     end;
     for i:=0 to inlist.Count-1 do begin
       splitlist.DelimitedText:=inlist[i];
@@ -7568,10 +7604,10 @@ var inlist, splitlist: TStringList;
     he:=StrToFloatN(splitlist[4]);               {Höhe Ende}
     emax:=0;
     if ha>he+hsw then begin                      {Sinken}
-      an:=an+rsDescend+tab1+vms(dur, ha-he)+', ';
+      an:=an+rsDescend+tab1+vms(dur, ha-he)+kma;
     end;
     if he>ha+hsw then begin                      {Steigen}
-      an:=an+rsAscend+tab1+vms(dur, he-ha)+', ';
+      an:=an+rsAscend+tab1+vms(dur, he-ha)+kma;
     end;
     for i:=0 to inlist.Count-1 do begin
       splitlist.DelimitedText:=inlist[i];
@@ -7859,6 +7895,7 @@ begin
             StringGrid1.TopRow:=i-StringGrid1.VisibleRowCount-1;   {zeitl. Pos setzen}
           end;
         end;
+        StringGrid1.AutoSizeColumn(0);
         StringGrid1.EndUpdate;
 
         Synedit1.Lines.add(Format('%-10s', [capLabel13+suff])+
