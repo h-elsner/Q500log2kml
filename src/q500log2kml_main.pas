@@ -178,6 +178,7 @@ History:
 2019-03-27       Time label at cursor in additional chart.
 2019-04-07       Colors in Elevation chart for PX4 logs.
 2019-04-10       Wording updated. Text message added to CSV file.
+2019-04-16       MAV Message PARAM_VALUE added.
 
 *)
 
@@ -196,8 +197,8 @@ uses
   fphttpclient, lazUTF8, SynEdit, SynHighlighterMulti, SynHighlighterAny, Types,
   strutils, dateutils;
 
-{$I q500_dt.inc}
-{.$I q500_en.inc}
+{.$I q500_dt.inc}
+{$I q500_en.inc}
 
 type
   TarrFW = array[0..7] of string;
@@ -521,6 +522,7 @@ type
     procedure FormDropFiles(Sender: TObject; const FileNames: array of String);
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormShow(Sender: TObject);
+    procedure FormShowHint(Sender: TObject; HintInfo: PHintInfo);
     procedure Image4Click(Sender: TObject);
     procedure Label7Click(Sender: TObject);
     procedure Label7MouseEnter(Sender: TObject);
@@ -585,6 +587,7 @@ type
     procedure SpinEdit1Change(Sender: TObject);
     procedure StaticText1DblClick(Sender: TObject);
     procedure StatusBar1DblClick(Sender: TObject);
+    procedure StatusBar1Hint(Sender: TObject);
     procedure StringGrid1Click(Sender: TObject);
     procedure StringGrid1DblClick(Sender: TObject);
     procedure StringGrid1HeaderClick(Sender: TObject; IsColumn: Boolean;
@@ -3883,7 +3886,7 @@ var dsbuf: array[0..YTHPcols] of byte;
                          FormatDateTime(zzf, bg)+tab2+csvVolt+
                          suff+csvarr[2]+'V'+
                          tab4+csvAmp+suff+csvarr[3]+'A'+
-                         tab4+csvSWload+suff+csvarr[1]+'%');
+                         tab4+csvSWload+suff+csvarr[47]+'%');
     sst:=GetIntFromBuf(0, 4);                      {Sensor present}
     if not cbReduced.Checked then
       Synedit1.Lines.Add('                  onboard_control_sensors_present'+suff+
@@ -3936,13 +3939,16 @@ var dsbuf: array[0..YTHPcols] of byte;
   procedure ParamValue;                            {PARAM_VALUE (22)}
   var i: integer;
       num, idx: uint16;
-      paramID: string;
-      wrt: float;
+      paramID, wrt: string;
   begin
     StandardAusgabe;                               {Hex values in CSV table}
     num:=GetIntFromBuf(4, 2);                      {Total number of onboard parameters}
     idx:=GetIntFromBuf(6, 2);                      {Index of this onboard parameter}
-    wrt:=GetFloatFromBuf(0);                       {Onboard paramaeter value}
+    wrt:=FloatToStr(GetFloatFromBuf(0));           {Onboard paramaeter value}
+    if (GetIntFromBuf(1, 3)=0) and                 {Extreme small values, masks}
+       (dsbuf[lenfix]>0) then
+      wrt:='$'+IntTohex(dsbuf[lenfix], 2)+'='+
+           IntToBin(dsbuf[lenfix], 8, 4);          {Overwrite ...E-44, ...E-45}
     paramID:='';
     for i:=8 to 23 do begin                        {Onboard parameter ID}
       if dsbuf[lenfix+i]=0 then                    {Terminated by NULL}
@@ -3950,13 +3956,14 @@ var dsbuf: array[0..YTHPcols] of byte;
       paramID:=paramID+Char(dsbuf[lenfix+i]);
     end;
     csvarr[57]:=paramID;
-    csvarr[58]:=FloatToStr(wrt);
+    csvarr[58]:=wrt;
     SynEdit1.Lines.Add(Format('%6d', [zhl])+tab2+  {Onboard parameter value}
-                       FormatDateTime(zzf, bg)+tab2+paramID+suff+
+                       FormatDateTime(zzf, bg)+tab2+
+                       Format('%-16s', [paramID])+suff+
                        'Type'+suff+IntToStr(dsbuf[lenfix+24])+kma+
                        'Index'+suff+IntToStr(idx)+kma+
                        'Count'+suff+IntToStr(num)+kma+
-                       'Value'+suff+FloatToStr(wrt));
+                       'Value'+suff+wrt);
     SenCSVAusgabe;                                 {CSV Datensatz schreiben}
   end;
 
@@ -6668,6 +6675,11 @@ begin
     end;
   end else
     SelDirAct('');                                 {Alles neu laden}
+end;
+
+procedure TForm1.FormShowHint(Sender: TObject; HintInfo: PHintInfo);
+begin
+
 end;
 
 procedure TForm1.Image4Click(Sender: TObject);
@@ -9762,6 +9774,12 @@ end;
 procedure TForm1.StatusBar1DblClick(Sender: TObject);  {Copy bei Doppelclick}
 begin
   StatusToClipboard;
+end;
+
+{http://www.lazarusforum.de/viewtopic.php?f=10&t=12130}
+procedure TForm1.StatusBar1Hint(Sender: TObject);  {Reroute Application hint}
+begin
+  Statusbar1.Panels[5].Text:=Application.Hint;
 end;
 
 procedure TForm1.StringGrid1Click(Sender: TObject);{Kursor im Diagramm anzeigen}
