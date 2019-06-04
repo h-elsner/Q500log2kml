@@ -197,8 +197,8 @@ uses
   fphttpclient, lazUTF8, SynEdit, SynHighlighterMulti, SynHighlighterAny, Types,
   strutils, dateutils;
 
-{.$I q500_dt.inc}
-{$I q500_en.inc}
+{$I q500_dt.inc}
+{.$I q500_en.inc}
 
 type
   TarrFW = array[0..7] of string;
@@ -728,7 +728,7 @@ type
   public
                                                    {public declarations}
     const 
-      Version ='V4.1 04/2019';
+      Version ='V4.1 06/2019';
   end;
 
 const
@@ -891,6 +891,7 @@ const
   HBlen=9;                                         {Länge Payload Heartbeat}
   csvanz=80;                                       {Anzahl Spalten bei PX4 CSV Datei}
   posChan=60;                                      {Startposition Spalten RC-Channels}
+  deltayaw=15;                                     {Change of direction [°] for Waypoints}
 
 var
   Form1: TForm1;
@@ -3825,11 +3826,12 @@ var dsbuf: array[0..YTHPcols] of byte;
 
   procedure vfr_hud;                               {Msg VFR_HUD (74)}
   var wrt: float;
+      thr: uint;
   begin
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
 (* Mehr Fragen als Antworten! Lieber nichts überschreiben.
-      wrt:=GetFloatFromBuf(0);                    {[m/s] Current indicated airspeed (IAS)}
+      wrt:=GetFloatFromBuf(0);                     {[m/s] Current indicated airspeed (IAS)}
       csvarr[7]:=FormatFloat(ctfl, wrt);
       wrt:=GetFloatFromBuf(4);                     {[m/s] Current ground speed}
       csvarr[25]:=FormatFloat(ctfl, wrt);
@@ -3841,10 +3843,14 @@ var dsbuf: array[0..YTHPcols] of byte;
    (* Werte passen nicht zu Maßeinheiten.
       hdg:=GetIntFromBuf(16, 2);                   {[deg] Current heading in
                                                     compass units (0-360, 0=north)}
-      csvarr[49]:=IntToStr(hdg);
-      thr:=GetIntFromBuf(18, 2);                   {[%] Current throttle setting (0 to 100))}
-      csvarr[50]:=IntToStr(thr);                                                 *)
-
+      csvarr[50]:=IntToStr(hdg);          *)
+      case len of                                  {pos depending on lenght ??}
+        17: thr:=GetIntFromBuf(18, 2);             {[%] Current throttle setting (0 to 100))}
+        18: thr:=GetIntFromBuf(19, 2);
+        19: thr:=GetIntFromBuf(20, 2);
+      end;
+      csvarr[49]:=FormatFloat(ctfl, thr*100/255);
+//      csvarr[49]:=IntToStr(thr);
       SenCSVAusgabe;                               {CSV Datensatz schreiben}
     end;
   end;
@@ -3979,15 +3985,15 @@ var dsbuf: array[0..YTHPcols] of byte;
       case e of                                    {Ausgabe bekannter Messages}
         0:   Heartbeat;                            {HEARTBEAT (0) ohne Zeitstempel}
         1:   SensorStatus;                         {MAV_SYS_STATUS}
-        $16: ParamValue;                           {PARAM_VALUE (22)}
-        $18: GPSAusgabe;                           {GPS_RAW_INT (24) auswerten}
-        $1E: Attitude;                             {ATTITUDE (30)}
-        $20: LocalPosNed;                          {LOCAL_POSITION_NED (32)}
-        $41: RCchannels;                           {RC_CHANNELS (65)}
-        $4A: vfr_hud;                              {VFR_HUD (74)}
-        $69: HighresIMU;                           {HIGHRES_IMU (105)}
-        $F5: ExtAusgabe;                           {Extended_SYS_State}
-        $FD: TextAusgabe;                          {Statustext}
+        22:  ParamValue;                           {PARAM_VALUE ($16)}
+        24:  GPSAusgabe;                           {GPS_RAW_INT ($18) auswerten}
+        30:  Attitude;                             {ATTITUDE ($1E)}
+        32:  LocalPosNed;                          {LOCAL_POSITION_NED ($1E)}
+        65:  RCchannels;                           {RC_CHANNELS ($41)}
+        74:  vfr_hud;                              {VFR_HUD ($4A)}
+        105: HighresIMU;                           {HIGHRES_IMU ($69)}
+        245: ExtAusgabe;                           {Extended_SYS_State ($F5)}
+        253: TextAusgabe;                          {Statustext ($FD)}
       else                                         {Standard Ausgabe}
         StandardAusgabe;                           {Hexwerte für alle anderen Msg}
       end;
@@ -3998,7 +4004,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       StringGrid1.Cells[lenfix+1, zhl]:=IntToStr(len);  {Payload Länge eintragen}
       StringGrid1.Cells[lenfix, zhl]:=MsgIDtoStr(e);    {Message Name}
     end else begin
-      if e=$18 then GPSAusgabe;
+      if e=24 then GPSAusgabe;
     end;
   end;
 
@@ -9574,10 +9580,10 @@ begin
   end;
 end;
 
-procedure TForm1.MacheCCC(fn: string);             {Waypoints aus Telemetrie}
+procedure TForm1.MacheCCC(fn: string);             {Waypoints from Telemetrie}
 var inlist, splitlist: TStringList;
     np, x: integer;
-    wpele: double;
+    wpele, dir, diralt: double;                    {Elevation and direction}
     dist, lat1, lat2, lon1, lon2: double;
     ahwp: array of TWayPH;                         {Array of waypoints}
 
@@ -9615,16 +9621,19 @@ begin
           lat2:=StrToFloatN(splitlist[5]);
           lon2:=StrToFloatN(splitlist[6]);
           dist:=DeltaKoord(lat1, lon1, lat2, lon2); {Entfernung zum letzten Punkt}
-          if dist>TrackBar2.Position then begin
+          dir:=StrToFloatN(splitlist[12]);         {direction (yaw)}
+          if (dist>TrackBar2.Position) or
+             (abs(dir-diralt)>deltayaw) then begin
             lat1:=lat2;
             lon1:=lon2;
+            diralt:=dir;                           {save direction}
             if dist<distmax then begin             {Waypoint gefunden}
               ahwp[np].lat:=lat2;
               ahwp[np].lon:=lon2;
               ahwp[np].pindex:=np;
               ahwp[np].altitude:=wpele;
               ahwp[np].roll:=StrToFloatN(splitlist[11]);    {? oder 0}
-              ahwp[np].yaw:=StrToFloatN(splitlist[12]);
+              ahwp[np].yaw:=dir;
               ahwp[np].pitch:=StrToFloatN(splitlist[13]);
               ahwp[np].gimbalYam:=0;
               ahwp[np].gimbalPitch:=0;
