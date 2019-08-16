@@ -179,7 +179,7 @@ History:
 2019-04-07       Colors in Elevation chart for PX4 logs.
 2019-04-10       Wording updated. Text message added to CSV file.
 2019-04-16       MAV Message PARAM_VALUE added.
-
+2019-08-16       Manual Link Updated
 *)
 
 unit q500log2kml_main;
@@ -728,12 +728,12 @@ type
   public
                                                    {public declarations}
     const 
-      Version ='V4.1 06/2019';
+      Version ='V4.1 08/2019';
   end;
 
 const
   homepage='http://h-elsner.mooo.com';             {meine Homepage}
-  hpmydat='/mydat/';
+  hpmydat='/pdf/';
   meinname='Helmut Elsner';
   email   ='helmut.elsner@live.com';               {meine e-mail Adresse}
   lazURL  ='http://www.lazarus-ide.org/';          {Werbung}
@@ -2600,9 +2600,15 @@ var e: integer;
     s: string;
     t: double=0;
 
+
+  function HeaderHnt: string;
+  begin
+    result:=StringGrid1.Cells[sp, 0]+'=';
+  end;
+
   function DefaultHnt: string;
   begin
-    result:=StringGrid1.Cells[sp, 0]+'='+StringGrid1.Cells[sp, zl];
+    result:=HeaderHnt+StringGrid1.Cells[sp, zl];
   end;
 
   procedure PayLoad;                               {Payload detailliert anzeigen}
@@ -2823,9 +2829,9 @@ var e: integer;
               except
                 t:=0;
               end;
-              s:=FloatToStrF(t/fft, ffFixed, 4, 2)+'ft'
+              s:=HeaderHnt+FloatToStrF(t/fft, ffFixed, 4, 2)+'ft'
             end else
-              s:=StringGrid1.Cells[sp, zl]+'m';
+              s:=DefaultHnt+'m';
           end;
        7: begin                                    {tas=true air speed}
             try
@@ -2833,13 +2839,14 @@ var e: integer;
             except
               t:=0;
             end;
-            s:=FloatToStrF(t, ffFixed, 3, 2)+'m/s = ';
+            s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 2)+'m/s = ';
             if RadioGroup3.ItemIndex=2 then
               s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
             else
               s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
           end;
        9: s:=GPSfixType(StringGrid1.Cells[sp, zl]);
+      11,12,13: s:=DefaultHnt+'°';                 {Pitch, roll, yaw}
       14: begin                                    {MotorStatus}
             e:=StatusToByte(StringGrid1.Cells[sp, zl]);
             s:=MotStatusToStr(e);
@@ -2895,11 +2902,43 @@ var e: integer;
     end;
   end;
 
+  procedure TabHintRemoteGPS;                      {RemoteGPS aus ST10/16}
+  begin
+    case sp of
+      0: Zeitstempel;
+      3: begin                                     {Altitude}
+        s:=HeaderHnt;
+        if RadioGroup3.ItemIndex=2 then begin
+             try
+               t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
+             except
+               t:=0;
+             end;
+             s:=s+FloatToStrF(t/fft, ffFixed, 4, 1)+'ft'
+           end else
+             s:=DefaultHnt+'m';
+         end;
+      5: begin                                     {Speed in cm/s}
+           try
+             t:=StrToFloatN(StringGrid1.Cells[sp, zl])/100;
+           except
+             t:=0;
+           end;
+           s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 2)+'m/s = ';
+           if RadioGroup3.ItemIndex=2 then
+             s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
+           else
+             s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
+         end;
+      6: s:=DefaultHnt+'°';
+    end;
+  end;
+
   procedure TabHintLegacy;                         {CSV-Dateien (Tm/Rm/Rm-GPS)}
   begin
     case RadioGroup1.ItemIndex of
       0: TabHLTelemetry;                           {Telemetrie Kopter}
-      1: Zeitstempel;                              {keine weitere Zuordnung}
+      1: TabHintRemoteGPS;                         {RemoteGPS}
       2: TabHLFunk;                                {Rawdata RF Funk}
       3: TabHintSensorYTH;                         {Sensor nur für YTH}
     end;
@@ -5454,7 +5493,7 @@ var vlist, flist, inlist, splitlist: TStringList;
         flag:=StrToIntDef(trim(splitlist[StringGrid1.Tag+3]), 0);
         if (flag and 32)>0 then begin              {CCW flag}
           inc(num);
-          if num>10 then begin                     {Threshold erreicht}
+          if num>20 then begin                     {Threshold erreicht}
             result:=true;
             break;
           end;

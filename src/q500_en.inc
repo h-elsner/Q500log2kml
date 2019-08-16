@@ -4,7 +4,7 @@ resourcestring                                     {english}
     DownURL='/downloads/q500log2kml_en.tar.gz';
   {$ELSE}
     {$IFDEF DARWIN}
-      DownURL='/downloads/q500log2kml_EN.dmg.zip';  {MAC OS X}
+      DownURL='/downloads/q500log2kml_MAC-english.zip';  {MAC OS X}
     {$ELSE}
       DownURL='/downloads/q500log2kml_en.zip';
     {$ENDIF}
