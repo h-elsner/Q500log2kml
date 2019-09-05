@@ -322,5 +322,7 @@ resourcestring                                     {english}
   capReduced='Reduced';
   hntReduced='Reduced output to AppLog';
   rsNotUsed='not used';
+  cbCapCaption='Remaining capacity instead voltage';
+  cbCapHint='Show remaining battery capacity instead voltage at Elevation histogram';
 
 

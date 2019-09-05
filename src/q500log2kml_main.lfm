@@ -1,11 +1,11 @@
 object Form1: TForm1
   Left = 908
-  Height = 696
+  Height = 690
   Top = 120
   Width = 997
   AllowDropFiles = True
   Anchors = [akTop, akRight]
-  ClientHeight = 676
+  ClientHeight = 670
   ClientWidth = 997
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
@@ -19,30 +19,30 @@ object Form1: TForm1
   OnShow = FormShow
   ParentBiDiMode = False
   Position = poDefaultPosOnly
-  SessionProperties = 'CheckBox1.Checked;CheckBox10.Checked;CheckBox11.Checked;CheckBox3.Checked;CheckBox6.Checked;CheckBox7.Checked;CheckBox8.Checked;CheckBox9.Checked;CheckGroup1.Tag;ColorButton1.ButtonColor;ComboBox1.Items;ComboBox1.Text;ComboBox2.Items;ComboBox2.Text;ComboBox8.Items;ComboBox8.Text;ComboBox9.Items;ComboBox9.Text;Edit5.Text;Height;LabeledEdit1.Tag;LabeledEdit1.Text;LabeledEdit2.Tag;LabeledEdit2.Text;LabeledEdit3.Tag;LabeledEdit3.Text;Memo1.Lines;PageControl1.ActivePage;PageControl2.ActivePage;RadioGroup10.ItemIndex;RadioGroup2.ItemIndex;RadioGroup3.ItemIndex;RadioGroup4.ItemIndex;RadioGroup5.ItemIndex;RadioGroup8.ItemIndex;RadioGroup9.ItemIndex;SelectDirectoryDialog1.FileName;SelectDirectoryDialog1.InitialDir;SpinEdit1.Value;SpinEdit2.Value;TrackBar1.Position;TrackBar2.Position;Width;cbReduced.Checked'
+  SessionProperties = 'cbReduced.Checked;CheckBox1.Checked;CheckBox10.Checked;CheckBox11.Checked;CheckBox3.Checked;CheckBox6.Checked;CheckBox7.Checked;CheckBox8.Checked;CheckBox9.Checked;CheckGroup1.Tag;ColorButton1.ButtonColor;ComboBox1.Items;ComboBox1.Text;ComboBox2.Items;ComboBox2.Text;ComboBox8.Items;ComboBox8.Text;ComboBox9.Items;ComboBox9.Text;Edit5.Text;Height;LabeledEdit1.Tag;LabeledEdit1.Text;LabeledEdit2.Tag;LabeledEdit2.Text;LabeledEdit3.Tag;LabeledEdit3.Text;Memo1.Lines;PageControl1.ActivePage;PageControl2.ActivePage;RadioGroup10.ItemIndex;RadioGroup2.ItemIndex;RadioGroup3.ItemIndex;RadioGroup4.ItemIndex;RadioGroup5.ItemIndex;RadioGroup8.ItemIndex;RadioGroup9.ItemIndex;SelectDirectoryDialog1.FileName;SelectDirectoryDialog1.InitialDir;SpinEdit1.Value;SpinEdit2.Value;TrackBar1.Position;TrackBar2.Position;Width;cbCap.Checked'
   ShowHint = True
-  LCLVersion = '1.8.4.0'
+  LCLVersion = '2.0.4.0'
   object PageControl1: TPageControl
     Left = 152
-    Height = 552
+    Height = 546
     Top = 96
     Width = 838
-    ActivePage = TabSheet3
+    ActivePage = TabSheet4
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 1
+    TabIndex = 6
     TabOrder = 1
     OnChange = PageControl1Change
     Options = [nboKeyboardTabSwitch]
     object TabSheet1: TTabSheet
-      ClientHeight = 524
+      ClientHeight = 518
       ClientWidth = 830
       ImageIndex = 0
-      object StringGrid2: TStringGrid
+      object grdOverview: TStringGrid
         Left = 0
-        Height = 524
+        Height = 518
         Top = 0
         Width = 830
         Align = alClient
@@ -51,13 +51,13 @@ object Form1: TForm1
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColSpanning, goDblClickAutoSize, goSmoothScroll]
         TabOrder = 0
         TitleFont.Style = [fsBold]
-        OnCompareCells = StringGrid2CompareCells
-        OnDblClick = StringGrid2DblClick
-        OnHeaderClick = StringGrid2HeaderClick
-        OnKeyUp = StringGrid2KeyUp
-        OnMouseMove = StringGrid2MouseMove
-        OnMouseUp = StringGrid2MouseUp
-        OnPrepareCanvas = StringGrid2PrepareCanvas
+        OnCompareCells = grdOverviewCompareCells
+        OnDblClick = grdOverviewDblClick
+        OnHeaderClick = grdOverviewHeaderClick
+        OnKeyUp = grdOverviewKeyUp
+        OnMouseMove = grdOverviewMouseMove
+        OnMouseUp = grdOverviewMouseUp
+        OnPrepareCanvas = grdOverviewPrepareCanvas
         ColWidths = (
           62
           65
@@ -74,12 +74,13 @@ object Form1: TForm1
       end
     end
     object TabSheet3: TTabSheet
-      ClientHeight = 524
+      ClientHeight = 518
       ClientWidth = 830
       ImageIndex = 1
       object StringGrid1: TStringGrid
+        Cursor = crHelp
         Left = 0
-        Height = 524
+        Height = 518
         Top = 0
         Width = 830
         Align = alClient
@@ -100,18 +101,18 @@ object Form1: TForm1
         OnPrepareCanvas = StringGrid1PrepareCanvas
         OnSelection = StringGrid1Selection
         ColWidths = (
-          115
-          64
+          413
+          413
         )
       end
     end
     object TabSheet2: TTabSheet
-      ClientHeight = 524
+      ClientHeight = 518
       ClientWidth = 830
       ImageIndex = 2
       object Chart1: TChart
         Left = 0
-        Height = 524
+        Height = 518
         Top = 0
         Width = 830
         AxisList = <        
@@ -219,7 +220,7 @@ object Form1: TForm1
           Position = 0
         end
         object Chart1ConstantLine2: TConstantLine
-          AxisIndexX = 2
+          AxisIndex = 2
           Pen.Color = clRed
           Position = 0
         end
@@ -232,8 +233,8 @@ object Form1: TForm1
       end
     end
     object TabSheet8: TTabSheet
-      ClientHeight = 524
-      ClientWidth = 830
+      ClientHeight = 508
+      ClientWidth = 832
       ImageIndex = 3
       OnResize = TabSheet8Resize
       PopupMenu = PopupMenu3
@@ -284,7 +285,7 @@ object Form1: TForm1
         Left = 0
         Height = 168
         Top = 200
-        Width = 825
+        Width = 823
         AxisList = <        
           item
             Marks.Format = '%0:.4g'
@@ -366,7 +367,7 @@ object Form1: TForm1
     end
     object TabSheet5: TTabSheet
       Caption = 'Scan'
-      ClientHeight = 524
+      ClientHeight = 518
       ClientWidth = 830
       ImageIndex = 9
       object GroupBox10: TGroupBox
@@ -452,7 +453,7 @@ object Form1: TForm1
         Left = 8
         Height = 23
         Top = 14
-        Width = 412
+        Width = 408
         Anchors = [akTop, akLeft, akRight]
         Color = clCream
         ItemHeight = 15
@@ -461,7 +462,7 @@ object Form1: TForm1
         TabOrder = 1
       end
       object SpeedButton5: TSpeedButton
-        Left = 419
+        Left = 415
         Height = 25
         Top = 13
         Width = 25
@@ -497,7 +498,7 @@ object Form1: TForm1
         OnClick = SpeedButton5Click
       end
       object ProgressBar1: TProgressBar
-        Left = 476
+        Left = 472
         Height = 23
         Top = 14
         Width = 349
@@ -535,7 +536,7 @@ object Form1: TForm1
           ItemIndex = 0
           Items.Strings = (
             'Flight mode Emergency'
-            'Compass warnings (>10)'
+            'Compass warnings (>20)'
             'Compass warnings (>5sec)'
             'Voltage warning 2 (>5)'
             'Voltage < FindValue'
@@ -631,9 +632,9 @@ object Form1: TForm1
       end
       object StringGrid5: TStringGrid
         Left = 376
-        Height = 522
+        Height = 542
         Top = 48
-        Width = 447
+        Width = 443
         Anchors = [akTop, akLeft, akRight, akBottom]
         Color = clCream
         ColCount = 2
@@ -653,8 +654,8 @@ object Form1: TForm1
     end
     object TabSheet11: TTabSheet
       Caption = 'CGO3'
-      ClientHeight = 524
-      ClientWidth = 830
+      ClientHeight = 508
+      ClientWidth = 832
       ImageIndex = 5
       object GroupBox5: TGroupBox
         Left = 8
@@ -929,7 +930,7 @@ object Form1: TForm1
           Left = 126
           Height = 19
           Top = 8
-          Width = 47
+          Width = 46
           Caption = 'RTSP'
           TabOrder = 1
         end
@@ -1470,7 +1471,7 @@ object Form1: TForm1
           Left = 8
           Height = 15
           Top = 74
-          Width = 25
+          Width = 26
           Caption = 'Expo'
           ParentColor = False
         end
@@ -1666,14 +1667,14 @@ object Form1: TForm1
       end
     end
     object TabSheet4: TTabSheet
-      ClientHeight = 527
-      ClientWidth = 824
+      ClientHeight = 518
+      ClientWidth = 830
       ImageIndex = 4
       object PageControl2: TPageControl
         Left = 0
-        Height = 527
+        Height = 518
         Top = 0
-        Width = 824
+        Width = 830
         ActivePage = TabSheet9
         Align = alClient
         Images = TabImages
@@ -1681,8 +1682,8 @@ object Form1: TForm1
         TabOrder = 0
         Options = [nboKeyboardTabSwitch]
         object TabSheet9: TTabSheet
-          ClientHeight = 499
-          ClientWidth = 816
+          ClientHeight = 490
+          ClientWidth = 822
           ImageIndex = 6
           object RadioGroup2: TRadioGroup
             Left = 8
@@ -1822,7 +1823,7 @@ object Form1: TForm1
               Left = 24
               Height = 19
               Top = 125
-              Width = 59
+              Width = 60
               Caption = 'Extrude'
               OnChange = CheckBox11Change
               TabOrder = 4
@@ -1867,8 +1868,8 @@ object Form1: TForm1
           end
         end
         object TabSheet10: TTabSheet
-          ClientHeight = 499
-          ClientWidth = 816
+          ClientHeight = 490
+          ClientWidth = 822
           ImageIndex = 7
           object GroupBox3: TGroupBox
             Left = 8
@@ -1927,12 +1928,12 @@ object Form1: TForm1
           end
           object GroupBox4: TGroupBox
             Left = 280
-            Height = 468
+            Height = 411
             Top = 24
             Width = 384
             Anchors = [akTop, akLeft, akBottom]
             Caption = 'sel'
-            ClientHeight = 448
+            ClientHeight = 391
             ClientWidth = 380
             TabOrder = 1
             object LabeledEdit1: TLabeledEdit
@@ -1941,13 +1942,7 @@ object Form1: TForm1
               Top = 32
               Width = 112
               Color = clCream
-              EditLabel.AnchorSideLeft.Control = LabeledEdit1
-              EditLabel.AnchorSideRight.Control = LabeledEdit1
-              EditLabel.AnchorSideRight.Side = asrBottom
-              EditLabel.AnchorSideBottom.Control = LabeledEdit1
-              EditLabel.Left = 256
               EditLabel.Height = 15
-              EditLabel.Top = 14
               EditLabel.Width = 112
               EditLabel.Caption = 'LabeledEdit1'
               EditLabel.ParentColor = False
@@ -1963,13 +1958,7 @@ object Form1: TForm1
               Top = 120
               Width = 112
               Color = clCream
-              EditLabel.AnchorSideLeft.Control = LabeledEdit2
-              EditLabel.AnchorSideRight.Control = LabeledEdit2
-              EditLabel.AnchorSideRight.Side = asrBottom
-              EditLabel.AnchorSideBottom.Control = LabeledEdit2
-              EditLabel.Left = 256
               EditLabel.Height = 15
-              EditLabel.Top = 102
               EditLabel.Width = 112
               EditLabel.Caption = 'LabeledEdit2'
               EditLabel.ParentColor = False
@@ -1984,13 +1973,7 @@ object Form1: TForm1
               Top = 208
               Width = 112
               Color = clCream
-              EditLabel.AnchorSideLeft.Control = LabeledEdit3
-              EditLabel.AnchorSideRight.Control = LabeledEdit3
-              EditLabel.AnchorSideRight.Side = asrBottom
-              EditLabel.AnchorSideBottom.Control = LabeledEdit3
-              EditLabel.Left = 256
               EditLabel.Height = 15
-              EditLabel.Top = 190
               EditLabel.Width = 112
               EditLabel.Caption = 'LabeledEdit3'
               EditLabel.ParentColor = False
@@ -2001,7 +1984,7 @@ object Form1: TForm1
             end
             object TreeView1: TTreeView
               Left = 8
-              Height = 426
+              Height = 369
               Top = 8
               Width = 216
               Anchors = [akTop, akLeft, akBottom]
@@ -2294,7 +2277,7 @@ object Form1: TForm1
             Left = 8
             Height = 19
             Top = 272
-            Width = 49
+            Width = 48
             Caption = 'ChVT'
             Checked = True
             State = cbChecked
@@ -2303,8 +2286,8 @@ object Form1: TForm1
         end
         object TabSheet12: TTabSheet
           Caption = 'allg'
-          ClientHeight = 499
-          ClientWidth = 816
+          ClientHeight = 490
+          ClientWidth = 822
           ImageIndex = 8
           object RadioGroup4: TRadioGroup
             Left = 8
@@ -2335,17 +2318,17 @@ object Form1: TForm1
             Left = 520
             Height = 240
             Top = 8
-            Width = 293
+            Width = 291
             Anchors = [akTop, akLeft, akRight]
             Caption = 'GroupBox1'
             ClientHeight = 220
-            ClientWidth = 289
+            ClientWidth = 287
             TabOrder = 1
             object Memo1: TMemo
               Left = 0
               Height = 220
               Top = 0
-              Width = 289
+              Width = 287
               Align = alClient
               Color = clCream
               Lines.Strings = (
@@ -2605,18 +2588,26 @@ object Form1: TForm1
               'Version'
             )
           end
+          object cbCap: TCheckBox
+            Left = 8
+            Height = 19
+            Top = 184
+            Width = 54
+            Caption = 'cbCap'
+            TabOrder = 4
+          end
         end
       end
     end
     object TabSheet6: TTabSheet
       Caption = 'AppLog'
-      ClientHeight = 524
+      ClientHeight = 518
       ClientWidth = 830
       ImageIndex = 11
       object BitBtn27: TBitBtn
-        Left = 712
+        Left = 710
         Height = 30
-        Top = 488
+        Top = 485
         Width = 107
         Anchors = [akRight, akBottom]
         Caption = 'Sv'
@@ -2653,7 +2644,7 @@ object Form1: TForm1
       end
       inline SynEdit1: TSynEdit
         Left = 0
-        Height = 477
+        Height = 481
         Top = 0
         Width = 830
         Align = alTop
@@ -3158,7 +3149,7 @@ object Form1: TForm1
       object BitBtn28: TBitBtn
         Left = 8
         Height = 30
-        Top = 488
+        Top = 485
         Width = 107
         Anchors = [akLeft, akBottom]
         Caption = 'del'
@@ -3196,7 +3187,7 @@ object Form1: TForm1
       object cbReduced: TCheckBox
         Left = 136
         Height = 19
-        Top = 494
+        Top = 496
         Width = 79
         Anchors = [akLeft, akBottom]
         Caption = 'cbReduced'
@@ -3207,7 +3198,7 @@ object Form1: TForm1
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
-    Top = 653
+    Top = 647
     Width = 997
     Anchors = [akRight, akBottom]
     Panels = <    
@@ -3231,10 +3222,11 @@ object Form1: TForm1
       end>
     SimplePanel = False
     OnDblClick = StatusBar1DblClick
+    OnHint = StatusBar1Hint
   end
   object ListBox1: TListBox
     Left = 11
-    Height = 374
+    Height = 368
     Top = 272
     Width = 134
     Anchors = [akTop, akLeft, akBottom]
@@ -4162,6 +4154,7 @@ object Form1: TForm1
           FFFFFFFFFFFFFFFFFFFFFFFFFF202020BFBFBFBFBFBFBFBFBFBFBFBF7F7F7FFF
           FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         }
+        Hint = 'Select dir'
         OnClick = MenuItem41Click
       end
       object MenuItem40: TMenuItem
@@ -5115,125 +5108,17 @@ object Form1: TForm1
     top = 288
     object MenuItem10: TMenuItem
       Caption = 'S'
-      Bitmap.Data = {
-        36040000424D3604000000000000360000002800000010000000100000000100
-        20000000000000040000640000006400000000000000000000007F7F7F000000
-        00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000
-        00FF000000FF000000FF000000FF000000FF000000FF7F7F7F007F7F7F003F3F
-        3FFF000000FFBFBFBFFF3F3F3FFF3F3F3FFF000000FFBFBFBFFF000000FF0000
-        00FF3F3F3FFF000000FF000000FF000000FF000000FF7F7F7F007F7F7F00FFFF
-        FFFFBFBFBFFFFFFFFFFFFFFFFFFFFFFFFFFFBFBFBFFFFFFFFFFFBFBFBFFF7F7F
-        7F007F7F7F007F7F7F00000000FF3F3F3FFF7F7F7F007F7F7F007F7F7F003F3F
-        FFFFBFBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFBFBFBFFFFFFFFFFF3F3F3FFF7F7F7F00BFBFBFFF7F7F7F007F7F7F00FF7F
-        7FFF7F3FBFFF7F7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFBFBFBFFFFFFFFFFF7F7F7F007F7F7F00FFFF
-        FFFFFFFFFFFFBFBFFFFF3F3FFFFFFFBFBFFFFF7F7FFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F7F7F007F7F7F00FFFF
-        FFFFFFFFFFFFFFFFFFFFBF3F7FFF3F00BFFFFFBFBFFFFF3F3FFFBFBFFFFF7F7F
-        FFFF7F7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F7F7F007F7F7F00FFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFBFBFFFFF3F3FFFFF3F3FFFFFBFBFFFFFFFFF
-        FFFFBFBFFFFF3F3FFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F7F7F007F7F7F00FFFF
-        FFFFFFFFBFFFFFFF3FFFFFFF7FFFFFFF7FFFFFFF3FFFFFBF7FFFFF3F3FFFFF3F
-        3FFFFF3F3FFFBF7FBFFF3F3FFFFFFFFFFFFFFFFFFFFF7F7F7F007F7F7F00FFFF
-        BFFFFFFFBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3FFFFFFF7FFFFFFF
-        7FFFFFFF7FFFFFBF00FF7F7FBFFFBFBF7FFFFFFF7FFF7F7F7F007F7F7F00FFFF
-        7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFF7F7FFFFFBFBFFF3F3FFFFFFFFFFFFF7F7F7F007F7F7F00FFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFF3F3FFFBF7FBFFF3F3FFFFF7F7F7F007F7F7F00FFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F7FFFFF3F3FFF7F7F7F007F7F7F00FFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBFBFFF7F7F7F007F7F7F007F7F
-        7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F
-        7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F00FFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-      }
       ImageIndex = 7
       OnClick = MenuItem10Click
     end
     object MenuItem11: TMenuItem
       Caption = 'D'
-      Bitmap.Data = {
-        36040000424D3604000000000000360000002800000010000000100000000100
-        2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00303030FF6060
-        60FF606060FF606060FF606060FF303030FFFFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00000000FFC0C0
-        C0FFC0C0C0FFC0C0C0FFC0C0C0FF404040FF202020FFFFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF003030
-        30FF606060FF606060FF303030FF808080FF808080FF000000FFFFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00000000FF000000FFFFFFFF00FFFFFF00FFFFFF000000
-        00FF909090FF6F6F6FFF303030FF505050FF404040FFFFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00000000FF7F7F7FFF7F7F7FFFFFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00000000FF7F7F7FFF7F7F7FFF000000FF000000FFFFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00000000FFBFBFBFFF7F7F7FFFFFFFFF00FFFFFF00FFFFFF000000
-        00FFBFBFBFFFBFBFBFFF3F3F3FFFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00000000FFFFFFFF007F7F7FFFFFFFFF00FFFFFF00FFFFFF003F3F
-        3FFFFFFFFF007F7F7FFF000000FF3F3F3FFF000000FFFFFFFF00FFFFFF00FFFF
-        FF00FFFFFF007F7F7FFFFFFFFF007F7F7FFFFFFFFF00FFFFFF00000000FFBFBF
-        BFFFFFFFFF003F3F3FFF3F3F3FFF3F3F3FFFFFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF007F7F7FFFFFFFFF00FFFFFF003F3F3FFF000000FFBFBFBFFFFFFF
-        FF007F7F7FFF7F7F7FFF3F3F3FFFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00000000FFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00BFBF
-        BFFF3F3F3FFF3F3F3FFFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF003F3F3FFFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF007F7F
-        7FFF000000FFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF000000
-        00FF7F7F7FFFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00BFBFBFFF0000
-        00FFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00000020FF0000
-        9FFFBFBFBFFFFFFFFF00FFFFFF00FFFFFF00FFFFFF00BFBFBFFF000000FFFFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF0000005FFF0000
-        7FFF7F7F7FFFFFFFFF00FFFFFF00FFFFFF00BFBFBFFF000000FFFFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF0000003FFF0000
-        BFFF0000BFFF00005FFF00005FFF00005FFF00007FFF000000FFFFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF000000
-        00FF00005FFF00005FFF00005FFF000020FF000000FFFFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
-      }
       ImageIndex = 10
       OnClick = MenuItem11Click
     end
     object MenuItem12: TMenuItem
       Caption = 'Profiles'
       Enabled = False
-      Bitmap.Data = {
-        36040000424D3604000000000000360000002800000010000000100000000100
-        2000000000000004000064000000640000000000000000000000DFDFBF008080
-        00FF808000FF808000FF404000FF404000FF404000FF404000FF404000FF4040
-        00FF404000FF404000FF404000FF606000FF808000FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF00BFBFFF007F7FFF007F7FFF007F7FFF007F7FFF007F
-        7FFF007F7FFF007F7FFF007F7FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF007F7FFFFFFFFFFFBF7F7FFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFF7F7F7FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF007F7FFFBF7F7FFF9F3F3FFFBF7F7FFFBF7F7FFFBF7F
-        7FFFBF7F7FFFBF7F7FFF5F3F3FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF007F7FFFBF7F7FFF9F3F3FFFBF7F7FFFBF7F7FFFBF7F
-        7FFFBF7F7FFFBF7F7FFF5F3F3FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF007F7FFFFFFFFFFFBF7F7FFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFF7F7F7FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF007F7FFFBF7F7FFF9F3F3FFFBF7F7FFFBF7F7FFFBF7F
-        7FFFBF7F7FFFBF7F7FFF5F3F3FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF007F7FFFBF7F7FFF9F3F3FFFBF7F7FFFBF7F7FFFBF7F
-        7FFFBF7F7FFFBF7F7FFF5F3F3FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF007F7FFFFFFFFFFFBF7F7FFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFF7F7F7FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF007F7FFFBF7F7FFF9F3F3FFFBF7F7FFFBF7F7FFFBF7F
-        7FFFBF7F7FFFBF7F7FFF5F3F3FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF007F7FFFBF7F7FFF9F3F3FFFBF7F7FFFBF7F7FFFBF7F
-        7FFFBF7F7FFFBF7F7FFF5F3F3FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF007F7FFFFFFFFFFFBF7F7FFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFF7F7F7FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF007F7FFFFFFFFFFFBF7F7FFF7F7F7FFF7F7F7FFF7F7F
-        7FFFBFBFBFFFFFFFFFFF7F7F7FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FF606060FF00BFBFFF007F7FFF007F7FFF3F7F7FFFFFFFFFFFBFBF
-        BFFF007F7FFF007F7FFF007F7FFF007F7FFFC0C0C0FF808000FFFFFFFFFFC0C0
-        C0FFC0C0C0FFC0C0C0FF606060FF606060FF606060FF303030FFBFBFBFFF3F3F
-        3FFF606060FF606060FF606060FF909090FFC0C0C0FF808000FFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBFBFBFFF7F7F7FFF7F7F
-        7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDFDFBF00
-      }
       ImageIndex = 0
       object MenuItem13: TMenuItem
         Caption = 'FlightMode'
@@ -5270,42 +5155,6 @@ object Form1: TForm1
     end
     object MenuItem57: TMenuItem
       Caption = 'DS'
-      Bitmap.Data = {
-        36040000424D3604000000000000360000002800000010000000100000000100
-        2000000000000004000064000000640000000000000000000000FFFFFF00BFFF
-        BFFF7FFF7FFF7FFF7FFF7FFF7FFFBFFFBFFFFFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF007FFF
-        7FFFBFFFBFFF7FFF7FFF7FFF7FFF7FFF7FFFFFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF007FFF
-        7FFF7FFF7FFF00FF00FF00FF00FF7FFF7FFFFFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF007FFF
-        7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFF7FFFFFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF007F7F7FFFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF007F7F7FFFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF007F7F7FFFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFBFBFFFFF7F7FFFFF7F7FFFFF7F7FFFFFBFBFFFFFFFFF00FFFFFF00FFFF
-        FF00FFFFFF007F7F7FFF7F7F7FFF7F7F7FFF7F7F7FFF7F7F7FFF7F7F7FFF7F7F
-        7FFFBF3F3FFFFFBFBFFFFF7F7FFFFFFFFF00FF7F7FFFFFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FF7F7FFFFF7F7FFFFF7F7FFFFF0000FFFF7F7FFFFFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FF7F7FFFFFBFBFFFFF7F7FFFFFFFFF00FF7F7FFFFFFFFF00FFFFFF00BFBF
-        FFFF7F7FFFFF7F7FFFFF7F7FFFFFBFBFFFFFFFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFBFBFFFFF7F7FFFBF3F3FFFFF7F7FFFFFBFBFFFFFFFFF00FFFFFF007F7F
-        FFFF7F7FFFFF0000FFFF7F7FFFFF7F7FFFFFFFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF007F7F7FFFFFFFFF00FFFFFF00FFFFFF00FFFFFF007F7F
-        FFFFBFBFFFFF7F7FFFFFBFBFFFFF3F3FBFFF7F7F7FFF7F7F7FFF7F7F7FFF7F7F
-        7FFF7F7F7FFF7F7F7FFFBFBFBFFFFFFFFF00FFFFFF00FFFFFF00FFFFFF007F7F
-        FFFFBFBFFFFF7F7FFFFFBFBFFFFF7F7FFFFFFFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00BFBF
-        FFFF7F7FFFFF7F7FFFFF7F7FFFFFBFBFFFFFFFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-        FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
-      }
       ImageIndex = 3
       OnClick = MenuItem57Click
     end

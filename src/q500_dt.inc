@@ -323,5 +323,6 @@ resourcestring                                     {deutsch}
   capReduced='Reduziert';
   hntReduced='Reduzierte Ausgabe für AppLog';
   rsNotUsed='nicht benutzt';
-
+  cbCapCaption='Batteriekapazität statt Spannung';
+  cbCapHint='Anzeige der verbleibenden Batteriekapazität statt der Spannung im Höhendiagramm';
 

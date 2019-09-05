@@ -13,7 +13,7 @@ object Form2: TForm2
   PopupMenu = PopupMenu1
   Position = poDefaultPosOnly
   ShowInTaskBar = stNever
-  LCLVersion = '1.8.4.0'
+  LCLVersion = '2.0.4.0'
   object StringGrid1: TStringGrid
     Left = 8
     Height = 235
