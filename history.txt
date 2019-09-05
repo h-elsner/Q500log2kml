@@ -63,7 +63,7 @@ History:
                   Breeze telemetry.
 2018-07-19        Sensor YTH Plus updated. Message ID and text messages
                   decoded.
-                  Bug fix fÃ¼r menu item "Go to datapoint".
+                  Bug fix für menu item "Go to datapoint".
 2018-07-24  V3.8  AppLog added, Text messages from Sensor files listed there.
                   MAV-Link Message IDs updated, Severity added to text messages.
 2018-08-15        Typhoon H Plus Smart Mode and Manual Mode added.
@@ -93,7 +93,6 @@ History:
                  Some more MAV messages decoded.
 2019-01-15       Self-defined CSV format changed - more flexible.
                  RF channels added.
-2019-06-04       Telemetry to CCC waypoints updated for yaw.                 
                  Show self-defined PX4 Sensor CSV format.
                  Some important H520 MAV messages added.
 2019-01-26       Optimization auto size columns.
@@ -103,4 +102,6 @@ History:
 2019-03-27       Time label at cursor in additional chart.
 2019-04-07       Colors in Elevation chart for PX4 logs.
 2019-04-16       MAV Message PARAM_VALUE added.
-2019-06-04       Telemetry to CCC waypoints updated.
+2019-06-04       Telemetry to CCC waypoints updated for yaw.
+2019-08-16       Manual Link updated.
+2019-09-04 V4.2  Option LiPo remaining capacity added.
