@@ -198,8 +198,8 @@ uses
   fphttpclient, lazUTF8, SynEdit, SynHighlighterMulti, SynHighlighterAny,
   strutils, dateutils, lazsysutils;
 
-{$I q500_dt.inc}
-{.$I q500_en.inc}
+{.$I q500_dt.inc}
+{$I q500_en.inc}
 
 type
   TarrFW = array[0..7] of string;
@@ -3744,7 +3744,8 @@ var dsbuf: array[0..YTHPcols] of byte;
             maplist.Add(tab2+'<description>'+ExtractFileName(fn)+'</description>');
             maplist.Add(tab2+'<styleUrl>#Flightpath</styleUrl>');
             maplist.Add(tab2+'<gx:Track>');
-            maplist.Add(tab2+'<'+amtag+s[RadioGroup5.ItemIndex]+'</'+amtag);
+            maplist.Add(tab2+'<'+amtag+RadioGroup5.Items[RadioGroup5.ItemIndex]+
+                             '</'+amtag);
             if CheckBox11.Checked then maplist.Add(tab2+extru);
           end;
           s:=tab4+'<gx:coord>'+skoor+tab1+csvarr[4]+'</gx:coord>';
@@ -4165,7 +4166,7 @@ begin
           AusgabeSensor;                           {alles anzeigen, ohne Filter}
         except
           SynEdit1.Lines.Add('''Broken record No'''+suff+
-                             IntToStr(zhl+1)+{', Byte'+suff+IntToHex(b, 2)+}
+                             IntToStr(zhl)+', Byte'+suff+IntToHex(b, 2)+
                              ', Payload length'+suff+IntToStr(len));
 {Usually the last record in a tlog file is too short compared to payload length,
  thus this exception will be raised for each file at the end.}
@@ -8004,8 +8005,8 @@ begin
   try
     inlist.LoadFromFile(fn);
 
-    StringGrid1.BeginUpdate;
     if inlist.count>1 then begin                   {Laden inklusive Überschrift}
+      StringGrid1.BeginUpdate;
       PageControl1.ActivePageIndex:=1;
       StringGrid1.ColCount:=csvanz;                {auch ID für PX4 CSV}
       StringGrid1.RowCount:=inlist.Count;          {nur wenn Daten vorhanden sind}
@@ -8016,8 +8017,8 @@ begin
         if i=10 then
           StringGrid1.AutoSizeColumns;             {only once}
       end;
+      StringGrid1.EndUpdate;
     end;
-    StringGrid1.EndUpdate;
 
     StatusBar1.Panels[1].Text:=IntToStr(inlist.Count-1);
     StatusBar1.Panels[5].Text:=fn;
@@ -8025,7 +8026,6 @@ begin
     SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+' PX4 '+rsMAVlink+tab1+rsDS);
     SynEdit1.Lines.Add('');
   finally
-    StringGrid1.FixedRows:=1;
     Label3.Tag:=n;
     FreeAndNil(inlist);
     Screen.Cursor:=crDefault;
@@ -9039,7 +9039,7 @@ begin
               kmllist.Add(tab2+'<description>'+ExtractFileName(dn)+'</description>');
               kmllist.Add(tab2+'<styleUrl>#GrndStn</styleUrl>');
               kmllist.Add(tab2+'<LineString>');
-              kmllist.Add(tab4+'<>'+amtag+'clampToGround</'+amtag);
+              kmllist.Add(tab4+'<'+amtag+'clampToGround</'+amtag);
               kmllist.Add(tab4+'<'+cotag);
               for x:=1 to inlist.Count-1 do begin
                 splitlist.DelimitedText:=inlist[x];
