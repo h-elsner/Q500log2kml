@@ -87,8 +87,8 @@ const
   ziff=['0'..'9'];                                 {gültige Ziffern}
   zzf='hh:nn:ss';
 
-{$I q500_dt.inc}
-{.$I q500_en.inc}
+{.$I q500_dt.inc}
+{$I q500_en.inc}
 
 implementation
 

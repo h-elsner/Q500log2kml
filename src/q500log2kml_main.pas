@@ -181,6 +181,8 @@ History:
 2019-04-16       MAV Message PARAM_VALUE added.
 2019-08-16       Manual Link updated.
 2019-09-04 V4.2  Option LiPo remaining capacity added.
+2019-11-12       Scan for 'EMERGENCY' in PX4 sensor files
+2019-12-10       Update für ST24/H920 alte Firmware (Telemetry ohne Header)
 *)
 
 unit q500log2kml_main;
@@ -711,7 +713,9 @@ type
     function PCGstatusToStr(const u: integer): string; {pressure_compass_status}
     function SwitchToStr(const p: integer; const s: string): string;
     function CheckE7(const s: string): boolean;    {prüft einen string auf Fehler}
-    procedure ShowSensorPlus(const fn: string; gx, tb: boolean);    {Sensordatei vom YTH Plus}
+    function ShowSensorPlus(fn: string;            {Sensordatei vom YTH Plus}
+                            z: integer;            {Index der Datei}
+                            gx, tb, ov: boolean): boolean;  {True bei emergency}
     procedure ShowSensorH(const fn: string; mode: integer); {Sensor File YTH}
     function ComplFN(st: string; tp: TDateTime): string;    {Dateinamen mit Nummer ergänzen}
     procedure AppLogTimeStamp(s: string);          {AppLog einteilen}
@@ -726,11 +730,13 @@ type
     procedure SetSensorEnv;                        {Bedienung für Sensor anpassen}
     procedure ResetSensorEnv;
     procedure AnzeigePX4CSV(fn: string);           {CSV aus eigenem Format anzeigen}
+    procedure HeaderST24;                          {Write Header for H920 + ST24}
+    function FakeHeader: string;                   {Missing Header for H920+ST24}
 
   public
                                                    {public declarations}
     const 
-      Version ='V4.2 09/2019';
+      Version ='V4.2 12/2019';
   end;
 
 const
@@ -757,6 +763,7 @@ const
   hext='.tlog';                                    {TLOG from H520}
   sext='.bin';                                     {Sensor files}
   wext='.txt';
+  skyext='.sky';
   us1='_1';
   sextP=wldcd+wext;                                {Suche Sensor files YTH Plus}
   pngdef=us1+'.png';                               {Dateivorschläge}
@@ -799,6 +806,9 @@ const
   lipomin=3.3;          {minimale Zellenspannung von LiPos,
                          die nicht unterschritten werden sollte}
   lipomax=4.2;
+
+  emcyID='EMERGENCY';
+
 {http://docwiki.embarcadero.com/RADStudio/Seattle/de/Farben_in_der_VCL}
   osmURL='http://www.openstreetmap.org/';          {als Karte}
   gzoom='16';
@@ -1178,6 +1188,8 @@ begin
   RadioGroup1.ItemIndex:=0;
   StringGrid1.Tag:=19;                    {default Position bei neuer FW ST10+}
   StringGrid1.ColWidths[0]:=130;
+//  StringGrid1.Columns[0].Width:=130;             {Besser, aber dann überall!
+//  Und das Indexkonzept ist anders, weil FixedColumns nicht beim Index mitzählt}
   StringGrid1.Hint:=hntGrid1;                      {Default Hint data}
   StringGrid1.ColCount:=defaultcol;
   grdOverview.ColWidths[0]:=fw0;
@@ -1738,7 +1750,8 @@ end;
 
 {Message Struktur:
  https://github.com/mavlink/c_library_v2/tree/master/common
- https://developer.yuneec.com/documentation/125/Supported-mavlink-messages}
+ https://github.com/YUNEEC/MavlinkLib/blob/master/message_definitions/common.xml
+ https://github.com/YUNEEC/MavlinkLib}
 
 function MsgIDtoStr(id: integer): string;
 begin
@@ -1752,7 +1765,7 @@ begin
       5:  result:='change_operator_control';
       6:  result:='change_operator_control_ack';
       7:  result:='auth_key';
-     $B:  result:='set_mode';
+     11:  result:='set_mode';
     $14:  result:='param_request_read';
     $15:  result:='param_request_list';
     $16:  result:='param_value';
@@ -1801,6 +1814,8 @@ begin
     $4B:  result:='command_int';
     $4C:  result:='command_long';                  {Länge 20}
     $4D:  result:='command_ack';
+    $4E:  result:='command_int_stamped';           {78: UTC time stamp, Boot time}
+    $4F:  result:='command_long_stamped';          {79}
     $51:  result:='manual_setpoint';
     $52:  result:='set_attitude_target';
     $53:  result:='attitude_target';               {Länge 24}
@@ -1862,6 +1877,21 @@ begin
     $93:  result:='battery_status';
     $94:  result:='autopilot_version';             {Länge 34, 48, 4C}
     $95:  result:='landing_target';
+{MESSAGE IDs 180 - 229: Space for custom messages in
+ individual projectname_messages.xml files -->}
+(*  201:  result:='sens_power';                    {not know if used}
+    202:  result:='sens_MPTT';
+    203:  result:='aslctrl_data';
+    204:  result:='aslctrl_debug';
+    205:  result:='asluav_status';
+    206:  result:='ekf_ext';                       {Wind speed and such stuff}
+    207:  result:='asl_obctrl';
+    208:  result:='sens_atmos';                    {Atmospheric sensors}
+    209:  result:='sens_batmon';                   {Battery monitor}
+    210:  result:='fw_soaring_data';               {fixed wing...}
+    211:  result:='sensorpod_status';
+    212:  result:='sens_power_board';
+    213:  result:='gsm_link_status';               {LTE too}       *)
     $E6:  result:='estimator_status';              {Länge 2A}
     $E7:  result:='wind_cov';                      {Länge 20}
     $E8:  result:='gps_input';
@@ -1910,6 +1940,9 @@ begin
     $14B: result:='odometry';
     $14C: result:='trajectory_representation_waypoints';
     $14D: result:='trajectory_representation_bezier';
+    340:  result:='UTM_global_position';           {154'h}
+    350:  result:='debug_float_array';
+    360:  result:='orbit_execution_status';
     //      21: result:='CMD_NAV_LAND';
     //      22: result:='CMD_NAV_TAKEOFF';
     400: result:='CMD_COMPONENT_ARM_DISARM';
@@ -1918,15 +1951,31 @@ begin
     //    4005: result:='';
     //    4007: result:='';
     5000: result:='CMD_NAV_FENCE_RETURN_POINT';
+
+    40001: result:='CMD_RESET_MPPT'; {Mission command to reset Maximum Power Point Tracker (MPPT)}
+    40002: result:='CMD_PAYLOAD_CONTROL';    {Mission command to perform a power cycle on payload}
   end;
 end;
+
+(*  unused until now
+{https://github.com/YUNEEC/MavlinkLib/blob/master/message_definitions/ASLUAV.xml}
+function GSMlinkType(sv: byte): string;
+begin
+  result:='Link type unknown';
+  case sv of
+    0: result:='No service';
+    2: result:='2G (GSM/GRPS/EDGE) link';
+    3: result:='3G link (WCDMA/HSDPA/HSPA)';
+    4: result:='4G link (LTE)';
+  end;
+end;   *)
 
 {ENUMs siehe: https://github.com/mavlink/c_library_v2/blob/master/common/common.h}
 function MAVseverity(sv: byte): string;
 begin
   result:='';
   case sv of
-    0: result:='EMERGENCY'; {System is unusable. This is a "panic" condition}
+    0: result:=emcyID;      {System is unusable. This is a "panic" condition}
     1: result:='ALERT';     {Action should be taken immediately. Indicates error
                              in non-critical systems}
     2: result:='CRITICAL';  {Action must be taken immediately. Indicates failure
@@ -1946,15 +1995,35 @@ begin
   end;
 end;
 
-{https://developer.yuneec.com/documentation/125/Supported-mavlink-messages}
+{https://developer.yuneec.com/documentation/125/Supported-mavlink-messages
+ https://github.com/YUNEEC/MavlinkLib/blob/master/message_definitions/common.xml}
 function MAVcompID(cid: byte): string;             {MAV_Component_ID}
 begin
   result:='';
   case cid of
     0: result:='ALL';
-    1: result:='AUTOPILOT1';
+    1: result:='AUTOPILOT 1';
     100: result:='CAMERA';
+    101..105: result:='CAMERA '+IntToStr(cid-99);
+    140..153: result:='SERVO '+IntToStr(cid-139);
     154: result:='GIMBAL';
+    155: result:='LOG';
+    156: result:='ADSB';
+    157: result:='OSD';
+    158: result:='PERIPHERAL';
+    159: result:='QX1_GIMBAL';
+    160: result:='FLARM';
+    180: result:='MAPPER';
+    190: result:='MISSIONPLANNER';
+    195: result:='PATHPLANNER';
+    200: result:='IMU';
+    201: result:='IMU 2';
+    202: result:='IMU 3';
+    220: result:='GPS';
+    221: result:='GPS 2';
+    240: result:='UDP BRIDGE';
+    241: result:='UART BRIDGE';
+    250: result:='SYSTEM CONTROL';
   end;
 end;
 
@@ -2209,7 +2278,7 @@ begin
     if (m and 4)>0   then result:=result+'STANDBY ';
     if (m and 8)>0   then result:=result+'ACTIVE ';
     if (m and 16)>0  then result:=result+'CRITICAL ';
-    if (m and 32)>0  then result:=result+'EMERGENCY ';
+    if (m and 32)>0  then result:=result+emcyID+' ';
     if (m and 64)>0  then result:=result+'POWEROFF ';
     if (m and 128)>0 then result:=result+'FLIGHT_TERMINATION';
   end else result:=result+rsUnknown;
@@ -3327,6 +3396,7 @@ begin
       SelectDirectoryDialog1.InitialDir:=ComboBox2.Text;
       if CheckNumTurns(ComboBox2.Text)>0 then begin
         OpenDialog1.InitialDir:=ComboBox2.Text;
+        fnum:=IncludeTrailingPathDelimiter(ComboBox2.Text);
         RadioGroup1.Enabled:=true;
         BitBtn2.Enabled:=true;
         MenuItem24.Enabled:=true;
@@ -3542,7 +3612,9 @@ https://github.com/mavlink/c_library_v2/tree/master/common
  https://github.com/mavlink/c_library_v2/tree/master/common
  }
 
-procedure TForm1.ShowSensorPlus(const fn: string; gx, tb: boolean); {Sensordatei vom YTH Plus}
+function TForm1.ShowSensorPlus(fn: string;         {Sensordatei vom YTH Plus}
+                               z: integer;
+                               gx, tb, ov: boolean): boolean;
 const
     homeID='home: ';                               {ID Homeposition bei Textmessages}
 
@@ -3629,21 +3701,27 @@ var dsbuf: array[0..YTHPcols] of byte;
     for i:=len+lenfixP-11 to len+lenfixP-2 do      {8 Byte Sig + 2 CRC}
       StringGrid1.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
 //    wx:=GetIntFromBuf(len+lenfixP-12-lenfix, 8); {Aufsteigende Nummer hinten dran?}
-    SynEdit1.Lines.Add(st+'''');                   {Textmessage speichern}
-    if pos(homeID, tm)>1 then begin                {Homepoint als Link}
-      distg:=0;                                    {Entfernungswerte zurücksetzen}
-      distmax:=0;
-      splitlist:=TStringList.Create;
-      try
-        tm:=StringReplace(tm, ',', '', [rfReplaceAll]);
-        splitlist.DelimitedText:=tm;
-        homestr:=Format('%-10s', [homeID])+
-                 URLGmap(splitlist[1], splitlist[2]);
-      finally
-        splitlist.Free;
-      end;
+    if pos(emcyID, st)>0 then begin                {EMERGECY gefunden}
+      topp[z, 6]:=topp[z, 6] or 256;
+      result:=true;
     end;
-    SenCSVAusgabe;
+    if not ov then begin
+      SynEdit1.Lines.Add(st+'''');                 {Textmessage speichern}
+      if pos(homeID, tm)>1 then begin              {Homepoint als Link}
+        distg:=0;                                  {Entfernungswerte zurücksetzen}
+        distmax:=0;
+        splitlist:=TStringList.Create;
+        try
+          tm:=StringReplace(tm, ',', '', [rfReplaceAll]);
+          splitlist.DelimitedText:=tm;
+          homestr:=Format('%-10s', [homeID])+
+                   URLGmap(splitlist[1], splitlist[2]);
+        finally
+          splitlist.Free;
+        end;
+      end;
+      SenCSVAusgabe;
+    end;
     csvarr[posChan]:=ch;
   end;
 
@@ -4033,7 +4111,7 @@ var dsbuf: array[0..YTHPcols] of byte;
   begin
     e:=GetIntFromBuf(-3, 3);                       {MsgID 3 Byte als Zahl}
     csvarr[posChan-1]:=IntToStr(e);                {Message ID dezimal hinten}
-    if tb then begin
+    if tb then begin                               {Alle Datenanzeigen füllen}
       if StringGrid1.RowCount<(zhl+2) then
         StringGrid1.RowCount:=StringGrid1.RowCount+2000;  {neue Zeilen}
       inc(zhl);                                    {Datensätze zählen}
@@ -4059,7 +4137,10 @@ var dsbuf: array[0..YTHPcols] of byte;
       StringGrid1.Cells[lenfix+1, zhl]:=IntToStr(len);  {Payload Länge eintragen}
       StringGrid1.Cells[lenfix, zhl]:=MsgIDtoStr(e);    {Message Name}
     end else begin
-      if e=24 then GPSAusgabe;
+      if ov then begin
+        if e=253 then TextAusgabe;
+      end else
+        if e=24 then GPSAusgabe;
     end;
   end;
 
@@ -4080,6 +4161,8 @@ begin
   itemp:='';
   homestr:='';                                     {URL Homepoint, wenn vorhanden}
   ismq:=false;
+  topp[z, 5]:=0;                                   {Pointer für Suche Null setzen}
+  result:=false;
   for i:=0 to csvanz do
     csvarr[i]:='';
   if FileSize(fn)>lenfixP then begin
@@ -4165,9 +4248,10 @@ begin
                                     FixPart, aber ohne $FD und Längen-Byte (-2)}
           AusgabeSensor;                           {alles anzeigen, ohne Filter}
         except
-          SynEdit1.Lines.Add('''Broken record No'''+suff+
-                             IntToStr(zhl)+', Byte'+suff+IntToHex(b, 2)+
-                             ', Payload length'+suff+IntToStr(len));
+          if zhl>0 then
+            SynEdit1.Lines.Add('''Broken record No'''+suff+
+                               IntToStr(zhl)+', Byte'+suff+IntToHex(b, 2)+
+                               ', Payload length'+suff+IntToStr(len));
 {Usually the last record in a tlog file is too short compared to payload length,
  thus this exception will be raised for each file at the end.}
         end;
@@ -4334,17 +4418,23 @@ function TForm1.fModeFinden(l: TStringList): boolean; {FlightMode Spalte finden}
 var i: integer;
 begin
   result:=false;
-  for i:=0 to l.count-1 do begin
-    if l[i]=fmode then begin
-      StringGrid1.Tag:=i;                          {Position f_mode merken}
-      result:=true;                                {validiert, f_mode gefunden}
-      break;
-    end;
-    if l[i]=pfmode then begin
-      StringGrid1.Tag:=i;                          {Position fMode merken}
-      result:=true;                                {validiert, fMode gefunden}
-      SpinEdit3.Tag:=YTHPid;                       {YTH Plus gefunden}
-      break;
+  if l[19]='1' then begin                          {H920 Telemetry w/o header}
+    StringGrid1.Tag:=17;
+    SpinEdit3.Tag:=1;
+    result:=true;
+  end else begin
+    for i:=0 to l.count-1 do begin
+      if l[i]=fmode then begin
+        StringGrid1.Tag:=i;                        {Position f_mode merken}
+        result:=true;                              {validiert, f_mode gefunden}
+        break;
+      end;
+      if l[i]=pfmode then begin
+        StringGrid1.Tag:=i;                        {Position fMode merken}
+        result:=true;                              {validiert, fMode gefunden}
+        SpinEdit3.Tag:=YTHPid;                     {YTH Plus gefunden}
+        break;
+      end;
     end;
   end;
 end;
@@ -4555,12 +4645,12 @@ begin
                 fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
                     nfile+ListBox1.Items[x]+wext;  {Sensor_*.txt}
                 if Fileexists(fn) then begin
-                  ShowSensorPlus(fn, true, false);
+                  ShowSensorPlus(fn, x, true, false, false);
                 end else begin                     {alternativ yuneec_*.log file}
                   fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
                       mfile+ListBox1.Items[x]+bext;
                   if Fileexists(fn) then begin
-                    ShowSensorPlus(fn, true, false);
+                    ShowSensorPlus(fn, x, true, false, false);
                   end;
                 end;
                 StatusBar1.Panels[5].Text:=fn;
@@ -4569,7 +4659,7 @@ begin
                 fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
                     ListBox1.Items[x]+hext;        {*.tlog}
                 if Fileexists(fn) then begin
-                  ShowSensorPlus(fn, true, false);
+                  ShowSensorPlus(fn, x, true, false, false);
                   StatusBar1.Panels[5].Text:=fn;
                 end;
               end;
@@ -5473,13 +5563,14 @@ var vlist, flist, inlist, splitlist: TStringList;
     inlist.LoadFromFile(fn);
     if inlist.Count>10 then begin                  {Datei durchsuchen}
       if GetFMPos then exit;
-      if SpinEdit3.Tag=3 then
-        vstr:='8'                                  {8 nur bei 350QX}
+      case SpinEdit3.Tag of
+        3: vstr:='8';                              {8 nur bei 350QX}
+//        YTHPid: vstr:='??';                      {unbekannt}
+        MQid: vstr:=emcyID;
+        H5id: vstr:=emcyID;
       else
-//      if SpinEdit3.Tag=YTHPid then             {YTH Plus}
-//        vstr:=??
-//      else
-        vstr:='12';
+        vstr:='12';                                {Yuneec legacy}
+      end;
       ComboBox9.Text:=vstr;                        {Suche vordefinieren}
       for k:=1 to inlist.Count-1 do begin          {Nach Fehlern suchen}
         splitlist.DelimitedText:=inlist[k];
@@ -5689,7 +5780,10 @@ var vlist, flist, inlist, splitlist: TStringList;
     result:=false;
     if FileSize(fn)>FWsz then begin                {Mindestanzahl 18 Bytes für FW}
       az:=ReadFW(fn, arrFW);
-      if (az>2) then result:=true;                 {mindestens 3 Werte}
+      if (az>2) then
+        result:=true;                              {mindestens 3 Werte}
+      if pos(skyext, fn)>1 then
+        result:=true;                              {alle *.sky haben H520 FW}
     end;
   end;
 
@@ -5737,10 +5831,19 @@ begin
       8, 9: for i:=0 to vlist.Count-1 do begin     {Sensor Dateien}
               if SpinEdit3.Tag=YTHPid then
                 SuchFile(vlist[i], nfile+sextP, flist)
-              else
+              else begin
                 SuchFile(vlist[i], nfile+wldcd+sext, flist);
+                SuchFile(vlist[i], wldcd+skyext, flist);
+              end;
             end;
-      else  for i:=0 to vlist.Count-1 do SuchFile(vlist[i], kfile+wldcd+fext, flist);
+      10: for i:=0 to vlist.Count-1 do begin     {PX4 Sensor Dateien}
+            SuchFile(vlist[i], wldcd+hext, flist);             {H520}
+            Suchfile(vlist[i], nfile+wldcd+wext, flist);   {Mantis Q}
+            Suchfile(vlist[i], mfile+wldcd+bext, flist);   {Mantis Q}
+          end;
+      else begin
+        for i:=0 to vlist.Count-1 do SuchFile(vlist[i], kfile+wldcd+fext, flist);
+      end;
     end;                                           {default file type Telemetry}
     StatusBar1.Panels[0].Text:=IntToStr(vlist.Count);  {Anzahl Verzeichnisse}
     StatusBar1.Panels[1].Text:=IntToStr(flist.Count);  {Anzahl Dateien}
@@ -5763,6 +5866,10 @@ begin
           7: if EditFind(flist[i]) then Ausgabe;
           8: if FileSize(flist[i])>FWsz then Ausgabe;  {Sensorfile > 6 Byte}
           9: if FindSensorFW(flist[i]) then Ausgabe;   {Sensorfile mit FW}
+          10: if ShowSensorPlus(flist[i], 0, false, false, true) then begin
+                Ausgabe;
+//                ShowSensorPlus(flist[i], 0, false, true, false); {gleich ausgeben?}
+              end;
         end;
         ProgressBar1.Position:=i;
       end;
@@ -6836,14 +6943,14 @@ end;
 
 Procedure TForm1.LoadTree;                         {TreeView für Spalten}
 var inlist, splitlist: TStringList;
-    fn: string;
+    fn, hdstr: string;
     newn: TTreeNode;
 
   procedure addnodes(s: string; n: TTreeNode);     {Überschriften einlesen}
   var x: integer;
   begin
     splitlist.DelimitedText:=s;
-    if splitlist.count>5 then begin
+    if splitlist.Count>5 then begin
       for x:=1 to splitlist.count-1 do begin
         if pos(lcol, splitlist[x])>0 then begin
           Treeview1.Items.AddChild(n, lcol);
@@ -6856,6 +6963,7 @@ var inlist, splitlist: TStringList;
 
 begin
   TreeView1.Items.Clear;
+  hdstr:='';
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=sep;
@@ -6875,15 +6983,26 @@ begin
     fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
         kfile+ListBox1.Items[ListBox1.ItemIndex]+fext;
     if FileExists(fn) then begin
-      newn:=TreeView1.Items.Add(nil, dkpath);
-      inlist.LoadFromFile(fn);
-      if inlist.count>2 then addnodes(inlist[0], newn);
-      if LabeledEdit1.Tag=brID then
+      newn:=TreeView1.Items.Add(nil, dkpath);      {create Tree node for Telemetry}
+      if (StringGrid1.Tag=17) and
+         (SpinEdit3.Tag=1) then begin
+        hdstr:=FakeHeader;
         LabeledEdit1.Tag:=0;
-      if LabeledEdit2.Tag=brID then
         LabeledEdit2.Tag:=0;
-      if LabeledEdit3.Tag=brID then
         LabeledEdit3.Tag:=0;
+      end else begin
+        inlist.LoadFromFile(fn);
+        if inlist.count>2 then
+          hdstr:=inlist[0];
+        if LabeledEdit1.Tag=brID then
+          LabeledEdit1.Tag:=0;
+        if LabeledEdit2.Tag=brID then
+          LabeledEdit2.Tag:=0;
+        if LabeledEdit3.Tag=brID then
+          LabeledEdit3.Tag:=0;
+      end;
+      if hdstr<>'' then
+        addnodes(hdstr, newn);
     end;
     fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+spath+
                  PathDelim+sfile+ListBox1.Items[ListBox1.ItemIndex]+fext;
@@ -7079,13 +7198,13 @@ begin
         nfile+ListBox1.Items[ListBox1.ItemIndex]+wext;
     if Fileexists(fn) then begin
       StatusBar1.Panels[5].Text:=fn;
-      ShowSensorPlus(fn, CheckBox10.Checked, true);
+      ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false);
     end else begin                                 {alternativ yuneec_*.log file}
       fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
           mfile+ListBox1.Items[ListBox1.ItemIndex]+bext;
       if Fileexists(fn) then begin
         StatusBar1.Panels[5].Text:=fn;
-        ShowSensorPlus(fn, CheckBox10.Checked, true);
+        ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false);
       end;
     end;
   end;
@@ -7110,7 +7229,7 @@ begin
         ListBox1.Items[ListBox1.ItemIndex]+hext;   {Dateinamenstamm+.tlog}
     if Fileexists(fn) then begin
       StatusBar1.Panels[5].Text:=fn;
-      ShowSensorPlus(fn, CheckBox10.Checked, true);
+      ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false);
     end;
   end;
 end;
@@ -7804,6 +7923,34 @@ begin                                              {Datenanalyse ausgewählter B
   end;
 end;
 
+procedure TForm1.HeaderST24;                       {Write Header for H920 + ST24}
+begin
+  StaticText1.Caption:='H920 + ST24';
+  StringGrid1.ColCount:=22;
+  StringGrid1.Cells[1,0]:=rsHDcell1;
+  StringGrid1.Cells[2,0]:=rsHDcell2;
+  StringGrid1.Cells[3,0]:=rsHDcell3;
+  StringGrid1.Cells[4,0]:=rsHDcell4;
+  StringGrid1.Cells[5,0]:=rsHDcell5;
+  StringGrid1.Cells[6,0]:=rsHDcell6;
+  StringGrid1.Cells[7,0]:=rsHDcell7;
+  StringGrid1.Cells[8,0]:=rsHDcell8;
+  StringGrid1.Cells[9,0]:=rsHDcell9;
+  StringGrid1.Cells[10,0]:=rsHDcell10;
+  StringGrid1.Cells[11,0]:=rsHDcell11;
+  StringGrid1.Cells[12,0]:=rsHDcell12;
+  StringGrid1.Cells[13,0]:=rsHDcell13;
+  StringGrid1.Cells[14,0]:=rsHDcell14;
+  StringGrid1.Cells[15,0]:=rsHDcell15;
+  StringGrid1.Cells[16,0]:=rsHDcell16;
+  StringGrid1.Cells[17,0]:=rsHDcell17;
+  StringGrid1.Cells[18,0]:=rsHDcell18;
+  StringGrid1.Cells[19,0]:=rsHDcell19;
+  StringGrid1.Cells[20,0]:=rsHDcell20;
+  StringGrid1.Cells[21,0]:=rsHDcell21;
+  StringGrid1.AutoSizeColumns;
+end;
+
 procedure TForm1.AnzeigeCSV(const mode: integer);  {Dateien als Tabelle anzeigen}
 var i, x, p, n, zhl: integer;
     inlist, splitlist: TStringList;
@@ -7875,7 +8022,7 @@ begin
         SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
         StringGrid1.RowCount:=inlist.Count;        {vorbelegen}
         StringGrid1.ColCount:=splitlist.Count;
-        StringGrid1.Cells[0,0]:=rsGridCell00;
+        StringGrid1.Cells[0,0]:=rsHDcell0;
         for i:=1 to splitlist.count-1 do begin
           StringGrid1.Cells[i,0]:=splitlist[i];
           if pos(lcol, splitlist[i])>0 then begin  {letzte Spalte gefunden}
@@ -7899,7 +8046,8 @@ begin
                    (splitlist[StringGrid1.Tag-1]='245') then rs:=true;
                 if (StrToIntDef(splitlist[StringGrid1.Tag+3], 0) shr 1)>0 then begin
                   MenuItem7.Enabled:=true;
-                  if topp[ListBox1.ItemIndex, 5]=0 then topp[ListBox1.ItemIndex, 5]:=x;
+                  if topp[ListBox1.ItemIndex, 5]=0 then
+                    topp[ListBox1.ItemIndex, 5]:=x;
                 end;
                 if (slat='') and                   {noch kein Homepoint}
                    NichtLeer(splitlist[5]) and
@@ -7967,6 +8115,9 @@ begin
             StringGrid1.TopRow:=i-StringGrid1.VisibleRowCount-1;   {zeitl. Pos setzen}
           end;
         end;
+        if (StringGrid1.Tag=17) and
+           (SpinEdit3.Tag=1) then
+          HeaderST24;
         StringGrid1.AutoSizeColumn(0);
         StringGrid1.EndUpdate;
 
@@ -8653,6 +8804,31 @@ begin
   end;
 end;
 
+function TForm1.FakeHeader: string;                {Missing Header for H920+ST24}
+begin
+  result:=sep+rsHDcell1+sep+
+             rsHDcell2+sep+
+             rsHDcell3+sep+
+             rsHDcell4+sep+
+             rsHDcell5+sep+
+             rsHDcell6+sep+
+             rsHDcell7+sep+
+             rsHDcell8+sep+
+             rsHDcell9+sep+
+             rsHDcell10+sep+
+             rsHDcell11+sep+
+             rsHDcell12+sep+
+             rsHDcell13+sep+
+             rsHDcell14+sep+
+             rsHDcell15+sep+
+             rsHDcell16+sep+
+             rsHDcell17+sep+
+             rsHDcell18+sep+
+             rsHDcell19+sep+
+             rsHDcell20+sep+
+             rsHDcell21;
+end;
+
 procedure TForm1.AnzeigeSchnell;                   {Schnellanalyse}
 var inlist0, inlist1, inlist2, splitlist: TStringList;
     fn: string;
@@ -8664,6 +8840,9 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
   begin
     case lab.Tag of
       0: begin                                     {Telemetry}
+           if (StringGrid1.Tag=17) and
+              (SpinEdit3.Tag=1) then
+             inlist0[0]:=FakeHeader;
            splitlist.DelimitedText:=inlist0[0];    {Column header}
            if splitlist.count>30 then              {Firmware error YTH}
              for x:=15 to splitlist.count-1 do
@@ -8742,22 +8921,22 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
   procedure ChkFileFill(lab1: TLabeledEdit);       {Inlist füllen, aber nur wenn leer}
   begin
     case lab1.Tag of             {Datei laden, wenn noch nicht gefüllt}
-      0: if inlist0.count=0 then begin
+      0: if inlist0.Count=0 then begin
            fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
                kfile+ListBox1.Items[ListBox1.ItemIndex]+fext; {Telemetry}
            if FileExists(fn) then inlist0.LoadFromFile(fn);
          end;
-      1: if inlist1.count=0 then begin
+      1: if inlist1.Count=0 then begin
            fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+spath+
                PathDelim+sfile+ListBox1.Items[ListBox1.ItemIndex]+fext; {RemGPS}
            if FileExists(fn) then inlist1.LoadFromFile(fn);
          end;
-      2: if inlist2.count=0 then begin
+      2: if inlist2.Count=0 then begin
            fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+fpath+
                PathDelim+ffile+ListBox1.Items[ListBox1.ItemIndex]+fext; {Rem}
            if FileExists(fn) then inlist2.LoadFromFile(fn);
          end;
-      brid: if inlist0.count=0 then begin
+      brid: if inlist0.Count=0 then begin
            fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
                ListBox1.Items[ListBox1.ItemIndex]+bext;   {Breeze}
            if FileExists(fn) then inlist0.LoadFromFile(fn);
@@ -10690,7 +10869,8 @@ var
 
     procedure ZhlYLegacy;
     begin
-      if RadioGroup1.ItemIndex=0 then try
+      if RadioGroup1.ItemIndex=0 then
+      try
         if p=8 then begin                          {GPS used}
           vbd;
         end;
@@ -10698,10 +10878,12 @@ var
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
             MotStatusToStr(StatusToByte(ag.Value));
         end;
-        if p=15 then                               {imu_status}
+        if (p=15) and
+           (StringGrid1.Tag<>17) then              {imu_status}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
             IMUstatusToStr(StatusToByte(ag.Value));
-        if p=StringGrid1.Tag-1 then                {press_compass_status}
+        if (p=StringGrid1.Tag-1) and
+           (StringGrid1.Tag<>17) then              {press_compass_status}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
             PCGstatusToStr(StatusToByte(ag.Value));
         if p=StringGrid1.Tag then begin            {f_mode}
@@ -11099,7 +11281,9 @@ begin
          (aCol<4) then                             {Emergency}
         grdOverview.Canvas.Brush.Color:=clMaroon;
     end else
-      grdOverview.Canvas.Brush.Color:=clMoneyGreen;
+      if (SpinEdit3.Tag<>MQid) and
+         (SpinEdit3.Tag<>H5id) then
+        grdOverview.Canvas.Brush.Color:=clMoneyGreen;   {Summenzeile}
   end;
 end;
 
@@ -11205,14 +11389,20 @@ begin
     if FileExists(SaveDialog1.FileName) then OpenDocument(SaveDialog1.FileName)
       else OpenDocument(IncludeTrailingPathDelimiter(ComboBox8.Text));
   end else begin                                   {Dateiliste}
-    if (StringGrid5.Tag>0) and
-       ((RadioGroup9.ItemIndex<8) or               {Sensor Dateien}
-        (SpinEdit3.Tag<>YTHPid)) then begin        {H Plus}
-      fn:=StringGrid5.Cells[1, StringGrid5.Tag];
-      ComboBox2.Text:=GetFlightLogDir(fn);
-      SelDirAct(fn);
-      ComboBox9.Enabled:=true;                     {Suche erlauben}
-      PageControl1.ActivePageIndex:=1;             {Springe zur Dateiansicht}
+    if (StringGrid5.Tag>0) then begin              {Es wurde etwas gefunden}
+      if RadioGroup9.ItemIndex=10 then begin
+        fn:=StringGrid5.Cells[1, StringGrid5.Tag];
+        ShowSensorPlus(fn, 0, false, true, false);
+        PageControl1.ActivePageIndex:=7;           {Springe zum AppLog}
+      end else
+      if (RadioGroup9.ItemIndex<8) or              {Sensor Dateien}
+         (SpinEdit3.Tag<>YTHPid) then begin        {H Plus}
+        fn:=StringGrid5.Cells[1, StringGrid5.Tag];
+        ComboBox2.Text:=GetFlightLogDir(fn);
+        SelDirAct(fn);
+        ComboBox9.Enabled:=true;                   {Suche erlauben}
+        PageControl1.ActivePageIndex:=1;           {Springe zur Dateiansicht}
+      end;
     end;
   end;
 end;
@@ -11519,7 +11709,7 @@ begin
     if ExtractFileExt(OpenDialog1.FileName)=fext then
       AnzeigePX4CSV(OpenDialog1.FileName)          {PX4 Sensor csv anzeigen}
     else                                           {Sensor Datei auswerten}
-      ShowSensorPlus(OpenDialog1.FileName, CheckBox10.Checked, true);
+      ShowSensorPlus(OpenDialog1.FileName, 0, CheckBox10.Checked, true, false);
   end;
 end;
 

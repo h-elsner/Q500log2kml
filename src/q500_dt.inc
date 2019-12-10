@@ -22,7 +22,30 @@ resourcestring                                     {deutsch}
   rsGridCell8='Höchstgeschw.';
   rsGridCell9='Umax';
   rsGridCell10='Umin';
-  rsGridCell00='Datum/Zeit';
+
+  rsHDcell0='Datum/Zeit';
+  rsHDcell1='fsk_rssi';
+  rsHDcell2='voltage';
+  rsHDcell3='current';
+  rsHDcell4='altitude';
+  rsHDcell5='latitude';
+  rsHDcell6='longitude';
+  rsHDcell7='tas';
+  rsHDcell8='gps_used';
+  rsHDcell9='fix_type';
+  rsHDcell10='satellites_num';
+  rsHDcell11='roll';
+  rsHDcell12='yaw';
+  rsHDcell13='pitch';
+  rsHDcell14='motor_status';
+  rsHDcell15='?status 15';
+  rsHDcell16='?status 16';
+  rsHDcell17='f_mode';
+  rsHDcell18='gps_pos_used';
+  rsHDcell19='vehicle_type';
+  rsHDcell20='error_flags';
+  rsHDcell21='gps_accH';
+
   rsSave='Speichern';
   rsInvalid='ungültige Daten';
   rsNoBild='System lässt Bild nicht zu';

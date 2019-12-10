@@ -21,18 +21,18 @@ object Form1: TForm1
   Position = poDefaultPosOnly
   SessionProperties = 'cbReduced.Checked;CheckBox1.Checked;CheckBox10.Checked;CheckBox11.Checked;CheckBox3.Checked;CheckBox6.Checked;CheckBox7.Checked;CheckBox8.Checked;CheckBox9.Checked;CheckGroup1.Tag;ColorButton1.ButtonColor;ComboBox1.Items;ComboBox1.Text;ComboBox2.Items;ComboBox2.Text;ComboBox8.Items;ComboBox8.Text;ComboBox9.Items;ComboBox9.Text;Edit5.Text;Height;LabeledEdit1.Tag;LabeledEdit1.Text;LabeledEdit2.Tag;LabeledEdit2.Text;LabeledEdit3.Tag;LabeledEdit3.Text;Memo1.Lines;PageControl1.ActivePage;PageControl2.ActivePage;RadioGroup10.ItemIndex;RadioGroup2.ItemIndex;RadioGroup3.ItemIndex;RadioGroup4.ItemIndex;RadioGroup5.ItemIndex;RadioGroup8.ItemIndex;RadioGroup9.ItemIndex;SelectDirectoryDialog1.FileName;SelectDirectoryDialog1.InitialDir;SpinEdit1.Value;SpinEdit2.Value;TrackBar1.Position;TrackBar2.Position;Width;cbCap.Checked'
   ShowHint = True
-  LCLVersion = '2.0.4.0'
+  LCLVersion = '2.0.6.0'
   object PageControl1: TPageControl
     Left = 152
     Height = 546
     Top = 96
     Width = 838
-    ActivePage = TabSheet4
+    ActivePage = TabSheet3
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 6
+    TabIndex = 1
     TabOrder = 1
     OnChange = PageControl1Change
     Options = [nboKeyboardTabSwitch]
@@ -233,8 +233,8 @@ object Form1: TForm1
       end
     end
     object TabSheet8: TTabSheet
-      ClientHeight = 508
-      ClientWidth = 832
+      ClientHeight = 518
+      ClientWidth = 830
       ImageIndex = 3
       OnResize = TabSheet8Resize
       PopupMenu = PopupMenu3
@@ -285,7 +285,7 @@ object Form1: TForm1
         Left = 0
         Height = 168
         Top = 200
-        Width = 823
+        Width = 821
         AxisList = <        
           item
             Marks.Format = '%0:.4g'
@@ -325,7 +325,7 @@ object Form1: TForm1
       object Chart5: TChart
         Left = 0
         Height = 164
-        Top = 360
+        Top = 354
         Width = 830
         AxisList = <        
           item
@@ -545,6 +545,7 @@ object Form1: TForm1
             'Edit/Find (1)'
             'Sensor_xxxxx'
             'Sensor+FW'
+            'PX4 Emergency'
           )
           TabOrder = 0
         end
@@ -1675,10 +1676,10 @@ object Form1: TForm1
         Height = 518
         Top = 0
         Width = 830
-        ActivePage = TabSheet9
+        ActivePage = TabSheet10
         Align = alClient
         Images = TabImages
-        TabIndex = 0
+        TabIndex = 1
         TabOrder = 0
         Options = [nboKeyboardTabSwitch]
         object TabSheet9: TTabSheet
