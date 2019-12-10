@@ -37,3 +37,6 @@ Control CGO3: Test environment for commands to CGO3 via 5G WLAN connection.
 Settings: Three tab sheets for commission settings of the application.
 
 AppLog: Listing of actions, messages and errors from the application. For sensor files from the Typhoon H Plus, H520 or Mantis Q, text messages (MAV link "statustext") and some other data from different messages will be listed too.
+
+
+For news and updates see "history.txt"
