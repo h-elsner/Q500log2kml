@@ -105,3 +105,5 @@ History:
 2019-06-04       Telemetry to CCC waypoints updated for yaw.
 2019-08-16       Manual Link updated.
 2019-09-04 V4.2  Option LiPo remaining capacity added.
+2019-11-12       Scan for 'EMERGENCY' in PX4 sensor files
+2019-12-10       Update für ST24/H920 alte Firmware (Telemetry ohne Header)
