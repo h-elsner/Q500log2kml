@@ -2,10 +2,10 @@ object Form2: TForm2
   Left = 1230
   Height = 292
   Top = 815
-  Width = 570
+  Width = 671
   Caption = 'Form2'
   ClientHeight = 292
-  ClientWidth = 570
+  ClientWidth = 671
   Color = clSkyBlue
   OnCreate = FormCreate
   OnResize = FormResize
@@ -18,7 +18,7 @@ object Form2: TForm2
     Left = 8
     Height = 235
     Top = 8
-    Width = 556
+    Width = 657
     Anchors = [akTop, akLeft, akRight, akBottom]
     Color = clCream
     ColumnClickSorts = True
@@ -39,7 +39,7 @@ object Form2: TForm2
     )
   end
   object BitBtn1: TBitBtn
-    Left = 457
+    Left = 558
     Height = 34
     Top = 248
     Width = 107
@@ -88,7 +88,7 @@ object Form2: TForm2
     Left = 8
     Height = 235
     Top = 8
-    Width = 556
+    Width = 657
     AxisList = <    
       item
         Marks.LabelBrush.Style = bsClear
@@ -132,11 +132,14 @@ object Form2: TForm2
   end
   object edTime: TEdit
     Left = 8
-    Height = 23
-    Top = 248
+    Height = 15
+    Top = 256
     Width = 64
     Alignment = taCenter
     Anchors = [akLeft, akBottom]
+    BorderStyle = bsNone
+    DoubleBuffered = True
+    ParentDoubleBuffered = False
     ReadOnly = True
     TabOrder = 3
     TextHint = 'hh:mm:ss'

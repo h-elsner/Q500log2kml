@@ -30,7 +30,6 @@
     <PublishOptions>
       <Version Value="2"/>
       <DestinationDirectory Value="D:\Lazarus\Projekte\ZZ_Output"/>
-      <CompressFinally Value="False"/>
     </PublishOptions>
     <RunParams>
       <FormatVersion Value="2"/>

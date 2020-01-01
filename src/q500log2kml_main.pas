@@ -183,6 +183,7 @@ History:
 2019-09-04 V4.2  Option LiPo remaining capacity added.
 2019-11-12       Scan for 'EMERGENCY' in PX4 sensor files
 2019-12-10       Update für ST24/H920 alte Firmware (Telemetry ohne Header)
+2019-12-31       Setting for Thunderbird (H480 with PX4 firmware)
 *)
 
 unit q500log2kml_main;
@@ -200,8 +201,8 @@ uses
   fphttpclient, lazUTF8, SynEdit, SynHighlighterMulti, SynHighlighterAny,
   strutils, dateutils, lazsysutils;
 
-{.$I q500_dt.inc}
-{$I q500_en.inc}
+{$I q500_dt.inc}
+{.$I q500_en.inc}
 
 type
   TarrFW = array[0..7] of string;
@@ -275,6 +276,7 @@ type
     CheckBox11: TCheckBox;
     cbReduced: TCheckBox;
     cbCap: TCheckBox;
+    cbThunder: TCheckBox;
     CheckBox2: TCheckBox;
     CheckBox3: TCheckBox;
     CheckBox4: TCheckBox;
@@ -485,6 +487,7 @@ type
     procedure BitBtn28Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
+    procedure cbThunderChange(Sender: TObject);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Chart3MouseUp(Sender: TObject; Button: TMouseButton;
@@ -732,6 +735,8 @@ type
     procedure AnzeigePX4CSV(fn: string);           {CSV aus eigenem Format anzeigen}
     procedure HeaderST24;                          {Write Header for H920 + ST24}
     function FakeHeader: string;                   {Missing Header for H920+ST24}
+    procedure OverWriteVT;                         {Overwrite vehicle type for PX4 Thunderbird}
+    procedure GetDefVT;                            {Fill defVT depending on settings}
 
   public
                                                    {public declarations}
@@ -799,6 +804,7 @@ const
   rfm2=[0..7, 9..14, 18, 20..24, 26..29, 31..33];  {Real flight modes, Yuneec legacy}
   rfm3=[8..14, 25];                                {Real flight modes Blade}
   rfmP=[4..7, 10, 12, 13, 17];                     {Real flight modes YTH Plus  ???}
+  rfmT=[3, 16];                                    {Real flight modes YTH Thunderbird}
   fkmh=3.6;                                        {m/s --> km/h}
   fmph=2.2369362920544;                            {m/s --> mph}
   fmile=1.609344;
@@ -875,6 +881,8 @@ const
   YTHPid=10;                 {YTH Plus ID}
   MQid=11;                   {MantisQ ID, PX4 Quadcopter}
   H5id=12;                   {Yuneec H520, *.tlog files (PX4)}
+  ThBid=15;                  {YTH Thunderbird on base of PX4}
+
   MQcsvID=13;                {neues CSV Format beim MQ}
   YTHPcols=276;              {Anzahl Spalten bei YTH Plus Sensorfiles = ID für Anzeige}
   AnzDirs=12;                {Anzahl der letzen Verzeichnisse}
@@ -965,8 +973,10 @@ begin
         end;
 
     end;
-    if ExtractFileExt(fn)=bext then
+    if ExtractFileExt(fn)=bext then begin
       result:=ExtractFilePath(fn);                 {Breeze}
+      SpinEdit3.Tag:=BRid;
+    end;
   finally
     FreeAndNil(splitlist);
   end;
@@ -1159,6 +1169,8 @@ begin
   cbCap.Hint:=cbCapHint;
   cbReduced.Caption:=capReduced;                   {Applog reduced, only text msg}
   cbReduced.Hint:=hntReduced;
+  cbThunder.Caption:=capThunder;
+  cbThunder.Hint:=hntThunder;
   GroupBox2.Caption:=capGroupBox2;
   GroupBox3.Caption:=rsPC1Tab2;
   GroupBox4.Caption:=capAnalyse;
@@ -1468,7 +1480,9 @@ begin
     MQid, MQcsvID: result:='Yuneec MantisQ';       {MantisQ erkannt}
     H5id: result:='Yuneec H520';                   {tlog files from H520}
     YTHPid: result:='Yuneec Typhoon H Plus';       {YTH Plus erkannt}
-    else SynEdit1.Lines.Add('''Unknown Vehicle type '+IntToStr(v)+' found');
+    ThBid: result:=capThunder;                     {H480 Thunderbird}
+  else
+    SynEdit1.Lines.Add('''Unknown Vehicle type '+IntToStr(v)+' found');
   end;
 end;
 
@@ -2381,7 +2395,7 @@ end;
 
 function H920Amp(const w: double): double;         {Stromsensor H920}
 begin
-  result:=w/4;                                     {Maßeinheit unklar, Näherung}
+  result:=w/2;                                     {uint8_t current; 0.5A resolution}
 end;
 
 function TiltToGrad(const w: double): double;      {Umrechnung Werte in 0-90 Grad}
@@ -2389,6 +2403,7 @@ begin
   result:=-(w-683)*90/2729;
 end;
 
+{eventuell auch so: uint8_t voltage; 25.4V  voltage = 5 + 255*0.1 = 30.5V, min=5V}
 function BrUmrech(const w: double): double;        {Umrechnung unsicher}
 begin
   result:=w/2.55;                                  {0..255}
@@ -3137,18 +3152,31 @@ begin
   end;
 end;
 
-procedure TForm1.DoForm2Show(p: integer); {Detailfenster anzeigen mit Breite p}
-begin                                     {p=0 --> Breite Form1}
-  Form2.Show;                             {oberhalb Hauptfesnter anzeigen}
+procedure TForm1.OverWriteVT;                      {Overwrite vehicle type for PX4 Thunderbird}
+begin
+  if cbThunder.Checked then begin                  {Overwrite for PX4 Thunderbird}
+    SpinEdit3.Tag:=ThBid;                          {Set to SpinEdit3.Tag}
+  end;
+end;
+
+procedure TForm1.GetDefVT;                         {Fill defVT depending on settings}
+begin
+  SpinEdit3.Tag:=defVT;                            {default legacy Yuneec}
+  OverWriteVT;                                     {Overwrite vehicle type for PX4 Thunderbird}
+end;
+
+procedure TForm1.DoForm2Show(p: integer);          {Detailfenster anzeigen mit Breite p}
+begin                                              {p=0 --> Breite Form1}
+  Form2.Show;                                      {oberhalb Hauptfesnter anzeigen}
   if p=0 then
     Form2.Width:=PageControl1.Width
   else
     Form2.Width:=p;
-  Form2.Left:=Form1.Left+PageControl1.Left; {linksbündig zu Diagrams anzeigen}
-  Form2.Top:=Form1.Top-Form2.Height-20;   {20 Pixel von Fensterleiste Kopf zeigen}
+  Form2.Left:=Form1.Left+PageControl1.Left;        {linksbündig zu Diagrams anzeigen}
+  Form2.Top:=Form1.Top-Form2.Height-20;            {20 Pixel von Fensterleiste Kopf zeigen}
   if Form2.Top<Screen.DesktopTop then
     Form2.Top:=Screen.DesktopTop;
-  Timer2.Enabled:=true;                   {Timer für Abfrage Doppelclick Form2}
+  Timer2.Enabled:=true;                            {Timer für Abfrage Doppelclick Form2}
 end;
 
 {http://www.joerg-buchwitz.de/temp/googlemapssyntax.htm
@@ -3294,6 +3322,7 @@ begin
     4: result:=StrToIntDef(fm, 999) in rfm2;       {Chroma}
     5: result:=StrToIntDef(fm, 999) in rfm2;       {Typhoon H}
     6: result:=StrToIntDef(fm, 999) in rfm2;       {H920+  ??}
+    ThBid: result:=StrToIntDef(fm, 999) in rfmT;   {PX4 Thunderbird}
     YTHPid: result:=infl and                       {InFlight nur bei YTH Plus}
               (StrToIntDef(fm, 999) in rfmP);      {YTH Plus}
     brID: result:=(trim(fm)<>'0'); {Breeze: fm ist splitlist[14] = AutoTakeOFF}
@@ -3387,7 +3416,7 @@ begin
     MenuItem24.Enabled:=false;
     StatusBar1.Panels[5].Text:=DefaultStatus;
     RadioGroup1.ItemIndex:=0;                      {default Telemetry}
-    SpinEdit3.Tag:=defVT;                          {default Vehicle Type}
+    GetDefVT;
     try
       if ComboBox2.Items.Count>0 then
         for x:=ComboBox2.Items.Count-1 downto 0 do {Liste putzen}
@@ -4735,6 +4764,15 @@ begin
   end;
 end;
 
+procedure TForm1.cbThunderChange(Sender: TObject);
+begin
+  if cbThunder.Checked then begin
+    cbThunder.Tag:=RadioGroup5.ItemIndex;          {save last setting}
+    RadioGroup5.ItemIndex:=0;                      {Set to 'Absolute'}
+  end else
+    RadioGroup5.ItemIndex:=cbThunder.Tag;          {restore setting}
+end;
+
 function GetCGOStr(w, s: string): string;          {Werte auslesen aus Kamera}
 var p, x: integer;
     hs: string;
@@ -5168,6 +5206,7 @@ begin
         if SpinEdit3.Tag<>YTHPid then begin
           splitlist.DelimitedText:=inlist[2];      {2. Datenzeile, v_type ermitteln}
           SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+          OverWriteVT;                             {Overwrite for PX4 Thunderbird}
         end;
         for x:=1 to inlist.Count-1 do
         if CheckE7(inlist[x]) then begin           {Plausicheck für YTH Plus}
@@ -5538,8 +5577,8 @@ var vlist, flist, inlist, splitlist: TStringList;
     i, zhl, vt: integer;
     vstr: string;
 
-  function GetFMPos: boolean;          {Position f_mode to StringGrid1.Tag}
-  begin                                {Gibt bei Fehler true zurück}
+  function GetFMPos: boolean;                      {Position f_mode to StringGrid1.Tag}
+  begin                                            {Gibt bei Fehler true zurück}
     try
       splitlist.DelimitedText:=inlist[0];
       fModeFinden(splitlist);                      {hier wird YTH Plus schon erkannt}
@@ -5574,7 +5613,7 @@ var vlist, flist, inlist, splitlist: TStringList;
       ComboBox9.Text:=vstr;                        {Suche vordefinieren}
       for k:=1 to inlist.Count-1 do begin          {Nach Fehlern suchen}
         splitlist.DelimitedText:=inlist[k];
-        if splitlist.Count<=StringGrid1.Tag then exit; {zerstörte Datensätze}
+        if splitlist.Count<=StringGrid1.Tag then exit; {invalid data sets}
         if trim(splitlist[StringGrid1.Tag])=vstr then inc(num);
         if num>2 then begin
           result:=true;
@@ -6056,7 +6095,8 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     try
       vlist.Add(IncludeTrailingPathDelimiter(ComboBox8.Text));
       CreateDirList(ComboBox8.Text, vlist);
-      for x:=0 to vlist.Count-1 do SuchFile(vlist[x], kfile+'0*'+fext, flist);
+      for x:=0 to vlist.Count-1 do
+        SuchFile(vlist[x], kfile+wldcd+fext, flist);
       if flist.Count>1 then begin                  {genug Dateien?}
         StatusBar1.Panels[0].Text:=IntToStr(vlist.Count);  {Anzahl Verzeichnisse}
         StatusBar1.Panels[1].Text:=IntToStr(flist.Count);  {Anzahl Telemetrie}
@@ -7124,20 +7164,6 @@ var x: integer;
     end;
   end;
 
-  procedure AnzMQcsv;
-  begin
-    RadioGroup1.ItemIndex:=0;
-    RadioGroup1.Enabled:=false;                    {nur Telemetrie}
-    case PageControl1.ActivePageIndex of
-      0: grdOverview.TopRow:=topp[0, 4];           {0 wird sowieso gefüllt}
-      1: MQAnzeigeCSV(0);
-(*    2: Diagramm(IncludeTrailingPathDelimiter(ComboBox2.Text)+
-                     ListBox1.Items[ListBox1.ItemIndex]+bext);
-      3: AnzeigeSchnell;
-      6: MetaLesen;         *)
-    end;
-  end;
-
 begin
   if (SpinEdit3.Tag=MQid) or                       {nichts tun für MantisQ}
      (SpinEdit3.Tag=H5id) then                     {nichts tun für H520}
@@ -7166,7 +7192,6 @@ begin
     end;
     case SpinEdit3.Tag of
       brID: AnzBreeze;                             {Breeze}
-      MQcsvID: AnzMQcsv;
     else
       AnzYLegacy;                                  {Rest der Yuneec Welt}
     end;
@@ -7513,6 +7538,7 @@ const bgid=999999;
          if SpinEdit3.Tag<>YTHPid then begin      {YTH Plus nicht überschreiben}
            splitlist.DelimitedText:=inlist[2];    {2. Datenzeile, v_type ermitteln}
            SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+           OverWriteVT;                           {Overwrite for PX4 Thunderbird}
          end;
          for x:=1 to inlist.Count-1 do begin
            if CheckE7(inlist[x]) then begin
@@ -7634,6 +7660,8 @@ begin
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=sep;
   splitlist.StrictDelimiter:=True;
+  if cbThunder.Checked then
+    StaticText1.Caption:=capThunder;               {Type hard wired}
   hmax:=0;
   umax:=0;
   umin:=999;
@@ -8009,6 +8037,7 @@ begin
           if SpinEdit3.Tag<>YTHPid then begin
             splitlist.DelimitedText:=inlist[2];    {Vehicle Type merken}
             SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2],2);
+            OverWriteVT;                           {Overwrite for PX4 Thunderbird}
           end else
             if CheckBox9.Checked then
               SynEdit1.Lines.Add(capCheckBox9);    {Bei YTH Plus anzeigen, ob bereinigt}
@@ -8546,14 +8575,19 @@ begin
   Chart1LineSeries1.Clear;                         {Spanungskurve}
   Chart1LineSeries2.Clear;                         {Hüllkurve}
   Chart1LineSeries1.SeriesColor:=clBlue;
-  case SpinEdit3.Tag of                            {Umin Linie anzeigen}
-    1: Chart1ConstantLine2.Position:=lipomin*6;    {H920 6S}
-    5: Chart1ConstantLine2.Position:=lipomin*4;    {YTH  4S}
-    H5id: Chart1ConstantLine2.Position:=lipomin*4; {H520 4S}
-    YTHPid: Chart1ConstantLine2.Position:=lipomin*4; {H Plus 4S}
-    else Chart1ConstantLine2.Position:=lipomin*3;  {3S default}
+  if cbCap.Checked then
+    Chart1ConstantLine2.Active:=false
+  else begin
+    case SpinEdit3.Tag of                          {Umin Linie anzeigen}
+      1: Chart1ConstantLine2.Position:=lipomin*6;  {H920 6S}
+      5: Chart1ConstantLine2.Position:=lipomin*4;  {YTH  4S}
+      H5id: Chart1ConstantLine2.Position:=lipomin*4;   {H520 4S}
+      YTHPid: Chart1ConstantLine2.Position:=lipomin*4; {H Plus 4S}
+    else
+      Chart1ConstantLine2.Position:=lipomin*3;   {3S default}
+    end;
+    Chart1ConstantLine2.Active:=true;
   end;
-  Chart1ConstantLine2.Active:=true;
   Chart1ConstantLine1.Active:=false;
 end;
 
@@ -9145,6 +9179,7 @@ begin
         if (SpinEdit3.Tag<>YTHPid) and
            (SpinEdit3.Tag<>brID) then begin        {v_type ermitteln}
           SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+          OverWriteVT;                             {Overwrite for PX4 Thunderbird}
         end;
         ts:=ZeitToDT(splitlist[0], SpinEdit3.Tag)+nowUTC-now;
         KMLheader(fn, ts, kmllist);
@@ -9396,6 +9431,7 @@ begin
         if (SpinEdit3.Tag<>YTHPid) and
            (SpinEdit3.Tag<>brID) then begin        {v_type ermitteln}
           SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+          OverWriteVT;                             {Overwrite for PX4 Thunderbird}
         end;
         ts:=ZeitToDT(splitlist[0], SpinEdit3.Tag)+nowUTC-now;
         GPXheader(ComboBox1.Text, fn, ts, kmllist);
@@ -9564,6 +9600,7 @@ begin
       splitlist.DelimitedText:=inlist[2];          {2. Datenzeile, Zeit}
       if SpinEdit3.Tag<>YTHPid then begin          {v_type ermitteln}
         SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+        OverWriteVT;                             {Overwrite for PX4 Thunderbird}
       end;
       s:=Trim(inlist[0]);
       s:=StringReplace(s, 'altitude', 'ascent', [rfIgnoreCase]);
@@ -9784,6 +9821,7 @@ begin
       if (SpinEdit3.Tag<>YTHPid) and
          (SpinEdit3.Tag<>brID) then begin          {v_type ermitteln}
         SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+        OverWriteVT;                               {Overwrite for PX4 Thunderbird}
       end;
       dashlist.Add(rrk+'RaceRender Data');
       dashlist.Add(rrk+vtypeToStr(SpinEdit3.Tag));
@@ -9840,6 +9878,7 @@ begin
       splitlist.DelimitedText:=inlist[2];          {2. Datenzeile, Zeit}
       if SpinEdit3.Tag<>YTHPid then begin          {v_type ermitteln}
         SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+        OverWriteVT;                               {Overwrite for PX4 Thunderbird}
       end;
       lat1:=0;
       lon1:=0;
@@ -10980,7 +11019,8 @@ var
   end;
 
 begin
-  if PageControl1.Tag>0 then Form2.Chart1ConstantLine1.Active:=false;
+  if PageControl1.Tag>0 then
+    Form2.Chart1ConstantLine1.Active:=false;
   PageControl1.Tag:=0;
   a:=nil;
   for i:=1 to StringGrid1.RowCount - 1 do begin
@@ -11798,7 +11838,7 @@ var x, p, n: integer;
     s: string;
 begin
   kpath:=IncludeTrailingPathDelimiter(dkpath);     {default setzen}
-  SpinEdit3.Tag:=defVT;                            {default YTH}
+  GetDefVT;                                        {Overwrite for PX4 Thunderbird}
   ListBox1.ItemIndex:=-1;                          {deselektieren}
   ListBox1.Items.Clear;                            {und löschen}
   tend:=0;
@@ -11858,8 +11898,9 @@ begin
           grdOverview.ColWidths[0]:=fw1;
           grdOverview.Update;
           StaticText1.Caption:=VTypeToStr(MQid);
-        end else
-          SpinEdit3.Tag:=defVT;                    {default, doch kein Breeze}
+        end else begin                             {doch kein Breeze}
+          GetDefVT;                                {Overwrite for PX4 Thunderbird}
+        end;
       finally
         FindClose(sr);
       end;
@@ -11896,8 +11937,9 @@ begin
         grdOverview.ColWidths[0]:=fw1;
         StaticText1.Caption:=VTypeToStr(MQid);
         ListBox1.Tag:=-1;                          {noch keine Datei angezeigt}
-      end else
-        SpinEdit3.Tag:=defVT;                      {default, doch kein Mantis Q}
+      end else begin                               {doch kein MantisQ}
+        GetDefVT;                                  {Overwrite for PX4 Thunderbird}
+      end;
     end;
 
     if n=0 then begin                              {noch ein Versuch für H520}
@@ -11916,8 +11958,9 @@ begin
         grdOverview.ColWidths[0]:=fw1;
         StaticText1.Caption:=VTypeToStr(H5id);
         ListBox1.Tag:=-1;                          {noch keine Datei angezeigt}
-      end else
-        SpinEdit3.Tag:=defVT;                      {default, doch kein H520}
+      end else begin                               {doch kein H520}
+        GetDefVT;                                  {Overwrite for PX4 Thunderbird}
+      end;
     end;
 
     if n>0 then begin                              {irgendwas von oben wurde gefunden}
@@ -11946,11 +11989,11 @@ begin
          (SpinEdit3.Tag<>H5id) then begin          {Übersichtstabelle füllen}
         grdOverview.RowCount:=grdOverview.RowCount+1; {Summenzeile}
         for x:=0 to ListBox1.Items.Count-1 do
-          Werte(x);                       {Telemetrie durchsuchen für Übersicht}
+          Werte(x);                                {Telemetrie durchsuchen für Übersicht}
         gtm:=0;
         wrt:=0;
         grdOverview.Cells[0, grdOverview.RowCount-1]:=rsSumme;
-        for x:=1 to grdOverview.RowCount-2 do begin   {Summen anzeigen}
+        for x:=1 to grdOverview.RowCount-2 do begin {Summen anzeigen}
           try
             wrt:=wrt+StrToFloatN(GetFNr(grdOverview.Cells[7, x]));  {Entfernung}
           except

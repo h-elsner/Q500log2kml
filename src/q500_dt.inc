@@ -348,4 +348,7 @@ resourcestring                                     {deutsch}
   rsNotUsed='nicht benutzt';
   cbCapCaption='Batteriekapazität statt Spannung';
   cbCapHint='Anzeige der verbleibenden Batteriekapazität statt der Spannung im Höhendiagramm';
+  capThunder='H480 Thunderbird';
+  hntThunder='FlightLog Auswertung nur für Thunderbird (H480 mit PX4), reduzierte Funktionalität';
+
 

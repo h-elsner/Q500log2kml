@@ -87,8 +87,8 @@ const
   ziff=['0'..'9'];                                 {gültige Ziffern}
   zzf='hh:nn:ss';
 
-{.$I q500_dt.inc}
-{$I q500_en.inc}
+{$I q500_dt.inc}
+{.$I q500_en.inc}
 
 implementation
 
@@ -132,6 +132,7 @@ begin
   MenuItem3.Enabled:=false;
   Chart1ConstantLine1.Active:=false;
   StringGrid1.Tag:=0;
+  edTime.Color:=clOrange;
   st:='';
 end;
 
@@ -291,7 +292,6 @@ begin
           end;
         end;
       end;
-      exit;
     end;
   end;
 end;

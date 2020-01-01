@@ -347,5 +347,7 @@ resourcestring                                     {english}
   rsNotUsed='not used';
   cbCapCaption='Remaining capacity instead voltage';
   cbCapHint='Show remaining battery capacity instead voltage at Elevation histogram';
+  capThunder='H480 Thunderbird';
+  hntThunder='FlightLog evaluation only for Thunderbird (H480 with PX4), reduced functionality';
 
 
