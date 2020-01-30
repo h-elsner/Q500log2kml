@@ -1,5 +1,5 @@
 object Form4: TForm4
-  Left = 1467
+  Left = 1490
   Height = 294
   Top = 811
   Width = 411
@@ -10,7 +10,7 @@ object Form4: TForm4
   FormStyle = fsSplash
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.4.0'
+  LCLVersion = '2.0.6.0'
   object Image1: TImage
     Left = 0
     Height = 296
@@ -845,7 +845,7 @@ object Form4: TForm4
     Top = 264
     Width = 233
     Alignment = taRightJustify
-    Caption = '(c) Helmut Elsner 2015-2019'
+    Caption = '(c) Helmut Elsner 2015-2020'
     Color = clSkyBlue
     Font.Color = clCream
     Font.Height = -16

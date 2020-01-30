@@ -2,7 +2,7 @@
           {                                                        }
           {     Auswertung FlightLog Daten von Yuneec Koptern      }
           {                                                        }
-          {       Copyright (c) 2015-2019    Helmut Elsner         }
+          {       Copyright (c) 2015-2020    Helmut Elsner         }
           {                                                        }
           {       Compiler: FPC 3.0.4   /    Lazarus 1.8.2         }
           {                                                        }
@@ -184,6 +184,7 @@ History:
 2019-11-12       Scan for 'EMERGENCY' in PX4 sensor files
 2019-12-10       Update für ST24/H920 alte Firmware (Telemetry ohne Header)
 2019-12-31       Setting for Thunderbird (H480 with PX4 firmware)
+2020-01-30       Throttle in % added to CSV Header and cell info
 *)
 
 unit q500log2kml_main;
@@ -741,7 +742,7 @@ type
   public
                                                    {public declarations}
     const 
-      Version ='V4.2 12/2019';
+      Version ='V4.2 01/2020';
   end;
 
 const
@@ -1369,9 +1370,9 @@ begin
               if BitBtn3.Tag=1 then                {Platform Android}
                 result:=result-nowUTC+now;         {UTC to local time}
             end;
-      MQcsvID: result:=ScanDateTime('yyyy-mm-dd hh:nn:ss.zzz', s);
+      MQcsvID: result:=ScanDateTime(dzf+' '+zzf+zzz, s);
     else
-      result:=ScanDateTime('yyyymmdd hh:nn:ss:zzz', s); {Yuneec legacy format}
+      result:=ScanDateTime('yyyymmdd '+zzf+':zzz', s); {Yuneec legacy format}
     end;
   except
     result:=0;
@@ -2670,13 +2671,12 @@ begin
   result:=w;                                       {default: in=out}
   case fnr of
     0: case inx of                                 {Telemetry}
-          7: SpeedX(w);                            {tas}
+          7: result:=SpeedX(w);                    {tas}
          14: result:=round(w) and 255;             {motor status}
          15: result:=round(w) and 255;             {imustatus}
          16: result:=round(w) and 255;             {sensor status}
        end;
-(*    1: case inx of                               {RemoteGPS}
-       end;                           eigentlich nix zu tun *)
+//  1: case inx of                                 {RemoteGPS}
     2: case inx of                                 {Remote}
          7: result:=TiltToGrad(w);                 {CH6 Kamera neigen}
        end;
@@ -3006,6 +3006,7 @@ var e: integer;
            end else
              s:=DefaultHnt+'m';
          end;
+      4: s:=DefaultHnt+'cm';
       5: begin                                     {Speed in cm/s}
            try
              t:=StrToFloatN(StringGrid1.Cells[sp, zl])/100;
@@ -3052,7 +3053,7 @@ var e: integer;
          end;
       8: s:=rsEmpty;                               {currently unused}
       11..13: s:=DefaultHnt+'rad';
-      1, 14, 46, 47: s:=DefaultHnt+'%';
+      1, 14, 46, 47, 49: s:=DefaultHnt+'%';
       15: begin
             if StringGrid1.Cells[sp, zl]<>'' then begin
               e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl]);
@@ -4379,7 +4380,7 @@ begin
               'xPosition'+sep+'yPosition'+sep+'zPosition'+sep+
               'xSpeed'+sep+'ySpeed'+sep+'zSpeed'+sep+
               csvCOG+sep+csvIMUtemp+sep+csvCap+sep+
-              csvSWload+sep+'Climb rate'+sep+'49'+sep+'50'+sep+'51'+sep+
+              csvSWload+sep+'Climb rate'+sep+'Throttle'+sep+'50'+sep+'51'+sep+
               '52'+sep+'53'+sep+'54'+sep+'55'+sep+'56'+sep+
               'Onboard paramater name'+sep+'Parameter value'+sep+
               csvMsgID+sep+'CH used';
@@ -7979,6 +7980,9 @@ begin
   StringGrid1.AutoSizeColumns;
 end;
 
+{see also:
+https://wiki.lazarus.freepascal.org/CsvDocument#Loading_a_csv_document_into_a_StringGrid}
+
 procedure TForm1.AnzeigeCSV(const mode: integer);  {Dateien als Tabelle anzeigen}
 var i, x, p, n, zhl: integer;
     inlist, splitlist: TStringList;
@@ -8576,30 +8580,32 @@ begin
   Chart1LineSeries2.Clear;                         {Hüllkurve}
   Chart1LineSeries1.SeriesColor:=clBlue;
   if cbCap.Checked then
-    Chart1ConstantLine2.Active:=false
+    Chart1ConstantLine2.Active:=false              {Voltage low level}
   else begin
     case SpinEdit3.Tag of                          {Umin Linie anzeigen}
       1: Chart1ConstantLine2.Position:=lipomin*6;  {H920 6S}
       5: Chart1ConstantLine2.Position:=lipomin*4;  {YTH  4S}
       H5id: Chart1ConstantLine2.Position:=lipomin*4;   {H520 4S}
       YTHPid: Chart1ConstantLine2.Position:=lipomin*4; {H Plus 4S}
+      ThBid: Chart1ConstantLine2.Position:=lipomin*4;  {Thunderbird}
     else
-      Chart1ConstantLine2.Position:=lipomin*3;   {3S default}
+      Chart1ConstantLine2.Position:=lipomin*3;     {3S default}
     end;
-    Chart1ConstantLine2.Active:=true;
+    Chart1ConstantLine2.Active:=true;              {Voltage low level depending on battery}
   end;
-  Chart1ConstantLine1.Active:=false;
+  Chart1ConstantLine1.Active:=false;               {Cursor line off}
 end;
 
 procedure TForm1.HDiagramm(fn: string);            {Höhenprofil anzeigen}
 var x: integer;
     inlist, splitlist: TStringList;
-    h, u, hmxg: double;
+    h, u, hmxg, alt1, baseh: double;
     gps, simu: boolean;
     bg: TDateTime;
 
   procedure HDiaBlade350;
   begin
+    Chart1LineSeries2.AddXY(bg, h);      {Hüllkurve}
     case StrToIntDef(splitlist[StringGrid1.Tag], 25) of
       25: Chart1BarSeries1.AddXY(bg, h);           {Angle (AP mode)}
       11: Chart1BarSeries7.AddXY(bg, h);           {Stability mit/ohne GPS}
@@ -8611,6 +8617,7 @@ var x: integer;
 
   procedure HDiaYTHPlus;
   begin
+    Chart1LineSeries2.AddXY(bg, h);      {Hüllkurve}
     case StrToIntDef(splitlist[StringGrid1.Tag], 5) of
       4: Chart1BarSeries5.AddXY(bg, h);            {ohne GPS}
       5: Chart1BarSeries1.AddXY(bg, h);            {Angle}
@@ -8623,8 +8630,9 @@ var x: integer;
 
   procedure HDiaYLegacy;
   begin
-    case StrToIntDef(splitlist[StringGrid1.Tag], 5) of
-      3, 4: Chart1BarSeries1.AddXY(bg, h);         {Angle}
+    Chart1LineSeries2.AddXY(bg, h);      {Hüllkurve}
+    case StrToIntDef(splitlist[StringGrid1.Tag], 3) of        {f_mode}
+      3, 4: Chart1BarSeries1.AddXY(bg, h);                    {Angle}
       2, 5, 7, 22, 24, 31, 32: Chart1BarSeries5.AddXY(bg, h); {ohne GPS}
       6, 21, 23, 26..29, 33:   Chart1BarSeries2.AddXY(bg, h); {Smart}
       13, 14, 20:              Chart1BarSeries3.AddXY(bg, h); {Agility + RTH}
@@ -8633,6 +8641,24 @@ var x: integer;
       0, 1:                    Chart1BarSeries7.AddXY(bg, h); {Stability}
     end;
   end;
+
+  procedure HDiaThunderbird;   {only needed as long as absolute altitude provided}
+  var vh: integer;
+  begin
+    if baseh>1 then
+      vh:=round(baseh)-30
+    else
+      vh:=1;
+    if testh(h) and
+       (h>vh) then
+      alt1:=h
+    else
+      h:=alt1;
+    Chart1LineSeries2.AddXY(bg, h-baseh);          {Hüllkurve}
+    case StrToIntDef(splitlist[StringGrid1.Tag], 5) of
+      5, 16: Chart1BarSeries1.AddXY(bg, h-baseh);  {Angle}
+    end;
+   end;
 
 begin
   screen.Cursor:=crHourGlass;
@@ -8645,6 +8671,8 @@ begin
   gps:=false;
   simu:=false;                                     {Simulatorflug}
   hmxg:=0;                                         {Höhe gesamt für Anzeige}
+  alt1:=0;
+  baseh:=0;                                        {default: relative altitude}
   try
     HDiaInit;
     StringGrid1.Tag:=19;                           {default Position bei neuer FW}
@@ -8675,30 +8703,61 @@ begin
       SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
       StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
       SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
-      for x:=1 to inlist.count-1 do
-      try                                          {erstmal Daten checken}
-        splitlist.DelimitedText:=inlist[x];
-        if (splitlist.Count>anzsp) and             {Konsistenz checken (YTH)}
-            CheckVT(splitlist[StringGrid1.Tag+2],
-                    splitlist[StringGrid1.Tag]) then begin  {YTH Plus sinnvoll}
-          if (NichtLeer(splitlist[3])) and
-             (splitlist[15]='231') then            {ID für Simulator}
-            simu:=true;
-          if (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and
-             (Lowercase(splitlist[8])=idtrue) then
-            GPS:=true;
-          h:=StrToFloatN(splitlist[4]);
-          if testh(h) then begin
-            if (hmxg<h) then
-              hmxg:=h;                             {Höhe für Anzeige}
-            h:=abs(h);
+      if cbThunder.Checked then begin              {Thunderbird}
+        for x:=1 to inlist.count-1 do begin        {erstmal Daten checken}
+          try
+            splitlist.DelimitedText:=inlist[x];
+            if (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and
+               (Lowercase(splitlist[8])=idtrue) then begin
+              GPS:=true;
+              if baseh=0 then begin                {take altitude base level}
+                baseh:=GethFromST10(ListBox1.ItemIndex,
+                                    ZeitToDT(splitlist[0], ThBid));
+                SynEdit1.Lines.Add('Altitude taken from ST16 GPS: '+
+                                   FormatFloat('0.00', baseh)+'m');
+                if baseh=0 then                    {no altitude found}
+                  baseh:=0.00001;                  {small but not 0 to avoid do it again}
+              end;
+            end;
+            h:=StrToFloatN(splitlist[4]);
+            if testh(h) then begin
+              if (hmxg<h) then
+                hmxg:=h;                           {Höhe für Gipfelhöhe Anzeige}
+            end;
+            alt1:=baseh;
+          except
+            StatusBar1.Panels[5].Text:=rsInvalid;
+            SynEdit1.Lines.Add('''8695'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+                               suff+StatusBar1.Panels[5].Text);
           end;
         end;
-      except
-        StatusBar1.Panels[5].Text:=rsInvalid;
-        SynEdit1.Lines.Add('''7795'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
-                           suff+StatusBar1.Panels[5].Text);
+      end else begin
+        for x:=1 to inlist.count-1 do begin         {erstmal Daten checken}
+          try
+            splitlist.DelimitedText:=inlist[x];
+            if (splitlist.Count>anzsp) and          {Konsistenz checken (YTH)}
+                CheckVT(splitlist[StringGrid1.Tag+2],
+                        splitlist[StringGrid1.Tag]) then begin  {YTH Plus sinnvoll}
+              if (NichtLeer(splitlist[3])) and
+                 (splitlist[15]='231') then         {ID für Simulator}
+                simu:=true;
+              if (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and
+                 (Lowercase(splitlist[8])=idtrue) then
+                GPS:=true;
+              h:=StrToFloatN(splitlist[4]);
+              if testh(h) then begin
+                if (hmxg<h) then
+                  hmxg:=h;                         {Höhe für Gipfelhöhe Anzeige}
+              end;
+            end;
+          except
+            StatusBar1.Panels[5].Text:=rsInvalid;
+            SynEdit1.Lines.Add('''8721'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+                               suff+StatusBar1.Panels[5].Text);
+          end;
+        end;
       end;
+      hmxg:=hmxg-baseh;
       if RadioGroup3.ItemIndex=2 then              {Überschrift im Diagramm ausgeben}
         Chart1.Title.Text.Add(rsGridCell5+suff+Format('%f', [hmxg/fft])+'ft')
       else
@@ -8711,34 +8770,36 @@ begin
         Chart1LineSeries1.SeriesColor:=clRed;      {ohne GPS}
         Chart1.Title.Text.Add(rsNoGPS);
       end;
-      for x:=1 to inlist.count-1 do
-      try                                          {Dateneinlesen}
-        splitlist.DelimitedText:=inlist[x];
-        if (splitlist.Count>anzsp) and             {Anzahl Spalten}
-            CheckVT(splitlist[StringGrid1.Tag+2],
-                    splitlist[StringGrid1.Tag]) then begin  {V-type beim YTH Plus}
-          bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
-          h:=StrToFloatN(splitlist[4]);
-          u:=StrToFloatN(splitlist[2]);
-          if cbCap.Checked then
-            Chart1LineSeries1.AddXY(bg, VtoProz(SpinEdit3.Tag, u))
-          else
-            Chart1LineSeries1.AddXY(bg, u);        {Spannungskurve}
-          if testh(h) and
-             (bg>0) then begin
-            Chart1LineSeries2.AddXY(bg, h);        {Hüllkurve}
-            case SpinEdit3.Tag of                  {Vehicle Type}
-              3: HDiaBlade350;                     {Blade 350QX}
-              YTHPid: HDiaYTHPlus;                 {YTH Plus}
-            else                                   {Q500 und andere}
-              HdiaYLegacy;
+      for x:=1 to inlist.count-1 do begin
+        try                                        {Dateneinlesen}
+          splitlist.DelimitedText:=inlist[x];
+          if (splitlist.Count>anzsp) and           {Anzahl Spalten}
+              CheckVT(splitlist[StringGrid1.Tag+2],
+                      splitlist[StringGrid1.Tag]) then begin  {V-type beim YTH Plus}
+            bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+            h:=StrToFloatN(splitlist[4]);
+            u:=StrToFloatN(splitlist[2]);
+            if cbCap.Checked then
+              Chart1LineSeries1.AddXY(bg, VtoProz(SpinEdit3.Tag, u))
+            else
+              Chart1LineSeries1.AddXY(bg, u);      {Spannungskurve}
+            if testh(h) and
+               (bg>0) then begin
+//              Chart1LineSeries2.AddXY(bg, h);      {Hüllkurve}
+              case SpinEdit3.Tag of                {Vehicle Type}
+                3: HDiaBlade350;                   {Blade 350QX}
+                YTHPid: HDiaYTHPlus;               {YTH Plus}
+                ThBid: HDiaThunderbird;
+              else                                 {Q500 und andere}
+                HdiaYLegacy;
+              end;
             end;
           end;
+        except
+          StatusBar1.Panels[5].Text:=rsInvalid;
+          SynEdit1.Lines.Add('''8410'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
+                             suff+StatusBar1.Panels[5].Text);
         end;
-      except
-        StatusBar1.Panels[5].Text:=rsInvalid;
-        SynEdit1.Lines.Add('''8410'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
-                           suff+StatusBar1.Panels[5].Text);
       end;
       Chart1.Title.Visible:=true;
     end;
@@ -9558,8 +9619,12 @@ begin
       end;
       result:=(hw/n)-1;                            {Durchschnittswert}
     except
+      SynEdit1.Lines.Add('Altitude taken from RC GPS failed! Requested time stamp: '+
+                         FormatDateTime(zzf, dt));
     end;
   finally
+    if IsNan(result) then
+      result:=0;
     FreeAndNil(inlist);
     FreeAndNil(splitlist);
   end;
@@ -10541,8 +10606,8 @@ begin                                              {Main part}
 end;
 
 procedure TForm1.DiaWerte(p: integer);   {Anzeige Diagramm Werte für Spalte p}
-var x, b: integer;
-    w, lat1, lon1: double;
+var x: integer;
+    w, lat1, lon1, alt1: double;
     bg: TDateTime;
     s: string;
 
@@ -10559,7 +10624,6 @@ var x, b: integer;
 
   procedure PrepYTHPlus;                           {YTH Plus vorbereiten}
   begin
-    b:=2;                                          {mit 2. Zeile beginnen}
     case RadioGroup1.ItemIndex of
       0: begin                                     {Telemetry}
             case p of
@@ -10576,8 +10640,8 @@ var x, b: integer;
             case p of                              {ST16}
               1, 2: s:=rsDistHome+' [m]';
               3: s:=s+' [m]';
-              5: s:=s+tab1+spath;                   {Accuracy GPS ST16}
-//              6: s:=s+' ['+RadioGroup3.Items[RadioGroup3.ItemIndex]+']';
+              5: s:=s+' [cm]';                     {Accuracy GPS ST16}
+              6: s:=s+' ['+RadioGroup3.Items[RadioGroup3.ItemIndex]+']';
               7: s:=s+' [°]';
             end;
          end;
@@ -10602,11 +10666,11 @@ var x, b: integer;
             end;
          end;
       1: begin                                     {RemoteGPS}
-            case p of                              {ST10}
+            case p of                              {ST10/ST16}
               1, 2: s:=rsDistHome+' [m]';
               3: s:=s+' [m]';
-              4: s:=s+tab1+spath;                   {Accuracy GPS ST10}
-//              5: s:=s+' ['+RadioGroup3.Items[RadioGroup3.ItemIndex]+']';
+              4: s:=s+' [cm]';                     {Accuracy GPS ST10}
+              5: s:=s+' ['+RadioGroup3.Items[RadioGroup3.ItemIndex]+']';
               6: s:=s+' [°]';
             end;
          end;
@@ -10685,7 +10749,7 @@ var x, b: integer;
                           end;
                         end;
                       end;
-                7, 24, 25: SpeedX(w);
+                7, 24, 25: w:=SpeedX(w);
               end;
               if (p=4) and (not testh(w)) then w:=0; {Korrektur unplausibler Höhe}
            end;                                    {Ende Blödsinn ausblenden}
@@ -10703,7 +10767,7 @@ var x, b: integer;
                      end;
                      w:=0;
                    end;
-//                    6:   SpeedX(w);              {Maßeinheit Speed unklar}
+              6: w:=SpeedX(w/100);                 {Maßeinheit Speed unklar, cm/s ?}
             end;
             if (p=3) and (not testh(w)) then w:=0; {Korrektur unplausibler Werte (Höhe)}
          end;
@@ -10739,11 +10803,11 @@ var x, b: integer;
                         end;
                       end;
                     end;
-              7: SpeedX(w);
+              7: w:=SpeedX(w);
             end;
          end;
       1: begin                                     {RemoteGPS}
-            case p of                              {ST10}
+            case p of                              {ST10/ST16}
               1,2: if (lat1<>0) or (lon1<>0) then begin
                      w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[2, x]),
                                    StrToFloatN(StringGrid1.Cells[1, x]));
@@ -10754,7 +10818,58 @@ var x, b: integer;
                      end;
                      w:=0;
                    end;
-//                  5:  SpeedX(w);                 {Maßeinheit Speed unklar}
+              5: w:=SpeedX(w/100);                 {Maßeinheit Speed unklar, cm/s}
+            end;
+            if (p=3) and (not testh(w)) then w:=0; {Korrektur unplausibler Werte (Höhe)}
+         end;
+      2: begin                                     {Remote}
+           if p=7 then w:=TiltToGrad(StrToFloatN(StringGrid1.Cells[p, x]));
+         end;
+    end;
+  end;
+
+  procedure ShowThunderbird;                       {Zeit + Diagramm zeichnen}
+  begin
+    bg:=ZeitToDT(StringGrid1.Cells[0, x], defVT);  {Zeitstempel}
+    w:=StrToFloatN(StringGrid1.Cells[p, x]);       {default: Wert einfach übernehmen}
+    case RadioGroup1.ItemIndex of                  {Gewählte Datei}
+      0: begin                                     {Telemetry}
+            case p of                              {Liste der Spalten für Dia}
+              4: if testh(w) and
+                    (w>1) then begin               {Altitude is plausible}
+                   alt1:=w;
+                 end else                          {Implausible altitude}
+                   w:=alt1;                        {keep previous altitude}
+              5, 6: begin
+                      if x>1 then begin            {1. Zeile ignorieren}
+                        if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
+                          w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[5, x]),
+                                                    StrToFloatN(StringGrid1.Cells[6, x]));
+                        end else begin             {Startpunkt erst setzen}
+                          if testh(StrToFloatN(StringGrid1.Cells[4, x])) then begin
+                            lat1:=StrToFloatN(StringGrid1.Cells[5, x]);
+                            lon1:=StrToFloatN(StringGrid1.Cells[6, x]);
+                          end;
+                          w:=0;
+                        end;
+                      end;
+                    end;
+              7: w:=SpeedX(w);
+            end;
+         end;
+      1: begin                                     {RemoteGPS}
+            case p of                              {ST16}
+              1,2: if (lat1<>0) or (lon1<>0) then begin
+                     w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[2, x]),
+                                   StrToFloatN(StringGrid1.Cells[1, x]));
+                   end else begin
+                     if testh(StrToFloatN(StringGrid1.Cells[3, x])) then begin
+                       lat1:=StrToFloatN(StringGrid1.Cells[2, x]);
+                       lon1:=StrToFloatN(StringGrid1.Cells[1, x]);
+                     end;
+                     w:=0;
+                   end;
+              5: w:=SpeedX(w/100);                 {Possibly cm/s}
             end;
             if (p=3) and (not testh(w)) then w:=0; {Korrektur unplausibler Werte (Höhe)}
          end;
@@ -10767,38 +10882,34 @@ var x, b: integer;
   procedure ShowDiaPX4csv;                         {Zeit + wert ermitteln}
   begin
     bg:=ScanDateTime(zzf+zzz, StringGrid1.Cells[0, x]);
-    w:=0;
-    if StringGrid1.Cells[p, x]<>'' then begin
-      w:=StrToFloatN(StringGrid1.Cells[p, x]);     {default: Wert einfach übernehmen}
-      case p of                                    {CSV Datei, Spalte p}
-        4: if not testh(w) then
-             w:=0;                                 {Korrektur unplausibler Höhe}
-        5, 6: begin                                {Entfernung zum Startpunkt}
-                if x>1 then begin                  {1. Zeile ignorieren}
-                  if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
-                    w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[5, x]),
-                                              StrToFloatN(StringGrid1.Cells[6, x]));
-                  end else begin                   {Startpunkt erst setzen}
-                    if testh(StrToFloatN(StringGrid1.Cells[4, x])) then begin
-                      lat1:=StrToFloatN(StringGrid1.Cells[5, x]);
-                      lon1:=StrToFloatN(StringGrid1.Cells[6, x]);
-                    end;
-                    w:=0;
-                  end;
+    w:=StrToFloatN(StringGrid1.Cells[p, x]);       {default: Wert einfach übernehmen}
+    case p of                                      {CSV Datei, Spalte p}
+      4: if not testh(w) then
+           w:=0;                                   {Korrektur unplausibler Höhe}
+      5, 6: begin                                  {Entfernung zum Startpunkt}
+              if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
+                w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[5, x]),
+                                          StrToFloatN(StringGrid1.Cells[6, x]));
+              end else begin                       {Startpunkt erst setzen}
+                if testh(StrToFloatN(StringGrid1.Cells[4, x])) then begin
+                  lat1:=StrToFloatN(StringGrid1.Cells[5, x]);
+                  lon1:=StrToFloatN(StringGrid1.Cells[6, x]);
                 end;
+                w:=0;
               end;
-      end;
+            end;
     end;
   end;
 
 begin
-  if p>0 then begin                                {Spalte Datum/Zeit ausschließen}
+  if (p>0) and                                    {Spalte Datum/Zeit ausschließen}
+     (StringGrid1.RowCount>25) then begin         {genügend Zeilen}
     DoForm2Show(0);
     PageControl1.Tag:=1;
     w:=0;
-    b:=1;                                          {1. Zeile für Auswertung}
     lat1:=0;
     lon1:=0;
+    alt1:=0;
     s:=StringGrid1.Cells[p, 0];
     Form2.Caption:=rsChart+' "'+s+'"';
     if Radiogroup1.ItemIndex=2 then Form2.Caption:=ChToStr(Form2.Caption, p);
@@ -10813,31 +10924,33 @@ begin
         PrepYlegacy;
       end;
     end;                                           {Ausgabe in s}
-
     Form2.Chart1.AxisList[0].Title.Caption:=s;     {y-Achse bezeichnen}
     Form2.Chart1.AxisList[0].LabelSize:=lblsize;   {y-Achse ausrichten}
     Form2.Chart1.Visible:=true;
     Form2.Chart1LineSeries1.Clear;
     Form2.Chart1.ZoomFull;
-     for x:=b to StringGrid1.RowCount-1 do begin
-      try
-        if StringGrid1.ColCount=csvanz then begin  {PX4 CSV}
-          ShowDiaPX4csv;
-        end else begin
-          case SpinEdit3.Tag of
-            brID: ShowDiaBreeze;                   {Breeze}
-            YTHPid: ShowDiaYTHPlus;                {YTH Plus}
-          else                                     {andere Kopter}
-            ShowDiaYlegacy;
+    for x:=2 to StringGrid1.RowCount-1 do begin    {skip first line}
+      if StringGrid1.Cells[p, x]<>'' then begin    {skip empty cells}
+        try
+          if StringGrid1.ColCount=csvanz then begin  {PX4 CSV}
+            ShowDiaPX4csv;
+          end else begin
+            case SpinEdit3.Tag of
+              brID: ShowDiaBreeze;                 {Breeze}
+              YTHPid: ShowDiaYTHPlus;              {YTH Plus}
+              ThBid: ShowThunderbird;
+            else                                   {andere Kopter}
+              ShowDiaYlegacy;
+            end;
           end;
+        except
+          w:=0;
         end;
-      except
-        w:=0;
-      end;
-      try
-        Form2.Chart1LineSeries1.AddXY(bg, w);
-      except
-        Form2.Close;
+        try
+          Form2.Chart1LineSeries1.AddXY(bg, w);
+        except
+          Form2.Close;
+        end;
       end;
     end;
     Form2.Refresh;
