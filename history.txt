@@ -109,3 +109,8 @@ History:
 2019-12-10       Update für ST24/H920 alte Firmware (Telemetry ohne Header)
 2019-12-31       Setting for Thunderbird (H480 with PX4 firmware)
 2020-01-30       Throttle in % added to CSV Header and cell info
+2020-02-28 V4.3  Tom's Hubsan Log Recorder added. MAVlink messages
+                 selectable for data reduction in PX4 CSV format.
+                 Remaining battery capacity now according RC Groups table for
+                 voltage vs. capacity.
+
