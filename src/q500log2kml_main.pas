@@ -5609,7 +5609,7 @@ procedure TForm1.H501ProtoWerte(fn: string;        {Dateiname}
                         var gstr: double);         {Flugstrecke}
 var x, n, g, frme: integer;
     inlist, splitlist: TStringList;
-    bg, bg1, ed, flt: TDateTime;
+    bg, bg1, ed, flt, dtm: TDateTime;
     hmax, h, hmaxg, u, umin: double;
     slat, vehid: string;
     dist, ddist, lat1, lat2, lat3, lon1, lon2, lon3, emax, strecke: double;
@@ -5638,6 +5638,7 @@ begin
   gpsu:=false;                                     {GPS off erkennen}
   flt:=0;                                          {reale Flugzeit}
   ed:=0;
+  dtm:=0;                                          {Date: get from Filename}
   vehid:=vtypeToStr(H501ID);                       {Hubsan vorbelegen}
   modestr:='';
   try
@@ -5652,6 +5653,7 @@ begin
     if inlist.count>minlines then begin            {Überschrift und mind. 10 Zeilen}
       try
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
+        dtm:=GetDateFile(copy(ExtractFileName(fn),length(h5file)+1, 10)); {Date from file name}
         for x:=1 to inlist.count-1 do begin        {Daten einlesen}
           splitlist.DelimitedText:=inlist[x];
           if splitlist.Count>14 then begin         {Konsistenz checken}
@@ -5660,7 +5662,7 @@ begin
             if (u<umin) then umin:=u;              {Minimum merken}
             if testh(h) then begin
               inc(n);
-              ed:=ZeitToDT(splitlist[0], H501ID);
+              ed:=dtm+ZeitToDT(splitlist[0], H501ID);
               if bg>ed then bg:=ed;                {Beginnzeit ohne GPS}
               if bg1>ed then bg1:=ed;              {ev. neue Beginnzeit}
               if h>hmax then hmax:=h;
@@ -5697,7 +5699,7 @@ begin
         end;                                       {Ende Einlesen}
         flt:=flt+ed-bg1;
         splitlist.DelimitedText:=inlist[inlist.count-1];
-        tend:=ZeitToDT(splitlist[0], H501ID);      {letzten Zeitstempel merken}
+        tend:=dtm+ZeitToDT(splitlist[0], H501ID);  {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
         SynEdit1.Lines.Add('''5585'+suff+StatusBar1.Panels[5].Text);
@@ -6973,7 +6975,7 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
     end;
   end else begin
     StatusBar1.Panels[5].Text:=rsError;
-    SynEdit1.Lines.Add('''6883'+suff+StatusBar1.Panels[5].Text);
+    SynEdit1.Lines.Add('''6976'+suff+StatusBar1.Panels[5].Text);
   end;
 end;
 
