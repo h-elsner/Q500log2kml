@@ -349,6 +349,7 @@ resourcestring                                     {deutsch}
   cbCapCaption='Batteriekapazität statt Spannung';
   cbCapHint='Anzeige der verbleibenden Batteriekapazität statt der Spannung im Höhendiagramm';
   capThunder='H480 Thunderbird';
-  hntThunder='FlightLog Auswertung nur für Thunderbird (H480 mit PX4), reduzierte Funktionalität';
+  hntThunder='FlightLog Auswertung nur für Thunderbird (H480 mit angepasster PX4 Firmware) -> reduzierte Funktionalität';
+  hntMAVmsg='Wähle MAVlink Messages zur Auswertung aus. Im Zweifel, wähle alle per Doppelklick.';
 
 
