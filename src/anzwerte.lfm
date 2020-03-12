@@ -118,10 +118,15 @@ object Form2: TForm2
     Toolset = ChartToolset1
     Anchors = [akTop, akLeft, akRight, akBottom]
     Color = clCream
+    OnDblClick = Chart1DblClick
     OnMouseUp = Chart1MouseUp
     object Chart1LineSeries1: TLineSeries
       LinePen.Color = clNavy
       LinePen.Width = 2
+      Pointer.HorizSize = 2
+      Pointer.Pen.Color = clRed
+      Pointer.Style = psVertBar
+      Pointer.VertSize = 3
     end
     object Chart1ConstantLine1: TConstantLine
       Active = False

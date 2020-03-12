@@ -30,6 +30,7 @@ type
     SaveDialog1: TSaveDialog;
     StringGrid1: TStringGrid;
     procedure BitBtn1Click(Sender: TObject);
+    procedure Chart1DblClick(Sender: TObject);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormCreate(Sender: TObject);
@@ -87,8 +88,8 @@ const
   ziff=['0'..'9'];                                 {gültige Ziffern}
   zzf='hh:nn:ss';
 
-{.$I q500_dt.inc}
-{$I q500_en.inc}
+{$I q500_dt.inc}
+{.$I q500_en.inc}
 
 implementation
 
@@ -114,6 +115,12 @@ procedure TForm2.BitBtn1Click(Sender: TObject);
 begin
   Close;
   st:='';
+end;
+
+procedure TForm2.Chart1DblClick(Sender: TObject);  {Datapoint ID toggle}
+begin
+  if Chart1.Tag=0 then                             {Only for telemetry}
+    Chart1LineSeries1.Pointer.Visible:=not Chart1LineSeries1.Pointer.Visible;
 end;
 
 procedure TForm2.Chart1MouseUp(Sender: TObject; Button: TMouseButton;

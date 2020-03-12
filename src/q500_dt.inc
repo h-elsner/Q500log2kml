@@ -38,10 +38,10 @@ resourcestring                                     {deutsch}
   rsHDcell12='yaw';
   rsHDcell13='pitch';
   rsHDcell14='motor_status';
-  rsHDcell15='?status 15';
-  rsHDcell16='?status 16';
+  rsHDcell15='imu_status';
+  rsHDcell16='press_compass_status';
   rsHDcell17='f_mode';
-  rsHDcell18='gps_pos_used';
+  rsHDcell18='gps_status';
   rsHDcell19='vehicle_type';
   rsHDcell20='error_flags';
   rsHDcell21='gps_accH';
