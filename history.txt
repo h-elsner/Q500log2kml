@@ -113,4 +113,5 @@ History:
                  selectable for data reduction in PX4 CSV format.
                  Remaining battery capacity now according RC Groups table for
                  voltage vs. capacity.
-
+2020-03-09       Additional placemarks in KML. Colors for Hubsan frames updated.
+2020-03-11       Visualize gaps in telemetry by double click to additional chart.
