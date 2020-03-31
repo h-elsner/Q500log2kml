@@ -20,7 +20,7 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="4"/>
       <MinorVersionNr Value="3"/>
-      <RevisionNr Value="3"/>
+      <RevisionNr Value="4"/>
       <Language Value="0407"/>
       <StringTable CompanyName="Helmut Elsner" LegalCopyright="(c) Helmut Elsner 2015-2020" ProductName="Yuneec FlightLog Analysis" ProductVersion="1.0"/>
     </VersionInfo>

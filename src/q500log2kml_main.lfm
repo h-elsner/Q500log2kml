@@ -1,12 +1,12 @@
 object Form1: TForm1
-  Left = 953
-  Height = 682
+  Left = 908
+  Height = 687
   Top = 121
-  Width = 933
+  Width = 905
   AllowDropFiles = True
   Anchors = [akTop, akRight]
-  ClientHeight = 662
-  ClientWidth = 933
+  ClientHeight = 667
+  ClientWidth = 905
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
   KeyPreview = True
@@ -24,27 +24,27 @@ object Form1: TForm1
   LCLVersion = '2.0.6.0'
   object PageControl1: TPageControl
     Left = 152
-    Height = 536
+    Height = 541
     Top = 96
-    Width = 774
-    ActivePage = TabSheet8
+    Width = 746
+    ActivePage = TabSheet1
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 3
+    TabIndex = 0
     TabOrder = 1
     OnChange = PageControl1Change
     Options = [nboKeyboardTabSwitch]
     object TabSheet1: TTabSheet
-      ClientHeight = 454
-      ClientWidth = 768
+      ClientHeight = 513
+      ClientWidth = 738
       ImageIndex = 0
       object grdOverview: TStringGrid
         Left = 0
-        Height = 445
+        Height = 513
         Top = 0
-        Width = 759
+        Width = 738
         Align = alClient
         Color = clCream
         ColCount = 11
@@ -74,15 +74,15 @@ object Form1: TForm1
       end
     end
     object TabSheet3: TTabSheet
-      ClientHeight = 464
-      ClientWidth = 766
+      ClientHeight = 508
+      ClientWidth = 811
       ImageIndex = 1
       object StringGrid1: TStringGrid
         Cursor = crHelp
         Left = 0
-        Height = 464
+        Height = 508
         Top = 0
-        Width = 766
+        Width = 811
         Align = alClient
         Color = clCream
         ColCount = 2
@@ -107,14 +107,14 @@ object Form1: TForm1
       end
     end
     object TabSheet2: TTabSheet
-      ClientHeight = 454
-      ClientWidth = 768
+      ClientHeight = 508
+      ClientWidth = 811
       ImageIndex = 2
       object Chart1: TChart
         Left = 0
-        Height = 495
+        Height = 508
         Top = 0
-        Width = 759
+        Width = 811
         AxisList = <        
           item
             Marks.LabelBrush.Style = bsClear
@@ -234,7 +234,7 @@ object Form1: TForm1
     end
     object TabSheet8: TTabSheet
       ClientHeight = 508
-      ClientWidth = 766
+      ClientWidth = 1111
       ImageIndex = 3
       OnResize = TabSheet8Resize
       PopupMenu = PopupMenu3
@@ -242,7 +242,7 @@ object Form1: TForm1
         Left = 0
         Height = 176
         Top = 0
-        Width = 766
+        Width = 1111
         AxisList = <        
           item
             Marks.Format = '%0:.4g'
@@ -284,8 +284,8 @@ object Form1: TForm1
       object Chart4: TChart
         Left = 0
         Height = 168
-        Top = 176
-        Width = 819
+        Top = 184
+        Width = 1111
         AxisList = <        
           item
             Marks.Format = '%0:.4g'
@@ -326,7 +326,7 @@ object Form1: TForm1
         Left = 0
         Height = 156
         Top = 352
-        Width = 766
+        Width = 1111
         AxisList = <        
           item
             Marks.Format = '%0:.4g'
@@ -1668,23 +1668,23 @@ object Form1: TForm1
       end
     end
     object TabSheet4: TTabSheet
-      ClientHeight = 508
-      ClientWidth = 766
+      ClientHeight = 513
+      ClientWidth = 738
       ImageIndex = 4
       object PageControl2: TPageControl
         Left = 0
-        Height = 508
+        Height = 513
         Top = 0
-        Width = 766
-        ActivePage = TabSheet10
+        Width = 738
+        ActivePage = TabSheet9
         Align = alClient
         Images = TabImages
-        TabIndex = 1
+        TabIndex = 0
         TabOrder = 0
         Options = [nboKeyboardTabSwitch]
         object TabSheet9: TTabSheet
-          ClientHeight = 460
-          ClientWidth = 762
+          ClientHeight = 485
+          ClientWidth = 730
           ImageIndex = 6
           object RadioGroup2: TRadioGroup
             Left = 8
@@ -1861,8 +1861,8 @@ object Form1: TForm1
           end
         end
         object TabSheet10: TTabSheet
-          ClientHeight = 480
-          ClientWidth = 758
+          ClientHeight = 485
+          ClientWidth = 730
           ImageIndex = 7
           object GroupBox3: TGroupBox
             Left = 8
@@ -1921,12 +1921,12 @@ object Form1: TForm1
           end
           object GroupBox4: TGroupBox
             Left = 232
-            Height = 446
+            Height = 451
             Top = 24
             Width = 384
             Anchors = [akTop, akLeft, akBottom]
             Caption = 'sel'
-            ClientHeight = 426
+            ClientHeight = 431
             ClientWidth = 380
             TabOrder = 1
             object LabeledEdit1: TLabeledEdit
@@ -1977,7 +1977,7 @@ object Form1: TForm1
             end
             object TreeView1: TTreeView
               Left = 8
-              Height = 406
+              Height = 411
               Top = 8
               Width = 216
               Anchors = [akTop, akLeft, akBottom]
@@ -2324,8 +2324,8 @@ object Form1: TForm1
         end
         object TabSheet12: TTabSheet
           Caption = 'allg'
-          ClientHeight = 480
-          ClientWidth = 758
+          ClientHeight = 485
+          ClientWidth = 730
           ImageIndex = 8
           object RadioGroup4: TRadioGroup
             Left = 8
@@ -2356,17 +2356,17 @@ object Form1: TForm1
             Left = 520
             Height = 267
             Top = 16
-            Width = 230
+            Width = 202
             Anchors = [akTop, akLeft, akRight]
             Caption = 'GroupBox1'
             ClientHeight = 247
-            ClientWidth = 226
+            ClientWidth = 198
             TabOrder = 1
             object Memo1: TMemo
               Left = 0
               Height = 247
               Top = 0
-              Width = 226
+              Width = 198
               Align = alClient
               Color = clCream
               Lines.Strings = (
@@ -2648,13 +2648,13 @@ object Form1: TForm1
     end
     object TabSheet6: TTabSheet
       Caption = 'AppLog'
-      ClientHeight = 454
-      ClientWidth = 768
+      ClientHeight = 513
+      ClientWidth = 738
       ImageIndex = 11
       object BitBtn27: TBitBtn
-        Left = 648
+        Left = 624
         Height = 30
-        Top = 456
+        Top = 476
         Width = 107
         Anchors = [akRight, akBottom]
         Caption = 'Sv'
@@ -2691,9 +2691,9 @@ object Form1: TForm1
       end
       inline SynEdit1: TSynEdit
         Left = 0
-        Height = 448
+        Height = 464
         Top = 0
-        Width = 759
+        Width = 738
         Align = alTop
         Anchors = [akTop, akLeft, akRight, akBottom]
         Color = clMoneyGreen
@@ -3196,7 +3196,7 @@ object Form1: TForm1
       object BitBtn28: TBitBtn
         Left = 8
         Height = 30
-        Top = 456
+        Top = 476
         Width = 107
         Anchors = [akLeft, akBottom]
         Caption = 'del'
@@ -3233,9 +3233,9 @@ object Form1: TForm1
       end
       object cbReduced: TCheckBox
         Left = 136
-        Height = 22
-        Top = 460
-        Width = 85
+        Height = 19
+        Top = 483
+        Width = 79
         Anchors = [akLeft, akBottom]
         Caption = 'cbReduced'
         TabOrder = 3
@@ -3245,8 +3245,8 @@ object Form1: TForm1
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
-    Top = 639
-    Width = 933
+    Top = 644
+    Width = 905
     Anchors = [akRight, akBottom]
     Panels = <    
       item
@@ -3273,7 +3273,7 @@ object Form1: TForm1
   end
   object ListBox1: TListBox
     Left = 11
-    Height = 360
+    Height = 365
     Top = 272
     Width = 134
     Anchors = [akTop, akLeft, akBottom]
@@ -3314,7 +3314,7 @@ object Form1: TForm1
     TabOrder = 3
   end
   object BitBtn1: TBitBtn
-    Left = 819
+    Left = 791
     Height = 30
     Top = 1
     Width = 107
@@ -3346,7 +3346,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object BitBtn2: TBitBtn
-    Left = 694
+    Left = 666
     Height = 30
     Top = 1
     Width = 107
@@ -3393,7 +3393,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object BitBtn3: TBitBtn
-    Left = 566
+    Left = 538
     Height = 30
     Top = 1
     Width = 107
@@ -3433,7 +3433,7 @@ object Form1: TForm1
   end
   object SpinEdit3: TSpinEdit
     Tag = 2
-    Left = 566
+    Left = 538
     Height = 23
     Top = 60
     Width = 107
@@ -3446,7 +3446,7 @@ object Form1: TForm1
     Value = 1
   end
   object Label6: TLabel
-    Left = 639
+    Left = 611
     Height = 15
     Top = 38
     Width = 34
@@ -3455,7 +3455,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object Label7: TLabel
-    Left = 892
+    Left = 864
     Height = 15
     Top = 38
     Width = 34
@@ -3473,14 +3473,14 @@ object Form1: TForm1
     Left = 152
     Height = 23
     Top = 60
-    Width = 360
+    Width = 332
     Anchors = [akTop, akLeft, akRight]
     Color = clCream
     ItemHeight = 15
     TabOrder = 8
   end
   object Label8: TLabel
-    Left = 892
+    Left = 864
     Height = 15
     Top = 63
     Width = 34
@@ -3495,7 +3495,7 @@ object Form1: TForm1
     OnMouseLeave = Label8MouseLeave
   end
   object BitBtn13: TBitBtn
-    Left = 694
+    Left = 666
     Height = 30
     Top = 56
     Width = 107
@@ -3533,7 +3533,7 @@ object Form1: TForm1
     TabOrder = 9
   end
   object SpeedButton4: TSpeedButton
-    Left = 511
+    Left = 483
     Height = 25
     Top = 5
     Width = 25
@@ -3572,7 +3572,7 @@ object Form1: TForm1
     Left = 152
     Height = 23
     Top = 6
-    Width = 360
+    Width = 332
     Anchors = [akTop, akLeft, akRight]
     Color = clCream
     ItemHeight = 15

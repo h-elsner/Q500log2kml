@@ -8,7 +8,7 @@
       <Unit0>
         <Filename Value="q500log2kml.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="2"/>
         <WindowIndex Value="1"/>
         <CursorPos Y="29"/>
         <UsageCount Value="200"/>
@@ -22,8 +22,8 @@
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
         <WindowIndex Value="1"/>
-        <TopLine Value="12319"/>
-        <CursorPos X="27" Y="12346"/>
+        <TopLine Value="2758"/>
+        <CursorPos X="39" Y="2786"/>
         <ExtraEditorCount Value="1"/>
         <ExtraEditor1>
           <EditorIndex Value="-1"/>
@@ -41,10 +41,10 @@
         <ComponentName Value="Form2"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="70"/>
-        <CursorPos X="3" Y="92"/>
+        <CursorPos X="30" Y="93"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -52,20 +52,20 @@
       <Unit3>
         <Filename Value="q500_dt.inc"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="3"/>
         <WindowIndex Value="1"/>
-        <TopLine Value="21"/>
-        <CursorPos X="57" Y="26"/>
+        <TopLine Value="315"/>
+        <CursorPos Y="355"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="q500_en.inc"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="4"/>
         <WindowIndex Value="1"/>
-        <TopLine Value="34"/>
-        <CursorPos X="10" Y="54"/>
+        <TopLine Value="315"/>
+        <CursorPos X="37" Y="353"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
       </Unit4>
@@ -250,123 +250,127 @@
         <UsageCount Value="9"/>
       </Unit24>
     </Units>
-    <JumpHistory Count="29" HistoryIndex="28">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7915" Column="24" TopLine="7882"/>
+        <Caret Line="10" Column="9"/>
       </Position1>
       <Position2>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7928" Column="24" TopLine="7896"/>
+        <Caret Line="706" Column="25" TopLine="674"/>
       </Position2>
       <Position3>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10183" Column="12" TopLine="10174"/>
+        <Caret Line="2885" Column="32" TopLine="2867"/>
       </Position3>
       <Position4>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7205" Column="5" TopLine="7201"/>
+        <Caret Line="9564" TopLine="9533"/>
       </Position4>
       <Position5>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7195" Column="24" TopLine="7184"/>
+        <Caret Line="539" TopLine="521"/>
       </Position5>
       <Position6>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7903" Column="24" TopLine="7870"/>
+        <Caret Line="688" Column="21" TopLine="656"/>
       </Position6>
       <Position7>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7916" Column="24" TopLine="7883"/>
+        <Caret Line="710" Column="21" TopLine="678"/>
       </Position7>
       <Position8>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7929" Column="24" TopLine="7897"/>
+        <Caret Line="4582" Column="19" TopLine="4550"/>
       </Position8>
       <Position9>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10184" Column="18" TopLine="10172"/>
+        <Caret Line="4955" Column="25" TopLine="4922"/>
       </Position9>
       <Position10>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7204" Column="14" TopLine="7184"/>
+        <Caret Line="4965" Column="25" TopLine="4932"/>
       </Position10>
       <Position11>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7198" Column="13" TopLine="7184"/>
+        <Caret Line="4993" Column="30" TopLine="4961"/>
       </Position11>
       <Position12>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7903" Column="24" TopLine="7870"/>
+        <Caret Line="10607" Column="23" TopLine="10592"/>
       </Position12>
       <Position13>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7916" Column="24" TopLine="7883"/>
+        <Caret Line="10772" Column="16" TopLine="10740"/>
       </Position13>
       <Position14>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7929" Column="24" TopLine="7897"/>
+        <Caret Line="10950" Column="32" TopLine="10938"/>
       </Position14>
       <Position15>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="203" Column="21" TopLine="183"/>
+        <Caret Line="10967" Column="16" TopLine="10937"/>
       </Position15>
       <Position16>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4461" Column="48" TopLine="4437"/>
+        <Caret Line="11193" Column="16" TopLine="11161"/>
       </Position16>
       <Position17>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10226" Column="27" TopLine="10194"/>
+        <Caret Line="11346" Column="22" TopLine="11314"/>
       </Position17>
       <Position18>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4462" TopLine="4441"/>
+        <Caret Line="2778" Column="26" TopLine="2756"/>
       </Position18>
       <Position19>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="9642" Column="27" TopLine="9609"/>
+        <Caret Line="5044" Column="38" TopLine="5011"/>
       </Position19>
       <Position20>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="12317" Column="2" TopLine="12286"/>
+        <Caret Line="2778" Column="26" TopLine="2758"/>
       </Position20>
       <Position21>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="12318" Column="35" TopLine="12286"/>
+        <Caret Line="5044" Column="38" TopLine="5011"/>
       </Position21>
       <Position22>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="9642" Column="27" TopLine="9623"/>
+        <Caret Line="2768" Column="36" TopLine="13502"/>
       </Position22>
       <Position23>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="221" Column="32" TopLine="196"/>
+        <Caret Line="7897" Column="38" TopLine="7871"/>
       </Position23>
       <Position24>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7203" Column="75" TopLine="7193"/>
+        <Caret Line="7904" Column="21" TopLine="7871"/>
       </Position24>
       <Position25>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="501" TopLine="482"/>
+        <Caret Line="7917" Column="21" TopLine="7885"/>
       </Position25>
       <Position26>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4460" TopLine="4427"/>
+        <Caret Line="8185" Column="23" TopLine="8152"/>
       </Position26>
       <Position27>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10219" TopLine="10186"/>
+        <Caret Line="8190" Column="21" TopLine="8157"/>
       </Position27>
       <Position28>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4459" Column="31" TopLine="4440"/>
+        <Caret Line="8194" Column="21" TopLine="8161"/>
       </Position28>
       <Position29>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10265" Column="46" TopLine="10240"/>
+        <Caret Line="8645" Column="27" TopLine="8607"/>
       </Position29>
+      <Position30>
+        <Filename Value="q500log2kml_main.pas"/>
+        <Caret Line="2768" Column="58" TopLine="2748"/>
+      </Position30>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
