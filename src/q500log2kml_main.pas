@@ -190,7 +190,8 @@ History:
                  Remaining battery capacity now according RC Groups table for
                  voltage vs. capacity.
 2020-03-09       Additional placemarks in KML. Colors for Hubsan frames updated.
-2020-03-11       Visualize gaps in telemetry by double click to additional chart.
+2020-03-11       Visualize RC gaps in telemetry by double click to additional chart.
+2020-04-02       Current unit for H920 updated.
 *)
 
 unit q500log2kml_main;
@@ -750,7 +751,6 @@ type
     procedure SetSensorEnv;                        {Bedienung für Sensor anpassen}
     procedure ResetSensorEnv;
     procedure AnzeigePX4CSV(fn: string);           {CSV aus eigenem Format anzeigen}
-    procedure HeaderST24;                          {Write Header for H920 + ST24}
     function FakeHeader: string;                   {Missing Header for H920+ST24}
     procedure OverWriteVT;                         {Overwrite vehicle type for PX4 Thunderbird}
     procedure GetDefVT;                            {Fill defVT depending on settings}
@@ -759,7 +759,7 @@ type
   public
                                                    {public declarations}
     const 
-      Version ='V4.3 03/2020';
+      Version ='V4.3 04/2020';
   end;
 
 const
@@ -2485,7 +2485,7 @@ end;
 
 function H920Amp(const w: double): double; inline; {Stromsensor H920}
 begin
-  result:=w/2;                                     {uint8_t current; 0.5A resolution}
+  result:=w/10;                                    {uint8_t current; 0.1A resolution?}
 end;
 
 function TiltToGrad(const w: double): double; inline; {Umrechnung Werte in 0-90 Grad}
@@ -7743,6 +7743,8 @@ begin
   splitlist.Delimiter:=sep;
   splitlist.StrictDelimiter:=True;
   try
+    {if StringGrid1.ColCount=csvanz  .... PX4 CSV auch aufnehmen?}
+
     fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
         ListBox1.Items[ListBox1.ItemIndex]+bext;   {Breeze}
     if FileExists(fn) then begin
@@ -7774,23 +7776,11 @@ begin
         kfile+ListBox1.Items[ListBox1.ItemIndex]+fext;
     if FileExists(fn) then begin
       newn:=TreeView1.Items.Add(nil, dkpath);      {create Tree node for Telemetry}
-      if (StringGrid1.Tag=17) and
-         (SpinEdit3.Tag=1) then begin              {H920+ST24}
-        hdstr:=FakeHeader;
-        LabeledEdit1.Tag:=0;
-        LabeledEdit2.Tag:=0;
-        LabeledEdit3.Tag:=0;
-      end else begin
-        inlist.LoadFromFile(fn);
-        if inlist.count>2 then
-          hdstr:=inlist[0];
-        if LabeledEdit1.Tag=brID then              {H501 ???}
-          LabeledEdit1.Tag:=0;
-        if LabeledEdit2.Tag=brID then
-          LabeledEdit2.Tag:=0;
-        if LabeledEdit3.Tag=brID then
-          LabeledEdit3.Tag:=0;
-      end;
+      inlist.LoadFromFile(fn);
+      if inlist.count>2 then
+        hdstr:=inlist[0];
+      if pos(sep+'1'+sep, hdstr)>20 then           {H920 + ST24, old firmware}
+        hdstr:=FakeHeader;                         {Replace header}
       if hdstr<>'' then
         addnodes(hdstr, newn);
     end;
@@ -8853,32 +8843,29 @@ begin                                              {Datenanalyse ausgewählter B
   end;
 end;
 
-procedure TForm1.HeaderST24;                       {Write Header for H920 + ST24}
+function TForm1.FakeHeader: string;                {Missing Header for H920+ST24}
 begin
-  StaticText1.Caption:='H920 + ST24';
-  StringGrid1.ColCount:=22;
-  StringGrid1.Cells[1,0]:=rsHDcell1;
-  StringGrid1.Cells[2,0]:=rsHDcell2;
-  StringGrid1.Cells[3,0]:=rsHDcell3;
-  StringGrid1.Cells[4,0]:=rsHDcell4;
-  StringGrid1.Cells[5,0]:=rsHDcell5;
-  StringGrid1.Cells[6,0]:=rsHDcell6;
-  StringGrid1.Cells[7,0]:=rsHDcell7;
-  StringGrid1.Cells[8,0]:=rsHDcell8;
-  StringGrid1.Cells[9,0]:=rsHDcell9;
-  StringGrid1.Cells[10,0]:=rsHDcell10;
-  StringGrid1.Cells[11,0]:=rsHDcell11;
-  StringGrid1.Cells[12,0]:=rsHDcell12;
-  StringGrid1.Cells[13,0]:=rsHDcell13;
-  StringGrid1.Cells[14,0]:=rsHDcell14;
-  StringGrid1.Cells[15,0]:=rsHDcell15;
-  StringGrid1.Cells[16,0]:=rsHDcell16;
-  StringGrid1.Cells[17,0]:=rsHDcell17;
-  StringGrid1.Cells[18,0]:=rsHDcell18;
-  StringGrid1.Cells[19,0]:=rsHDcell19;
-  StringGrid1.Cells[20,0]:=rsHDcell20;
-  StringGrid1.Cells[21,0]:=rsHDcell21;
-  StringGrid1.AutoSizeColumns;
+  result:=sep+rsHDcell1+sep+
+             rsHDcell2+sep+
+             rsHDcell3+sep+
+             rsHDcell4+sep+
+             rsHDcell5+sep+
+             rsHDcell6+sep+
+             rsHDcell7+sep+
+             rsHDcell8+sep+
+             rsHDcell9+sep+
+             rsHDcell10+sep+
+             rsHDcell11+sep+
+             rsHDcell12+sep+
+             rsHDcell13+sep+
+             rsHDcell14+sep+
+             rsHDcell15+sep+
+             rsHDcell16+sep+
+             rsHDcell17+sep+
+             rsHDcell18+sep+
+             rsHDcell19+sep+
+             rsHDcell20+sep+
+             rsHDcell21;
 end;
 
 {see also:
@@ -8937,6 +8924,10 @@ begin
       try
         splitlist.DelimitedText:=inlist[0];        {Überschrift einlesen}
         if RadioGroup1.ItemIndex=0 then begin      {nur bei Telemetrie}
+          if splitlist[19]='1' then begin          {H920 + ST24, old firmware}
+            inlist[0]:=FakeHeader;
+            splitlist.DelimitedText:=inlist[0];    {restore fake header}
+          end;
           topp[ListBox1.ItemIndex, 5]:=0;          {Pointer Null setzen}
           fModeFinden(splitlist);                  {Position f-mode merken}
           if SpinEdit3.Tag<>YTHPid then begin
@@ -9049,9 +9040,6 @@ begin
             StringGrid1.TopRow:=i-StringGrid1.VisibleRowCount-1;   {zeitl. Pos setzen}
           end;
         end;
-        if (StringGrid1.Tag=17) and                {H920+ST24}
-           (SpinEdit3.Tag=1) then
-          HeaderST24;
         StringGrid1.AutoSizeColumn(0);
         StringGrid1.EndUpdate;
 
@@ -9851,7 +9839,7 @@ begin
           end;
         except
           StatusBar1.Panels[5].Text:=rsInvalid;
-          SynEdit1.Lines.Add('''9848'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
+          SynEdit1.Lines.Add('''9841'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
                              suff+StatusBar1.Panels[5].Text);
         end;
       end;
@@ -10044,31 +10032,6 @@ begin
   end;
 end;
 
-function TForm1.FakeHeader: string;                {Missing Header for H920+ST24}
-begin
-  result:=sep+rsHDcell1+sep+
-             rsHDcell2+sep+
-             rsHDcell3+sep+
-             rsHDcell4+sep+
-             rsHDcell5+sep+
-             rsHDcell6+sep+
-             rsHDcell7+sep+
-             rsHDcell8+sep+
-             rsHDcell9+sep+
-             rsHDcell10+sep+
-             rsHDcell11+sep+
-             rsHDcell12+sep+
-             rsHDcell13+sep+
-             rsHDcell14+sep+
-             rsHDcell15+sep+
-             rsHDcell16+sep+
-             rsHDcell17+sep+
-             rsHDcell18+sep+
-             rsHDcell19+sep+
-             rsHDcell20+sep+
-             rsHDcell21;
-end;
-
 procedure TForm1.AnzeigeSchnell;                   {Schnellanalyse}
 var inlist0, inlist1, inlist2, splitlist: TStringList;
     fn: string;
@@ -10080,9 +10043,6 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
   begin
     case lab.Tag of
       0: begin                                     {Telemetry}
-           if (StringGrid1.Tag=17) and
-              (SpinEdit3.Tag=1) then               {H920+ST24}
-             inlist0[0]:=FakeHeader;
            splitlist.DelimitedText:=inlist0[0];    {Column header}
            if splitlist.count>30 then              {Firmware error YTH}
              for x:=15 to splitlist.count-1 do
@@ -10179,7 +10139,11 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
       0: if inlist0.Count=0 then begin
            fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
                kfile+ListBox1.Items[ListBox1.ItemIndex]+fext;  {Telemetry}
-           if FileExists(fn) then inlist0.LoadFromFile(fn);
+           if FileExists(fn) then begin
+             inlist0.LoadFromFile(fn);
+             if pos(sep+'1'+sep, inlist0[0])>20 then           {H920 + ST24, old firmware}
+                inlist0[0]:=FakeHeader;                        {Replace header}
+           end;
          end;
       1: if inlist1.Count=0 then begin
            fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+spath+
@@ -10189,12 +10153,14 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
       2: if inlist2.Count=0 then begin
            fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+fpath+
                PathDelim+ffile+ListBox1.Items[ListBox1.ItemIndex]+fext; {Rem}
-           if FileExists(fn) then inlist2.LoadFromFile(fn);
+           if FileExists(fn) then
+             inlist2.LoadFromFile(fn);
          end;
       brid: if inlist0.Count=0 then begin
               fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
                   ListBox1.Items[ListBox1.ItemIndex]+bext;     {Breeze}
-             if FileExists(fn) then inlist0.LoadFromFile(fn);
+             if FileExists(fn) then
+               inlist0.LoadFromFile(fn);
            end;
       H501ID: if inlist0.Count=0 then begin
                 fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+H5file+
@@ -11852,17 +11818,25 @@ const mxw=1365;
       e:=round(trunc(StrToFloatN(StringGrid1.Cells[aCol, aRow])));
       case aCol of
         1: begin
-             p:=e-stkntrl;
-             if p<0 then Farblauf(1, p)            {nach unten}
-                    else Farblauf(0, p);           {nach oben}
-             if e=0 then                           {rote Taste}
-               StringGrid1.Canvas.Brush.Color:=clAttention;
+             if e=2048 then
+               StringGrid1.Canvas.Brush.Color:=StringGrid1.Color
+             else begin
+               p:=e-stkntrl;
+               if p<0 then Farblauf(1, p)          {nach unten}
+                      else Farblauf(0, p);         {nach oben}
+               if e=0 then                         {rote Taste}
+                 StringGrid1.Canvas.Brush.Color:=clAttention;
+             end;
            end;
         2, 3, 4:
-           begin {die restlichen Knüppel}
-             p:=e-stkntrl;
-             if p<0 then Farblauf(1, p)            {nach unten}
-                    else Farblauf(0, p);           {nach oben}
+           begin                                   {die restlichen Knüppel}
+             if e=2048 then
+               StringGrid1.Canvas.Brush.Color:=StringGrid1.Color
+             else begin
+               p:=e-stkntrl;
+               if p<0 then Farblauf(1, p)          {nach unten}
+                      else Farblauf(0, p);         {nach oben}
+             end;
            end;
         5: begin                                   {Flight mode switch}
              if e=stkntrl then begin               {Angle}

@@ -20,10 +20,9 @@
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
         <WindowIndex Value="1"/>
-        <TopLine Value="2758"/>
-        <CursorPos X="39" Y="2786"/>
+        <TopLine Value="178"/>
+        <CursorPos X="3" Y="213"/>
         <ExtraEditorCount Value="1"/>
         <ExtraEditor1>
           <EditorIndex Value="-1"/>
@@ -41,10 +40,11 @@
         <ComponentName Value="Form2"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="1"/>
-        <TopLine Value="70"/>
-        <CursorPos X="30" Y="93"/>
+        <TopLine Value="58"/>
+        <CursorPos X="37" Y="84"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -253,123 +253,122 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10" Column="9"/>
+        <Caret Line="10223" Column="19" TopLine="10191"/>
       </Position1>
       <Position2>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="706" Column="25" TopLine="674"/>
+        <Caret Line="10056" Column="54" TopLine="9928"/>
       </Position2>
       <Position3>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="2885" Column="32" TopLine="2867"/>
+        <Caret Line="753" Column="24" TopLine="735"/>
       </Position3>
       <Position4>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="9564" TopLine="9533"/>
+        <Caret Line="7781" TopLine="7748"/>
       </Position4>
       <Position5>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="539" TopLine="521"/>
+        <Caret Line="8854" Column="27" TopLine="8821"/>
       </Position5>
       <Position6>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="688" Column="21" TopLine="656"/>
+        <Caret Line="8936" Column="34" TopLine="8904"/>
       </Position6>
       <Position7>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="710" Column="21" TopLine="678"/>
+        <Caret Line="10155" Column="64" TopLine="10148"/>
       </Position7>
       <Position8>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4582" Column="19" TopLine="4550"/>
+        <Caret Line="10092" Column="37" TopLine="10082"/>
       </Position8>
       <Position9>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4955" Column="25" TopLine="4922"/>
+        <Caret Line="10155" Column="39" TopLine="10123"/>
       </Position9>
       <Position10>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4965" Column="25" TopLine="4932"/>
+        <Caret Line="753" Column="24" TopLine="735"/>
       </Position10>
       <Position11>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4993" Column="30" TopLine="4961"/>
+        <Caret Line="7781" TopLine="7721"/>
       </Position11>
       <Position12>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10607" Column="23" TopLine="10592"/>
+        <Caret Line="9082" Column="35" TopLine="9077"/>
       </Position12>
       <Position13>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10772" Column="16" TopLine="10740"/>
+        <Caret Line="10144" Column="39" TopLine="10124"/>
       </Position13>
       <Position14>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10950" Column="32" TopLine="10938"/>
+        <Caret Line="753" Column="24" TopLine="735"/>
       </Position14>
       <Position15>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10967" Column="16" TopLine="10937"/>
+        <Caret Line="7745" Column="42" TopLine="7714"/>
       </Position15>
       <Position16>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="11193" Column="16" TopLine="11161"/>
+        <Caret Line="7957" Column="13" TopLine="7931"/>
       </Position16>
       <Position17>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="11346" Column="22" TopLine="11314"/>
+        <Caret Line="669" Column="23" TopLine="650"/>
       </Position17>
       <Position18>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="2778" Column="26" TopLine="2756"/>
+        <Caret Line="7717" Column="26" TopLine="7684"/>
       </Position18>
       <Position19>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="5044" Column="38" TopLine="5011"/>
+        <Caret Line="7957" Column="13" TopLine="7928"/>
       </Position19>
       <Position20>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="2778" Column="26" TopLine="2758"/>
+        <Caret Line="669" Column="23" TopLine="650"/>
       </Position20>
       <Position21>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="5044" Column="38" TopLine="5011"/>
+        <Caret Line="7717" Column="26" TopLine="7684"/>
       </Position21>
       <Position22>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="2768" Column="36" TopLine="13502"/>
+        <Caret Line="7949" Column="27" TopLine="7925"/>
       </Position22>
       <Position23>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7897" Column="38" TopLine="7871"/>
+        <Caret Line="7939" Column="34" TopLine="7925"/>
       </Position23>
       <Position24>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7904" Column="21" TopLine="7871"/>
+        <Caret Line="9589" Column="22" TopLine="9562"/>
       </Position24>
       <Position25>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="7917" Column="21" TopLine="7885"/>
+        <Caret Line="9803" Column="68" TopLine="504"/>
       </Position25>
       <Position26>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="8185" Column="23" TopLine="8152"/>
+        <Caret Line="10046" TopLine="10013"/>
       </Position26>
       <Position27>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="8190" Column="21" TopLine="8157"/>
+        <Caret Line="10143" Column="69" TopLine="10111"/>
       </Position27>
       <Position28>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="8194" Column="21" TopLine="8161"/>
+        <Caret Line="12012" Column="61" TopLine="11980"/>
       </Position28>
       <Position29>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="8645" Column="27" TopLine="8607"/>
+        <Caret Line="12171" TopLine="12137"/>
       </Position29>
       <Position30>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="2768" Column="58" TopLine="2748"/>
       </Position30>
     </JumpHistory>
     <RunParams>
