@@ -59,6 +59,9 @@ type
     var st: string;
   end;
 
+{.$I q500_dt.inc}
+{$I q500_en.inc}
+
 var
   Form2: TForm2;
 
@@ -87,9 +90,6 @@ const
   spk=4;                                           {Korrekturwert Spaltenbreite}
   ziff=['0'..'9'];                                 {gültige Ziffern}
   zzf='hh:nn:ss';
-
-{$I q500_dt.inc}
-{.$I q500_en.inc}
 
 implementation
 

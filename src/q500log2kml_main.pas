@@ -209,8 +209,8 @@ uses
   fphttpclient, lazUTF8, SynEdit, SynHighlighterMulti, SynHighlighterAny,
   strutils, dateutils, lazsysutils;
 
-{$I q500_dt.inc}
-{.$I q500_en.inc}
+{.$I q500_dt.inc}
+{$I q500_en.inc}
 
 type
   TarrFW = array[0..7] of string;
@@ -2651,7 +2651,6 @@ function VoltToColor(Const vt: integer; v: double): TColor;
                                                    {LiPo thresholds for colors}
 var w: double;
 const
-  thr_green=3.71;
   thr_yellow=3.69;
   thr_attention=3.61;
   thr_red=3.26;
@@ -3528,6 +3527,23 @@ begin
   result:=StringReplace(result, '³', '&sup3;',  [rfReplaceAll]);
 end;
 
+function write_nme(nm: string): string; inline;    {Set an "name" line tagged}
+begin
+  result:=tab2+'<'+nmtag+'>'+nm+'</'+nmtag+'>';
+end;
+
+procedure placemark(list: TStringList; styl, nam, lkor, ltim: string); inline;
+begin
+  list.Add('<'+pmtag);                             {Create a placemark}
+  list.Add(tab2+'<TimeStamp><'+KMLwhen+ltim+'</'+KMLwhen+'</TimeStamp>');
+  list.Add(tab2+'<styleUrl>'+styl+'</styleUrl>');
+  if nam<>'' then
+    list.Add(write_nme(nam));
+  lkor:=StringReplace(lkor, tab1, sep, [rfReplaceAll]);
+  list.Add(tab2+'<Point><'+cotag+lkor+'</'+cotag+'</Point>');
+  list.Add('</'+pmtag);
+end;
+
 procedure GPXheader(n, f: string; dt: TDateTime; klist: TStringList); inline;
                    {Name, Datei,  Beginnzeit,    Ausgabeliste}
 begin
@@ -3535,7 +3551,7 @@ begin
   klist.Add(gpxvers+' creator="'+
             HTMLEnc(ExtractFileName(Application.ExeName))+'">');
   klist.Add('<metadata>');
-  klist.Add('  <'+nmtag+'>'+HTMLEnc(n)+'</'+nmtag+'>');
+  klist.Add(write_nme(HTMLEnc(n)));
   klist.Add('  <desc>'+FormatDateTime(mzf, dt)+'h - '+
               ExtractFileName(f)+'</desc>');
   klist.Add('</metadata>');
@@ -4090,10 +4106,10 @@ var dsbuf: array[0..YTHPcols] of byte;
           if s='' then begin                       {Startpunkt erkannt}
             maplist.Add('<wpt '+skoor);            {Startpunkt}
             maplist.Add(tab2+'<time>'+tstr+'</time>');
-            maplist.Add(tab2+'<'+nmtag+'>Start</'+nmtag+'>');
+            maplist.Add(write_nme('Start'));
             maplist.Add(GPXet1);
             maplist.Add('<trk>');
-            maplist.Add(tab2+'<'+nmtag+'>'+ExtractFileName(fn)+'</'+nmtag+'>');
+            maplist.Add(write_nme(ExtractFileName(fn)));
             maplist.Add(tab2+'<trkseg>');
           end;
           s:=tab4+'<trkpt '+skoor+GPXele+csvarr[4]+
@@ -4103,16 +4119,10 @@ var dsbuf: array[0..YTHPcols] of byte;
         end else begin                             {KML/KMZ}
           skoor:=FloatToStr(lon2)+tab1+FloatToStr(lat2);
           if s='' then begin                       {Startpunkt erkannt}
-            maplist.Add('<'+pmtag);                {Startpunkt}
-            maplist.Add('<TimeStamp><'+KMLwhen+tstr+
-                        '</'+KMLwhen+'</TimeStamp>');
-            maplist.Add('<styleUrl>#starting</styleUrl>');
-            maplist.Add('<Point><'+cotag+
-                        StringReplace(skoor, tab1, sep, [rfReplaceAll])+
-                        '</'+cotag+'</Point>');
-            maplist.Add('</'+pmtag);
+            placemark(maplist, '#starting', '',
+                      StringReplace(skoor, tab1, sep, [rfReplaceAll]), tstr);
             maplist.Add('<'+pmtag);
-            maplist.Add(tab2+'<'+nmtag+'>'+ComboBox1.Text+'<'+nmtag+'>');
+            maplist.Add(write_nme(ComboBox1.Text));
             maplist.Add(tab2+'<description>'+ExtractFileName(fn)+'</description>');
             maplist.Add(tab2+'<styleUrl>#Flightpath</styleUrl>');
             maplist.Add(tab2+'<gx:Track>');
@@ -4564,7 +4574,7 @@ begin
           GPXfooter1(maplist);
           maplist.Add('<wpt '+skoor);              {Landepunkt}
           maplist.Add(' <time>'+tstr+'</time>');
-          maplist.Add(' <'+nmtag+'>Stop</'+nmtag+'>');
+          maplist.Add(write_nme('Stop'));
           maplist.Add(GPXet1);
           GPXfooter2(maplist);
           maplist.SaveToFile(ChangeFileExt(fn,
@@ -4574,15 +4584,8 @@ begin
             maplist.Add(outlist[i]);
           maplist.Add('  </gx:Track>');
           maplist.Add('</'+pmtag);                 {End playable track}
-          maplist.Add('<'+pmtag);                  {Landepunkt}
-          maplist.Add('<TimeStamp><'+
-                      KMLwhen+tstr+'</'+KMLwhen+'</TimeStamp>');
-          maplist.Add('<styleUrl>#landing</styleUrl>');
-          maplist.Add('<Point><'+cotag+
-                      StringReplace(skoor, tab1, sep, [rfReplaceAll])+
-                      '</'+cotag+'</Point>');
-          maplist.Add('</'+pmtag);
-
+          placemark(maplist, '#landing', '',      {Landepunkt}
+                    StringReplace(skoor, tab1, sep, [rfReplaceAll]), tstr);
           KMLFooter2(maplist);
           maplist.SaveToFile(ChangeFileExt(fn, RadioGroup2.Items[0]));
           if RadioGroup2.ItemIndex=1 then
@@ -10244,7 +10247,7 @@ begin
   klist.Add(xmlvers);
   klist.Add(kmlvers);
   klist.Add('<'+doctag);
-  klist.Add('<'+nmtag+'>'+capForm1+'</'+nmtag+'>');
+  klist.Add(write_nme(capForm1));
   klist.Add('<description>'+
               FormatDateTime(mzf, dt)+'h - '+
               ExtractFileName(f)+'</description>');
@@ -10287,8 +10290,7 @@ end;
 
  <extrude>1</extrude>}
 
-
-procedure TForm1.MacheKML(fn: string; z: integer);   {Hauptfunktion - konvertieren in KML}
+procedure TForm1.MacheKML(fn: string; z: integer); {Hauptfunktion - konvertieren in KML}
 var
   inlist, kmllist, splitlist, outlist, outlist1, placelist: TStringList;
   x, bdt, fmd, lfmd: integer;
@@ -10302,17 +10304,6 @@ var
 const
   fmdnil=300;                                      {not existent flight mode}
 
-  procedure placemark(list: TStringList; styl, nam, lkor, ltim: string);
-  begin
-    list.Add('<'+pmtag);                           {Create a placemark}
-    list.Add(tab2+'<TimeStamp><'+KMLwhen+ltim+'</'+KMLwhen+'</TimeStamp>');
-    list.Add(tab2+'<styleUrl>'+styl+'</styleUrl>');
-    if nam<>'' then
-      list.Add(tab2+'<'+nmtag+'>'+nam+'</'+nmtag+'>');
-    lkor:=StringReplace(lkor, tab1, sep, [rfReplaceAll]);
-    list.Add(tab2+'<Point><'+cotag+lkor+'</'+cotag+'</Point>');
-    list.Add('</'+pmtag);
-  end;
 
   procedure kmlLegacy;
   begin
@@ -10514,10 +10505,10 @@ begin
         placemark(kmllist, '#starting', '', skoor, stime);
 
         kmllist.Add('<'+pmtag);
-        kmllist.Add(tab2+'<'+nmtag+'>'+ComboBox1.Text+'</'+nmtag+'>');
+        kmllist.Add(write_nme(ComboBox1.Text));
         kmllist.Add(tab2+'<description>'+ExtractFileName(fn)+'</description>');
         kmllist.Add(tab2+'<styleUrl>#Flightpath</styleUrl>');
-        kmllist.Add(tab2+'<gx:Track>');               {Start playable track}
+        kmllist.Add(tab2+'<gx:Track>');            {Start playable track}
 {wenn absolute Höhe aus ST10 kommt und es eingestellt ist}
         if (absh<>0) and
            (RadioGroup5.ItemIndex=0) then begin
@@ -10558,7 +10549,7 @@ begin
             end;
             if inlist.count>5 then begin
               kmllist.Add('<'+pmtag);
-              kmllist.Add(tab2+'<'+nmtag+'>'+spath+'</'+nmtag+'>');
+              kmllist.Add(write_nme(spath));
               kmllist.Add(tab2+'<description>'+ExtractFileName(dn)+'</description>');
               kmllist.Add(tab2+'<styleUrl>#GrndStn</styleUrl>');
               kmllist.Add(tab2+'<LineString>');
@@ -10807,11 +10798,11 @@ begin
         kmllist.Add('<wpt'+skoor);                 {Startpunkt}
         kmllist.Add(tab1+GPXele+'0.0</ele>');
         kmllist.Add(stime);
-        kmllist.Add(tab2+'<'+nmtag+'>Start</'+nmtag+'>');
+        kmllist.Add(write_nme('Start'));
         kmllist.Add(GPXet1);
 
         kmllist.Add('<trk>');
-        kmllist.Add(tab2+'<'+nmtag+'>'+ExtractFileName(fn)+'</'+nmtag+'>');
+        kmllist.Add(write_nme(ExtractFileName(fn)));
         kmllist.Add(tab2+'<trkseg>');
         if n>10 then for x:=0 to outlist.count-1 do
           kmllist.add(tab4+'<trkpt'+outlist[x]+GPXet3);
@@ -10830,7 +10821,7 @@ begin
           end;
           if inlist.count>5 then begin
             kmllist.Add('<trk>');
-            kmllist.Add(tab2+'<'+nmtag+'>'+ExtractFileName(dn)+'</'+nmtag+'>');
+            kmllist.Add(write_nme(ExtractFileName(dn)));
             kmllist.Add(tab2+'<trkseg>');
             for x:=1 to inlist.Count-1 do begin
               splitlist.DelimitedText:=inlist[x];
@@ -10852,7 +10843,7 @@ begin
         kmllist.Add('<wpt'+lkoor);                 {Landepunkt}
         kmllist.Add(lalt);
         kmllist.Add(ltime);
-        kmllist.Add(tab2+'<'+nmtag+'>Stop</'+nmtag+'>');
+        kmllist.Add(write_nme('Stop'));
         kmllist.Add(GPXet1);
         GPXfooter2(kmllist);
         if n>10 then begin                         {kleine Dateien ausblenden}
