@@ -116,3 +116,5 @@ History:
 2020-03-09       Additional placemarks in KML. Colors for Hubsan frames updated.
 2020-03-11       Visualize RC gaps in telemetry by double click to additional chart.
 2020-04-02       Current unit for H920 updated.
+2020-04-25 V4.4  GLOBAL_POSITION_INT and BATTERY_STATUS added.
+2020-05-11       Updates for H480 Thunderbird.
