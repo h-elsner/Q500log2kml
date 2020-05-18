@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, tachartlazaruspkg, lazcontrols, q500log2kml_main, anzwerte,
-  Splash_sc;
+  Splash_sc, q5_common;
 
 {$R *.res}
 

@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, TAGraph, TAIntervalSources, TASeries, TATools,
   Forms, Controls, Graphics, Dialogs, Grids, Buttons, Menus, LCLIntf, LCLType,
-  StdCtrls, Types;
+  StdCtrls, q5_common;
 
 type
 
@@ -48,25 +48,24 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure StringGrid1PrepareCanvas(sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
+
   private
     {private declarations}
     procedure DataToMain;
+
   public
     {public declarations}
-    function CleanDN(const s: string): string;     {Ungültige Zeichen entfernen}
-    function CleanNum(const s: string): string;    {Ziffern filtern}
-    procedure MoveVCursor(x: double; p: integer);  {Time and label position}
     var st: string;
+
+    procedure MoveVCursor(x: double; p: integer);  {Time and label position}
   end;
 
-{.$I q500_dt.inc}
-{$I q500_en.inc}
+{$I language.inc}
 
 var
   Form2: TForm2;
 
 const
-  InvalidChars: set of char=['\', '/', ':', '*', '?', '"', '<', '>', '|', '&'];
 
 { Chart1BarSeries1: Series Color:=clFuchsia  (Angle Mode – Purple LED)
   Chart1BarSeries2: Series Color:=clGreen    (für Smart Mode)
@@ -75,7 +74,7 @@ const
   Chart1BarSeries5: Series Color:= $000080FF (Orange)
   Chart1BarSeries7: Series Color:=clBlue     (Sports Mode, Stability)    }
 
-  clOrange=$000080FF;
+(*  clOrange=$000080FF;
   clNoGPS=$000080FF;                               {Dark Orange}
   clAngle=clFuchsia;
   clEmergency=clMaroon;
@@ -84,11 +83,10 @@ const
   clSport=clBlue;
   clTasks=clMoneyGreen;
   clAttention =$008080F0;                          {Farbe Achtung}
-  clVolt2     =$00FF901E;                          {Voltage 2 Farbe}
+  clVolt2     =$00FF901E;                          {Voltage 2 Farbe}   *)
 
   csvsep=';';
   spk=4;                                           {Korrekturwert Spaltenbreite}
-  ziff=['0'..'9'];                                 {gültige Ziffern}
   zzf='hh:nn:ss';
 
 implementation
@@ -180,27 +178,6 @@ begin
     StringGrid1.CopyToClipboard(false)
   else
     Chart1.CopyToClipboardBitmap;
-end;
-
-function TForm2.CleanDN(const s: string): string;  {Ungültige Zeichen entfernen}
-var i: integer;
-begin
-  result:='';
-  for i:=1 to length(s) do
-    if s[i]=' ' then
-      result:=result+'_'
-    else
-      if not (s[i] in InvalidChars) then
-        result:=result+s[i];
-end;
-
-function TForm2.CleanNum(const s: string): string;  {Ziffern filtern}
-var i: integer;
-begin
-  result:='';
-  for i:=1 to length(s) do
-    if s[i] in ziff then
-      result:=result+s[i];
 end;
 
 procedure TForm2.MenuItem2Click(Sender: TObject);

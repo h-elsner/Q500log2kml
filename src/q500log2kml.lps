@@ -8,9 +8,9 @@
       <Unit0>
         <Filename Value="q500log2kml.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="4"/>
         <WindowIndex Value="1"/>
-        <CursorPos Y="29"/>
+        <CursorPos X="44" Y="22"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -21,8 +21,8 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <WindowIndex Value="1"/>
-        <TopLine Value="196"/>
-        <CursorPos X="2" Y="213"/>
+        <TopLine Value="2289"/>
+        <CursorPos X="65" Y="2310"/>
         <ExtraEditorCount Value="1"/>
         <ExtraEditor1>
           <EditorIndex Value="-1"/>
@@ -40,11 +40,10 @@
         <ComponentName Value="Form2"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="2"/>
         <WindowIndex Value="1"/>
-        <TopLine Value="52"/>
-        <CursorPos X="33" Y="62"/>
+        <TopLine Value="92"/>
+        <CursorPos X="11" Y="126"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -52,20 +51,20 @@
       <Unit3>
         <Filename Value="q500_dt.inc"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="5"/>
         <WindowIndex Value="1"/>
-        <TopLine Value="315"/>
-        <CursorPos Y="355"/>
+        <TopLine Value="259"/>
+        <CursorPos Y="298"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="q500_en.inc"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="6"/>
         <WindowIndex Value="1"/>
-        <TopLine Value="315"/>
-        <CursorPos X="37" Y="353"/>
+        <TopLine Value="258"/>
+        <CursorPos X="29" Y="271"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
       </Unit4>
@@ -76,14 +75,34 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Splash_sc"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="7"/>
         <WindowIndex Value="1"/>
-        <CursorPos X="46" Y="12"/>
+        <CursorPos X="19" Y="8"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit5>
       <Unit6>
+        <Filename Value="language.inc"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <WindowIndex Value="1"/>
+        <CursorPos X="3" Y="2"/>
+        <UsageCount Value="74"/>
+        <Loaded Value="True"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="q5_common.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="3"/>
+        <WindowIndex Value="1"/>
+        <TopLine Value="19"/>
+        <CursorPos X="18" Y="11"/>
+        <UsageCount Value="35"/>
+        <Loaded Value="True"/>
+      </Unit7>
+      <Unit8>
         <Filename Value="wpedit1.pas"/>
         <ComponentName Value="Form3"/>
         <HasResources Value="True"/>
@@ -91,90 +110,90 @@
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <CursorPos X="43"/>
-        <UsageCount Value="135"/>
-      </Unit6>
-      <Unit7>
+        <UsageCount Value="130"/>
+      </Unit8>
+      <Unit9>
         <Filename Value="C:\lazarus\fpc\2.6.2\source\rtl\objpas\sysutils\sysstrh.inc"/>
         <WindowIndex Value="1"/>
         <TopLine Value="148"/>
         <CursorPos X="10" Y="169"/>
-        <UsageCount Value="8"/>
-      </Unit7>
-      <Unit8>
+        <UsageCount Value="3"/>
+      </Unit9>
+      <Unit10>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\sysstrh.inc"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="169"/>
         <CursorPos X="10" Y="119"/>
-        <UsageCount Value="7"/>
-      </Unit8>
-      <Unit9>
+        <UsageCount Value="2"/>
+      </Unit10>
+      <Unit11>
         <Filename Value="C:\lazarus\components\tachart\tachartaxis.pas"/>
         <UnitName Value="TAChartAxis"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="823"/>
         <CursorPos X="36" Y="845"/>
-        <UsageCount Value="5"/>
-      </Unit9>
-      <Unit10>
+        <UsageCount Value="10"/>
+      </Unit11>
+      <Unit12>
         <Filename Value="C:\lazarus\components\tachart\tageometry.pas"/>
         <UnitName Value="TAGeometry"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="91"/>
         <CursorPos X="3" Y="111"/>
-        <UsageCount Value="5"/>
-      </Unit10>
-      <Unit11>
+        <UsageCount Value="10"/>
+      </Unit12>
+      <Unit13>
         <Filename Value="C:\lazarus\components\tachart\tatextelements.pas"/>
         <UnitName Value="TATextElements"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="2"/>
         <CursorPos X="3" Y="22"/>
-        <UsageCount Value="5"/>
-      </Unit11>
-      <Unit12>
+        <UsageCount Value="10"/>
+      </Unit13>
+      <Unit14>
         <Filename Value="C:\lazarus\components\tachart\taseries.pas"/>
         <UnitName Value="TASeries"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="326"/>
         <CursorPos X="3" Y="346"/>
-        <UsageCount Value="5"/>
-      </Unit12>
-      <Unit13>
+        <UsageCount Value="10"/>
+      </Unit14>
+      <Unit15>
         <Filename Value="C:\lazarus\components\IndustrialStuff\source\indcyBaseLed.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="109"/>
         <CursorPos X="21" Y="129"/>
-        <UsageCount Value="5"/>
-      </Unit13>
-      <Unit14>
+        <UsageCount Value="10"/>
+      </Unit15>
+      <Unit16>
         <Filename Value="C:\lazarus\components\IndustrialStuff\source\indcyGraphics.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="32"/>
         <CursorPos X="54" Y="52"/>
-        <UsageCount Value="5"/>
-      </Unit14>
-      <Unit15>
+        <UsageCount Value="10"/>
+      </Unit16>
+      <Unit17>
         <Filename Value="C:\lazarus\components\IndustrialStuff\source\AdvLed.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="158"/>
         <CursorPos X="18" Y="193"/>
-        <UsageCount Value="7"/>
-      </Unit15>
-      <Unit16>
+        <UsageCount Value="2"/>
+      </Unit17>
+      <Unit18>
         <Filename Value="N:\Delphi\Projekte_alt\EpochTime\epoch1.pas"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
-        <UsageCount Value="4"/>
-      </Unit16>
-      <Unit17>
+        <UsageCount Value="9"/>
+      </Unit18>
+      <Unit19>
         <Filename Value="..\FlacScanner\elsflacscanner1.pas"/>
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
@@ -184,60 +203,42 @@
         <WindowIndex Value="1"/>
         <TopLine Value="80"/>
         <CursorPos X="13" Y="112"/>
-        <UsageCount Value="4"/>
-      </Unit17>
-      <Unit18>
+        <UsageCount Value="9"/>
+      </Unit19>
+      <Unit20>
         <Filename Value="C:\lazarus\components\ideintf\objectinspector.pp"/>
         <UnitName Value="ObjectInspector"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="1283"/>
         <CursorPos X="32" Y="1304"/>
-        <UsageCount Value="6"/>
-      </Unit18>
-      <Unit19>
+        <UsageCount Value="1"/>
+      </Unit20>
+      <Unit21>
         <Filename Value="C:\lazarus\components\tachart\tatypes.pas"/>
         <UnitName Value="TATypes"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="41"/>
         <CursorPos X="14" Y="62"/>
-        <UsageCount Value="4"/>
-      </Unit19>
-      <Unit20>
+        <UsageCount Value="9"/>
+      </Unit21>
+      <Unit22>
         <Filename Value="C:\lazarus\components\tachart\tachartutils.pas"/>
         <UnitName Value="TAChartUtils"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="25"/>
         <CursorPos X="3" Y="46"/>
-        <UsageCount Value="4"/>
-      </Unit20>
-      <Unit21>
+        <UsageCount Value="9"/>
+      </Unit22>
+      <Unit23>
         <Filename Value="C:\lazarus\components\tachart\tatools.pas"/>
         <UnitName Value="TATools"/>
         <EditorIndex Value="-1"/>
         <WindowIndex Value="1"/>
         <TopLine Value="412"/>
         <CursorPos X="31" Y="430"/>
-        <UsageCount Value="6"/>
-      </Unit21>
-      <Unit22>
-        <Filename Value="C:\lazarus\lcl\graphics.pp"/>
-        <UnitName Value="Graphics"/>
-        <EditorIndex Value="-1"/>
-        <WindowIndex Value="1"/>
-        <TopLine Value="1190"/>
-        <CursorPos X="15" Y="1209"/>
-        <UsageCount Value="1"/>
-      </Unit22>
-      <Unit23>
-        <Filename Value="C:\lazarus\fpc\3.0.4\source\packages\fcl-image\src\fpcanvas.pp"/>
-        <UnitName Value="FPCanvas"/>
-        <EditorIndex Value="-1"/>
-        <WindowIndex Value="1"/>
-        <TopLine Value="299"/>
-        <CursorPos X="15" Y="317"/>
         <UsageCount Value="1"/>
       </Unit23>
       <Unit24>
@@ -247,126 +248,128 @@
         <WindowIndex Value="1"/>
         <TopLine Value="84"/>
         <CursorPos X="14" Y="101"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="4"/>
       </Unit24>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4089" Column="30" TopLine="4079"/>
+        <Caret Line="9940" Column="31" TopLine="9935"/>
       </Position1>
       <Position2>
         <Filename Value="q500log2kml_main.pas"/>
+        <Caret Line="11711" Column="21" TopLine="11707"/>
       </Position2>
       <Position3>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="869" Column="8" TopLine="836"/>
+        <Caret Line="11717" Column="21" TopLine="11707"/>
       </Position3>
       <Position4>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="3543" Column="25" TopLine="3508"/>
+        <Caret Line="12531" Column="16" TopLine="12504"/>
       </Position4>
       <Position5>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="3556" Column="52" TopLine="3523"/>
+        <Caret Line="705" Column="19" TopLine="687"/>
       </Position5>
       <Position6>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4111" Column="58" TopLine="4079"/>
+        <Caret Line="10012" Column="26" TopLine="9979"/>
       </Position6>
       <Position7>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4114" Column="36" TopLine="4083"/>
+        <Caret Line="12186" Column="24" TopLine="12181"/>
       </Position7>
       <Position8>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="3532" Column="51" TopLine="3513"/>
+        <Caret Line="12533" Column="23" TopLine="12507"/>
       </Position8>
       <Position9>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="3531" Column="30" TopLine="3512"/>
+        <Caret Line="705" Column="24" TopLine="687"/>
       </Position9>
       <Position10>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4114" Column="34" TopLine="4092"/>
+        <Caret Line="10014" Column="7" TopLine="9976"/>
       </Position10>
       <Position11>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4127" Column="50" TopLine="4095"/>
       </Position11>
       <Position12>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4577" Column="2" TopLine="4556"/>
+        <Caret Line="740" Column="20" TopLine="709"/>
       </Position12>
       <Position13>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10252" Column="32" TopLine="10219"/>
+        <Caret Line="1411" Column="23" TopLine="1394"/>
       </Position13>
       <Position14>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10510" Column="46" TopLine="10478"/>
+        <Caret Line="10011" Column="24" TopLine="9979"/>
       </Position14>
       <Position15>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10554" Column="43" TopLine="10522"/>
+        <Caret Line="10588" Column="25" TopLine="10557"/>
       </Position15>
       <Position16>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10803" Column="39" TopLine="10771"/>
+        <Caret Line="10964" Column="23" TopLine="10932"/>
       </Position16>
       <Position17>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10807" Column="51" TopLine="10775"/>
+        <Caret Line="11134" Column="25" TopLine="11129"/>
       </Position17>
       <Position18>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10826" Column="55" TopLine="10794"/>
+        <Caret Line="11244" Column="33" TopLine="11212"/>
       </Position18>
       <Position19>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="10848" Column="38" TopLine="10816"/>
+        <Caret Line="12533" Column="23" TopLine="12501"/>
       </Position19>
       <Position20>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="869" Column="8" TopLine="849"/>
+        <Caret Line="705" Column="22" TopLine="687"/>
       </Position20>
       <Position21>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="3532" Column="25" TopLine="3499"/>
+        <Caret Line="10012" Column="57" TopLine="9979"/>
       </Position21>
       <Position22>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4111" TopLine="4074"/>
+        <Caret Line="10588" Column="25" TopLine="10557"/>
       </Position22>
       <Position23>
         <Filename Value="q500log2kml_main.pas"/>
+        <Caret Line="10964" Column="23" TopLine="10932"/>
       </Position23>
       <Position24>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="869" Column="8" TopLine="836"/>
+        <Caret Line="11134" Column="25" TopLine="11102"/>
       </Position24>
       <Position25>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="3532" Column="43" TopLine="3499"/>
+        <Caret Line="11244" Column="33" TopLine="11212"/>
       </Position25>
       <Position26>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="3539" Column="14" TopLine="3509"/>
+        <Caret Line="12533" Column="49" TopLine="12501"/>
       </Position26>
       <Position27>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="3555" TopLine="3522"/>
+        <Caret Line="705" Column="22" TopLine="687"/>
       </Position27>
       <Position28>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="867" Column="8" TopLine="849"/>
+        <Caret Line="10011" Column="81" TopLine="9979"/>
       </Position28>
       <Position29>
         <Filename Value="q500log2kml_main.pas"/>
-        <Caret Line="4124" Column="52" TopLine="4111"/>
+        <Caret Line="12457" Column="52" TopLine="12104"/>
       </Position29>
       <Position30>
         <Filename Value="q500log2kml_main.pas"/>
+        <Caret Line="1637" Column="51" TopLine="1572"/>
       </Position30>
     </JumpHistory>
     <RunParams>

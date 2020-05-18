@@ -5,8 +5,7 @@ unit Splash_sc;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  StdCtrls;
+  Classes, Forms, ExtCtrls, StdCtrls;
 
 type
 

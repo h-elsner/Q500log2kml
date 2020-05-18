@@ -192,6 +192,8 @@ History:
 2020-03-09       Additional placemarks in KML. Colors for Hubsan frames updated.
 2020-03-11       Visualize RC gaps in telemetry by double click to additional chart.
 2020-04-02       Current unit for H920 updated.
+2020-04-25 V4.4  GLOBAL_POSITION_INT and BATTERY_STATUS added.
+2020-05-11       Updates for H480 Thunderbird.
 *)
 
 unit q500log2kml_main;
@@ -207,10 +209,7 @@ uses
   Zipper, math, TAChartUtils, TAFuncSeries, Clipbrd, anzwerte,
   TACustomSeries, TATools, indGnouMeter, AdvLed, Sensors, graphutil,
   fphttpclient, lazUTF8, SynEdit, SynHighlighterMulti, SynHighlighterAny,
-  strutils, dateutils, lazsysutils;
-
-{.$I q500_dt.inc}
-{$I q500_en.inc}
+  strutils, dateutils, lazsysutils, q5_common;
 
 type
   TarrFW = array[0..7] of string;
@@ -251,6 +250,7 @@ type
     BitBtn27: TBitBtn;
     BitBtn28: TBitBtn;
     BitBtn3: TBitBtn;
+    btSpecial: TButton;
     Chart1: TChart;
     Chart1BarSeries1: TBarSeries;
     Chart1BarSeries2: TBarSeries;
@@ -293,6 +293,7 @@ type
     CheckBox7: TCheckBox;
     CheckBox8: TCheckBox;
     CheckBox9: TCheckBox;
+    lblMAVcommon: TLabel;
     MAVmsg: TCheckGroup;
     ColorButton1: TColorButton;
     ColorButton2: TColorButton;
@@ -334,8 +335,11 @@ type
     Image4: TImage;
     Label9: TLabel;
     MenuItem57: TMenuItem;
+    mnTR2: TMenuItem;
+    mnCleanCSV: TMenuItem;
     ProgressBar1: TProgressBar;
     RadioGroup10: TRadioGroup;
+    rgVrule: TRadioGroup;
     RadioGroup8: TRadioGroup;
     RadioGroup9: TRadioGroup;
     SpeedButton5: TSpeedButton;
@@ -391,11 +395,11 @@ type
     MenuItem29: TMenuItem;
     MenuItem3: TMenuItem;            {"Als Bild speichern" im PopUp Menü HDiagr}
     MenuItem30: TMenuItem;
-    MenuItem31: TMenuItem;
+    mnTR1: TMenuItem;
     MenuItem32: TMenuItem;
     MenuItem33: TMenuItem;
     MenuItem34: TMenuItem;
-    MenuItem35: TMenuItem;
+    mnCut: TMenuItem;
     MenuItem36: TMenuItem;
     MenuItem37: TMenuItem;
     MenuItem38: TMenuItem;
@@ -496,6 +500,7 @@ type
     procedure BitBtn28Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
+    procedure btSpecialClick(Sender: TObject);
     procedure cbThunderChange(Sender: TObject);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -539,6 +544,7 @@ type
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormShow(Sender: TObject);
     procedure Image4Click(Sender: TObject);
+    procedure lblMAVcommonClick(Sender: TObject);
     procedure Label7Click(Sender: TObject);
     procedure Label7MouseEnter(Sender: TObject);
     procedure Label7MouseLeave(Sender: TObject);
@@ -554,6 +560,8 @@ type
     procedure LabeledEdit3DragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure LabeledEdit3DragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);
+    procedure lblMAVcommonMouseEnter(Sender: TObject);
+    procedure lblMAVcommonMouseLeave(Sender: TObject);
     procedure ListBox1Click(Sender: TObject);
     procedure ListBox1DblClick(Sender: TObject);
     procedure MAVmsgDblClick(Sender: TObject);
@@ -588,6 +596,7 @@ type
     procedure MenuItem7Click(Sender: TObject);
     procedure MenuItem8Click(Sender: TObject);
     procedure MenuItem9Click(Sender: TObject);
+    procedure mnCleanCSVClick(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
@@ -732,6 +741,7 @@ type
     function FindTP(wlist: TStringList; tp: TDateTime; const vt: integer): integer;
     function fmodeToStr(const f: integer): string; {Flight Mode abh. vom Typ ausgeben}
     function PCGstatusToStr(const u: integer): string; {pressure_compass_status}
+    function MotStatusToStr(const u: integer): string; {Motor_status}
     function SwitchToStr(const p: integer; const s: string): string;
     function CheckE7(const s: string): boolean;    {prüft einen string auf Fehler}
     function ShowSensorPlus(fn: string;            {Sensordatei vom YTH Plus}
@@ -752,22 +762,20 @@ type
     procedure ResetSensorEnv;
     procedure AnzeigePX4CSV(fn: string);           {CSV aus eigenem Format anzeigen}
     function FakeHeader: string;                   {Missing Header for H920+ST24}
-    procedure OverWriteVT;                         {Overwrite vehicle type for PX4 Thunderbird}
+    procedure OverwriteVT;                         {Overwrite vehicle type for PX4 Thunderbird}
     procedure GetDefVT;                            {Fill defVT depending on settings}
     procedure MAVmsgDefault;                       {Set all messages to true}
-
-  public
-                                                   {public declarations}
-    const 
-      Version ='V4.3 04/2020';
   end;
+
+{$I language.inc}
 
 const
   homepage='http://h-elsner.mooo.com';             {meine Homepage}
   hpmydat='/pdf/';
   meinname='Helmut Elsner';
   email   ='helmut.elsner@live.com';               {meine e-mail Adresse}
-  lazURL  ='http://www.lazarus-ide.org/';          {Werbung}
+  lazURL  ='https://www.lazarus-ide.org/';          {Werbung}
+  lazForum='https://www.lazarusforum.de/app.php/portal';
   mndir='FlightLog';
   mndirp='Flight2Log';                             {YTH Plus}
   dkpath='Telemetry';
@@ -799,7 +807,6 @@ const
   suff=': ';                                       {Suffix zur Datenausgabe}
   kma=', ';                                        {Kommaausgabe}
   bind=' - ';                                      {von/bis ID}
-  ziff=['0'..'9'];                                 {gültige Ziffern}
   anzsp=20;                                        {Mindestanzahl Spalten}
   lzbr=19;                                         {Länge Zeitstempel Breeze}
   lzyu=21;                                         {Länge Zeitstempel Yuneec}
@@ -822,8 +829,8 @@ const
   minflt=10/86400;                                 {Mindestflugzeit beim YTH Plus 10s}
   rfm2=[0..7, 9..14, 18, 20..24, 26..29, 31..33];  {Real flight modes, Yuneec legacy}
   rfm3=[8..14, 25];                                {Real flight modes Blade}
+  rfmT=[0, 1, 3, 13, 14, 20, 33];                  {Real flight modes Thunderbird}
   rfmP=[4..7, 10, 12, 13, 17];                     {Real flight modes YTH Plus  ???}
-  rfmT=[3, 16];                                    {Real flight modes YTH Thunderbird}
   fkmh=3.6;                                        {m/s --> km/h}
   fmph=2.2369362920544;                            {m/s --> mph}
   fmile=1.609344;
@@ -835,22 +842,27 @@ const
   emcyID='EMERGENCY';
 
 {http://docwiki.embarcadero.com/RADStudio/Seattle/de/Farben_in_der_VCL}
-  osmURL='http://www.openstreetmap.org/';          {als Karte}
+  osmURL='https://www.openstreetmap.org/';         {als Karte}
+//  osmURL='https://opentopomap.org/';               {als topografische Karte}
+//  https://opentopomap.org/#map=17/48.92523/14.26150
+
   gzoom='16';
-  starticon='http://maps.google.com/mapfiles/dir_0.png';       {blau}
-  stopicon= 'http://maps.google.com/mapfiles/dir_walk_60.png';  {grau}
-  alerticon='http://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_red.png';
-  infoicon= 'http://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_yellow.png';
-  aircrafticon='http://earth.google.com/images/kml-icons/track-directional/track-0.png';
-  fotoicon='http://maps.google.com/mapfiles/kml/pal4/icon38.png';
+  starticon='https://maps.google.com/mapfiles/dir_0.png';       {blau}
+  stopicon= 'https://maps.google.com/mapfiles/dir_walk_60.png';  {grau}
+  alerticon='https://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_red.png';
+  infoicon= 'https://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_yellow.png';
+  aircrafticon='https://earth.google.com/images/kml-icons/track-directional/track-0.png';
+  fotoicon='https://maps.google.com/mapfiles/kml/pal4/icon38.png';
 {Mapicons: https://sites.google.com/site/gmapicons/home/
            https://sites.google.com/site/gmapsdevelopment/
            http://kml4earth.appspot.com/icons.html
  Alternativen, aber oben gefällt mir besser}
-//  starticon='http://maps.google.com/mapfiles/north.png';
-//  stopicon='http://maps.google.com/mapfiles/south.png';
-//  stopicon='http://maps.google.com/mapfiles/dir_60.png';     {blau}
-//  aircrafticon='http://maps.google.com/mapfiles/kml/shapes/airports.png';
+//  starticon='https://maps.google.com/mapfiles/north.png';
+//  stopicon='https://maps.google.com/mapfiles/south.png';
+//  stopicon='https://maps.google.com/mapfiles/dir_60.png';     {blau}
+//  aircrafticon='https://maps.google.com/mapfiles/kml/shapes/airports.png';
+
+  MAVurl='https://github.com/mavlink/c_library_v2/tree/master/common';
 
   idxpage='INDEX_PAGE';
   getshpn='GET_SHARPNESS';
@@ -872,10 +884,6 @@ const
   extru='<extrude>1</extrude>';
   tr='"'+suff;
   wpem='},';                                       {Waypoint Endemarke}
-  tab1=' ';                                        {ein Leerzeichen}
-  tab2='  ';
-  tab4='    ';
-  tab6='      ';
 
   hwphwp ='"way_points';
   hwpyaw ='"yaw';
@@ -891,22 +899,24 @@ const
   minh=0.01;                                       {Höhengrenzen bei Übernahme}
   maxh=300;
   defh=10;                                         {default Höhe in m}
-  stkntrl=2048;
-  stkdown=683;
-  stkup  =3412;
-  stkmax=4095;
-  stkmin=0;
+  stkntrl=2048;                                    {neutral; 0%}
+  stkdown=683;                                     {-100%}
+  stkup  =3412;                                    {+100%}
+  stkmax=4095;                                     {+150%}
+  stkmin=0;                                        {-150%}
   m45val=1433;                                     {Pan -45% TeamMode}
+  p50val=2730;                                     {+50%}
+  m50val=1365;                                     {-50%}
   spt=10;                    {zusätzliche Spaltenbreite  für Telemetrie in pix}
   rrk='# ';                  {RaceRender Kommentar}
   defaultcol=5;              {muss kleiner als die Mindestmenge der Spalten sein}
-  brID=90;                   {Breeze ID}
-  defVT=5;                   {Default vehicle YTH}
+  defVT=5;                   {Default vehicle YTH, need 5 for Thunderbird}
   YTHPid=10;                 {YTH Plus ID}
   MQid=11;                   {MantisQ ID, PX4 Quadcopter}
   H5id=12;                   {Yuneec H520, *.tlog files (PX4)}
   MQcsvID=13;                {neues CSV Format beim MQ}
-  ThBid=15;                  {YTH Thunderbird on base of PX4}
+  ThBid=14;                  {Thunderbird, H480 customized firmware on base of PX4}
+  brID=90;                   {Breeze ID}
   H501ID=91;                 {Hubsan flaretom Rekorder}
   YTHPcols=276;              {Anzahl Spalten bei YTH Plus Sensorfiles = ID für Anzeige}
   AnzDirs=12;                {Anzahl der letzen Verzeichnisse}
@@ -989,13 +999,13 @@ begin
         end;
 
       for i:=splitlist.Count-2 downto 0 do         {FlightLog von hinten suchen}
-        if pos(mndir, splitlist[i])=1 then begin
+        if pos(mndir, splitlist[i])=1 then begin   {legacy Yuneec}
           result:='';                              {Pfad zusammenbauen}
           for k:=0 to i do
             result:=result+splitlist[k]+Pathdelim;
           exit;
         end;
-      exit;
+//      exit;                                      {wofür?}
     end;
     if ExtractFileExt(fn)=bext then begin
       result:=ExtractFilePath(fn);                 {Breeze}
@@ -1005,7 +1015,7 @@ begin
     if (pos(h5file, fn)=1) and
        (ExtractFileExt(fn)=fext) then begin        {Hubsam 501 flaretom Recorder}
       result:=ExtractFilePath(fn);
-      SpinEdit3.Tag:=H501ID;
+      SpinEdit3.Tag:=H501ID;                       {Vehicle ID für <> legacy setzen}
     end;
   finally
     FreeAndNil(splitlist);
@@ -1024,7 +1034,7 @@ begin
   kpath:=IncludeTrailingPathDelimiter(dkpath);     {default setzen}
   SynEdit1.Lines.Clear;
   AppLogTimeStamp(Application.ExeName+tab4+version);
-  Caption:=capForm1+tab2+Version;                  {Sprachversion einstellen}
+  Caption:=capForm1+tab2+Version;                  {Name und Version}
   Hint:=capForm1;
   BitBtn1.Caption:=capBitBtn1;
   BitBtn1.Hint:=hntBitBtn1;
@@ -1077,7 +1087,7 @@ begin
   MenuItem32.Caption:=rsResetCutBE;
   MenuItem33.Caption:=rsStartTPunkt;
   MenuItem34.Caption:=rsEndTPunkt;
-  MenuItem35.Caption:=capBitBtn14;                 {Ausschneiden / Cut}
+  mnCut.Caption:=capBitBtn14;                      {Ausschneiden / Cut}
   MenuItem54.Caption:=capBitBtn14;                 {Ausschneiden / Cut}
   MenuItem36.Caption:=capBitBtn3;
   MenuItem38.Caption:=capBitBtn1;
@@ -1091,6 +1101,8 @@ begin
   MenuItem10.Caption:=rsPC1Tab4;                   {Menü Settings}
   MenuItem56.Caption:=capSensorPlus;               {Sensordatei für YTH Plus öffnen}
   MenuItem57.Caption:=capDiashow;                  {alle Profiles anzeigen}
+  mnCleanCSV.Caption:=capCleanCSV;
+  mnCleanCSV.Hint:=hntCleanCSV;
   RadioGroup1.Caption:=capRadioGroup1;
   RadioGroup1.Hint:=hntRadioGroup1;
   RadioGroup1.Items[0]:=dkpath;
@@ -1113,6 +1125,8 @@ begin
   RadioGroup7.Hint:=capRadioGroup2;
   RadioGroup8.Caption:=capRadioGroup2+tab1+capNachweis;
   RadioGroup8.Hint:=hntRadioGroup8;
+  rgVrule.Caption:=capVrule;
+  rgVrule.Hint:=hntVrule;
   StatusBar1.Hint:=hntStatus1;
   TabSheet1.Caption:=rsPC1Tab1;
   TabSheet2.Caption:=rsPC1Tab2;
@@ -1159,6 +1173,7 @@ begin
   {$ENDIF}
   end;
   Label8.Hint:=homepage+downURL;
+  lblMAVcommon.Hint:=MAVurl;
   StaticText1.Caption:='';
   TrackBar3.Hint:=hntSharpness;
   Label21.Caption:=rsWB;
@@ -1520,7 +1535,7 @@ begin
     3: result:='Blade 350QX';
     4: result:='Blade Chroma (380QX)';
     5: result:='Yuneec Typhoon H';
-    6: result:='Yuneec H920+';                     {vermutlich ungenutzt}
+    6: result:='Yuneec H920+';                     {vermutlich nie genutzt}
     brID: result:='Yuneec Breeze';                 {selbst bestimmte Typ-IDs}
     MQid, MQcsvID: result:='Yuneec MantisQ';       {MantisQ erkannt}
     H5id: result:='Yuneec H520';                   {tlog files from H520}
@@ -1533,64 +1548,68 @@ begin
 end;
 
 function TForm1.fmodeToStr(const f: integer): string; {Flight Mode abh. vom Typ ausgeben}
-begin
-  result:='';
-  if SpinEdit3.Tag=3 then begin                    {Blade 350 QX}
+
+  procedure Mode350;                               {Blade 350 QX}
+  begin
     case f of
        3: result:=rsWaitRC;
        4: result:=rsInitializing;
        5: result:=rsMotorStarting;
        8: result:=rsEmergency;
-       9: result:=rsRTH+tab1+rsLanding;
-      10: result:=rsAgility+GPSoff;
-      11: result:=rsStability;
-      12: result:=rsSmart;
-      13: result:=rsAgility;
-      14: result:=rsRTH+tab1+rsComing;
+       9: result:=fmRTH+tab1+rsLanding;
+      10: result:=fmAgility+GPSoff;
+      11: result:=fmStability;
+      12: result:=fmSmart;
+      13: result:=fmAgility;
+      14: result:=fmRTH+tab1+rsComing;
       17: result:=rsMagCali+rsCali;
       23: result:=rsBinding;
       25: result:='AP mode';
     end;
+  end;
 
-  end else if SpinEdit3.Tag=YTHPid then begin      {neu YTH Plus}
+  procedure ModeYTHP;                              {neu YTH Plus}
+  begin
     case f of
-      4: result:=rsManual;          {C0409R.drawable.ic_drone_flying_mode_m}
-      5: result:=rsAngle;           {C0409R.drawable.ic_drone_flying_mode_a}
-      6: result:=rsSmart;           {C0409R.drawable.ic_drone_flying_mode_smart}
-      7: result:=rsSportMode;       {C0409R.drawable.ic_drone_flying_mode_sport}
+      4: result:=fmManual;          {C0409R.drawable.ic_drone_flying_mode_m}
+      5: result:=fmAngle;           {C0409R.drawable.ic_drone_flying_mode_a}
+      6: result:=fmSmart;           {C0409R.drawable.ic_drone_flying_mode_smart}
+      7: result:=fmSportMode;       {C0409R.drawable.ic_drone_flying_mode_sport}
       8: result:='Flight mode 8';
-     10: result:='Flight mode 10';  {IPS mode ?, no GPS ?}
-     12: result:=rsRTH+'12';
-     13: result:=rsRTH+'13';
-     17: result:='GPS lost';        {Really ?}
+     10: result:='Flight mode 10';                 {IPS mode ?, no GPS ?}
+     12: result:=fmRTH+'12';
+     13: result:=fmRTH+'13';
+     17: result:='GPS lost';                       {Really ?}
     end;
+  end;
 
-  end else begin                                   {Q500, YTH and all other legacy}
+  procedure ModeLegacy;                            {Q500, YTH and all other legacy}
+  begin
     case f of
-       0: result:=rsStability;
+       0: result:=fmStability;
        1: result:='Blue flashing'+GPSoff;
        2: result:='Blue'+GPSlost;
-       3: result:=rsAngle+' (Purple solid)';
-       4: result:=rsAngle+' (Purple flashing)'+GPSoff;
-       5: result:=rsAngle+' (Purple solid)'+GPSlost;
-       6: result:=rsSmart;
-       7: result:=rsSmart+GPSlost;
+       3: result:=fmAngle+' (Purple solid)';
+       4: result:=fmAngle+' (Purple flashing)'+GPSoff;
+       5: result:=fmAngle+' (Purple solid)'+GPSlost;
+       6: result:=fmSmart;
+       7: result:=fmSmart+GPSlost;
        8: result:=rsMotorStarting;
        9: result:='Temperature'+rsCali;
       10: result:='Pressure'+rsCali;
       11: result:='Accelerometer bias'+rsCali;
       12: result:=rsEmergency;
-      13: result:=rsRTH+tab1+rsComing;
-      14: result:=rsRTH+tab1+rsLanding;
+      13: result:=fmRTH+tab1+rsComing;
+      14: result:=fmRTH+tab1+rsLanding;
       15: result:=rsBinding;
       16: result:=rsInitializing;                  {Ready to start}
       17: result:=rsWaitRC;
       18: result:=rsMagCali+rsCali;
       19: result:=rsUnknown;
-      20: result:=rsAgility;                       {Rate}
-      21: result:=rsSmart+' - Follow me';
-      22: result:=rsSmart+' - Follow me'+GPSlost;
-      23: result:=rsSmart+' - Camera tracking';
+      20: result:=fmAgility;                       {Rate}
+      21: result:=fmSmart+' - Follow me';
+      22: result:=fmSmart+' - Follow me'+GPSlost;
+      23: result:=fmSmart+' - Camera tracking';
       24: result:='Camera tracking'+GPSlost;
       26: result:='Task Curve Cable Cam';
       27: result:='Task Journey';
@@ -1600,6 +1619,30 @@ begin
       32: result:='IPS';                           {FMODE_ANGLE_MODE_IPS_ONLY:I = 0x20}
       33: result:='Waypoints';
     end;
+  end;
+
+  procedure ModeThB;                               {Thunderbird}
+  begin
+    case f of                                      {Overwrite for Thunderbird}
+      0: result:=fmStabilized;
+      1: result:=fmAltitude+' or '+fmStabilized;   {??}
+      3: result:=fmPosition;
+      8: result:='GPS Aquiring';
+      13: result:=fmRTH;
+      16: result:='Ready';                         {Ready to start}
+      20: result:=fmRattitude;
+      33: result:=fmMission;
+    end;
+  end;
+
+begin
+  result:='';
+  case SpinEdit3.Tag of
+    3: Mode350;
+    YTHPid: ModeYTHP;
+    ThBid: ModeThB;
+  else
+    ModeLegacy;
   end;
 end;
 
@@ -1734,7 +1777,8 @@ begin
         result:=result+'Mag fail ';
       if (u and 16)=0 then
         result:=result+'GPS fail ';
-      if SpinEdit3.Tag=5 then begin                {nur Typhoon H}
+      if (SpinEdit3.Tag=5) or
+         (SpinEdit3.Tag=YTHPid) then begin         {nur Typhoon H oder H Plus}
         if (u and 32)=0 then
           result:=result+'RealSense error';
         if (u and 64)=0 then
@@ -1746,7 +1790,7 @@ begin
     result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
 end;
 
-function MotStatusToStr(const u: integer): string; {Motor_status}
+function TForm1.MotStatusToStr(const u: integer): string; {Motor_status}
 begin
   result:='';
   case u of
@@ -1760,8 +1804,10 @@ begin
         result:=result+'Motor 3 off ';
       if (u and 8) =0 then
         result:=result+'Motor 4 off ';
-      if (Form1.SpinEdit3.Tag=1) or
-         (Form1.SpinEdit3.Tag=5) then begin        {Hexakopter}
+      if (SpinEdit3.Tag=1) or
+         (SpinEdit3.Tag=5) or
+         (SpinEdit3.Tag=YTHPid) or
+         (SpinEdit3.Tag=ThBid) then begin          {Hexakopter, evtl H5id}
         if (u and 16)=0 then
           result:=result+'Motor 5 off ';
         if (u and 32)=0 then
@@ -2064,16 +2110,18 @@ begin
   case cid of
     0: result:='ALL';
     1: result:='AUTOPILOT 1';
-    100: result:='CAMERA';
-    101..105: result:='CAMERA '+IntToStr(cid-99);
+    25..86, 88..99: result:='USER '+IntToStr(cid-24);
+    87: result:='USER 63 (H520 - CGO-ET?)';
+    100..105: result:='CAMERA '+IntToStr(cid-99);
     140..153: result:='SERVO '+IntToStr(cid-139);
-    154: result:='GIMBAL';
+    154: result:='GIMBAL 1';
     155: result:='LOG';
     156: result:='ADSB';
     157: result:='OSD';
     158: result:='PERIPHERAL';
     159: result:='QX1_GIMBAL';
     160: result:='FLARM';
+    171..175: result:='GIMBAL '+IntToStr(cid-169);
     180: result:='MAPPER';
     190: result:='MISSIONPLANNER';
     195: result:='PATHPLANNER';
@@ -2227,6 +2275,48 @@ begin
   end;
 end;
 
+function BladeCol(const fm: integer): TColor; inline;
+begin
+  result:=Form1.StringGrid1.Color;
+  case fm of                                       {flight modes; wie Chart1BarSeries}
+    25:             result:=clAngle;
+    11:             result:=clSport;
+    9, 14, 10, 13:  result:=clRTH;
+    12:             result:=clSmart;
+    8:              result:=clEmergency;
+    5:              result:=clSilver;              {Motor Starting}
+  end;
+end;
+
+function LegacyCol(const fm: integer): TColor; inline;
+begin
+  result:=Form1.StringGrid1.Color;
+  case fm of                                       {flight modes wie Chart1BarSeries}
+    3, 4:                  result:=clAngle;
+    2, 5, 7, 22, 24, 32:   result:=clNoGPS;
+    13, 14, 20:            result:=clRTH;
+    6, 21, 23:             result:=clSmart;
+    9, 10, 11, 12, 17, 18: result:=clEmergency;
+    0, 1:                  result:=clSport;
+    26..29, 33:            result:=clTasks;        {Tasks}
+    8:                     result:=clSilver;       {Motor Starting}
+  end;
+end;
+
+function ThunderCol(const fm: integer): TColor; inline;
+begin
+  result:=Form1.StringGrid1.Color;
+  case fm of                                       {flight modes; wie Chart1BarSeries}
+    0:      result:=clSport;                       {Stabilized blue}
+    1:      result:=clNoGPS;                       {Altitude orange}
+    3:      result:=clAngle;                       {Position purple}
+    13, 14: result:=clEmergency;                   {RTH maroon}
+    20:     result:=clRTH;                         {Rattitude/Rate red}
+    33:     result:=clSmart;                       {Mission green}
+    16:     result:=clSilver;                      {Ready silver}
+  end;
+end;
+
 function LandGearToStr(const s: string): string;   {Fahrwerkseinstellung}
 var stk: integer;
 begin
@@ -2239,51 +2329,61 @@ begin
     result:=rsLandGear+tab1+rsDown;
 end;
 
+{Flightmodes:
+stk   %      YTH    Thunderbird
+-------------------------------
+4095 +150%    -         -
+3412 +100%   Smart  Altitude
+2730  +50%    -     Rattitude        p50val
+2048    0%   Angle  Position
+1365  -50%    -     Stabilized       m50val
+ 683 -100%   RTH    RTH
+   0 -150%    -     RTH
+}
 function TForm1.SwitchToStr(const p: integer; const s: string): string;
-var stk: double;
+var stk: integer;
 begin
   result:='';
   stk:=trunc(StrToFloatN(s));
   case p of
-    5: begin
-         if stk=stkup then
-           result:=rsSmart;
-         if (stk=stkup) and
-            (SpinEdit3.Tag=YTHPid) then
-           result:=rsSportSmartMode;
-         if stk=stkntrl then
-           result:=rsAngle;
-         if stk=stkdown then
-           result:=rsRTH;
+    5: begin                                       {Flight mode switch}
+         case stk of                               {default}
+           stkup:   result:=fmSmart;
+           stkntrl: result:=fmAngle;
+           stkdown: result:=fmRTH;
+         end;
+         case SpinEdit3.Tag of                     {Overwrite}
+           ThBid: case stk of
+                    0..stkdown: result:=fmRTH;     {-150 .. -100%}
+                    m50val:  result:=fmStabilized; {-50%}
+                    stkntrl: result:=fmPosition;   {0%}
+                    p50val:  result:=fmRattitude;  {+50%}
+                    stkup:   result:=fmAltitude;   {+100%}
+                  end;
+           YTHPid: if stk=stkup then
+                     result:=fmSportSmartMode;
+         end;
        end;
-    6: case SpinEdit3.Tag of                 {abhängig vom vehicle type}
-         1: begin                                  {H920}
-              if stk=stkmax then
-                result:=rsRTH;
-              if stk=stkup then
-                result:=rsNeutral;
-              if stk=2730 then
-                result:=rsNoGPS;
-//              if s=strdown  then result:='';
-            end;
-         2: begin                                  {Q500}
-              if stk=stkup then
-                result:=rsRTH;
-              if stk=stkntrl  then
-                result:=rsNeutral;
-            end;
-         5: begin                                  {YTH}
-              if stk=stkmax then
-                result:=rsRTH;
-              if stk=stkntrl then
-                result:=rsNeutral;
-            end;
+    6: begin
+         case stk of                               {Default, YTH}
+           stkntrl: result:=rsNeutral;
+           stkmax:  result:=fmRTH;
+         end;
+         case SpinEdit3.Tag of                     {abhängig vom vehicle type}
+           1: case stk of                          {H920}
+                p50val: result:=rsNoGPS;
+                stkup:  result:=rsNeutral;
+              end;
+           2: if stk=stkup then                    {Q500}
+                result:=fmRTH;
+
+         end;
        end;
     9: begin                                       {S1 Gimbal Tilt mode}
          if stk=stkup then
            result:='Velocity mode';
          if stk=2184 then
-           result:=rsAngle;
+           result:=fmAngle;
          if stk=stkntrl  then
            result:=rsNeutral;
        end;
@@ -2419,6 +2519,32 @@ begin
   end else Result:=result+rsUnknown;
 end;
 
+function RandomFN(const fn: string; const vt, mode: integer): string; {Dateinamen ermitteln}
+var p: integer;                                    {Position zum zufälligen Ändern}
+    z: char;
+begin
+  result:=IncludeTrailingPathDelimiter(ExtractFilePath(fn))+'cut'+us1+bext;
+  case vt of
+    brID:   p:=UTF8length(fn)-4;                   {Breeze}
+       4:   p:=UTF8length(fn)-7;                   {Chroma}
+    H501ID: p:=UTF8length(fn)-6;                   {flaretom file name format}
+    else
+      p:=UTF8length(fn)-8;                         {legacy Yuneec}
+  end;
+
+  if length(fn)>p then begin
+    result:=fn;
+    if mode=0 then
+      repeat
+        z:=Chr(random(8)+49)
+      until
+        fn[p]<>z                                   {Zahl zwischen 1 und 9}
+    else
+      z:=Chr(mode+48);
+    result[p]:=z;
+  end;
+end;
+
 function TForm1.CheckE7(const s: string): boolean; inline;
                                                    {prüft einen string auf Fehler}
 begin
@@ -2510,9 +2636,8 @@ begin
   end;
 end;
 
-(*
 {aus Yuneec Source code: LiPo Spannung in % Restkapazität}
-function VtoProz(const vt: integer; const u: double): integer; {vehicle_type, Spannung in %}
+function VtoProzY(const vt: integer; const u: double): integer; {vehicle_type, Spannung in %}
 const s61=23.9;                                    {Schwellwerte 6S}
       s62=21.7;
       s63=21.3;
@@ -2552,7 +2677,7 @@ begin
             (u<=s63) then
            result:=round( ((u-s64)* 5)/(s63-s64));
        end;
-    5, 7, YTHPid, ThBid: begin                     {YTH / YTH Plus / Thunderbird}
+    5, YTHPid, ThBid: begin                        {YTH / YTH Plus / Thunderbird}
          m:=4*lipomax;                             {4S}
          if  u>=m then
            result:=100;
@@ -2598,13 +2723,13 @@ begin
        result:=round( ((u-s33)* 5)/(s32-s33));
     end;
   end;
-end;   *)
+end;
 
 {The relationship of voltage and capacity from RC-Groups:
  https://blog.ampow.com/lipo-voltage-chart/
  https://www.rcgroups.com/forums/showpost.php?p=29431951}
 
-function VtoProz(const vt: integer; u: double): integer;
+function VtoProzRC(const vt: integer; u: double): integer;
 const
   CapTab: array [0..20] of double = (
     100,  95,   90,   85,   80,   75,   70,   65,   60,   55,   50,
@@ -2620,7 +2745,7 @@ begin
   result:=100;
   case vt of                                       {Check numbers of cells per vehicle type}
     1, 6: uz:=u/6;                                 {6S H920}
-    5, 7, YTHPid, ThBid: uz:=u/4;                  {4S Hexa}
+    5, YTHPid, ThBid, H5id: uz:=u/4;               {4S driven}
     H501ID: uz:=u/2;                               {2S Hubsan}
   else
     uz:=u/3;                                       {3S all other}
@@ -2638,12 +2763,21 @@ begin
     end;
 end;
 
-function RSSIpToColor(Const r: integer): TColor;  {RSSI in Prozent einfärben}
+function VtoProz(const vt: integer; u: double): integer;
+begin                                              {Choose rule to convert V to %}
+  result:=0;
+  case Form1.rgVrule.ItemIndex of
+    0: result:=VtoProzY(vt, u);
+    1: result:=VtoProzRC(vt, u);
+  end;
+end;
+
+function RSSIpToColor(Const r: integer): TColor;   {RSSI in Prozent einfärben}
 begin
   result:=Form1.StringGrid1.Color;
-  if r<30 then                                    {unter 30%}
+  if r<30 then                                     {unter 30%}
     result:=clAttention;
-  if r<15 then                                    {unter 15%}
+  if r<15 then                                     {unter 15%}
     result:=clRed;
 end;
 
@@ -2657,10 +2791,10 @@ const
 begin
   result:=Form1.StringGrid1.Color;
   case vt of                                       {Volts per cell}
-    1, 6:     w:=v/6;                              {H920 6S}
-    5, 7, YTHPid, ThBid:
-              w:=v/4;                              {H480/520 4S}
-    H501ID:   w:=v/2;                              {Hubsan 2S}
+    1, 6:   w:=v/6;                                {H920 6S}
+    5, YTHPid, ThBid, H5id:
+            w:=v/4;                                {H480/520 4S}
+    H501ID: w:=v/2;                                {Hubsan 2S}
   else
     w:=v/3;                                        {all other 3S}
   end;
@@ -2678,7 +2812,7 @@ function VPerCell (const vt: integer; const u: double): string;  {Voltage per ce
 begin
   case vt of
     1, 6:     result:=FormatFloat(ctfl, u/6)+rsPerCell; {H920 6S}
-    5, 7, YTHPid, ThBid:
+    5, YTHPid, ThBid, H5id:
               result:=FormatFloat(ctfl, u/4)+rsPerCell; {H480/520 4S}
     H501ID:   result:=FormatFloat(ctfl, u/2)+rsPerCell; {Hubsan 2S}
   else
@@ -2711,47 +2845,19 @@ begin
   end;
 end;
 
-function tabs(const prefix, suffix: string; const t: integer): string;  {Tabulator + suff}
-begin                  {formatiert einen string in Länge t zur Ausgabe}
-  result:=prefix;
-  while UTF8Length(result)<t do
-    result:=result+tab1;
-  result:=result+suffix;
+function ShowVoltageF(const w: double; vt: integer): string;
+begin
+  result:=rsRest+' ~'+IntToStr(VtoProz(vt, w))+    {Voltage in %}
+          '%'+kma+VperCell(vt, w);                 {V per cell}
 end;
 
-function FormSR(const s: string; const p: integer): string;  {füllt string mit führenden
-                                                       Leerzeichen auf Länge p}
+function ShowVoltage(const s: string; vt: integer): string;
+var v: double;
 begin
-  result:=s;
-  while UTF8length(result)<p do
-    result:=tab1+result;
+  v:=StrToFloat(s);
+  result:=ShowVoltageF(v, vt);
 end;
 
-function IntToStrFL(const w, p: integer): string; {Wandelt Zahlen in String mit
-                                         Länge p mit führenden Leerzeichen um}
-begin
-  try
-    result:=FormSR(IntToStr(w), p);
-  except
-    result:=FormSR('?', p);
-  end;
-end;
-
-function GetFNr(const s: string): string;          {filtert Float aus einem String}
-var x: integer;
-    s1: string;
-begin
-  result:='';
-  s1:=trim(s);
-  if length(s1)>0 then
-    for x:=1 to length(s1) do
-      if (s1[x] in ziff) or
-         (s1[x]='-') or
-         (s1[x]=DefaultFormatSettings.DecimalSeparator) then
-        result:=result+s1[x];
-  if result='' then
-    result:='0';
-end;
 
 function GetNr(const s: string): string; {filtert Ziffern aus einem String für Dateiname}
 begin
@@ -2767,7 +2873,7 @@ begin
        brID: result:=ChangeFileExt(s, '');         {Breeze, new firmware}
        H501ID: result:=Copy(s, 6, 19);             {flaretom file name format}
 
-       else result:=Form2.CleanNum(s);
+       else result:=CleanNum(s);
     end;
   end;
 end;
@@ -2784,31 +2890,6 @@ begin
   end;
 end;
 
-function RandomFN(const fn: string; const vt, mode: integer): string; {Dateinamen ermitteln}
-var p: integer;                                    {Position zum zufälligen Ändern}
-    z: char;
-begin
-  result:=IncludeTrailingPathDelimiter(ExtractFilePath(fn))+'cut'+us1+bext;
-  case vt of
-    brID:   p:=UTF8length(fn)-4;                   {Breeze}
-       4:   p:=UTF8length(fn)-7;                   {Chroma}
-    H501ID: p:=UTF8length(fn)-6;                   {flaretom file name format}
-    else
-      p:=UTF8length(fn)-8;                         {legacy Yuneec}
-  end;
-
-  if length(fn)>p then begin
-    result:=fn;
-    if mode=0 then
-      repeat
-        z:=Chr(random(8)+49)
-      until
-        fn[p]<>z                                   {Zahl zwischen 1 und 9}
-    else
-      z:=Chr(mode+48);
-    result[p]:=z;
-  end;
-end;
 
 function NichtLeer(const s: string): boolean; inline;
                  {Identifikation eines leeren Feldes oder Feld mit 0 Wert}
@@ -3074,10 +3155,7 @@ var e: integer;
             s:=s+Lunit;
           end;
        6, 7, 8: s:=DefaultHnt+'°';
-       9: s:=rsRest+' ~'+IntToStr(VtoProz(SpinEdit3.Tag,  {Voltage in %}
-                   StrToFloatN(StringGrid1.Cells[sp, zl])))+'%'+
-                   kma+VperCell(SpinEdit3.Tag,    {V per cell}
-                   StrToFloatN(StringGrid1.Cells[sp, zl]));
+       9: s:=ShowVoltage(StringGrid1.Cells[sp, zl], SpinEdit3.Tag);
        19:
           begin
             t:=H501velo(StrToFloatN(StringGrid1.Cells[sp, zl]));   {Velocity}
@@ -3155,10 +3233,7 @@ var e: integer;
     case sp of                                     {beginnt mit fixen Spalten}
        1: if (StringGrid1.Cells[sp, zl]='0')
             then s:='Dual Band Control Redundancy (5.8G WiFi)';
-       2: s:=rsRest+' ~'+IntToStr(VtoProz(SpinEdit3.Tag,  {Voltage in %}
-                   StrToFloatN(StringGrid1.Cells[sp, zl])))+'%'+
-                   kma+VperCell(SpinEdit3.Tag,    {V per cell}
-                   StrToFloatN(StringGrid1.Cells[sp, zl]));
+       2: s:=ShowVoltage(StringGrid1.Cells[sp, zl], SpinEdit3.Tag);
        3: if SpinEdit3.Tag=1 then begin            {H920: Current}
             try
               t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
@@ -3357,19 +3432,22 @@ var e: integer;
   end;
 
 begin                                              {grundlegende Verzweigungen}
-  result:=DefaultHnt;                              {default Hint}
-  s:='';                                           {default bei nix gefunden}
-  if StringGrid1.ColCount=csvanz then begin
-    TabHintPX4csv;
-  end else begin
-    if StringGrid1.ColCount>=YTHPcols then begin   {Sensor PX4 überschreibt alles}
-      TabHintYTHP;
+  result:='';
+  if StringGrid1.Cells[sp, zl]<>'' then begin
+    result:=DefaultHnt;                            {default Hint}
+    s:='';                                         {default bei nix gefunden}
+    if StringGrid1.ColCount=csvanz then begin
+      TabHintPX4csv;
     end else begin
-      TabHintLegacy;
+      if StringGrid1.ColCount>=YTHPcols then begin {Sensor PX4 überschreibt alles}
+        TabHintYTHP;
+      end else begin
+        TabHintLegacy;
+      end;
     end;
+    if s<>'' then                                  {wenn etwas gefunden wurde}
+      result:=s;                                   {default überschreiben}
   end;
-  if s<>'' then                                    {wenn etwas gefunden wurde}
-    result:=s;                                     {default überschreiben}
 end;
 
 function TForm1.vms(const d: TDateTime; const w: double): string; {Weg in m --> V in m/s oder km/h}
@@ -3412,17 +3490,19 @@ begin
   end;
 end;
 
-procedure TForm1.OverWriteVT;                      {Overwrite vehicle type for PX4 Thunderbird}
+procedure TForm1.OverwriteVT;                      {Overwrite vehicle type for PX4 Thunderbird}
 begin
-  if cbThunder.Checked then begin                  {Overwrite for PX4 Thunderbird}
+  if cbThunder.Checked and
+     (SpinEdit3.Tag=defVT) then begin              {Overwrite for PX4 Thunderbird}
     SpinEdit3.Tag:=ThBid;                          {Set to SpinEdit3.Tag}
+    StaticText1.Caption:=capThunder;               {Type hard wired}
   end;
 end;
 
 procedure TForm1.GetDefVT;                         {Fill defVT depending on settings}
 begin
   SpinEdit3.Tag:=defVT;                            {default legacy Yuneec}
-  OverWriteVT;                                     {Overwrite vehicle type for PX4 Thunderbird}
+  OverwriteVT;                                     {Overwrite vehicle type for PX4 Thunderbird}
 end;
 
 procedure TForm1.DoForm2Show(p: integer);          {Detailfenster anzeigen mit Breite p}
@@ -3450,7 +3530,7 @@ begin
 end;
 
 { http://wiki.openstreetmap.org/wiki/Browsing
- http://www.openstreetmap.org/?mlat=49.9676&mlon=9.9673#map=10/49.9676/9.9673&layers=Q}
+ https://www.openstreetmap.org/?mlat=49.9676&mlon=9.9673#map=10/49.9676/9.9673&layers=Q}
 
 function URLosm(lati, long: string): string; {URL für Koordinate in OpenStreetMap}
 begin
@@ -3460,6 +3540,11 @@ end;
 
 procedure TForm1.MenuItem9Click(Sender: TObject);  {zeige OSM Karte; lat/lon}
 begin
+  if StringGrid1.ColCount=csvanz then begin        {Self-dev PX4 CSV format}
+    OpenURL(URLosm(StringGrid1.Cells[5,StringGrid1.Selection.Top],
+                   StringGrid1.Cells[6,StringGrid1.Selection.Top]));
+    exit;
+  end;
   if ListBox1.Items.Count>0 then begin
     case SpinEdit3.Tag of
       brID: OpenURL(URLosm(BrCoordFormat(StringGrid1.Cells[12,StringGrid1.Selection.Top]),
@@ -3479,33 +3564,46 @@ begin
   end;
 end;
 
-{Entfernung zwischen zwei Koordinaten in m
- siehe Haversine formula, Erdradius: 6,371km abh. von Breitengrad
- https://rechneronline.de/erdradius/
- 6365.692 optimiert für 50 Breitengrad und 60m Höhe
-
- D:\Flight_Log_data\_Eigene\YTH\3\FlightLog2019-07-01\Telemetry_00002.csv
- seit Update auf Lazarus 2.0.4 unerwartete Fehlrechnung mit result NaN:
-                    lat1     lon1     lat2      lon2
-Test-3564 : 0.1 von 48.86739 9.366312 48.86739  9.366313
-Test-3565 : Nan von 48.86739 9.366313 48.86739  9.366313
-Test-3566 : 0.1 von 48.86739 9.366313 48.86739  9.366315
-Test-3567 : Nan von 48.86739 9.366315 48.86739  9.366315
-Test-3568 : 0.5 von 48.86739 9.366315 48.867386 9.366317
-}
-function DeltaKoord(lat1, lon1, lat2, lon2: double): double;
+procedure TForm1.mnCleanCSVClick(Sender: TObject); {5GHz daten aus Telemetrie entfernen}
+var i: integer;
+    inlist, outlist, splitlist: TStringList;
 begin
-  result:=0;
+  inlist:=TStringList.Create;
+  outlist:=TStringList.Create;
+  splitlist:=TStringList.Create;
+  splitlist.Delimiter:=sep;
+  splitlist.StrictDelimiter:=True;
+  Screen.Cursor:=crHourGlass;
   try
-    result:=6365692*arccos(sin(lat1*pi/180)*sin(lat2*pi/180)+
-            cos(lat1*pi/180)*cos(lat2*pi/180)*cos((lon1-lon2)*pi/180));
-    if IsNan(result) or                            {Fehler in Formel ?}
-       (result>30000) or   {> 30km --> unplausible Werte identifizieren}
-       (result<0.005) then                         {Fehler reduzieren, Glättung}
-      result:=0;
-  except
+    OpenDialog1.Title:=capCleanCSV;
+    OpenDialog1.InitialDir:=ComboBox2.Text;
+    if OpenDialog1.Execute then begin
+      inlist.LoadFromFile(OpenDialog1.FileName);   {Load telemetry file}
+      StatusBar1.Panels[0].Text:=IntToStr(inlist.Count-1);
+      if inlist.Count>10 then begin
+        inlist.SaveToFile(ChangeFileExt(OpenDialog1.FileName, '.bak'));
+        outlist.Clear;
+        outlist.Add(inlist[0]);                    {Header}
+        for i:=1 to inlist.Count-1 do begin
+          splitlist.DelimitedText:=inlist[i];
+          if splitlist[1]<>'0' then                {fsk_rssi<>0 idicated data from 2.4GHz}
+            outlist.Add(inlist[i]);
+        end;
+        if outlist.Count>1 then begin              {Save results}
+          outlist.SaveToFile(OpenDialog1.FileName);
+          StatusBar1.Panels[1].Text:=IntToStr(outlist.Count-1);
+          StatusBar1.Panels[5].Text:=capCleanCSV+suff+OpenDialog1.FileName;
+        end;
+      end;
+    end;
+  finally
+    inlist.Free;
+    outlist.Free;
+    splitlist.Free;
+    Screen.Cursor:=crDefault;
   end;
 end;
+
 
 function HTMLEnc(const s: string): string;         {Sonderzeichen escapen}
 begin
@@ -3979,7 +4077,7 @@ var dsbuf: array[0..YTHPcols] of byte;
 {https://www.delphipraxis.net/122021-single-byte-array-konvertieren-und-umgekehrt.html
  http://forum.lazarus-ide.org/index.php?topic=42182.0
  Direkter Typecast mit dem Zieldatentyp oder die Deklaration mittels absolute}
-  function GetFloatFromBuf(const p: integer): Single; {Position, Länge immer 4}
+  function GetFloatFromBuf(const p: integer): double; {Position, Länge immer 4}
   var i: integer;
       wfl: array[0..3] of Byte;
       wx: Single absolute wfl;
@@ -4035,6 +4133,47 @@ var dsbuf: array[0..YTHPcols] of byte;
     csvarr[posChan]:=ch;
   end;
 
+  procedure AusgTrack;                           {KML oder GPX aus GPS data}
+  begin
+    if gx then begin                             {Ausgabe GPX oder KML}
+      if RadioGroup2.ItemIndex=2 then begin      {GPX}
+        skoor:=GPXlat+FloatToStr(lat2)+
+               GPXlon+FloatToStr(lon2)+'"> ';
+        if s='' then begin                       {Startpunkt erkannt}
+          maplist.Add('<wpt '+skoor);            {Startpunkt}
+          maplist.Add(tab2+'<time>'+tstr+'</time>');
+          maplist.Add(write_nme('Start'));
+          maplist.Add(GPXet1);
+          maplist.Add('<trk>');
+          maplist.Add(write_nme(ExtractFileName(fn)));
+          maplist.Add(tab2+'<trkseg>');
+        end;
+        s:=tab4+'<trkpt '+skoor+GPXele+csvarr[4]+
+                '</ele> <time>'+tstr+'</time></trkpt>';
+        maplist.Add(s);
+
+      end else begin                             {KML/KMZ}
+        skoor:=FloatToStr(lon2)+tab1+FloatToStr(lat2);
+        if s='' then begin                       {Startpunkt erkannt}
+          placemark(maplist, '#starting', '',
+                    StringReplace(skoor, tab1, sep, [rfReplaceAll]), tstr);
+          maplist.Add('<'+pmtag);
+          maplist.Add(write_nme(ComboBox1.Text));
+          maplist.Add(tab2+'<description>'+ExtractFileName(fn)+'</description>');
+          maplist.Add(tab2+'<styleUrl>#Flightpath</styleUrl>');
+          maplist.Add(tab2+'<gx:Track>');
+          maplist.Add(tab2+'<'+amtag+RadioGroup5.Items[RadioGroup5.ItemIndex]+
+                           '</'+amtag);
+          if CheckBox11.Checked then maplist.Add(tab2+extru);
+        end;
+        s:=tab4+'<gx:coord>'+skoor+tab1+csvarr[4]+'</gx:coord>';
+        outlist.Add(s);
+        maplist.Add(tab4+'<'+KMLwhen+tstr+'</'+KMLwhen);
+      end;
+    end;
+
+  end;
+
 {https://github.com/mavlink/c_library_v2/blob/master/common/mavlink_msg_gps_raw_int.h
  https://mavlink.io/en/messages/common.html#GPS_RAW_INT}
 
@@ -4042,7 +4181,7 @@ var dsbuf: array[0..YTHPcols] of byte;
   var tme: uint64;                                 {unsignet Integer}
       lat, lon, ele: integer;                      {int32}
       eph, epv, vel, cog, hacc: uint64;
-      distp, dists: double;                        {Entfernung zum "Start"}
+      distp, dists, alta: double;                  {Entfernung zum "Start"}
 
   begin
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
@@ -4059,7 +4198,7 @@ var dsbuf: array[0..YTHPcols] of byte;
        (ele<maxxh*1000) then begin                 {nur sinnvolle Höhe}
       lat2:=lat/10000000;                          {nur einmal rechnen}
       lon2:=lon/10000000;                          {und überall verfügbar}
-      csvarr[4]:=FormatFloat(ctfl, ele/1000);      {altitude}
+      csvarr[51]:=FormatFloat(ctfl, ele/1000);     {Altitude MSL}
       csvarr[5]:=FloatToStr(lat2);                 {Koordinaten}
       csvarr[6]:=FloatToStr(lon2);
 {GPS HDOP horizontal dilution of position (unitless)}
@@ -4098,53 +4237,20 @@ var dsbuf: array[0..YTHPcols] of byte;
       distg:=distg+dists;                          {Länge Route ermitteln}
       lat3:=lat2;                                  {Koordinaten merken}
       lon3:=lon2;
+      alta:=(ele-ele0)/1000;
+      csvarr[4]:=FormatFloat(ctfl, alta);          {altitude relative}
 
-      if gx then begin                             {Ausgabe GPX oder KML}
-        if RadioGroup2.ItemIndex=2 then begin      {GPX}
-          skoor:=GPXlat+FloatToStr(lat2)+
-                 GPXlon+FloatToStr(lon2)+'"> ';
-          if s='' then begin                       {Startpunkt erkannt}
-            maplist.Add('<wpt '+skoor);            {Startpunkt}
-            maplist.Add(tab2+'<time>'+tstr+'</time>');
-            maplist.Add(write_nme('Start'));
-            maplist.Add(GPXet1);
-            maplist.Add('<trk>');
-            maplist.Add(write_nme(ExtractFileName(fn)));
-            maplist.Add(tab2+'<trkseg>');
-          end;
-          s:=tab4+'<trkpt '+skoor+GPXele+csvarr[4]+
-                  '</ele> <time>'+tstr+'</time></trkpt>';
-          maplist.Add(s);
+      AusgTrack;
 
-        end else begin                             {KML/KMZ}
-          skoor:=FloatToStr(lon2)+tab1+FloatToStr(lat2);
-          if s='' then begin                       {Startpunkt erkannt}
-            placemark(maplist, '#starting', '',
-                      StringReplace(skoor, tab1, sep, [rfReplaceAll]), tstr);
-            maplist.Add('<'+pmtag);
-            maplist.Add(write_nme(ComboBox1.Text));
-            maplist.Add(tab2+'<description>'+ExtractFileName(fn)+'</description>');
-            maplist.Add(tab2+'<styleUrl>#Flightpath</styleUrl>');
-            maplist.Add(tab2+'<gx:Track>');
-            maplist.Add(tab2+'<'+amtag+RadioGroup5.Items[RadioGroup5.ItemIndex]+
-                             '</'+amtag);
-            if CheckBox11.Checked then maplist.Add(tab2+extru);
-          end;
-          s:=tab4+'<gx:coord>'+skoor+tab1+csvarr[4]+'</gx:coord>';
-          outlist.Add(s);
-          maplist.Add(tab4+'<'+KMLwhen+tstr+'</'+KMLwhen);
-        end;
-      end;
-
-      if tb then begin                               {Höhendiagramm füllen}
+      if tb then begin                             {Höhendiagramm füllen}
         case msl of
-          2: Chart1BarSeries1.AddXY(bg, (ele-ele0)/1000);   {fuchsia like Angle}
-          3: Chart1BarSeries7.AddXY(bg, (ele-ele0)/1000);   {blue}
-          4: Chart1BarSeries3.AddXY(bg, (ele-ele0)/1000);   {red}
+          2: Chart1BarSeries1.AddXY(bg, alta);     {fuchsia like Angle}
+          3: Chart1BarSeries7.AddXY(bg, alta);     {blue}
+          4: Chart1BarSeries3.AddXY(bg, alta);     {red}
         else
-          Chart1BarSeries2.AddXY(bg, (ele-ele0)/1000); {relative Höhe zum ersten Wert}
+          Chart1BarSeries2.AddXY(bg, alta);        {relative Höhe zum ersten Wert}
         end;
-        Chart1LineSeries2.AddXY(bg, (ele-ele0)/1000); {Hüllkurve}
+        Chart1LineSeries2.AddXY(bg, alta/1000);    {Hüllkurve}
         Chart1LineSeries1.AddXY(bg, distp);
         SenCSVAusgabe;
       end;
@@ -4153,6 +4259,7 @@ var dsbuf: array[0..YTHPcols] of byte;
 
 {dsbuf[0]: vtol_state, dsbuf[1]: landed_state
            vtol_state immer 0}
+
   procedure ExtAusgabe;                            {Extended_SYS_State 245 ($F5)}
   begin
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
@@ -4166,6 +4273,31 @@ var dsbuf: array[0..YTHPcols] of byte;
                            csvarr[20]);
       msl:=dsbuf[lenfix+1];                        {letzten Wert merken}
     end;
+    SenCSVAusgabe;
+  end;
+
+{Battery status for 10 cells}
+  procedure Batt_Status;                           {BATTERY_STATUS 147 ($93)}
+  var i, ival, volts: integer;
+  begin
+    StandardAusgabe;                               {hexwerte in StringGrid darstellen}
+    ival:=GetIntFromBuf(30, 2);                    {Current in cA}
+    csvarr[3]:=FormatFloat(dzfl, ival/100);        {Current [A]}
+    volts:=0;
+    for i:=0 to 9 do begin                         {Voltage for 10 cells}
+      ival:=GetIntFromBuf(i*2+10, 2);
+      if ival<60000 then
+        volts:=volts+ival;                         {Zellen aufsummieren}
+    end;
+    csvarr[2]:=FormatFloat(ctfl, volts/1000);      {Battery voltage}
+    ival:=GetIntFromBuf(35, 1);
+    if ival>=0 then
+      csvarr[46]:=IntToStr(ival);                  {remaining capacity [%]}
+    if not cbReduced.Checked then
+      Synedit1.Lines.Add(Format('%6d', [zhl])+tab2+
+                         FormatDateTime(zzf, bg)+tab2+csvVolt+
+                         suff+csvarr[2]+'V'+
+                         tab4+csvAmp+suff+csvarr[3]+'A');
     SenCSVAusgabe;
   end;
 
@@ -4209,7 +4341,7 @@ var dsbuf: array[0..YTHPcols] of byte;
 
   procedure HighresIMU;                            {Msg HIGHRES_IMU (105)}
   var tme: uint64;
-      wrt: float;
+      wrt: double;
       it: string;                                  {aktuelle IMU temp}
       i: integer;
   begin
@@ -4237,7 +4369,7 @@ var dsbuf: array[0..YTHPcols] of byte;
 
   procedure LocalPosNed;                           {Msg LOCAL_POSTION_NED (32)}
   var tme: uint32;
-      vx, vy, vz: float;
+      vx, vy, vz: double;
       i: integer;
   begin
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
@@ -4260,9 +4392,109 @@ var dsbuf: array[0..YTHPcols] of byte;
     end;
   end;
 
+  procedure GlobalPosInt;                          {Msg Global_POSTION_INT (33)}
+  var tme, hdg: uint32;
+      vx, vy, vz: double;
+      distp, dists: double;                        {Entfernung zum "Start"}
+      lat, lon, altr, ele: integer;                {int32}
+
+  begin
+    StandardAusgabe;                               {hexwerte in StringGrid darstellen}
+    if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
+      tme:=GetIntFromBuf(0, 4);                    {in ms}
+      bg:=tme/(Secpd*1000);                        {Zeitstempel überall verfügbar}
+      tstr:=FormatDateTime(dzf, ftm)+'T'+
+            FormatDateTime(zzf, bg)+'Z';           {Zeitstring überall verfügbar}
+
+      lat:=GetIntFromBuf(4, 4);
+      lon:=GetIntFromBuf(8, 4);                    {degrees E7  (/10000000)}
+      ele:=GetIntFromBuf(12, 4);                   {altitude MSL [mm]}
+      altr:=GetIntFromBuf(16, 4);                  {relative alt [mm]}
+      csvarr[51]:=FormatFloat(ctfl, ele/1000);     {altitude MSL}
+
+      if ((lat>0) or (lon>0)) and                  {nur bei gültigen Koordinaten}
+         (altr<maxxh*1000) then begin              {nur sinnvolle Höhe}
+        lat2:=lat/10000000;                        {nur einmal rechnen}
+        lon2:=lon/10000000;                        {und überall verfügbar}
+        csvarr[4]:=FormatFloat(ctfl, altr/1000);   {altitude relative}
+        csvarr[5]:=FloatToStr(lat2);               {Koordinaten}
+        csvarr[6]:=FloatToStr(lon2);
+
+        if not isGPS then begin                    {erster gültiger GPS Datensatz}
+          lat1:=lat2;                              {"Start"-Koordinaten}
+          lon1:=lon2;
+          lat3:=lat2;                              {init vorherige Koordinaten}
+          lon3:=lon2;
+          ele0:=ele;                               {Altitude first MSL}
+        end;
+        isGPS:=true;                               {1. Datensatz erledigt}
+        if ele>elemax then elemax:=ele;            {Gipfelhöhe MSL}
+
+        distp:=DeltaKoord(lat1, lon1, lat2, lon2); {Entfernung zum 1. Punkt}
+        dists:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum vorherigen Punkt}
+        if distp>distmax then                      {maximale Entfernung ermitteln}
+          distmax:=distp;
+        distg:=distg+dists;                        {Länge Route ermitteln}
+        lat3:=lat2;                                {Koordinaten merken}
+        lon3:=lon2;
+
+        AusgTrack;
+
+        if tb then begin                           {Höhendiagramm füllen}
+          case msl of
+            2: Chart1BarSeries1.AddXY(bg, (altr)/1000);   {fuchsia like Angle}
+            3: Chart1BarSeries7.AddXY(bg, (altr)/1000);   {blue}
+            4: Chart1BarSeries3.AddXY(bg, (altr)/1000);   {red}
+          else
+            Chart1BarSeries2.AddXY(bg, (altr)/1000); {relative Höhe zum ersten Wert}
+          end;
+          Chart1LineSeries2.AddXY(bg, (altr)/1000);  {Hüllkurve}
+          Chart1LineSeries1.AddXY(bg, distp);
+        end;
+
+      end;
+
+      vx:=GetIntFromBuf(20, 2)/100;                {[cm/s] X Speed}
+      vy:=GetIntFromBuf(22, 2)/100;                {[cm/s] Y Speed}
+      vz:=GetIntFromBuf(24, 2)/100;                {[cm/s] Z Speed}
+      if vx<100 then
+        csvarr[41]:=FormatFloat(ctfl, vx)
+      else
+        vx:=0;
+      if vy<100 then
+        csvarr[42]:=FormatFloat(ctfl, vy)
+      else
+        vy:=0;
+      if vz<100 then
+        csvarr[43]:=FormatFloat(ctfl, vz)
+      else
+        vz:=0;
+      csvarr[7]:=FormatFloat(ctfl,                 {Orginal Spalte tas}
+        sqrt((vx*vx)+(vy*vy)+(vz*vz)));            {tas in m/s berechnet}
+      hdg:=GetIntFromBuf(26, 2);
+      if hdg<36000 then
+        csvarr[50]:=FormatFloat(ctfl, hdg/100);    {Heading [cdeg] 0..359.99}
+
+      SenCSVAusgabe;                               {CSV Datensatz schreiben}
+    end;
+  end;
+
+(*  Format pass nicht zur Beschreibung; Länge immer 11 Byte
+00	50	23	E8	07
+11      88	71	01	00	00      {6 byte immer gleich}
+
+
+  procedure GPS_Status;                            {GPS_STATUS (25 = 19'h}
+  begin
+    StandardAusgabe;                               {hexwerte in StringGrid darstellen}
+    csvarr[10]:=IntToStr(GetIntFromBuf(3, 1));     {Number sats}
+  end;    *)
+
   procedure vfr_hud;                               {Msg VFR_HUD (74)}
-  var wrt: float;
+  var wrt: double;
       thr: uint;
+      hdg: integer;
+
   begin
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
@@ -4270,23 +4502,23 @@ var dsbuf: array[0..YTHPcols] of byte;
       wrt:=GetFloatFromBuf(0);                     {[m/s] Current indicated airspeed (IAS)}
       csvarr[7]:=FormatFloat(ctfl, wrt);
       wrt:=GetFloatFromBuf(4);                     {[m/s] Current ground speed}
-      csvarr[25]:=FormatFloat(ctfl, wrt);
+      csvarr[25]:=FormatFloat(ctfl, wrt);                         *)
       wrt:=GetFloatFromBuf(8);                     {[m] Current altitude (MSL)}
-      csvarr[4]:=FormatFloat(ctfl, wrt);                                        *)
+      csvarr[51]:=FormatFloat(ctfl, wrt);
 
       wrt:=GetFloatFromBuf(12);                    {[m/s] Current climb rate}
       csvarr[48]:=FormatFloat(ctfl, wrt);
-   (* Werte passen nicht zu Maßeinheiten.
+   { Werte passen nicht zu Maßeinheiten.   }
       hdg:=GetIntFromBuf(16, 2);                   {[deg] Current heading in
                                                     compass units (0-360, 0=north)}
-      csvarr[50]:=IntToStr(hdg);          *)
+      csvarr[50]:=IntToStr(hdg);                   {Heading}
       thr:=0;                                      {default: 0%}
       case len of                                  {pos depending on lenght ??}
         17: thr:=GetIntFromBuf(18, 2);             {[%] Current throttle setting (0 to 100))}
         18: thr:=GetIntFromBuf(19, 2);
         19: thr:=GetIntFromBuf(20, 2);
       end;
-      csvarr[49]:=FormatFloat(ctfl, thr*100/255);
+      csvarr[49]:=FormatFloat(ctfl, thr*100/255);  {Throttle}
 //      csvarr[49]:=IntToStr(thr);
       SenCSVAusgabe;                               {CSV Datensatz schreiben}
     end;
@@ -4294,7 +4526,7 @@ var dsbuf: array[0..YTHPcols] of byte;
 
   procedure Attitude;                              {Msg ATTITUDE (30)}
   var tme: uint32;
-      wrt: float;
+      wrt: double;
   begin
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
@@ -4322,7 +4554,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     load:=GetIntFromBuf(12, 2)/10;
     csvarr[47]:=FormatFloat(dzfl, load);           {SW-load in %}
     csvarr[2]:=FormatFloat(dzfl, volt);            {Voltage in V}
-    csvarr[3]:=FormatFloat(ctfl, curr);            {Current in A}
+    csvarr[3]:=FormatFloat(ctfl, curr);          {Current in A}
     csvarr[46]:=IntToStr(dsbuf[lenfix+30]);        {Battery remaining %}
     if not cbReduced.Checked then
       Synedit1.Lines.Add(Format('%6d', [zhl])+tab2+
@@ -4425,12 +4657,15 @@ var dsbuf: array[0..YTHPcols] of byte;
         22:  if MAVmsg.Checked[2] then ParamValue; {PARAM_VALUE ($16)}
         24:  if MAVmsg.Checked[3] or
                 gx then GPSAusgabe;                {GPS_RAW_INT ($18)}
+//      25:  GPS_Status;                           {GPS_STATUS ($19) only # sats added}
         30:  if MAVmsg.Checked[4] then Attitude;   {ATTITUDE ($1E)}
-        32:  if MAVmsg.Checked[5] then LocalPosNed;    {LOCAL_POSITION_NED ($1E)}
-        65:  if MAVmsg.Checked[6] then RCchannels; {RC_CHANNELS ($41)}
-        74:  if MAVmsg.Checked[7] then vfr_hud;    {VFR_HUD ($4A)}
-        105: if MAVmsg.Checked[8] then HighresIMU; {HIGHRES_IMU ($69)}
-        245: if MAVmsg.Checked[9] then ExtAusgabe; {Extended_SYS_State ($F5)}
+        32:  if MAVmsg.Checked[5] then LocalPosNed;    {LOCAL_POSITION_NED ($20)}
+        33:  if MAVmsg.Checked[6] then GlobalPosInt;   {GLOBAL_POSITION_INT ($21)}
+        65:  if MAVmsg.Checked[7] then RCchannels; {RC_CHANNELS ($41)}
+        74:  if MAVmsg.Checked[8] then vfr_hud;    {VFR_HUD ($4A)}
+        105: if MAVmsg.Checked[9] then HighresIMU; {HIGHRES_IMU ($69)}
+        147: if MAVmsg.Checked[10] then Batt_Status;   {BATTERY_STATUS ($93)}
+        245: if MAVmsg.Checked[11] then ExtAusgabe;    {Extended_SYS_State ($F5)}
         253: TextAusgabe;                          {Statustext ($FD)}
       else                                         {Standard Ausgabe}
         StandardAusgabe;                           {Hexwerte für alle anderen Msg}
@@ -4473,8 +4708,8 @@ begin
     csvarr[i]:='';
   if FileSize(fn)>lenfixP then begin
     Screen.Cursor:=crHourGlass;
+    HDiaInit;                                      {Höhendiagramm initalisieren}
     if tb then begin
-      HDiaInit;                                    {Höhendiagramm initalisieren}
       KursorAus;
       SetSensorEnv;
       Chart1ConstantLine2.Position:=0;
@@ -4613,6 +4848,9 @@ begin
           SynEdit1.Lines.add(Format('%-10s', [capLabel14+suff])+
                              URLGmap(FloatToStr(lat2),
                                      FloatToStr(lon2)));
+(*          SynEdit1.Lines.add(Format('%-10s', [capLabel14+suff])+
+                             URLosm(FloatToStr(lat2),
+                                    FloatToStr(lon2))); *)
           s:=Format('%-25s', [rsGPSh+rsAbsh+suff])+
              Format('%7.1f', [ele0/1000])+'m';
           Chart1.Title.Text.Add(s);                {absolute Höhe für Null}
@@ -4649,7 +4887,7 @@ begin
               'xPosition'+sep+'yPosition'+sep+'zPosition'+sep+
               'xSpeed'+sep+'ySpeed'+sep+'zSpeed'+sep+
               csvCOG+sep+csvIMUtemp+sep+csvCap+sep+
-              csvSWload+sep+'Climb rate'+sep+'Throttle'+sep+'50'+sep+'51'+sep+
+              csvSWload+sep+'Climb rate'+sep+'Throttle'+sep+csvHeading+sep+csvAltMSL+sep+
               '52'+sep+'53'+sep+'54'+sep+'55'+sep+'56'+sep+
               'Onboard paramater name'+sep+'Parameter value'+sep+
               csvMsgID+sep+'CH used';
@@ -4787,12 +5025,12 @@ procedure TForm1.BitBtn13Click(Sender: TObject);   {Take screenshot}
 begin
   SaveDialog1.Title:=rsScreenshot;
   if PageControl1.ActivePageIndex>=0 then begin
-    SaveDialog1.FileName:=Form2.CleanDN(rsScreenshot+PageControl1.ActivePage.Caption+pngdef);
+    SaveDialog1.FileName:=CleanDN(rsScreenshot+PageControl1.ActivePage.Caption+pngdef);
     if (PageControl1.ActivePageIndex=6) and        {Settings}
        (PageControl2.ActivePageIndex>=0) then
-      SaveDialog1.FileName:=Form2.CleanDN(rsScreenshot+PageControl2.ActivePage.Caption+pngdef);
+      SaveDialog1.FileName:=CleanDN(rsScreenshot+PageControl2.ActivePage.Caption+pngdef);
   end else
-    SaveDialog1.FileName:=Form2.CleanDN(rsScreenshot+capForm1+pngdef);
+    SaveDialog1.FileName:=CleanDN(rsScreenshot+capForm1+pngdef);
   if SaveDialog1.Execute then
     ScreenToBild(SaveDialog1.FileName);
 end;
@@ -5069,7 +5307,7 @@ begin
   end;
 end;
 
-procedure TForm1.cbThunderChange(Sender: TObject);
+procedure TForm1.cbThunderChange(Sender: TObject); {Thunderbird Toggeln}
 begin
   if cbThunder.Checked then begin
     cbThunder.Tag:=RadioGroup5.ItemIndex;          {save last setting}
@@ -5441,14 +5679,14 @@ function TForm1.CheckVT(vt, fm: string): boolean;  {Vehicle Type prüfen für YT
 var fmode: integer;
 begin
   result:=true;                                    {default: Alles geht durch}
-  fmode:=StrToIntDef(fm, 0);
-  if (CheckBox9.Checked) and                       {nur wenn erlaubt}
-     (SpinEdit3.Tag=YTHPid) then                   {nur bei YTH Plus}
-    if (StrToIntDef(trim(vt), defVT)<>defVT) or    {alle unsinnigen Vehicle Types}
-       (vt='') or                                  {Zeilen mit $00}
-       (fmode=0) or                                {unsinnige FlightModes}
+  if (SpinEdit3.Tag=YTHPid) and                    {only for Typhoon H Plus}
+     (CheckBox9.Checked) then begin                {only if cleaning is allowed}
+    fmode:=StrToIntDef(fm, 0);
+    if (StrToIntDef(trim(vt), 0)<>defVT) or        {useless Vehicle Types}
+       (fmode=0) or                                {useless FlightModes}
        (fmode>19) then                             {fMode 20 ist wahrscheinlich ein Fehler}
-      result:=false;                               {fehlerhafte Flight Modes}
+      result:=false;                               {suppress data set}
+  end;
 end;
 
 procedure TForm1.ProtoWerte(fn: string;            {Dateiname}
@@ -5510,8 +5748,8 @@ begin
         vld:=fModeFinden(splitlist);        {setzt StringGrid1.Tag mit Spaltenindex}
         if SpinEdit3.Tag<>YTHPid then begin
           splitlist.DelimitedText:=inlist[2];      {2. Datenzeile, v_type ermitteln}
-          SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
-          OverWriteVT;                             {Overwrite for PX4 Thunderbird}
+          SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
+          OverwriteVT;                             {Overwrite for PX4 Thunderbird}
         end;
         for x:=1 to inlist.Count-1 do
         if CheckE7(inlist[x]) then begin           {Plausicheck für YTH Plus}
@@ -6079,6 +6317,7 @@ var vlist, flist, inlist, splitlist: TStringList;
       vt:=StrToInt(splitlist[StringGrid1.Tag+2]);  {eventuell Abbruch bei Fehler}
       if SpinEdit3.Tag<>YTHPid then                {erkannten H Plus nicht überschreiben}
         SpinEdit3.Tag:=vt;
+      OverwriteVT;
   {zusätzlicher Filter nach Vehicle Type. Vehicle type 5 ist H oder H Plus}
       result:=CheckBox1.Checked and
               (vt<>RadioGroup10.ItemIndex+1);
@@ -6640,7 +6879,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         Screen.Cursor:=crDefault;
         SaveDialog1.Title:=rsProtSave;
         SaveDialog1.InitialDir:=ComboBox8.Text;
-        SaveDialog1.FileName:=Form2.CleanDN(capNachweis+prtext);
+        SaveDialog1.FileName:=CleanDN(capNachweis+prtext);
         if SaveDialog1.Execute then begin
           ProgressBar1.Position:=0;
           outlist.SaveToFile(SaveDialog1.FileName);
@@ -6851,7 +7090,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         Screen.Cursor:=crDefault;
         SaveDialog1.Title:=rsProtSave;
         SaveDialog1.InitialDir:=ComboBox8.Text;
-        SaveDialog1.FileName:=Form2.CleanDN(capNachweis+'YBr'+prtext);
+        SaveDialog1.FileName:=CleanDN(capNachweis+'YBr'+prtext);
         if SaveDialog1.Execute then begin
           ProgressBar1.Position:=0;
           outlist.SaveToFile(SaveDialog1.FileName);
@@ -7058,7 +7297,7 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
         Screen.Cursor:=crDefault;
         SaveDialog1.Title:=rsProtSave;
         SaveDialog1.InitialDir:=ComboBox8.Text;
-        SaveDialog1.FileName:=Form2.CleanDN(capNachweis+'H501'+prtext);
+        SaveDialog1.FileName:=CleanDN(capNachweis+'H501'+prtext);
         if SaveDialog1.Execute then begin
           ProgressBar1.Position:=0;
           outlist.SaveToFile(SaveDialog1.FileName);
@@ -7630,6 +7869,11 @@ begin
   OpenURL(LazURL);
 end;
 
+procedure TForm1.lblMAVcommonClick(Sender: TObject); {Open MAVlink info (common)}
+begin
+  OpenURL(MAVurl);
+end;
+
 procedure TForm1.Label7Click(Sender: TObject);     {Hilfe aufrufen}
 begin
   if OpenManual then
@@ -7716,6 +7960,17 @@ procedure TForm1.LabeledEdit3DragOver(Sender, Source: TObject; X, Y: Integer;
   State: TDragState; var Accept: Boolean);         {Drop aus TreeView1}
 begin
   Accept:=True;
+end;
+
+procedure TForm1.lblMAVcommonMouseEnter(Sender: TObject); {Link animation}
+begin
+  lblMAVcommon.Font.Style:=Label7.Font.Style+[fsBold];
+  lblMAVcommon.Cursor:=crHandPoint;
+end;
+
+procedure TForm1.lblMAVcommonMouseLeave(Sender: TObject);
+begin
+  lblMAVcommon.Font.Style:=Label7.Font.Style-[fsBold];
 end;
 
 Procedure TForm1.LoadTree;                         {TreeView für Spalten}
@@ -8125,7 +8380,7 @@ begin
     StatusBar1.Panels[3].Text:=Label13.Caption;
     StatusBar1.Panels[4].Text:=Label14.Caption;
   end;
-  MenuItem35.Enabled:=BitBtn14.Enabled;
+  mnCut.Enabled:=BitBtn14.Enabled;
   MenuItem54.Enabled:=BitBtn14.Enabled;
   StatusBar1.Tag:=0;                               {nicht kopieren}
 end;
@@ -8401,8 +8656,8 @@ const bgid=999999;
          vld:=fModeFinden(splitlist);             {Position f-mode merken}
          if SpinEdit3.Tag<>YTHPid then begin      {YTH Plus nicht überschreiben}
            splitlist.DelimitedText:=inlist[2];    {2. Datenzeile, v_type ermitteln}
-           SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
-           OverWriteVT;                           {Overwrite for PX4 Thunderbird}
+           SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
+           OverwriteVT;                           {Overwrite for PX4 Thunderbird}
          end;
          for x:=1 to inlist.Count-1 do begin
            if CheckE7(inlist[x]) then begin
@@ -8524,8 +8779,7 @@ begin
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=sep;
   splitlist.StrictDelimiter:=True;
-  if cbThunder.Checked then
-    StaticText1.Caption:=capThunder;               {Type hard wired}
+  OverwriteVT;
   hmax:=0;
   umax:=0;
   umin:=999;
@@ -8935,7 +9189,7 @@ begin
           fModeFinden(splitlist);                  {Position f-mode merken}
           if SpinEdit3.Tag<>YTHPid then begin
             splitlist.DelimitedText:=inlist[2];    {Vehicle Type merken}
-            SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2],2);
+            SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
             OverWriteVT;                           {Overwrite for PX4 Thunderbird}
           end else
             if CheckBox9.Checked then
@@ -9674,7 +9928,7 @@ var x: integer;
   procedure HDiaYLegacy;
   begin
     Chart1LineSeries2.AddXY(bg, h);                {Hüllkurve}
-    case StrToIntDef(splitlist[StringGrid1.Tag], 3) of        {f_mode}
+    case StrToIntDef(splitlist[StringGrid1.Tag], 3) of        {f_mode; default: Angle}
       3, 4: Chart1BarSeries1.AddXY(bg, h);                    {Angle}
       2, 5, 7, 22, 24, 31, 32: Chart1BarSeries5.AddXY(bg, h); {ohne GPS}
       6, 21, 23, 26..29, 33:   Chart1BarSeries2.AddXY(bg, h); {Smart}
@@ -9697,10 +9951,14 @@ var x: integer;
     else
       h:=alt1;                                     {If 0 the keep previous value}
     Chart1LineSeries2.AddXY(bg, h-baseh);          {Hüllkurve}
-    Chart1BarSeries1.AddXY(bg, h-baseh);           {Angle}
-(*    case StrToIntDef(splitlist[StringGrid1.Tag], 5) of
-      5, 16: Chart1BarSeries1.AddXY(bg, h-baseh);  {Angle}
-    end;     *)
+    case StrToIntDef(splitlist[StringGrid1.Tag], 3) of
+      0:  Chart1BarSeries7.AddXY(bg, h-baseh);     {Stabilized mode, blue}
+      1:  Chart1BarSeries5.AddXY(bg, h-baseh);     {Altitude mode, orange}
+      3:  Chart1BarSeries1.AddXY(bg, h-baseh);     {Position mode, purple}
+      13, 14: Chart1BarSeries4.AddXY(bg, h-baseh); {Failsave, RTH mode, maroon}
+      20: Chart1BarSeries3.AddXY(bg, h-baseh);     {Rattitude/Rate mode, red}
+      33: Chart1BarSeries2.AddXY(bg, h-baseh);     {Mission mode, green}
+    end;
   end;
 
 begin
@@ -9737,6 +9995,8 @@ begin
         Chart1BarSeries1.BarPen.Width:=2           {Bar smoothing}
       else
         Chart1BarSeries1.BarPen.Width:=4;          {dyn. anpassen}
+      if SpinEdit3.Tag=ThBid then                  {for Thunderbird}
+        Chart1BarSeries1.BarPen.Width:=Chart1BarSeries1.BarPen.Width+2;
       Chart1BarSeries2.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       Chart1BarSeries3.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       Chart1BarSeries4.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
@@ -9746,9 +10006,9 @@ begin
       SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
       StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
       SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
-      if cbThunder.Checked then begin              {check data for Thunderbird}
-        baseh:=GethFromST10(ListBox1.ItemIndex,
-                            ZeitToDT(splitlist[0], ThBid));
+
+      if SpinEdit3.Tag=ThBid then begin            {check data for Thunderbird}
+        baseh:=GethFromST10(ListBox1.ItemIndex, 0);{From begin of the Remote CSV file}
         SynEdit1.Lines.Add(rsGCSalt+suff+
                            FormatFloat(ctfl, baseh)+'m');
         for x:=1 to inlist.count-1 do begin        {erstmal Daten checken}
@@ -9765,12 +10025,13 @@ begin
             end;
           except
             StatusBar1.Panels[5].Text:=rsInvalid;
-            SynEdit1.Lines.Add('''9774'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+            SynEdit1.Lines.Add('''10013'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                                suff+StatusBar1.Panels[5].Text);
           end;
         end;
         alt1:=baseh;                                {set default GCS altitude}
-      end else begin
+
+      end else begin                                {all other legacy Yuneec}
         for x:=1 to inlist.count-1 do begin         {erstmal Daten checken}
           try
             splitlist.DelimitedText:=inlist[x];
@@ -9791,7 +10052,7 @@ begin
             end;
           except
             StatusBar1.Panels[5].Text:=rsInvalid;
-            SynEdit1.Lines.Add('''9798'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+            SynEdit1.Lines.Add('''10040'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                                suff+StatusBar1.Panels[5].Text);
           end;
         end;
@@ -9809,8 +10070,8 @@ begin
         Chart1LineSeries1.SeriesColor:=clRed;      {ohne GPS}
         Chart1.Title.Text.Add(rsNoGPS);
       end;
-      if cbThunder.Checked and
-        (baseh<>0)then begin
+      if (SpinEdit3.Tag=ThBid) and
+         (baseh<>0) then begin
         if RadioGroup3.ItemIndex=2 then            {GCS altitude im Diagramm ausgeben}
           Chart1.Title.Text.Add(rsGCSalt+suff+Format('%f', [baseh/fft])+'ft')
         else
@@ -9834,7 +10095,7 @@ begin
               case SpinEdit3.Tag of                {Vehicle Type}
                 3: HDiaBlade350;                   {Blade 350QX}
                 YTHPid: HDiaYTHPlus;               {YTH Plus}
-                ThBid: HDiaThunderbird;
+                ThBid: HDiaThunderbird;            {assign f_mode to color for TB}
               else                                 {Q500 und andere}
                 HdiaYLegacy;
               end;
@@ -9842,7 +10103,7 @@ begin
           end;
         except
           StatusBar1.Panels[5].Text:=rsInvalid;
-          SynEdit1.Lines.Add('''9841'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
+          SynEdit1.Lines.Add('''10091'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
                              suff+StatusBar1.Panels[5].Text);
         end;
       end;
@@ -10480,7 +10741,7 @@ begin
           fModeFinden(splitlist);                  {Position f-mode merken}
           splitlist.DelimitedText:=inlist[bdt+1];    {2. Datenzeile, Zeit}
           if (SpinEdit3.Tag<>YTHPid) then begin    {v_type ermitteln}
-            SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+            SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
             OverWriteVT;                           {Overwrite for PX4 Thunderbird}
           end;
         end;
@@ -10773,7 +11034,7 @@ begin
           fModeFinden(splitlist);                  {Position f-mode merken}
           splitlist.DelimitedText:=inlist[bdt+1];  {2. Datenzeile, Zeit}
           if SpinEdit3.Tag<>YTHPid then begin      {v_type ermitteln}
-            SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+            SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
             OverWriteVT;                           {Overwrite for PX4 Thunderbird}
           end;
         end;
@@ -10953,7 +11214,7 @@ begin
       fModeFinden(splitlist);                      {Position f-mode merken}
       splitlist.DelimitedText:=inlist[2];          {2. Datenzeile, Zeit}
       if SpinEdit3.Tag<>YTHPid then begin          {v_type ermitteln}
-        SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+        SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
         OverWriteVT;                             {Overwrite for PX4 Thunderbird}
       end;
       s:=Trim(inlist[0]);
@@ -11179,7 +11440,7 @@ begin
         fModeFinden(splitlist);                      {Position f-mode merken}
         splitlist.DelimitedText:=inlist[2];          {2. Datenzeile, Zeit}
         if (SpinEdit3.Tag<>YTHPid) then begin        {v_type ermitteln}
-          SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+          SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
           OverWriteVT;                               {Overwrite for PX4 Thunderbird}
         end;
       end;
@@ -11202,11 +11463,11 @@ begin
           SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
         except
           StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-          SynEdit1.Lines.Add('''11223'+suff+StatusBar1.Panels[5].Text);
+          SynEdit1.Lines.Add('''11447'+suff+StatusBar1.Panels[5].Text);
         end;
       end;
     except
-      SynEdit1.Lines.Add('''11227'+suff+rsInvalid);
+      SynEdit1.Lines.Add('''11451'+suff+rsInvalid);
     end;
   finally
     FreeAndNil(inlist);
@@ -11237,7 +11498,7 @@ begin
     if inlist.Count>50 then begin
       splitlist.DelimitedText:=inlist[2];          {2. Datenzeile, Zeit}
       if SpinEdit3.Tag<>YTHPid then begin          {v_type ermitteln}
-        SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], 2);
+        SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
         OverWriteVT;                               {Overwrite for PX4 Thunderbird}
       end;
       lat1:=0;
@@ -11314,11 +11575,11 @@ begin
           SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
         except
           StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-          SynEdit1.Lines.Add('''11355'+suff+StatusBar1.Panels[5].Text);
+          SynEdit1.Lines.Add('''11559'+suff+StatusBar1.Panels[5].Text);
         end;
       end else begin
         StatusBar1.Panels[5].Text:=rsError;
-        SynEdit1.Lines.Add('''11359'+suff+StatusBar1.Panels[5].Text);
+        SynEdit1.Lines.Add('''11563'+suff+StatusBar1.Panels[5].Text);
       end;
       StatusBar1.Panels[5].Text:=IntToStr(np)+rsNumWP;
       SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
@@ -11551,7 +11812,7 @@ const mxw=1365;
             e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 100);
             StringGrid1.Canvas.Brush.Color:=RSSIpToColor(e);
           end;
-  end;
+    end;
   end;
 
   procedure TelemYTHP;                             {Telemetrie YTH Plus}
@@ -11717,27 +11978,12 @@ const mxw=1365;
         exit;
       end;
       if aCol=StringGrid1.Tag then begin           {f_mode Zellen einfärben}
-        e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 0);
-        if SpinEdit3.Tag=3 then begin              {350QX}
-          case e of                                {flight modes; wie Chart1BarSeries}
-            25:   StringGrid1.Canvas.Brush.Color:=clAngle;
-            11:   StringGrid1.Canvas.Brush.Color:=clSport;
-            9, 14, 10, 13:  StringGrid1.Canvas.Brush.Color:=clRTH;
-            12:   StringGrid1.Canvas.Brush.Color:=clSmart;
-            8:    StringGrid1.Canvas.Brush.Color:=clEmergency;
-            5:    StringGrid1.Canvas.Brush.Color:=clSilver;     {Motor Starting}
-          end;
-        end else begin                             {Q500 and all others}
-          case e of                                {flight modes wie Chart1BarSeries}
-            3, 4: StringGrid1.Canvas.Brush.Color:=clAngle;
-            2, 5, 7, 22, 24, 32: StringGrid1.Canvas.Brush.Color:=clNoGPS;
-            13, 14, 20: StringGrid1.Canvas.Brush.Color:=clRTH;
-            6, 21, 23: StringGrid1.Canvas.Brush.Color:=clSmart;
-            9, 10, 11, 12, 17, 18: StringGrid1.Canvas.Brush.Color:=clEmergency;
-            0, 1: StringGrid1.Canvas.Brush.Color:=clSport;
-            26..29, 33: StringGrid1.Canvas.Brush.Color:=clTasks;  {Tasks}
-            8:          StringGrid1.Canvas.Brush.Color:=clSilver; {Motor Starting}
-          end;
+        e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 0);       {Flight Mode}
+        case SpinEdit3.Tag of
+          1, 2:  StringGrid1.Canvas.Brush.Color:=LegacyCol(e);
+          3:     StringGrid1.Canvas.Brush.Color:=BladeCol(e);   {350QX}
+          4..6:  StringGrid1.Canvas.Brush.Color:=LegacyCol(e);
+          ThBid: StringGrid1.Canvas.Brush.Color:=ThunderCol(e); {Thunderbird}
         end;
         exit;
       end;
@@ -12030,7 +12276,7 @@ var x: integer;
       1, 14, 46, 47, 49: s:=s+' [%]';
       2: s:=s+' [V]';
       3: s:=s+' [A]';
-      4, 21, 22, 37..40: s:=s+' [m]';
+      4, 21, 22, 37..40, 51: s:=s+' [m]';
       5, 6: s:=rsDistHome+' [m]';
       7, 25, 41..43, 48: s:=s+' [m/s]';
       26..28: s:=s+' [m/s²]';
@@ -12038,7 +12284,7 @@ var x: integer;
       29..31: s:=s+' [rad/s]';
       32..34: s:=s+' [gauss]';
       35, 36: s:=s+' [mbar]';
-      44: s:=s+' [°]';
+      44, 50: s:=s+' [°]';
       45: s:=s+' [°C]';
       60..78: s:=s+' [µs]';
     end;
@@ -12208,7 +12454,7 @@ var x: integer;
       0: begin                                     {Telemetry}
             case p of                              {Liste der Spalten für Dia}
               4: if testh(w) and
-                    (w>1) then begin               {Altitude is plausible}
+                    (abs(w-alt1)<20) then begin    {Altitude is plausible}
                    alt1:=w;
                  end else                          {Implausible altitude}
                    w:=alt1;                        {keep previous altitude}
@@ -12274,8 +12520,8 @@ var x: integer;
   end;
 
 begin
-  if (p>0) and                                    {Spalte Datum/Zeit ausschließen}
-     (StringGrid1.RowCount>25) then begin         {genügend Zeilen}
+  if (p>0) and                                     {Spalte Datum/Zeit ausschließen}
+     (StringGrid1.RowCount>25) then begin          {genügend Zeilen}
     DoForm2Show(0);
     PageControl1.Tag:=1;
     w:=0;
@@ -12283,6 +12529,8 @@ begin
     lat1:=0;
     lon1:=0;
     alt1:=0;
+    if SpinEdit3.Tag=ThBid then
+      alt1:=GethFromST10(ListBox1.ItemIndex, 0);   {Set to ST16 altitude}
     s:=StringGrid1.Cells[p, 0];
     Form2.Caption:=rsChart+' "'+s+'"';
     if Radiogroup1.ItemIndex=2 then Form2.Caption:=ChToStr(Form2.Caption, p);
@@ -12308,7 +12556,7 @@ begin
     Form2.Chart1.Tag:=RadioGroup1.ItemIndex;       {Tell that it Telemetry or whatever}
     for x:=2 to StringGrid1.RowCount-1 do begin    {skip first line}
       if StringGrid1.Cells[p, x]<>'' then begin    {skip empty cells}
-        if cbThunder.Checked and                   {only for Thunderbird}
+        if (SpinEdit3.Tag=ThBid) and               {only for Thunderbird}
            (p=4) and
            (StringGrid1.Cells[p, x]=dzfl) then     {absolute altitude = 0}
           Continue;                                {skip zero altitude}
@@ -12320,7 +12568,7 @@ begin
               brID: ShowDiaBreeze;                 {Breeze}
               H501ID: ShowDiaH501;
               YTHPid: ShowDiaYTHPlus;              {YTH Plus}
-              ThBid: ShowThunderbird;
+              ThBid: ShowThunderbird;              {H480 Thunderbird, chart per column}
             else                                   {andere Kopter}
               ShowDiaYlegacy;
             end;
@@ -12678,8 +12926,8 @@ procedure TForm1.AnzeigeAddHist(Index: integer);   {Index ist Nummer Spalte}
 begin
   if StringGrid1.ColCount=csvanz then begin        {PX4 CSV self-def format}
     case index of
-      9, 15..20, 57, 59, 60: ZhlWerte(Index);          {Tabelle}
-      1..7, 10..14, 21..49, 61..78: DiaWerte(Index);
+      9, 15..20, 57, 59, 60: ZhlWerte(Index);      {Tabelle}
+      1..7, 10..14, 21..51, 61..78: DiaWerte(Index);
     end;
   end else                                         {sonstige, wie gehabt}
   case RadioGroup1.ItemIndex of
@@ -12766,7 +13014,8 @@ begin
   zl:=0;
   sp:=0;
   StringGrid1.MouseToCell(x, y, sp, zl);           {Zelle unter Maus finden}
-  if zl>0 then StringGrid1.Hint:=GetCellInfo(sp, zl)
+  if zl>0 then
+    StringGrid1.Hint:=GetCellInfo(sp, zl)
   else
     if RadioGroup1.ItemIndex=3 then                {Hint bei Sensor ausblenden}
       StringGrid1.Hint:=StringGrid1.Cells[sp, 0]
@@ -12895,7 +13144,7 @@ begin
   zl:=0;
   grdOverview.MouseToCell(x, y, sp, zl);           {Zelle unter Maus finden}
   if (sp>0) and (zl>0) then begin
-    if zl=grdOverview.RowCount-1 then begin
+    if zl=grdOverview.RowCount-1 then begin        {Last line: Sumn}
       case sp of
         1: grdOverview.Hint:=hntNumFlt;
         4: grdOverview.Hint:=hntDauer;
@@ -12903,9 +13152,16 @@ begin
         8: grdOverview.Hint:=hntHGeschw;
         else grdOverview.Hint:=rsPC1Tab1;          {default}
       end;
-    end else grdOverview.Hint:=grdOverview.Cells[sp, 0]+'='+
-                               grdOverview.Cells[sp, zl];
-  end else grdOverview.Hint:=grdOverview.Cells[sp, zl];
+    end else begin
+      case sp of
+        9, 10: grdOverview.Hint:=                  {min/max voltage}
+               ShowVoltageF(GetFVal(grdOverview.Cells[sp, zl]), SpinEdit3.Tag);
+      else
+        grdOverview.Hint:=grdOverview.Cells[sp, 0]+'='+
+                          grdOverview.Cells[sp, zl];     {Default hint}
+      end;
+    end;
+  end else grdOverview.Hint:=grdOverview.Cells[sp, zl];  {Header}
 end;
 
 procedure TForm1.grdOverviewMouseUp(Sender: TObject; Button: TMouseButton;
@@ -13119,7 +13375,7 @@ end;
 procedure TForm1.MenuItem3Click(Sender: TObject);  {PopUp Höhenprofil als Datei}
 begin
   SaveDialog1.Title:=rsHDiaSave;
-  SaveDialog1.FileName:=Form2.CleanDN(PageControl1.Page[2].Caption+pngdef);
+  SaveDialog1.FileName:=CleanDN(PageControl1.Page[2].Caption+pngdef);
   if SaveDialog1.Execute then
     Chart1.SaveToFile(TPortableNetworkGraphic, SaveDialog1.FileName);
 end;
@@ -13630,6 +13886,153 @@ begin
   result:=n;                                       {Anzahl übergeben}
   if n>0 then
     RadioGroup1.Tag:=0;                            {Resize columns needed again}
+end;
+
+{###############################################################################
+ Für spezielle Sonderauswertungen einer CSV Datei. Diese Sonderfälle müssen extra
+ programmiert werden. Hier ist der Rahmen dazu.}
+
+procedure TForm1.btSpecialClick(Sender: TObject);  {Spezielle Auswertung für CSV-Datei}
+var i, j, zhl: integer;
+    inlist, splitlist: TStringList;
+    fn, slat, slon, vlat, vlon: string;
+    tme, tmev: TDateTime;
+    wrt, wrtv, ddist, tdiff, rslt1, rslt2: double;
+begin
+  screen.Cursor:=crHourGlass;
+  MenuItem7.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  StringGrid1.ColCount:=0;                         {alles löschen}
+  StringGrid1.RowCount:=14;
+  zhl:=0;
+  slat:='';
+  vlat:='';
+  tmev:=0;
+  wrtv:=0;
+  ddist:=0;
+  rslt1:=0;
+  rslt2:=0;
+  StringGrid1.ColCount:=defaultcol;
+  inlist:=TStringList.Create;
+  splitlist:=TStringList.Create;
+  splitlist.Delimiter:=sep;
+  splitlist.StrictDelimiter:=True;
+  try
+    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+kfile;   {Fake telemetry_xxx.csv}
+    fn:=fn+ListBox1.Items[ListBox1.ItemIndex]+fext;
+    try
+      inlist.LoadFromFile(fn);
+    except
+      StatusBar1.Panels[5].Text:=fn+nixda;
+      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+    end;
+    if inlist.count>1 then begin
+      StatusBar1.Panels[5].Text:=fn;
+      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+    end else begin
+      StatusBar1.Panels[5].Text:=fn+tab1+rsEmpty;
+      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+    end;
+    if inlist.count>10 then begin
+      try
+        splitlist.DelimitedText:=inlist[0];        {Überschrift einlesen}
+        SpinEdit3.MaxValue:=inlist.Count;
+        SpinEdit2.MaxValue:=inlist.Count-10;
+        SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
+        StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
+        SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
+        StringGrid1.RowCount:=inlist.Count;        {vorbelegen}
+        StringGrid1.ColCount:=splitlist.Count;
+        for i:=1 to splitlist.Count-1 do
+          StringGrid1.Cells[i, 0]:=splitlist[i];
+        StringGrid1.Cells[0,0]:=rsHDcell0;
+
+        StringGrid1.BeginUpdate;
+        for i:=1 to inlist.count-1 do begin        {Daten einlesen}
+          inc(zhl);
+          splitlist.DelimitedText:=inlist[i];
+          if splitlist.Count>6 then begin
+            for j:=0 to splitlist.count-1 do
+              StringGrid1.Cells[j, i]:=splitlist[j];
+
+            if (slat='') and                       {noch kein Homepoint}
+                NichtLeer(splitlist[5]) and
+                NichtLeer(splitlist[6]) then begin
+              slat:=splitlist[5];                  {Homepoint speichern}
+              slon:=splitlist[6];                  {Homepoint speichern}
+              if vlat='' then begin                {previous coordinate}
+                vlat:=splitlist[5];
+                vlon:=splitlist[6];
+              end;
+            end;
+
+{spezielle Auswertung hier beginnen}
+            tme:=ZeitToDT(splitlist[0], 3);        {Zeit}
+            if tmev=0 then
+              tmev:=tme;
+            tdiff:=tme-tmev;
+            wrt:=StrToFloat(splitlist[4]);         {Altitude}
+            if wrtv=0 then
+              wrtv:=wrt;
+            if tdiff>0 then begin
+              if vlat<>'' then begin               {only with valid coordinates}
+                ddist:=DeltaKoord(StrToFloatN(vlat), StrToFloatN(vlon),
+                                  StrToFloatN(splitlist[5]), StrToFloatN(splitlist[6]));
+
+                rslt1:=ddist/(tdiff*Secpd);        {Ground speed}
+
+                vlat:=splitlist[5];
+                vlon:=splitlist[6];
+              end;
+
+              rslt2:=(wrt-wrtv)/(tdiff*Secpd);     {Vertical speed}
+
+              tmev:=tme;
+              wrtv:=wrt;
+            end;
+            StringGrid1.Cells[7, i]:=FormatFloat('0.00', rslt1);
+            StringGrid1.Cells[11, i]:=FormatFloat('0.00', rslt2);
+{Ende spezielle Auswertung}
+            if i=(inlist.Count div 2) then
+              StringGrid1.AutoSizeColumns;
+          end else begin
+            StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsEmpty+tab1+
+                                       capLabel6+Format('%6d', [i]);
+            SynEdit1.Lines.Add('''9011'+suff+StatusBar1.Panels[5].Text);
+          end;
+        end;                                       {Ende Daten einlesen}
+
+        StringGrid1.Cells[7, 0]:='grnd_spd';
+        StringGrid1.Cells[11, 0]:='vert_spd';
+
+        StringGrid1.AutoSizeColumn(0);
+        StringGrid1.EndUpdate;
+
+        Synedit1.Lines.add(Format('%-10s', [capLabel13+suff])+
+                           URLGmap(slat, slon));   {Anzeige Start und Ende}
+        Synedit1.Lines.add(Format('%-10s', [capLabel13+suff])+
+                           URLosm(slat, slon));
+        Synedit1.Lines.add('');
+        Synedit1.Lines.add(Format('%-10s', [capLabel14+suff])+
+                           URLGmap(splitlist[5], splitlist[6]));
+        Synedit1.Lines.add(Format('%-10s', [capLabel14+suff])+
+                           URLosm(splitlist[5], splitlist[6]));
+      except
+        StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
+                                   capLabel6+Format('%6d', [zhl]);
+        SynEdit1.Lines.Add('''13909'+suff+StatusBar1.Panels[5].Text);
+      end;
+      PageControl1.ActivePageIndex:=1;
+      StringGrid1.SetFocus;
+      StringGrid1.CopyToClipboard(false);          {Tabelle im Clipboard ablegen}
+    end else begin                                 {Datei leer}
+      StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
+      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+    end;
+  finally
+    FreeAndNil(inlist);
+    FreeAndNil(splitlist);
+    Screen.Cursor:=crDefault;
+  end;
 end;
 
 end.

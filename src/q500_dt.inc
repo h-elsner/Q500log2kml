@@ -22,29 +22,7 @@ resourcestring                                     {deutsch}
   rsGridCell8='Höchstgeschw.';
   rsGridCell9='Umax';
   rsGridCell10='Umin';
-
   rsHDcell0='Datum/Zeit';
-  rsHDcell1='fsk_rssi';
-  rsHDcell2='voltage';
-  rsHDcell3='current';
-  rsHDcell4='altitude';
-  rsHDcell5='latitude';
-  rsHDcell6='longitude';
-  rsHDcell7='tas';
-  rsHDcell8='gps_used';
-  rsHDcell9='fix_type';
-  rsHDcell10='satellites_num';
-  rsHDcell11='roll';
-  rsHDcell12='yaw';
-  rsHDcell13='pitch';
-  rsHDcell14='motor_status';
-  rsHDcell15='imu_status';
-  rsHDcell16='press_compass_status';
-  rsHDcell17='f_mode';
-  rsHDcell18='gps_status';
-  rsHDcell19='vehicle_type';
-  rsHDcell20='error_flags';
-  rsHDcell21='gps_accH';
 
   rsSave='Speichern';
   rsInvalid='ungültige Daten';
@@ -134,7 +112,6 @@ resourcestring                                     {deutsch}
   rsAllSet='All Set';
   rsAllOK='Alles OK';
   capLabel8='Neueste Version';
-  rsUndef='Undef';
   rsOpenWayP='Waypoint Datei öffnen...';
   rsError='Fehler! Ungültige oder fehlende Daten/Einstellungen';
   rsCancel='&Abbrechen';
@@ -145,10 +122,6 @@ resourcestring                                     {deutsch}
   rsLon='Länge';
   capLabel12='Entfernung zwischen Waypoints';
   rsLandGear='Landegestell';
-  rsAngle='Angle Mode';
-  rsSmart='Smart Mode';
-  rsManual='Manual Mode';
-  rsRTH='RTH';
   rsComing='Heimflug';
   rsLanding='Landung';
   rsMotorStarting='Motor Start';
@@ -158,8 +131,6 @@ resourcestring                                     {deutsch}
   rsMagCali='Magnetometer';
   rsCali=' Kalibrierung';
   rsBinding='RC Binden';
-  rsAgility='Agility Mode (Rate)';
-  rsStability='Stability Mode (Blue solid)';
   GPSlost=' - GPS lost';
   GPSoff=' - GPS off';
   rsNeutral='Mittelstellung (neutral)';
@@ -289,8 +260,6 @@ resourcestring                                     {deutsch}
   rsLenPL='Länge Payload=';
   capCheckBox9='H Plus bereinigt';
   hntCheckBox9='Telemetrie-Fehldatensätze beim Typhoon H Plus ausblenden';
-  rsSportMode='Sport Mode';
-  rsSportSmartMode='Sport/Smart Mode';
   capSensorPlus='Sensordatei PX4 öffnen...';
   capDiashow='Anzeige aller Profiles';
   rsProfile='Profile';
@@ -312,36 +281,6 @@ resourcestring                                     {deutsch}
   hntDel='Lösche AppLog ohne zu speichern';
   capCheckBox8='Sensordaten PX4 als CSV Datei';
   hntCheckBox8='Ausgewählte Daten aus PX4 Sensordateien (aus MAV Messages) als CSV-Datei speichern.';
-  csvTime='Time';
-  csvSWload='SW load';
-  csvVolt='voltage';
-  csvAmp='current';
-  csvAlt='altitude';
-  csvLat='lat';
-  csvLon='lon';
-  csvCap='Batt remain';
-  csvGPSfixT='GPS fix type';
-  csvNumSats='Num sats';
-  csvCOG='COG';
-  csvIMUtemp='IMU temp';
-  csvDropRate='Drop rate';
-  csvSenHealth='Sensor health';
-  csvGPSen='GPS enabled';
-  csvCustMode='Custom mode';
-  csvMAVstate='MAV state';
-  csvMAVmode='MAV mode flag';
-  csvMAVland='MAV landed state';
-  csvVacc='V_Acc';
-  csvHacc='H_Acc';
-  csvHDOP='HDOP';
-  csvVDOP='VDOP';
-  csvHSpeed='hSpeed';
-  csvTas='tas';
-  csvRoll='roll';
-  csvPitch='pitch';
-  csvYaw='yaw';
-  csvMsgID='MsgID';
-  csvRSSI='rssi';
   rsTimeToBoot='Zeit seit System boot';
   capReduced='Reduziert';
   hntReduced='Reduzierte Ausgabe für AppLog';
@@ -351,5 +290,9 @@ resourcestring                                     {deutsch}
   capThunder='H480 Thunderbird';
   hntThunder='FlightLog Auswertung nur für Thunderbird (H480 mit angepasster PX4 Firmware) -> reduzierte Funktionalität';
   hntMAVmsg='Wähle MAVlink Messages zur Auswertung aus. Im Zweifel, wähle alle per Doppelklick.';
-
+  rsGCSalt='Absolute Höhe vom GCS-GPS';
+  capCleanCSV='Telemetrie bereinigen';
+  hntCleanCSV='Entfernt alle Datensätze, die über 5GHz WiFi gesendet wurden, aus der Telemetrie CSV-Datei.';
+  capVrule='Umrechnungsregel';
+  hntVrule='Regel für Umrechnen der LiPo-Spannung in Restkapazität';
 
