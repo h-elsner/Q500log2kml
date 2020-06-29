@@ -9,7 +9,7 @@ uses
 
 const
 {public constants}
-  Version ='V4.4 05/2020';
+  Version ='V4.4 06/2020';
 
   InvalidChars: set of char=['\', '/', ':', '*', '?', '"', '<', '>', '|', '&'];
   ziff=['0'..'9'];                                 {gültige Ziffern}

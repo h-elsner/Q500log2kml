@@ -1,6 +1,6 @@
 
-{.$I q500_dt.inc}
-{$I q500_en.inc}
+{$I q500_dt.inc}
+{.$I q500_en.inc}
 
 
 
@@ -47,6 +47,7 @@ resourcestring                                     {Länderneutral}
   csvSWload='SW load';
   csvVolt='voltage';
   csvAmp='current';
+  csvUcap='Batt used';
   csvAlt='altitude';
   csvAltMSL='Altitude MSL';
   csvHeading='Heading';

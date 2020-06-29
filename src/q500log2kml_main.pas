@@ -194,6 +194,7 @@ History:
 2020-04-02       Current unit for H920 updated.
 2020-04-25 V4.4  GLOBAL_POSITION_INT and BATTERY_STATUS added.
 2020-05-11       Updates for H480 Thunderbird.
+2020-05-29       Used capacity for PX4 sensor files instead of SW load.
 *)
 
 unit q500log2kml_main;
@@ -251,6 +252,7 @@ type
     BitBtn28: TBitBtn;
     BitBtn3: TBitBtn;
     btSpecial: TButton;
+    cbCap: TCheckBox;
     Chart1: TChart;
     Chart1BarSeries1: TBarSeries;
     Chart1BarSeries2: TBarSeries;
@@ -283,7 +285,6 @@ type
     CheckBox10: TCheckBox;
     CheckBox11: TCheckBox;
     cbReduced: TCheckBox;
-    cbCap: TCheckBox;
     cbThunder: TCheckBox;
     CheckBox2: TCheckBox;
     CheckBox3: TCheckBox;
@@ -293,6 +294,8 @@ type
     CheckBox7: TCheckBox;
     CheckBox8: TCheckBox;
     CheckBox9: TCheckBox;
+    gbBatt: TGroupBox;
+    lblBaseLoad: TLabel;
     lblMAVcommon: TLabel;
     MAVmsg: TCheckGroup;
     ColorButton1: TColorButton;
@@ -339,10 +342,11 @@ type
     mnCleanCSV: TMenuItem;
     ProgressBar1: TProgressBar;
     RadioGroup10: TRadioGroup;
-    rgVrule: TRadioGroup;
     RadioGroup8: TRadioGroup;
     RadioGroup9: TRadioGroup;
+    rgVrule: TRadioGroup;
     SpeedButton5: TSpeedButton;
+    speBaseLoad: TSpinEdit;
     StringGrid5: TStringGrid;
     SynAnySyn1: TSynAnySyn;
     SynEdit1: TSynEdit;
@@ -774,7 +778,7 @@ const
   hpmydat='/pdf/';
   meinname='Helmut Elsner';
   email   ='helmut.elsner@live.com';               {meine e-mail Adresse}
-  lazURL  ='https://www.lazarus-ide.org/';          {Werbung}
+  lazURL  ='https://www.lazarus-ide.org/';         {Werbung}
   lazForum='https://www.lazarusforum.de/app.php/portal';
   mndir='FlightLog';
   mndirp='Flight2Log';                             {YTH Plus}
@@ -1232,6 +1236,11 @@ begin
   GroupBox10.Hint:=hntGroupBox10;
   GroupBox11.Caption:=rsFind;                      {Suche}
   GroupBox11.Hint:=hntComboBox9;
+  gbBatt.Caption:=capgbBatt;
+  gbBatt.Hint:=hntgbBatt;
+  lblBaseLoad.Caption:=capBaseLoad;
+  lblBaseLoad.Hint:=hntBaseLoad;
+  speBaseLoad.Hint:=hntbaseLoad;
   ColorButton1.Caption:=capColorButton1;
   TrackBar1.Hint:=hntTrackBar1;
   SpinEdit3.Hint:=hntSpinEdit3;
@@ -4027,19 +4036,19 @@ const
     homeID='home: ';                               {ID Homeposition bei Textmessages}
 
 var dsbuf: array[0..YTHPcols] of byte;
-    i, len, zhl, ele0, elemax: integer;
+    i, len, zhl, ele0, elemax, battremain: integer;
     msl, hbt, mmf: byte;
     inf: TMemoryStream;
     b: byte;
     maplist, outlist, datlist: TStringList;
     s, homestr: string;                            {GPX Ausgabe, homepoint}
     tstr, skoor: String;
-    ftm, bg: TDateTime;
+    ftm, bg, bgl: TDateTime;
     ismq, isGPS: boolean;
     lat1, lon1: double;                            {erster gültiger Datenpunkt}
     lat2, lon2: double;                            {aktuelle Koordinaten}
     lat3, lon3: double;                            {vorherige Koordinaten}
-    distg, distmax: double;
+    distg, distmax, ucap: double;
     csvarr: array[1..csvanz] of string;            {Werte für CSV-Ausgabe}
     itemp: string;
 
@@ -4071,6 +4080,15 @@ var dsbuf: array[0..YTHPcols] of byte;
     result:=0;
     for i:=0 to a-1 do begin
       result:=result+dsbuf[lenfix+i+p]*(256**i);
+    end;
+  end;
+
+  function GetHexFromBuf(const p, a: integer): string; {Position/Anzahl Bytes}
+  var i: integer;
+  begin
+    result:='';
+    for i:=0 to a-1 do begin
+      result:=result+'$'+IntToHex(dsbuf[lenfix+i+p], 2)+' ';
     end;
   end;
 
@@ -4545,23 +4563,32 @@ var dsbuf: array[0..YTHPcols] of byte;
   procedure SensorStatus;                          {MAV_SYS_STATUS}
   var volt, curr, load: double;
       sst: uint64;                                 {UINT unsigned Integer / bits}
+      cca: integer;
   begin
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     volt:=GetIntFromBuf(14, 2)/1000;
-    curr:=GetIntFromBuf(16, 2)/100;
+    cca:=GetIntFromBuf(16, 2);                     {Current in cA, -1 means not used}
+    curr:=cca/100;                                 {Currency in A}
+    if (bgl>0) and (cca>=0) then begin             {Used capacity in mAh}
+      cca:=cca+speBaseLoad.Value;                  {Correction value for drained
+             current in cA (i.e. for camera, lights, mainboard etc), default 2A}
+      ucap:=ucap+((bg-bgl)*cca*240);
+    end;
 {load: Maximum usage in percent of the mainloop time.
  Values: [0-1000] - should always be below 1000 (100%)}
     load:=GetIntFromBuf(12, 2)/10;
-    csvarr[47]:=FormatFloat(dzfl, load);           {SW-load in %}
+    csvarr[52]:=FormatFloat(dzfl, load);           {SW-load in %}
     csvarr[2]:=FormatFloat(dzfl, volt);            {Voltage in V}
-    csvarr[3]:=FormatFloat(ctfl, curr);          {Current in A}
-    csvarr[46]:=IntToStr(dsbuf[lenfix+30]);        {Battery remaining %}
+    csvarr[3]:=FormatFloat(ctfl, curr);            {Current in A}
+    battremain:=dsbuf[lenfix+30];
+    csvarr[46]:=IntToStr(battremain);              {Battery remaining %}
+    csvarr[47]:=FormatFloat(ctfl, ucap);;          {Battery used mAh}
     if not cbReduced.Checked then
       Synedit1.Lines.Add(Format('%6d', [zhl])+tab2+
                          FormatDateTime(zzf, bg)+tab2+csvVolt+
                          suff+csvarr[2]+'V'+
                          tab4+csvAmp+suff+csvarr[3]+'A'+
-                         tab4+csvSWload+suff+csvarr[47]+'%');
+                         tab4+csvUcap+suff+csvarr[47]+'mAh');
     sst:=GetIntFromBuf(0, 4);                      {Sensor present}
     if not cbReduced.Checked then
       Synedit1.Lines.Add('                  onboard_control_sensors_present'+suff+
@@ -4587,8 +4614,9 @@ var dsbuf: array[0..YTHPcols] of byte;
     if tb then begin                               {Anzeige in Schnellanalyse}
       Chart3LineSeries1.AddXY(bg, volt);           {Spannung}
       Chart4LineSeries1.AddXY(bg, curr);           {Strom (nicht bei Mantis Q)}
-      Chart5LineSeries1.AddXY(bg, load);           {SW-Load in %}
+      Chart5LineSeries1.AddXY(bg, ucap);           {Used capacity in mAh}
     end;
+    bgl:=bg;
     SenCSVAusgabe;                                 {CSV Datensatz schreiben}
   end;
 
@@ -4615,11 +4643,16 @@ var dsbuf: array[0..YTHPcols] of byte;
   var i: integer;
       num, idx: uint16;
       paramID, wrt: string;
+      pvalue: double;
   begin
     StandardAusgabe;                               {Hex values in CSV table}
     num:=GetIntFromBuf(4, 2);                      {Total number of onboard parameters}
     idx:=GetIntFromBuf(6, 2);                      {Index of this onboard parameter}
-    wrt:=FloatToStr(GetFloatFromBuf(0));           {Onboard paramaeter value}
+    pvalue:=GetFloatFromBuf(0);
+    if isNan(pvalue) then
+      wrt:=GetHexFromBuf(0, 4)
+    else
+      wrt:=FloatToStr(pvalue);                     {Onboard paramaeter value}
     if (GetIntFromBuf(1, 3)=0) and                 {Extreme small values, masks}
        (dsbuf[lenfix]>0) then
       wrt:='$'+IntTohex(dsbuf[lenfix], 2)+'='+
@@ -4695,6 +4728,8 @@ begin
   distmax:=0;                                      {maximale Entfernung}
   distg:=0;                                        {länge Route}
   elemax:=-1000000;
+  ucap:=0;                                         {Used battery capacity}
+  bgl:=0;
   tstr:='';
   skoor:='';
   bg:=0;                                           {Zeitstempel allg}
@@ -4726,7 +4761,7 @@ begin
       Chart1.AxisList[2].Title.Caption:=rsDistHome+' [m]'; {Entfernung}
       Chart3.AxisList[0].Title.Caption:=csvVolt+' [V]';    {y-Achse top}
       Chart4.AxisList[0].Title.Caption:=csvAmp+' [A]';     {y-Achse middle}
-      Chart5.AxisList[0].Title.Caption:=csvSWload+' [%]';  {y-Achse bottom}
+      Chart5.AxisList[0].Title.Caption:=csvUcap+' [mAh]';  {y-Achse bottom}
       if (PageControl1.ActivePageIndex>3) or
          (PageControl1.ActivePageIndex=0) then
         PageControl1.ActivePageIndex:=1;           {Zur Tabelle springen}
@@ -4864,6 +4899,16 @@ begin
                               Format('%7.1f', [distmax])+'m');
           SynEdit1.Lines .Add(Format('%-25s', [rsGridCell7+suff])+
                               Format('%7.1f', [distg])+'m');
+          SynEdit1.Lines.Add('');
+          if ucap>0 then begin
+            SynEdit1.Lines.Add(Format('%-25s', [csvUcap+suff])+
+                               Format('%7.0f', [ucap])+'mAh');
+            SynEdit1.Lines.Add(Format('%-25s', [csvCap+suff])+
+                               Format('%7.0d', [battremain])+'%');
+            if battremain<100 then
+              SynEdit1.Lines.Add(Format('%-25s', [rsAbattCap+suff])+
+                                 Format('%7.0f', [100*ucap/(100-battremain)])+'mAh');
+          end;
         end;
         Chart1.Title.Visible:=true;                {Diagrammtitel anzeigen}
         SynEdit1.Lines.Add('');
@@ -4887,8 +4932,8 @@ begin
               'xPosition'+sep+'yPosition'+sep+'zPosition'+sep+
               'xSpeed'+sep+'ySpeed'+sep+'zSpeed'+sep+
               csvCOG+sep+csvIMUtemp+sep+csvCap+sep+
-              csvSWload+sep+'Climb rate'+sep+'Throttle'+sep+csvHeading+sep+csvAltMSL+sep+
-              '52'+sep+'53'+sep+'54'+sep+'55'+sep+'56'+sep+
+              csvUcap+sep+'Climb rate'+sep+'Throttle'+sep+csvHeading+sep+csvAltMSL+sep+
+              csvSWload+sep+'53'+sep+'54'+sep+'55'+sep+'56'+sep+
               'Onboard paramater name'+sep+'Parameter value'+sep+
               csvMsgID+sep+'CH used';
           for i:=1 to 18 do
@@ -8305,8 +8350,19 @@ begin
 end;
 
 procedure TForm1.MAVmsgDblClick(Sender: TObject);  {All messages true by double click}
+var i: integer;                                    {or invert with Ctrl}
+    shstate: TShiftState;
 begin
-  MAVmsgDefault;
+  shstate:=GetKeyShiftState;
+  MAVmsg.Tag:=0;
+  if ssCtrl in shstate then begin                  {or invert with Ctrl}
+    for i:=0 to MAVMsg.Items.Count-1 do
+      MAVmsg.Checked[i]:=not MAVmsg.Checked[i];
+    if MAVmsg.Checked[i] then
+      MAVmsg.Tag:=MAVmsg.Tag or 1;
+    MAVmsg.Tag:=MAVmsg.Tag shl 1;
+  end else
+    MAVmsgDefault;                                {all checked}
 end;
 
 procedure TForm1.MAVmsgItemClick(Sender: TObject; Index: integer);
@@ -8315,7 +8371,7 @@ begin
   MAVmsg.Tag:=0;
   for i:=0 to MAVmsg.Items.Count-1 do begin
     if MAVmsg.Checked[i] then
-     MAVmsg.Tag:=MAVmsg.Tag or 1;
+      MAVmsg.Tag:=MAVmsg.Tag or 1;
     MAVmsg.Tag:=MAVmsg.Tag shl 1;
   end;
 end;
@@ -10635,8 +10691,8 @@ const
   procedure kmlBreeze;
   begin
     bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
-    if (NichtLeer(splitlist[12]) or
-        NichtLeer(splitlist[13])) and
+    if (NichtLeer(splitlist[12]) or NichtLeer(splitlist[13])) and
+       (trim(splitlist[14])<>'0') and              {real flight mode}
         BrGPSfix(splitlist[20]) and
         (bg>0) then begin
       ts:=bg+nowUTC-now;                           {UTC Zeitstempel errechnen}
@@ -10722,6 +10778,7 @@ begin
               lgcy:=false;
               dt:=GetDateFile(ListBox1.Items[z]);
             end;
+    MQcsvID: lgcy:=false;
   end;
   splitlist.StrictDelimiter:=True;
   stime:='';
@@ -10900,6 +10957,7 @@ var
   begin
     bg:=ZeitToDT(splitlist[0], brID);
     if (NichtLeer(splitlist[12]) or NichtLeer(splitlist[13])) and
+       (trim(splitlist[14])<>'0') and              {real flight mode}
         BrGPSfix(splitlist[20]) and
        (bg>0) then begin
       ts:=bg+nowUTC-now;                           {UTC Zeitstempel errechnen}
@@ -12273,7 +12331,7 @@ var x: integer;
   procedure PrepPX4csv;                            {PX4 self-dev CSV  vorbereiten}
   begin
     case p of                                      {PX4 CSV Maßeinheiten}
-      1, 14, 46, 47, 49: s:=s+' [%]';
+      1, 14, 46, 49, 52: s:=s+' [%]';
       2: s:=s+' [V]';
       3: s:=s+' [A]';
       4, 21, 22, 37..40, 51: s:=s+' [m]';
@@ -12286,6 +12344,7 @@ var x: integer;
       35, 36: s:=s+' [mbar]';
       44, 50: s:=s+' [°]';
       45: s:=s+' [°C]';
+      47: s:=s+' mAh';
       60..78: s:=s+' [µs]';
     end;
   end;
@@ -12927,7 +12986,7 @@ begin
   if StringGrid1.ColCount=csvanz then begin        {PX4 CSV self-def format}
     case index of
       9, 15..20, 57, 59, 60: ZhlWerte(Index);      {Tabelle}
-      1..7, 10..14, 21..51, 61..78: DiaWerte(Index);
+      1..7, 10..14, 21..52, 61..78: DiaWerte(Index);
     end;
   end else                                         {sonstige, wie gehabt}
   case RadioGroup1.ItemIndex of
