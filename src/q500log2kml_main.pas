@@ -195,6 +195,8 @@ History:
 2020-04-25 V4.4  GLOBAL_POSITION_INT and BATTERY_STATUS added.
 2020-05-11       Updates for H480 Thunderbird.
 2020-05-29       Used capacity for PX4 sensor files instead of SW load.
+2020-07-07       Remarks in KML files from PX4 Sensor files
+
 *)
 
 unit q500log2kml_main;
@@ -886,6 +888,8 @@ const
   doctag='Document>';
   cotag='coordinates>';
   extru='<extrude>1</extrude>';
+  itagin='<!-- ';
+  itagout=' -->';
   tr='"'+suff;
   wpem='},';                                       {Waypoint Endemarke}
 
@@ -1813,10 +1817,8 @@ begin
         result:=result+'Motor 3 off ';
       if (u and 8) =0 then
         result:=result+'Motor 4 off ';
-      if (SpinEdit3.Tag=1) or
-         (SpinEdit3.Tag=5) or
-         (SpinEdit3.Tag=YTHPid) or
-         (SpinEdit3.Tag=ThBid) then begin          {Hexakopter, evtl H5id}
+
+      if (u and 64)=1 then begin                   {Hexakopter}
         if (u and 16)=0 then
           result:=result+'Motor 5 off ';
         if (u and 32)=0 then
@@ -4043,7 +4045,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     maplist, outlist, datlist: TStringList;
     s, homestr: string;                            {GPX Ausgabe, homepoint}
     tstr, skoor: String;
-    ftm, bg, bgl: TDateTime;
+    ftm, bg, bgl, bglg: TDateTime;
     ismq, isGPS: boolean;
     lat1, lon1: double;                            {erster gültiger Datenpunkt}
     lat2, lon2: double;                            {aktuelle Koordinaten}
@@ -4122,6 +4124,10 @@ var dsbuf: array[0..YTHPcols] of byte;
       StringGrid1.Cells[i+1, zhl]:=Char(dsbuf[i-1]); {Rest Payload als Text}
       tm:=tm+Char(dsbuf[i-1]);                     {Textmessage zusammenstellen}
     end;
+    if gx then begin
+      maplist.Add(itagin+tm+itagout);
+      outlist.Add(itagin+tm+itagout);
+    end;
     csvarr[posChan]:='"'+tm+'"';
     st:=st+tm;
     for i:=len+lenfixP-11 to len+lenfixP-2 do      {8 Byte Sig + 2 CRC}
@@ -4152,8 +4158,15 @@ var dsbuf: array[0..YTHPcols] of byte;
   end;
 
   procedure AusgTrack;                           {KML oder GPX aus GPS data}
+  var sinfo: string;
   begin
     if gx then begin                             {Ausgabe GPX oder KML}
+      if (bg+tsdelta2)<bglg then begin           {Delta > 2s backwards}
+        sinfo:=itagin+'time reset'+itagout;      {info about new flight}
+        maplist.Add(sinfo);
+        outlist.Add(sinfo);
+      end;
+      bglg:=bg;                                  {Last timestamp for GPS}
       if RadioGroup2.ItemIndex=2 then begin      {GPX}
         skoor:=GPXlat+FloatToStr(lat2)+
                GPXlon+FloatToStr(lon2)+'"> ';
@@ -4730,6 +4743,7 @@ begin
   elemax:=-1000000;
   ucap:=0;                                         {Used battery capacity}
   bgl:=0;
+  bglg:=0;
   tstr:='';
   skoor:='';
   bg:=0;                                           {Zeitstempel allg}
