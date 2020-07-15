@@ -118,3 +118,5 @@ History:
 2020-04-02       Current unit for H920 updated.
 2020-04-25 V4.4  GLOBAL_POSITION_INT and BATTERY_STATUS added.
 2020-05-11       Updates for H480 Thunderbird.
+2020-05-29       Used capacity for PX4 sensor files instead of SW load.
+2020-07-07       Remarks in KML files from PX4 Sensor files 
