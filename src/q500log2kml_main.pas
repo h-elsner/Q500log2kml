@@ -196,6 +196,7 @@ History:
 2020-05-11       Updates for H480 Thunderbird.
 2020-05-29       Used capacity for PX4 sensor files instead of SW load.
 2020-07-07       Remarks in KML files from PX4 Sensor files
+2020-07-30 V4.5  Added Text messages overview for PX4 sensor files
 
 *)
 
@@ -752,7 +753,8 @@ type
     function CheckE7(const s: string): boolean;    {prüft einen string auf Fehler}
     function ShowSensorPlus(fn: string;            {Sensordatei vom YTH Plus}
                             z: integer;            {Index der Datei}
-                            gx, tb, ov: boolean): boolean;  {True bei emergency}
+                            gx, tb, ov10,          {True bei emergency}
+                            ov11: boolean): boolean;   {True bei Text-Overview}
     procedure ShowSensorH(const fn: string; mode: integer); {Sensor File YTH}
     function ComplFN(st: string; tp: TDateTime): string;    {Dateinamen mit Nummer ergänzen}
     procedure AppLogTimeStamp(s: string);          {AppLog einteilen}
@@ -2370,6 +2372,8 @@ begin
                     stkntrl: result:=fmPosition;   {0%}
                     p50val:  result:=fmRattitude;  {+50%}
                     stkup:   result:=fmAltitude;   {+100%}
+                  else
+                    result:='Unknown flight mode for '+IntToStr(stk)+'%';
                   end;
            YTHPid: if stk=stkup then
                      result:=fmSportSmartMode;
@@ -4033,7 +4037,9 @@ https://github.com/mavlink/c_library_v2/tree/master/common
 
 function TForm1.ShowSensorPlus(fn: string;         {Sensordatei vom YTH Plus}
                                z: integer;
-                               gx, tb, ov: boolean): boolean;
+                               gx, tb,
+                               ov10,               {Overview Emergency}
+                               ov11: boolean): boolean; {Overview Text}
 const
     homeID='home: ';                               {ID Homeposition bei Textmessages}
 
@@ -4108,6 +4114,19 @@ var dsbuf: array[0..YTHPcols] of byte;
     result:=wx;                                    {Typecast mittels absolute}
   end;
 
+  procedure TextOverview;
+  var i: integer;
+      st, tm: string;
+  begin
+    st:=FormatDateTime(zzf, bg)+tab2+
+        MAVseverity(dsbuf[lenfix])+suff+'''';
+    for i:=lenfix+2 to len+lenfixP-12 do begin     {Fixpart Teil 2 + Payload}
+      tm:=tm+Char(dsbuf[i-1]);                     {Textmessage zusammenstellen}
+    end;
+    SynEdit1.Lines.Add(st+tm);                     {Textmessage speichern}
+    result:=true;
+  end;
+
   procedure TextAusgabe;                           {Ausgabe als Text in Zeile zl}
   var i: integer;
       st, tm, ch: string;
@@ -4137,7 +4156,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       topp[z, 6]:=topp[z, 6] or 256;
       result:=true;
     end;
-    if not ov then begin
+    if not ov10 then begin
       SynEdit1.Lines.Add(st+'''');                 {Textmessage speichern}
       if pos(homeID, tm)>1 then begin              {Homepoint als Link}
         distg:=0;                                  {Entfernungswerte zurücksetzen}
@@ -4160,7 +4179,8 @@ var dsbuf: array[0..YTHPcols] of byte;
   procedure AusgTrack;                           {KML oder GPX aus GPS data}
   var sinfo: string;
   begin
-    if gx then begin                             {Ausgabe GPX oder KML}
+    if gx and                                    {Ausgabe GPX oder KML}
+       (msl<>1) then begin                       {not Landed State}
       if (bg+tsdelta2)<bglg then begin           {Delta > 2s backwards}
         sinfo:=itagin+'time reset'+itagout;      {info about new flight}
         maplist.Add(sinfo);
@@ -4271,7 +4291,8 @@ var dsbuf: array[0..YTHPcols] of byte;
       alta:=(ele-ele0)/1000;
       csvarr[4]:=FormatFloat(ctfl, alta);          {altitude relative}
 
-      AusgTrack;
+      if msl<>1 then
+        AusgTrack;
 
       if tb then begin                             {Höhendiagramm füllen}
         case msl of
@@ -4697,7 +4718,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       if StringGrid1.RowCount<(zhl+2) then
         StringGrid1.RowCount:=StringGrid1.RowCount+2000; {neue Zeilen}
       inc(zhl);                                    {Datensätze zählen}
-      case e of                                    {Ausgabe bekannter Messages}
+      case e of                               {Ausgabe bekannter Messages}
         0:   if MAVmsg.Checked[0] then Heartbeat;  {HEARTBEAT (0) ohne Zeitstempel}
         1:   if MAVmsg.Checked[1] then SensorStatus;   {MAV_SYS_STATUS (1)}
         22:  if MAVmsg.Checked[2] then ParamValue; {PARAM_VALUE ($16)}
@@ -4723,10 +4744,16 @@ var dsbuf: array[0..YTHPcols] of byte;
       StringGrid1.Cells[lenfix+1, zhl]:=IntToStr(len); {Payload Länge eintragen}
       StringGrid1.Cells[lenfix, zhl]:=MsgIDtoStr(e);   {Message Name}
     end else begin
-      if ov then begin
+      if ov10 then begin
         if e=253 then TextAusgabe;
       end else
         if e=24 then GPSAusgabe;
+      if ov11 then begin                           {Overview text messages}
+        case e of
+          30, 65:  bg:=GetIntFromBuf(0, 4)/(Secpd*1000); {Zeitstempel}
+          253: TextOverview;
+        end;
+      end;
     end;
   end;
 
@@ -5276,12 +5303,12 @@ begin
                 fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
                     nfile+ListBox1.Items[x]+wext;  {Sensor_*.txt}
                 if Fileexists(fn) then begin
-                  ShowSensorPlus(fn, x, true, false, false);
+                  ShowSensorPlus(fn, x, true, false, false, false);
                 end else begin                     {alternativ yuneec_*.log file}
                   fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
                       mfile+ListBox1.Items[x]+bext;
                   if Fileexists(fn) then begin
-                    ShowSensorPlus(fn, x, true, false, false);
+                    ShowSensorPlus(fn, x, true, false, false, false);
                   end;
                 end;
                 StatusBar1.Panels[5].Text:=fn;
@@ -5290,7 +5317,7 @@ begin
                 fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
                     ListBox1.Items[x]+hext;        {*.tlog}
                 if Fileexists(fn) then begin
-                  ShowSensorPlus(fn, x, true, false, false);
+                  ShowSensorPlus(fn, x, true, false, false, false);
                   StatusBar1.Panels[5].Text:=fn;
                 end;
               end;
@@ -6667,9 +6694,9 @@ begin
                 SuchFile(vlist[i], wldcd+skyext, flist);
               end;
             end;
-      10: for i:=0 to vlist.Count-1 do begin     {PX4 Sensor Dateien}
-            SuchFile(vlist[i], wldcd+hext, flist);             {H520}
-            Suchfile(vlist[i], nfile+wldcd+wext, flist);   {Mantis Q}
+      10, 11: for i:=0 to vlist.Count-1 do begin   {PX4 Sensor Dateien}
+            SuchFile(vlist[i], wldcd+hext, flist);         {H520}
+            Suchfile(vlist[i], nfile+wldcd+wext, flist);   {H Plus}
             Suchfile(vlist[i], mfile+wldcd+bext, flist);   {Mantis Q}
           end;
       else begin
@@ -6697,10 +6724,10 @@ begin
           7: if EditFind(flist[i]) then Ausgabe;
           8: if FileSize(flist[i])>FWsz then Ausgabe;  {Sensorfile > 6 Byte}
           9: if FindSensorFW(flist[i]) then Ausgabe;   {Sensorfile mit FW}
-          10: if ShowSensorPlus(flist[i], 0, false, false, true) then begin
+          10: if ShowSensorPlus(flist[i], 0, false, false, true, false) then
                 Ausgabe;
-//                ShowSensorPlus(flist[i], 0, false, true, false); {gleich ausgeben?}
-              end;
+          11: if ShowSensorPlus(flist[i], 0, false, false, false, true) then
+                Ausgabe;
         end;
         ProgressBar1.Position:=i;
       end;
@@ -6717,6 +6744,8 @@ begin
       SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     ProgressBar1.Position:= ProgressBar1.Max;
+    if RadioGroup9.ItemIndex=11 then             {Go to Applog}
+      PageControl1.ActivePageIndex:=7;
   finally
     FreeAndNil(flist);
     FreeAndNil(vlist);
@@ -8295,13 +8324,13 @@ begin
         nfile+ListBox1.Items[ListBox1.ItemIndex]+wext;
     if Fileexists(fn) then begin
       StatusBar1.Panels[5].Text:=fn;
-      ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false);
+      ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false, false);
     end else begin                                 {alternativ yuneec_*.log file}
       fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
           mfile+ListBox1.Items[ListBox1.ItemIndex]+bext;
       if Fileexists(fn) then begin
         StatusBar1.Panels[5].Text:=fn;
-        ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false);
+        ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false, false);
       end;
     end;
   end;
@@ -8326,7 +8355,7 @@ begin
         ListBox1.Items[ListBox1.ItemIndex]+hext;   {Dateinamenstamm+.tlog}
     if Fileexists(fn) then begin
       StatusBar1.Panels[5].Text:=fn;
-      ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false);
+      ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false, false);
     end;
   end;
 end;
@@ -13298,9 +13327,10 @@ begin
       else OpenDocument(IncludeTrailingPathDelimiter(ComboBox8.Text));
   end else begin                                   {Dateiliste}
     if (StringGrid5.Tag>0) then begin              {Es wurde etwas gefunden}
-      if RadioGroup9.ItemIndex=10 then begin
+      if (RadioGroup9.ItemIndex=10) or
+         (RadioGroup9.ItemIndex=11) then begin
         fn:=StringGrid5.Cells[1, StringGrid5.Tag];
-        ShowSensorPlus(fn, 0, false, true, false);
+        ShowSensorPlus(fn, 0, false, true, false, false);
         PageControl1.ActivePageIndex:=7;           {Springe zum AppLog}
       end else
       if (RadioGroup9.ItemIndex<8) or              {Sensor Dateien}
@@ -13633,7 +13663,7 @@ begin
     if ExtractFileExt(OpenDialog1.FileName)=fext then
       AnzeigePX4CSV(OpenDialog1.FileName)          {PX4 Sensor csv anzeigen}
     else                                           {Sensor Datei auswerten}
-      ShowSensorPlus(OpenDialog1.FileName, 0, CheckBox10.Checked, true, false);
+      ShowSensorPlus(OpenDialog1.FileName, 0, CheckBox10.Checked, true, false, false);
   end;
 end;
 
