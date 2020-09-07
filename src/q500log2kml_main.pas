@@ -197,6 +197,7 @@ History:
 2020-05-29       Used capacity for PX4 sensor files instead of SW load.
 2020-07-07       Remarks in KML files from PX4 Sensor files
 2020-07-30 V4.5  Added Text messages overview for PX4 sensor files
+2020-08-21       Clean up KML files from PX4 sensor files
 
 *)
 
