@@ -198,6 +198,8 @@ History:
 2020-07-07       Remarks in KML files from PX4 Sensor files
 2020-07-30 V4.5  Added Text messages overview for PX4 sensor files
 2020-08-21       Clean up KML files from PX4 sensor files
+2020-09-20       Message POSITION_TARGET_GLOBAL_INT added (only for AppLog)
+2020-09-21       Message ALTITUDE (141) added. Tools: List of used MAVlink messages.
 
 *)
 
@@ -341,6 +343,7 @@ type
     Image3: TImage;
     Image4: TImage;
     Label9: TLabel;
+    mnMAVlist: TMenuItem;
     MenuItem57: TMenuItem;
     mnTR2: TMenuItem;
     mnCleanCSV: TMenuItem;
@@ -584,6 +587,7 @@ type
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem28Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
+    procedure mnMAVlistClick(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure MenuItem40Click(Sender: TObject);
     procedure MenuItem41Click(Sender: TObject);
@@ -756,6 +760,8 @@ type
                             z: integer;            {Index der Datei}
                             gx, tb, ov10,          {True bei emergency}
                             ov11: boolean): boolean;   {True bei Text-Overview}
+    procedure AusgabeMessages(const fn: string;
+                     var outlist: TStringList);    {Datenausgabe MsgID sortiert}
     procedure ShowSensorH(const fn: string; mode: integer); {Sensor File YTH}
     function ComplFN(st: string; tp: TDateTime): string;    {Dateinamen mit Nummer ergänzen}
     procedure AppLogTimeStamp(s: string);          {AppLog einteilen}
@@ -872,6 +878,8 @@ const
 //  aircrafticon='https://maps.google.com/mapfiles/kml/shapes/airports.png';
 
   MAVurl='https://github.com/mavlink/c_library_v2/tree/master/common';
+{Extract data from following messages}
+  MAVmsgX=[0, 1, 22, 24, 30, 32, 33, 65, 74, 87, 105, 141, 147, 245, 253];
 
   idxpage='INDEX_PAGE';
   getshpn='GET_SHARPNESS';
@@ -935,6 +943,7 @@ const
   CGO3dir='100MEDIA/';
   CGO3cgi='cgi-bin/cgi?CMD=';
   trenner='--------------------';
+  trnrApplog='                  ';
 
   mzf='yyyy-mm-dd hh:nn';                          {Datum/Zeit Formate}
   dzf='yyyy-mm-dd';
@@ -1114,6 +1123,8 @@ begin
   MenuItem57.Caption:=capDiashow;                  {alle Profiles anzeigen}
   mnCleanCSV.Caption:=capCleanCSV;
   mnCleanCSV.Hint:=hntCleanCSV;
+  mnMAVlist.Caption:=capMAVlist;                   {Tools: List of used MAVlink messages}
+  mnMAVlist.Hint:=hntMAVlist;
   RadioGroup1.Caption:=capRadioGroup1;
   RadioGroup1.Hint:=hntRadioGroup1;
   RadioGroup1.Items[0]:=dkpath;
@@ -2078,6 +2089,17 @@ begin
   end;
 end;
 
+{https://github.com/mavlink/c_library_v2/blob/master/common/mavlink_msg_position_target_global_int.h}
+function CoordFrameToStr(f: integer): string;      {for POSITION_TARGET_GLOBAL_INT}
+begin
+  result:='';
+  case f of
+    5: result:='GLOBAL';
+    6: result:='GLOBAL_RELATIVE_ALT';
+    11: result:='GLOBAL_TERRAIN_ALT';
+  end;
+end;
+
 (*  unused until now
 {https://github.com/YUNEEC/MavlinkLib/blob/master/message_definitions/ASLUAV.xml}
 function GSMlinkType(sv: byte): string;
@@ -3025,7 +3047,7 @@ var e: integer;
   procedure PayLoad;                               {Payload detailliert anzeigen}
   begin
     if StringGrid1.Cells[sp, zl]='' then           {leere Zellen}
-      s:='n/a'
+      s:=rsN_A
     else begin                                     {gefüllte Zellen}
       try
         e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl])
@@ -3580,7 +3602,7 @@ begin
   end;
 end;
 
-procedure TForm1.mnCleanCSVClick(Sender: TObject); {5GHz daten aus Telemetrie entfernen}
+procedure TForm1.mnCleanCSVClick(Sender: TObject); {5GHz Daten aus Telemetrie entfernen}
 var i: integer;
     inlist, outlist, splitlist: TStringList;
 begin
@@ -4057,6 +4079,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     lat1, lon1: double;                            {erster gültiger Datenpunkt}
     lat2, lon2: double;                            {aktuelle Koordinaten}
     lat3, lon3: double;                            {vorherige Koordinaten}
+    latw1, lonw1: integer;                         {Waypoints from position_target_global_int}
     distg, distmax, ucap: double;
     csvarr: array[1..csvanz] of string;            {Werte für CSV-Ausgabe}
     itemp: string;
@@ -4081,6 +4104,8 @@ var dsbuf: array[0..YTHPcols] of byte;
     for i:=1 to csvanz do                          {csv Daten ausgeben}
       c:=c+sep+csvarr[i];
     datlist.Add(c);
+    csvarr[57]:='';
+    csvarr[58]:='';
   end;
 
   function GetIntFromBuf(const p, a: integer): uint64; {Position/Anzahl Bytes}
@@ -4119,10 +4144,12 @@ var dsbuf: array[0..YTHPcols] of byte;
   var i: integer;
       st, tm: string;
   begin
+    tm:='';
     st:=FormatDateTime(zzf, bg)+tab2+
         MAVseverity(dsbuf[lenfix])+suff+'''';
     for i:=lenfix+2 to len+lenfixP-12 do begin     {Fixpart Teil 2 + Payload}
-      tm:=tm+Char(dsbuf[i-1]);                     {Textmessage zusammenstellen}
+      if dsbuf[i-1]>9 then
+        tm:=tm+Char(dsbuf[i-1]);                   {Textmessage zusammenstellen}
     end;
     SynEdit1.Lines.Add(st+tm);                     {Textmessage speichern}
     result:=true;
@@ -4141,8 +4168,12 @@ var dsbuf: array[0..YTHPcols] of byte;
     StringGrid1.Cells[lenfix+2, zhl]:=IntToStr(dsbuf[lenfix]); {Severity dezimal}
     tm:='';
     for i:=lenfix+2 to len+lenfixP-12 do begin     {Fixpart Teil 2 + Payload}
-      StringGrid1.Cells[i+1, zhl]:=Char(dsbuf[i-1]); {Rest Payload als Text}
-      tm:=tm+Char(dsbuf[i-1]);                     {Textmessage zusammenstellen}
+      if dsbuf[i-1]>9 then begin
+        StringGrid1.Cells[i+1, zhl]:=Char(dsbuf[i-1]); {Rest Payload als Text}
+        tm:=tm+Char(dsbuf[i-1]);                   {Textmessage zusammenstellen}
+      end else
+        StringGrid1.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
+                                                   {nicht druckbare Zeichen als Hex};
     end;
     if gx then begin
       maplist.Add(itagin+tm+itagout);
@@ -4230,7 +4261,7 @@ var dsbuf: array[0..YTHPcols] of byte;
  https://mavlink.io/en/messages/common.html#GPS_RAW_INT}
 
   procedure GPSAusgabe;                            {GPS_RAW_INT auswerten}
-  var tme: uint64;                                 {unsignet Integer}
+  var tme: uint64;                                 {unsigned Integer}
       lat, lon, ele: integer;                      {int32}
       eph, epv, vel, cog, hacc: uint64;
       distp, dists, alta: double;                  {Entfernung zum "Start"}
@@ -4243,10 +4274,10 @@ var dsbuf: array[0..YTHPcols] of byte;
     lon:=GetIntFromBuf(12, 4);
     tme:=GetIntFromBuf(0, 8);                      {in mysec}
     bg:=tme/(Secpd*1000000);                       {Zeitstempel überall verfügbar}
-    ele:=GetIntFromBuf(16, 4);                     {Höhe}
     tstr:=FormatDateTime(dzf, ftm)+'T'+
           FormatDateTime(zzf, bg)+'Z';             {Zeitstring überall verfügbar}
-    if ((lat>0) or (lon>0)) and                    {nur bei gültigen Koordinaten}
+    ele:=GetIntFromBuf(16, 4);                     {Höhe}
+    if ((lat<>0) or (lon<>0)) and                  {nur bei gültigen Koordinaten}
        (ele<maxxh*1000) then begin                 {nur sinnvolle Höhe}
       lat2:=lat/10000000;                          {nur einmal rechnen}
       lon2:=lon/10000000;                          {und überall verfügbar}
@@ -4326,6 +4357,26 @@ var dsbuf: array[0..YTHPcols] of byte;
                            csvarr[20]);
       msl:=dsbuf[lenfix+1];                        {letzten Wert merken}
     end;
+    SenCSVAusgabe;
+  end;
+
+{https://github.com/mavlink/c_library_v2/blob/master/common/mavlink_msg_altitude.h}
+  procedure Altitude;                              {MAVLINK_MSG_ID_ALTITUDE 141 ($8D)}
+  var tme: uint64;                                 {unsigned Integer}
+      fval: double;
+  begin
+    StandardAusgabe;
+    tme:=GetIntFromBuf(0, 8);                      {in mysec}
+    bg:=tme/(Secpd*1000000);                       {Zeitstempel überall verfügbar}
+    tstr:=FormatDateTime(dzf, ftm)+'T'+
+          FormatDateTime(zzf, bg)+'Z';             {Zeitstring überall verfügbar}
+
+    fval:=GetFloatFromBuf(12);                     {altitude MSL in m}
+    csvarr[51]:=FormatFloat(ctfl, fval);
+
+    fval:=GetFloatFromBuf(20);                     {altitude relative in m}
+    csvarr[4]:=FormatFloat(ctfl, fval);
+
     SenCSVAusgabe;
   end;
 
@@ -4445,6 +4496,40 @@ var dsbuf: array[0..YTHPcols] of byte;
     end;
   end;
 
+{Only new waypoints for recording in AppLog, no CSV}
+  procedure PositionTargetGlobal;                  {POSITION_TARGET_GLOBAL_INT 87}
+  var tme: uint32;
+      lat, lon: integer;
+      ele, yawsetp: double;
+  begin
+    StandardAusgabe;                               {hexwerte in StringGrid darstellen}
+    if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
+      tme:=GetIntFromBuf(0, 4);                    {in ms}
+      bg:=tme/(Secpd*1000);                        {Zeitstempel überall verfügbar}
+      tstr:=FormatDateTime(dzf, ftm)+'T'+
+            FormatDateTime(zzf, bg)+'Z';           {Zeitstring überall verfügbar}
+
+      lat:=GetIntFromBuf(4, 4);
+      lon:=GetIntFromBuf(8, 4);                    {degrees E7  (/10000000)}
+
+      if (lat<>latw1) or (lon<>lonw1) then begin   {new target waypoint}
+        ele:=GetFloatFromBuf(12);                  {[m] Altitude (MSL, AGL or relative to home altitude, depending on frame)}
+        yawsetp:=GetFloatFromBuf(40);              {Yaw setpoint}
+        yawsetp:=RadToGrad(yawsetp);               {Conversion rad (+/- 180°) to °}
+
+        Synedit1.Lines.Add(Format('%6d', [zhl])+tab2+
+                           FormatDateTime(zzf, bg)+tab2+MsgIDtoStr(87)+suff+
+                           rsGPSh+suff+FormatFloat(ctfl, ele)+'m'+tab2+
+                           CoordFrameToStr(dsbuf[lenfix+50])+tab2+
+                           'Yaw setpoint'+suff+FormatFloat(ctfl, yawsetp)+'°');
+        SynEdit1.Lines.Add(trnrApplog+URLGMap(FloatToStr(lat/10000000), FloatToStr(lon/10000000)));
+
+        latw1:=lat;
+        lonw1:=lon;
+      end;
+    end;
+  end;
+
   procedure GlobalPosInt;                          {Msg Global_POSTION_INT (33)}
   var tme, hdg: uint32;
       vx, vy, vz: double;
@@ -4465,7 +4550,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       altr:=GetIntFromBuf(16, 4);                  {relative alt [mm]}
       csvarr[51]:=FormatFloat(ctfl, ele/1000);     {altitude MSL}
 
-      if ((lat>0) or (lon>0)) and                  {nur bei gültigen Koordinaten}
+      if ((lat<>0) or (lon<>0)) and                  {nur bei gültigen Koordinaten}
          (altr<maxxh*1000) then begin              {nur sinnvolle Höhe}
         lat2:=lat/10000000;                        {nur einmal rechnen}
         lon2:=lon/10000000;                        {und überall verfügbar}
@@ -4626,7 +4711,7 @@ var dsbuf: array[0..YTHPcols] of byte;
                          tab4+csvUcap+suff+csvarr[47]+'mAh');
     sst:=GetIntFromBuf(0, 4);                      {Sensor present}
     if not cbReduced.Checked then
-      Synedit1.Lines.Add('                  onboard_control_sensors_present'+suff+
+      Synedit1.Lines.Add(trnrApplog+'onboard_control_sensors_present'+suff+
                          MSenStat(sst));           {MAV_SYS_STATUS_SENSOR}
     sst:=GetIntFromBuf(4, 4);                      {Sensor enabled}
     if (sst and 32)>0  then                        {GPS status}
@@ -4634,7 +4719,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     else
       csvarr[16]:='false';
     if not cbReduced.Checked then
-      Synedit1.Lines.Add('                  onboard_control_sensors_enabled'+suff+
+      Synedit1.Lines.Add(trnrApplog+'onboard_control_sensors_enabled'+suff+
                          MSenStat(sst));
 {[c%] Communication drop rate, (UART, I2C, SPI, CAN), dropped packets on all
  links (packets that were corrupted on reception on the MAV)}
@@ -4644,7 +4729,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     sst:=GetIntFromBuf(8, 4);                      {Sensor health}
     csvarr[15]:=IntToHex(sst, 2);
     if not cbReduced.Checked then
-      Synedit1.Lines.Add('                  onboard_control_sensors_health '+suff+
+      Synedit1.Lines.Add(trnrApplog+'onboard_control_sensors_health '+suff+
                          MSenStat(sst));
     if tb then begin                               {Anzeige in Schnellanalyse}
       Chart3LineSeries1.AddXY(bg, volt);           {Spannung}
@@ -4690,7 +4775,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       wrt:=FloatToStr(pvalue);                     {Onboard paramaeter value}
     if (GetIntFromBuf(1, 3)=0) and                 {Extreme small values, masks}
        (dsbuf[lenfix]>0) then
-      wrt:='$'+IntTohex(dsbuf[lenfix], 2)+'='+
+      wrt:='$'+IntToHex(dsbuf[lenfix], 2)+'='+
            IntToBin(dsbuf[lenfix], 8, 4);          {Overwrite ...E-44, ...E-45}
     paramID:='';
     for i:=8 to 23 do begin                        {Onboard parameter ID}
@@ -4731,9 +4816,11 @@ var dsbuf: array[0..YTHPcols] of byte;
         33:  if MAVmsg.Checked[6] then GlobalPosInt;   {GLOBAL_POSITION_INT ($21)}
         65:  if MAVmsg.Checked[7] then RCchannels; {RC_CHANNELS ($41)}
         74:  if MAVmsg.Checked[8] then vfr_hud;    {VFR_HUD ($4A)}
+        87:  PositionTargetGlobal;                 {POSITION_TARGET_GLOBAL_INT 87 ($57), only AppLog}
         105: if MAVmsg.Checked[9] then HighresIMU; {HIGHRES_IMU ($69)}
-        147: if MAVmsg.Checked[10] then Batt_Status;   {BATTERY_STATUS ($93)}
-        245: if MAVmsg.Checked[11] then ExtAusgabe;    {Extended_SYS_State ($F5)}
+        141: if MAVmsg.Checked[10] then Altitude;  {MSG_ID_ALTITUDE 141 ($8D)}
+        147: if MAVmsg.Checked[11] then Batt_Status;   {BATTERY_STATUS ($93)}
+        245: if MAVmsg.Checked[12] then ExtAusgabe;    {Extended_SYS_State ($F5)}
         253: TextAusgabe;                          {Statustext ($FD)}
       else                                         {Standard Ausgabe}
         StandardAusgabe;                           {Hexwerte für alle anderen Msg}
@@ -4752,6 +4839,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       if ov11 then begin                           {Overview text messages}
         case e of
           30, 65:  bg:=GetIntFromBuf(0, 4)/(Secpd*1000); {Zeitstempel}
+          87:  PositionTargetGlobal;               {POSITION_TARGET_GLOBAL_INT 87 ($57)}
           253: TextOverview;
         end;
       end;
@@ -4764,6 +4852,8 @@ begin
   msl:=0;                                          {MAV landed_state undef}
   hbt:=0;                                          {MAV state uninit/unknown}
   mmf:=0;                                          {MAV Mode Flags}
+  latw1:=0;                                        {init for position_target_global_int}
+  lonw1:=0;
   s:='';                                           {noch keine Ausgabe}
   ele0:=0;                                         {Höhe bei Start}
   distmax:=0;                                      {maximale Entfernung}
@@ -4989,6 +5079,75 @@ begin
       maplist.Free;
       outlist.Free;
       datlist.Free;
+      Screen.Cursor:=crDefault;
+    end;
+  end;
+end;
+
+procedure TForm1.AusgabeMessages(const fn: string; {List of used MsgID in PX4 file}
+                 var outlist: TStringList);        {List as CSV}
+var dsbuf: array[0..YTHPcols] of byte;
+    inf: TMemoryStream;
+	b: byte;
+	msglist: TStringList;
+	e, len, i, zhl: integer;
+        s: string;
+begin
+  zhl:=0;
+  if FileSize(fn)>lenfixP then begin
+    Screen.Cursor:=crHourGlass;
+    FillChar(dsbuf, length(dsbuf), 0);             {Datenbuffer löschen}
+    msglist:=TStringList.Create;
+    msglist.Sorted:=true;
+    msglist.Duplicates:=dupIgnore;
+    outlist.Clear;
+    inf:=TMemoryStream.Create;
+    try
+      inf.LoadFromFile(fn);
+
+      while inf.Position<(inf.Size-lenfixP) do begin {bis zum Ende der Datei}
+        try
+          repeat                                   {Scan whole file for msgIDs}
+            b:=inf.ReadByte;
+          until (b=dsIDP) or (inf.Position>inf.Size-lenfixP);
+          len:=inf.ReadByte;                       {Länge Payload mit CRC}
+          inf.ReadBuffer(dsbuf, len+lenfixP-2);    {Read Rest-Datensatz mit
+                                    FixPart, aber ohne $FD und Längen-Byte (-2)}
+          e:=0;
+          inc(zhl);
+          for i:=0 to 2 do
+            e:=e+dsbuf[lenfix-3+i]*(256**i);       {MsgID 3 Byte als Zahl}
+          if e<512 then                            {assumption highest message ID number}
+            msglist.Add('$'+IntToHex(e, 3));       {list as hex IDs}
+        except
+        end;
+      end;
+      if msglist.Count>0 then begin
+        SynEdit1.Lines.Add(fn);
+        SynEdit1.Lines.Add(rsUsedMAV);
+        SynEdit1.Lines.Add('');
+        s:=csvMsgID+#9+csvMsgID+#9+'*'+#9+'MAVlink Message';
+        SynEdit1.Lines.Add(s);
+        s:=StringReplace(s, #9, sep, [rfReplaceAll]);
+        outlist.Add(s);
+        StatusBar1.Panels[0].Text:=IntToStr(zhl);
+        StatusBar1.Panels[1].Text:=IntToStr(msglist.Count);
+        StatusBar1.Panels[5].Text:=rsUsedMAV;
+        for i:=0 to msglist.Count-1 do begin
+	  e:=Hex2Dec(msglist[i]);                  {convert back to integer}
+  	  s:=IntToStr(e)+#9+msglist[i]+#9;
+          if e in MAVmsgX then                     {extracted messages}
+            s:=s+'x';
+          s:=s+#9+UpCase(MsgIDtoStr(e));
+ 	  SynEdit1.Lines.Add(s);
+          s:=StringReplace(s, #9, sep, [rfReplaceAll]);
+	  outlist.Add(s);
+        end;
+        SynEdit1.Lines.Add('');
+      end;
+    finally
+      inf.Free;
+      msglist.Free;
       Screen.Cursor:=crDefault;
     end;
   end;
@@ -7053,7 +7212,7 @@ var vlist, flist, outlist: TStringList;
     csvlist[10]:=rsGridCell5;
     csvlist[11]:=rsGridCell6;
     csvlist[12]:=rsGridCell7;
-    csvlist[13]:='n/a';
+    csvlist[13]:=rsN_A;
     csvlist[14]:=rsAvgSpeed;
     csvlist[15]:=rsRest;
     prtext:=csvlist[0];
@@ -7264,7 +7423,7 @@ var vlist, flist, outlist: TStringList;
     csvlist[10]:=rsGridCell5;
     csvlist[11]:=rsGridCell6;
     csvlist[12]:=rsGridCell7;
-    csvlist[13]:='n/a';
+    csvlist[13]:=rsN_A;
     csvlist[14]:=rsAvgSpeed;
     csvlist[15]:=rsRest;
     prtext:=csvlist[0];
@@ -13474,6 +13633,29 @@ end;
 procedure TForm1.MenuItem2Click(Sender: TObject);  {Höhenprofil in Zwischenablage}
 begin
   Chart1.CopyToClipboardBitmap;                    {Höhenprofil}
+end;
+
+procedure TForm1.mnMAVlistClick(Sender: TObject); {List MAV messages}
+var mlist: TStringList;
+begin
+  mlist:=TStringList.Create;
+  try
+    OpenDialog1.Title:=capSensorPlus;
+    if OpenDialog1.Execute then begin
+      AusgabeMessages(OpenDialog1.Filename, mlist);
+      if mlist.Count>1 then begin
+        SaveDialog1.Title:=rsFileSave;
+        SaveDialog1.FileName:=ChangeFileExt(ExtractFileName(OpenDialog1.Filename), '')+
+                              '_MAVmsgList.csv';
+        if SaveDialog1.Execute then begin
+          mlist.SaveToFile(SaveDialog1.FileName);
+
+        end;
+      end;
+    end;
+  finally
+    mlist.Free;
+  end;
 end;
 
 procedure TForm1.MenuItem3Click(Sender: TObject);  {PopUp Höhenprofil als Datei}

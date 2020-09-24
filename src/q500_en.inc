@@ -39,17 +39,17 @@ resourcestring                                     {english}
   rsSaved='saved';
   rsNotSaved='not saved';
   rsTurns=' Tracks';
-  rsRG1Item0='Copter';
+  rsRG1Item0='Drone';
   rsPC1Tab1='Overview';
   rsPC1Tab2='Elevation histogram';
   rsPC1Tab3='Display files';
   rsPC1Tab4='Settings';
-  capForm1='FlightLog evaluation for Yuneec copter';
+  capForm1='FlightLog evaluation for Yuneec drones';
   capLabel2='FlightLog:';
-  capLabel3='Copter-ID:';
+  capLabel3='Drone-ID:';
   capLabel13='Begin';
   capLabel14='End';
-  hntEdit1='Enter name and/or serial number of the copter';
+  hntEdit1='Enter name and/or serial number of the drone';
   capBitBtn1='&Close';
   hntBitBtn1='Close application';
   capBitBtn2='Con&vert';
@@ -284,8 +284,6 @@ resourcestring                                     {english}
   capReduced='Reduced';
   hntReduced='Reduced output to AppLog';
   rsNotUsed='not used';
-  cbCapCaption='Remaining capacity instead voltage';
-  cbCapHint='Show remaining battery capacity instead voltage at Elevation histogram';
   capThunder='H480 Thunderbird';
   hntThunder='FlightLog evaluation only for Thunderbird (H480 with customized PX4 firmware) -> reduced functionality';
   hntMAVmsg='Select MAVlink messages for evaluation. In doubt, select all by double click.';
@@ -294,4 +292,14 @@ resourcestring                                     {english}
   hntCleanCSV='Remove all data sent by 5GHz WiFi connection from telemetry CSV file.';
   capVrule='Conversion rule';
   hntVrule='Rule to convert battery voltage to remaining capacity';
+  cbCapCaption='Capacity instead of voltage';
+  cbCapHint='Show remaining battery capacity instead of voltage at Elevation histogram';
+  rsAbattCap='Computed batt capacity';
+  capgbBatt='Battery capacity';
+  hntgbBatt='Rules to approximate the battery capacity.';
+  capBaseLoad='Base load correction [cA]';
+  hntBaseLoad='Correction value in centi ampere as base load to compute used battery capacity (i.e. for camera, LEDs rtc. Default: 200 (=2A)).';
+  capMAVlist='List MAVlink messages...';
+  hntMAVlist='Makes a sorted list of used MAVlink messages in a PX4 sensor file';
+  rsUsedMav='MAVlink messages types in file';
 

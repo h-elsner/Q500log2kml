@@ -1,7 +1,7 @@
 object Form4: TForm4
-  Left = 1411
+  Left = 1463
   Height = 295
-  Top = 777
+  Top = 812
   Width = 411
   BorderStyle = bsNone
   Caption = 'Log'
@@ -830,7 +830,7 @@ object Form4: TForm4
     Top = 8
     Width = 385
     Alignment = taCenter
-    Caption = 'Q500log2kml  Version 4.4'
+    Caption = 'Q500log2kml  Version 4.5'
     Color = clSkyBlue
     Font.Color = clCream
     Font.Height = -21

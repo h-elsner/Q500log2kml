@@ -285,8 +285,6 @@ resourcestring                                     {deutsch}
   capReduced='Reduziert';
   hntReduced='Reduzierte Ausgabe für AppLog';
   rsNotUsed='nicht benutzt';
-  cbCapCaption='Batteriekapazität statt Spannung';
-  cbCapHint='Anzeige der verbleibenden Batteriekapazität statt der Spannung im Höhendiagramm';
   capThunder='H480 Thunderbird';
   hntThunder='FlightLog Auswertung nur für Thunderbird (H480 mit angepasster PX4 Firmware) -> reduzierte Funktionalität';
   hntMAVmsg='Wähle MAVlink Messages zur Auswertung aus. Im Zweifel, wähle alle per Doppelklick.';
@@ -295,4 +293,14 @@ resourcestring                                     {deutsch}
   hntCleanCSV='Entfernt alle Datensätze, die über 5GHz WiFi gesendet wurden, aus der Telemetrie CSV-Datei.';
   capVrule='Umrechnungsregel';
   hntVrule='Regel für Umrechnen der LiPo-Spannung in Restkapazität';
+  cbCapCaption='Kapazität statt Spannung';
+  cbCapHint='Anzeige der verbleibenden Batteriekapazität statt der Spannung im Höhendiagramm';
+  rsAbattCap='Berechnete Kapazität';
+  capgbBatt='Batteriekapazität';
+  hntgbBatt='Regeln zur Berechnung der Batteriekapazität.';
+  capBaseLoad='Korrektur Grundlast [cA]';
+  hntBaseLoad='Gibt an, wieviel Centiampere als Grundlast für die Berechnung der verbrauchten Batteriekapazität angenommen werden (z.B. für Kamera, LEDs usw.). Default: 200 (=2A)';
+  capMAVlist='MAVlink Messages auflisten...';
+  hntMAVlist='Legt eine sortierte Liste aller MAVlink Messages einer PX4 Sensordatei an';
+  rsUsedMav='Übertragene MAVlink Message Typen';
 

@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 840
+  Left = 851
   Height = 831
-  Top = 84
+  Top = 117
   Width = 1041
   AllowDropFiles = True
   Anchors = [akTop, akRight]
@@ -27,12 +27,12 @@ object Form1: TForm1
     Height = 685
     Top = 96
     Width = 882
-    ActivePage = TabSheet5
+    ActivePage = TabSheet4
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 4
+    TabIndex = 6
     TabOrder = 1
     OnChange = PageControl1Change
     Options = [nboKeyboardTabSwitch]
@@ -1660,12 +1660,12 @@ object Form1: TForm1
       end
     end
     object TabSheet4: TTabSheet
-      ClientHeight = 555
+      ClientHeight = 657
       ClientWidth = 874
       ImageIndex = 4
       object PageControl2: TPageControl
         Left = 0
-        Height = 555
+        Height = 657
         Top = 0
         Width = 874
         ActivePage = TabSheet10
@@ -1853,7 +1853,7 @@ object Form1: TForm1
           end
         end
         object TabSheet10: TTabSheet
-          ClientHeight = 527
+          ClientHeight = 629
           ClientWidth = 866
           ImageIndex = 7
           object GroupBox3: TGroupBox
@@ -1913,12 +1913,12 @@ object Form1: TForm1
           end
           object GroupBox4: TGroupBox
             Left = 232
-            Height = 493
+            Height = 595
             Top = 24
             Width = 384
             Anchors = [akTop, akLeft, akBottom]
             Caption = 'sel'
-            ClientHeight = 473
+            ClientHeight = 575
             ClientWidth = 380
             TabOrder = 1
             object LabeledEdit1: TLabeledEdit
@@ -1969,7 +1969,7 @@ object Form1: TForm1
             end
             object TreeView1: TTreeView
               Left = 8
-              Height = 453
+              Height = 555
               Top = 8
               Width = 216
               Anchors = [akTop, akLeft, akBottom]
@@ -2297,6 +2297,7 @@ object Form1: TForm1
               'RC_CHANNELS (65)'
               'VFR_HUD (74)'
               'HIGHRES_IMU (105)'
+              'ALTITUDE (141)'
               'BATTERY_STATUS (147)'
               'Extended_SYS_State (245)'
             )
@@ -2304,7 +2305,7 @@ object Form1: TForm1
             OnItemClick = MAVmsgItemClick
             TabOrder = 4
             Data = {
-              0C000000020202020202020202020202
+              0D00000002020202020202020202020202
             }
           end
           object CheckBox8: TCheckBox
@@ -4240,7 +4241,7 @@ object Form1: TForm1
     left = 872
     top = 400
     object MenuItem22: TMenuItem
-      Caption = 'datei'
+      Caption = 'Datei'
       object MenuItem41: TMenuItem
         Caption = 'SelDir'
         Bitmap.Data = {
@@ -4748,6 +4749,46 @@ object Form1: TForm1
           7FFF7F7F7FFF7F7F7FFF7F7F7FFF7F7F7FFF3F3F3FFFFFFFFF00
         }
         OnClick = mnCleanCSVClick
+      end
+      object mnMAVlist: TMenuItem
+        Caption = 'MAV'
+        Bitmap.Data = {
+          36040000424D3604000000000000360000002800000010000000100000000100
+          2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00A97151A9C38E
+          68FFC08B66FFBE8864FFBB8561FFB9835FFFB47E5CFFB27C5AFFB17B58FFAE79
+          57FFAD7656FFAB7554FFA97353FFA97151FFA97151A9FFFFFF00C8926CFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDCA77BFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA97251FFFFFFFF00CA946EFFFFFF
+          FFFFFF8E2BFF959595FF878787FFFFFFFFFFDCA77BFFFFFFFFFFFEFEFCFFFEFE
+          FCFFFEFEFAFFFEFEFAFFFCFCF9FFFFFFFFFFAA7353FFFFFFFF00CC976FFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDCA77BFFFFFFFFFFFDFDFAFFFDFD
+          FAFFFDFDFAFFFCFCF7FFFBFBF6FFFFFFFFFFAC7554FFFFFFFF00D19C73FFFFFF
+          FFFFFF9E3AFF9F9F9FFF999999FFFFFFFFFFDCA77BFFFFFFFFFFFDFDF8FFFBFB
+          F9FFFBFAF7FFFBFAF6FFFBF8F4FFFFFFFFFFB07A58FFFFFFFF00D49E75FFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDCA77BFFFFFFFFFFFBF9F7FFFBF9
+          F5FFFBF8F4FFFBF7F2FFFBF5F2FFFFFFFFFFB27C5AFFFFFFFF00D5A076FFFFFF
+          FFFFFFBF68FFAFAFAFFFAAAAAAFFFFFFFFFFDCA77BFFFFFFFFFFFBF8F4FFFBF7
+          F3FFFBF5F2FFFAF3EFFFF8F2ECFFFFFFFFFFB57E5CFFFFFFFF00D8A279FFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDCA77BFFFFFFFFFFFBF6F1FFF8F4
+          EEFFF7F2EBFFF7F0EAFFF6ECE8FFFFFFFFFFB7815EFFFFFFFF00D9A379FFFFFF
+          FFFFFFBF68FFBDBDBDFFB7B7B7FFFFFFFFFFDCA77BFFFFFFFFFFF7F3EDFFF6EF
+          EAFFF5EBE7FFF3EAE4FFF2E7DEFFFFFFFFFFBA8560FFFFFFFF00DBA47AFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDCA77BFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBD8763FFFFFFFF00DCA77BFFDCA7
+          7BFFDCA77BFFDCA77BFFDCA77BFFDCA77BFFDCA77BFFDCA77BFFDCA77BFFDCA7
+          7BFFDCA77BFFDCA77BFFDCA77BFFDCA77BFFC08B66FFFFFFFF00DDAC85FDE8B9
+          92FFE8B992FFE8B992FFE8B992FFE8B992FFE8B992FFE8B992FFE8B992FFE8B9
+          92FFE8B992FFE8B992FFE8B992FFE8B992FFC1906FFDFFFFFF00A971516BDDB1
+          8DF4DCA77BFFDCA67AFFDAA47AFFD8A279FFD5A076FFD49E75FFD29D73FFCF9A
+          72FFCE9970FFCB966FFFC9946CFFC49A7AF4A971516BFFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
+        }
+        OnClick = mnMAVlistClick
       end
     end
     object MenuItem26: TMenuItem
