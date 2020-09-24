@@ -122,3 +122,5 @@ History:
 2020-07-07       Remarks in KML files from PX4 Sensor files
 2020-07-30 V4.5  Added Text messages overview for PX4 sensor files
 2020-08-21       Clean up KML files from PX4 sensor files
+2020-09-20       Message POSITION_TARGET_GLOBAL_INT added (only for AppLog)
+2020-09-21       Message ALTITUDE (141) added. Tools: List of used MAVlink messages.
