@@ -200,6 +200,7 @@ History:
 2020-08-21       Clean up KML files from PX4 sensor files
 2020-09-20       Message POSITION_TARGET_GLOBAL_INT added (only for AppLog)
 2020-09-21       Message ALTITUDE (141) added. Tools: List of used MAVlink messages.
+2020-09-30       Tools - Hexdump added. Bugfix Motorstatus hexacopter (223).
 
 *)
 
@@ -257,6 +258,7 @@ type
     BitBtn27: TBitBtn;
     BitBtn28: TBitBtn;
     BitBtn3: TBitBtn;
+    btnShowHex: TBitBtn;
     btSpecial: TButton;
     cbCap: TCheckBox;
     Chart1: TChart;
@@ -343,17 +345,20 @@ type
     Image3: TImage;
     Image4: TImage;
     Label9: TLabel;
+    mnHexdump: TMenuItem;
     mnMAVlist: TMenuItem;
     MenuItem57: TMenuItem;
     mnTR2: TMenuItem;
     mnCleanCSV: TMenuItem;
     ProgressBar1: TProgressBar;
     RadioGroup10: TRadioGroup;
+    rgBlockSize: TRadioGroup;
     RadioGroup8: TRadioGroup;
     RadioGroup9: TRadioGroup;
     rgVrule: TRadioGroup;
     SpeedButton5: TSpeedButton;
     speBaseLoad: TSpinEdit;
+    speBlockNum: TSpinEdit;
     StringGrid5: TStringGrid;
     SynAnySyn1: TSynAnySyn;
     SynEdit1: TSynEdit;
@@ -511,6 +516,7 @@ type
     procedure BitBtn28Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
+    procedure btnShowHexClick(Sender: TObject);
     procedure btSpecialClick(Sender: TObject);
     procedure cbThunderChange(Sender: TObject);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -587,6 +593,7 @@ type
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem28Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
+    procedure mnHexdumpClick(Sender: TObject);
     procedure mnMAVlistClick(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure MenuItem40Click(Sender: TObject);
@@ -752,8 +759,8 @@ type
     function ZeitToDT(const s: string; const vt: integer): TDateTime;
     function FindTP(wlist: TStringList; tp: TDateTime; const vt: integer): integer;
     function fmodeToStr(const f: integer): string; {Flight Mode abh. vom Typ ausgeben}
-    function PCGstatusToStr(const u: integer): string; {pressure_compass_status}
-    function MotStatusToStr(const u: integer): string; {Motor_status}
+    function PCGstatusToStr(const u: uint8): string; {pressure_compass_status}
+    function MotStatusToStr(const u: uint8): string; {Motor_status}
     function SwitchToStr(const p: integer; const s: string): string;
     function CheckE7(const s: string): boolean;    {prüft einen string auf Fehler}
     function ShowSensorPlus(fn: string;            {Sensordatei vom YTH Plus}
@@ -780,6 +787,8 @@ type
     procedure OverwriteVT;                         {Overwrite vehicle type for PX4 Thunderbird}
     procedure GetDefVT;                            {Fill defVT depending on settings}
     procedure MAVmsgDefault;                       {Set all messages to true}
+    procedure HexAusgabe(const fn: string);        {Tools: Display a binary file as hex print}
+    procedure HexHeader(const fn: string);         {Write header for file and take block size}
   end;
 
 {$I language.inc}
@@ -1347,6 +1356,12 @@ begin
   BitBtn27.Hint:=hntBitBtn27;
   BitBtn28.Caption:=capDel;                        {AppLog löschen}
   BitBtn28.Hint:=hntDel;
+  btnShowHex.Caption:=capHexdump;
+  btnShowHex.Hint:=hntHexdump;
+  rgBlockSize.Hint:=hntBlockSize;
+  speBlockNum.Hint:=hntBlockNum;
+  mnHexDump.Hint:=hntHexdump;
+  mnHexDump.Caption:=capHexdump;
   Image1.Hint:=BitBtn21.Caption;
   SpeedButton6.Hint:=hntSpeed6;
   Edit3.Hint:=hntEdit3;
@@ -1786,7 +1801,7 @@ int gpsModuleStatus = (baroMagByte & 2) >> 1;
 Für PX4: telemetrie definitionen
 https://github.com/PX4/Firmware/blob/master/src/lib/rc/st24.h
 }
-function TForm1.PCGstatusToStr(const u: integer): string; {pressure_compass_status}
+function TForm1.PCGstatusToStr(const u: uint8): string; {pressure_compass_status}
 begin
   result:='';
   case u of
@@ -1817,7 +1832,7 @@ begin
     result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
 end;
 
-function TForm1.MotStatusToStr(const u: integer): string; {Motor_status}
+function TForm1.MotStatusToStr(const u: uint8): string; {Motor_status}
 begin
   result:='';
   case u of
@@ -1832,8 +1847,9 @@ begin
       if (u and 8) =0 then
         result:=result+'Motor 4 off ';
 
-      if (u and 64)=1 then begin                   {Hexakopter}
-        if (u and 16)=0 then
+      if (u and 64)<>1 then begin                  {Hexakopter}
+   if u<>255 then SynEdit1.Lines.Add(IntToStr(u));
+       if (u and 16)=0 then
           result:=result+'Motor 5 off ';
         if (u and 32)=0 then
           result:=result+'Motor 6 off';
@@ -3616,6 +3632,7 @@ begin
     OpenDialog1.Title:=capCleanCSV;
     OpenDialog1.InitialDir:=ComboBox2.Text;
     if OpenDialog1.Execute then begin
+      btnShowhex.Tag:=0;                           {No file selected for Block --> Hex}
       inlist.LoadFromFile(OpenDialog1.FileName);   {Load telemetry file}
       StatusBar1.Panels[0].Text:=IntToStr(inlist.Count-1);
       if inlist.Count>10 then begin
@@ -3914,7 +3931,7 @@ end;
 procedure TForm1.ShowSensorH(const fn: string; mode: integer);
 var dsbuf: array[0..264] of byte;
     i, len, zhl, n3: integer;
-    inf: TMemoryStream;
+    infn: TMemoryStream;
     b: byte;
 
   procedure AusgabeSensor;
@@ -3958,21 +3975,21 @@ begin
     StringGrid1.EndUpdate;
 
     FillChar(dsbuf, length(dsbuf), 0);             {Datenbuffer löschen}
-    inf:=TMemoryStream.Create;
+    infn:=TMemoryStream.Create;
     try
-      inf.LoadFromFile(fn);
+      infn.LoadFromFile(fn);
       SynEdit1.Lines.Add('');
       SynEdit1.Lines.Add(fn);
       StatusBar1.Panels[5].Text:=rsWait;
 
       StringGrid1.BeginUpdate;
-      while inf.Position<(inf.Size-lenfix) do begin
+      while infn.Position<(infn.Size-lenfix) do begin
         repeat                                     {RecordID suchen}
-          b:=inf.ReadByte;
-        until (b=dsID) or (inf.Position>=inf.Size-lenfix);
-        len:=inf.ReadByte;                         {Länge Payload mit CRC}
+          b:=infn.ReadByte;
+        until (b=dsID) or (infn.Position>=infn.Size-lenfix);
+        len:=infn.ReadByte;                        {Länge Payload mit CRC}
         try
-          inf.ReadBuffer(dsbuf, len+lenfix-2);     {Länge Rest-Datensatz mit FixPart}
+          infn.ReadBuffer(dsbuf, len+lenfix-2);    {Länge Rest-Datensatz mit FixPart}
           if mode=0 then
             AusgabeSensor                          {alles anzeigen, ohne Filter}
           else if mode=1 then begin                {mit Filter}
@@ -4013,7 +4030,7 @@ begin
       end;
       SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsMAVlink+tab1+rsDS);
     finally
-      inf.Free;
+      infn.Free;
       Screen.Cursor:=crDefault;
     end;
   end;
@@ -4069,7 +4086,7 @@ const
 var dsbuf: array[0..YTHPcols] of byte;
     i, len, zhl, ele0, elemax, battremain: integer;
     msl, hbt, mmf: byte;
-    inf: TMemoryStream;
+    infn: TMemoryStream;
     b: byte;
     maplist, outlist, datlist: TStringList;
     s, homestr: string;                            {GPX Ausgabe, homepoint}
@@ -4925,10 +4942,10 @@ begin
     maplist:=TStringList.Create;
     outlist:=TStringList.Create;
     datlist:=TStringList.Create;                   {Ausgabedatei für csv-Daten}
-    inf:=TMemoryStream.Create;
+    infn:=TMemoryStream.Create;
     try
       ftm:=FileDateToDateTime(FileAge(fn));
-      inf.LoadFromFile(fn);
+      infn.LoadFromFile(fn);
       StatusBar1.Panels[5].Text:=rsWait;
       StatusBar1.Update;
       SynEdit1.Lines.Add('');
@@ -4945,14 +4962,14 @@ begin
       if tb then
         StringGrid1.BeginUpdate;
       SynEdit1.BeginUpdate(false);                 {Without UnDo Block}
-      while inf.Position<(inf.Size-lenfixP) do begin {bis zum Ende der Datei}
+      while infn.Position<(infn.Size-lenfixP) do begin {bis zum Ende der Datei}
         len:=0;                                    {Reset for error detection}
         try
           repeat
-            b:=inf.ReadByte;
-          until (b=dsIDP) or (inf.Position>inf.Size-lenfixP);
-          len:=inf.ReadByte;                       {Länge Payload mit CRC}
-          inf.ReadBuffer(dsbuf, len+lenfixP-2);    {Länge Rest-Datensatz mit
+            b:=infn.ReadByte;
+          until (b=dsIDP) or (infn.Position>infn.Size-lenfixP);
+          len:=infn.ReadByte;                      {Länge Payload mit CRC}
+          infn.ReadBuffer(dsbuf, len+lenfixP-2);   {Länge Rest-Datensatz mit
                                     FixPart, aber ohne $FD und Längen-Byte (-2)}
           AusgabeSensor;                           {alles anzeigen, ohne Filter}
         except
@@ -5075,7 +5092,7 @@ begin
         end;
       end;
     finally
-      inf.Free;
+      infn.Free;
       maplist.Free;
       outlist.Free;
       datlist.Free;
@@ -5087,7 +5104,7 @@ end;
 procedure TForm1.AusgabeMessages(const fn: string; {List of used MsgID in PX4 file}
                  var outlist: TStringList);        {List as CSV}
 var dsbuf: array[0..YTHPcols] of byte;
-    inf: TMemoryStream;
+        inf: TMemoryStream;
 	b: byte;
 	msglist: TStringList;
 	e, len, i, zhl: integer;
@@ -13508,7 +13525,8 @@ end;
 procedure TForm1.StringGrid5KeyUp(Sender: TObject; var Key: Word; {Strg+C}
   Shift: TShiftState);
 begin
-  if (key=vk_c) and (ssCtrl in Shift) then StringGrid5.CopyToClipboard(false);
+  if (key=vk_c) and (ssCtrl in Shift) then
+    StringGrid5.CopyToClipboard(false);
 end;
 
 procedure TForm1.StringGrid5MouseUp(Sender: TObject; Button: TMouseButton;
@@ -13540,7 +13558,8 @@ end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);     {CGO3 Statusabfrage}
 begin
-  if TabSheet11.Visible then CGO3run('', 0);
+  if TabSheet11.Visible then
+    CGO3run('', 0);
 end;
 
 procedure TForm1.Timer2Timer(Sender: TObject);     {Abfrage Doppelclick Form2}
@@ -13635,13 +13654,14 @@ begin
   Chart1.CopyToClipboardBitmap;                    {Höhenprofil}
 end;
 
-procedure TForm1.mnMAVlistClick(Sender: TObject); {List MAV messages}
+procedure TForm1.mnMAVlistClick(Sender: TObject);  {List MAV messages}
 var mlist: TStringList;
 begin
   mlist:=TStringList.Create;
   try
     OpenDialog1.Title:=capSensorPlus;
     if OpenDialog1.Execute then begin
+      btnShowhex.Tag:=0;                           {No file selected for Block --> Hex}
       AusgabeMessages(OpenDialog1.Filename, mlist);
       if mlist.Count>1 then begin
         SaveDialog1.Title:=rsFileSave;
@@ -13649,8 +13669,9 @@ begin
                               '_MAVmsgList.csv';
         if SaveDialog1.Execute then begin
           mlist.SaveToFile(SaveDialog1.FileName);
-
         end;
+        PageControl1.ActivePageIndex:=7;           {Switch to AppLog}
+        SynEdit1.TopLine:=SynEdit1.Lines.Count;
       end;
     end;
   finally
@@ -13841,12 +13862,14 @@ begin
   if DirectoryExists(spdir) then
     OpenDialog1.InitialDir:=spdir;                 {zu Sensor wechseln}
   if Opendialog1.Execute then begin
+    btnShowhex.Tag:=0;                             {Default: not used for Block --> Hex}
     if Form2<>nil then
       Form2.Close;              {zusätzliches Diagramm schließen beim Neuladen}
-    if ExtractFileExt(OpenDialog1.FileName)=fext then
+    if ExtractFileExt(OpenDialog1.FileName)=fext then        {if a CSV file}
       AnzeigePX4CSV(OpenDialog1.FileName)          {PX4 Sensor csv anzeigen}
-    else                                           {Sensor Datei auswerten}
+    else begin                                     {Sensor Datei auswerten}
       ShowSensorPlus(OpenDialog1.FileName, 0, CheckBox10.Checked, true, false, false);
+    end;
   end;
 end;
 
@@ -14318,6 +14341,110 @@ begin
     FreeAndNil(inlist);
     FreeAndNil(splitlist);
     Screen.Cursor:=crDefault;
+  end;
+end;
+
+procedure TForm1.mnHexdumpClick(Sender: TObject);  {Tools Menu Hexdump}
+begin
+  OpenDialog1.Title:='Select file for '+capHexdump+'...';
+  if OpenDialog1.Execute then begin
+    HexHeader(OpenDialog1.FileName);               {Block size taken only once per file, changes ingnored}
+    HexAusgabe(OpenDialog1.FileName);
+  end;
+end;
+
+procedure TForm1.btnShowHexClick(Sender: TObject); {Button Hexdump}
+begin
+  if btnShowhex.Tag=0 then begin                   {No file selected}
+    OpenDialog1.Title:='Select file for '+capHexdump+'...';
+    If OpenDialog1.Execute then                    {Select one file for dump}
+      HexHeader(OpenDialog1.FileName);
+  end;
+  if btnShowhex.Tag>1 then
+    HexAusgabe(OpenDialog1.FileName);
+end;
+
+procedure TForm1.HexHeader(const fn: string); {all actions before hexdump}
+var fnsize, numblk: integer;
+begin
+  PageControl1.ActivePageIndex:=7;                 {Switch to AppLog}
+  SynEdit1.Lines.Clear;
+  fnsize:=FileSize(fn);
+  btnShowHex.Tag:=2048;                            {File selected}
+  btnShowHex.Tag:=btnShowHex.Tag shl rgBlockSize.ItemIndex;  {Block size at 1st run}
+  numblk:=fnsize div btnShowHex.Tag + 1;
+  speBlockNum.Value:=1;
+  speBlockNum.MaxValue:=numblk;
+  SynEdit1.Lines.Add('');
+  StatusBar1.Panels[0].Text:=IntToStr(fnsize);
+  StatusBar1.Panels[1].Text:=IntToStr(numblk);
+  StatusBar1.Panels[5].Text:=CapHexdump+suff+ExtractFileName(fn);
+  SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+  SynEdit1.Lines.Add(rsFilesize+suff+StatusBar1.Panels[0].Text+
+                     ' bytes = '+StatusBar1.Panels[1].Text+' blocks');
+  SynEdit1.Lines.Add('');
+end;
+
+procedure TForm1.HexAusgabe(const fn: string);     {Display a binary file as hex print}
+var bytesread, adr, p1, p2, i, zhl: integer;
+    instream: TFileStream;
+    rwert: array [1..8192] of byte;
+    zeile: string;
+    zch: char;                                     {Block size in btnShowhex.Tag}
+const
+  hdrstr1='Relative  Bytes                                             ASCII';
+  hdrstr2='address   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F';
+  strstr= '----------------------------------------------------------------------------';
+  adrlen=8;                                        {Length addres string}
+  numbyte=16;                                      {Number of bytes in one line}
+begin
+  zeile:='Block No: '+IntToStr(speBlockNum.Value); {write block header}
+  SynEdit1.Lines.Add(zeile);
+  SynEdit1.Lines.Add(hdrstr1);
+  SynEdit1.Lines.Add(hdrstr2);
+  SynEdit1.Lines.Add(strstr);
+  zhl:=4;
+  instream:=TFileStream.Create(fn, fmOpenRead or fmShareDenyWrite); {file open}
+  try
+    instream.position:=btnShowhex.Tag*(speBlockNum.Value-1);  {Start address of block}
+    bytesread:=instream.Read(rwert, btnShowhex.Tag);
+    adr:=0;                                        {Address counter offset}
+    p1:=1;                                         {position in buffer for Hex}
+    p2:=1;                                         {position in buffer for Char}
+    SynEdit1.BeginUpdate(false);
+      repeat                                       {Go through the whole read buffer}
+        zeile:=IntToHex(adr+(speBlockNum.Value-1)*btnShowhex.Tag, adrlen)+tab2;
+        for i:=1 to numbyte do begin               {Hex dump of one line á 16 bytes}
+          if p1<=bytesread then
+            zeile:=zeile+IntToHex(rwert[p1], 2)+tab1
+          else
+            zeile:=zeile+tab2+tab1;                {Fill the rest with spaces}
+          inc(adr);
+          inc(p1);
+        end;
+        zeile:=zeile+tab2;
+        for i:=1 to numbyte do begin               {ASCII part of the line}
+          case rwert[p2] of
+            32..126, 128, 166, 167, 169, 177..179, 181, 188..190, 215, 247: zch:=Chr(rwert[p2]);
+            196, 214, 220, 223, 228, 246, 252: zch:=Chr(rwert[p2]); {Umlaute}
+          else
+            zch:='.';                              {not a character}
+          end;
+          if p2<=bytesread then
+            zeile:=Zeile+zch;
+          inc(p2);
+        end;
+        SynEdit1.Lines.Add(zeile);
+        inc(zhl);
+      until p1>bytesread;                          {all copied bytes read}
+      SynEdit1.Lines.Add('');
+      SynEdit1.TopLine:=SynEdit1.Lines.Count-zhl;
+    SynEdit1.EndUpdate;
+    if speBlockNum.Value=speBlockNum.MaxValue then {last block dumped, end file}
+      btnShowhex.Tag:=0;                           {next file?}
+    speBlockNum.Value:=speBlockNum.Value+1;        {next block}
+  finally
+    instream.Free
   end;
 end;
 

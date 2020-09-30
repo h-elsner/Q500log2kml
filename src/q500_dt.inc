@@ -303,4 +303,10 @@ resourcestring                                     {deutsch}
   capMAVlist='MAVlink Messages auflisten...';
   hntMAVlist='Legt eine sortierte Liste aller MAVlink Messages einer PX4 Sensordatei an';
   rsUsedMav='Übertragene MAVlink Message Typen';
+  capHexdump='Hexdump';
+  hntHexdump='Hexadezimale Ausgabe eines Blockes aus der Datei.';
+  hntBlockNum='Nummer des Blocks zur Ausgabe hexadezimal.';
+  hntBlockSize='Länge eines Blockes in kByte';
+  rsFilesize='Dateigröße';
+
 
