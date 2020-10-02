@@ -9,7 +9,7 @@ uses
 
 const
 {public constants}
-  Version ='V4.5 08/2020';
+  Version ='V4.5 09/2020';
 
   InvalidChars: set of char=['\', '/', ':', '*', '?', '"', '<', '>', '|', '&'];
   ziff=['0'..'9'];                                 {gültige Ziffern}
@@ -145,6 +145,11 @@ begin
       result:=0;
   except
   end;
+end;
+
+function RadToGrad(r: double): double;
+begin
+  result:=r*180/pi;                                {rad to ° +/-180}
 end;
 
 end.

@@ -14,7 +14,7 @@ type
   {TForm2: Detailanzeige kontextabhängig Diagramme oder Statistiken}
 
   TForm2 = class(TForm)
-    BitBtn1: TBitBtn;
+    btnOKform2: TBitBtn;
     Chart1: TChart;
     Chart1ConstantLine1: TConstantLine;
     Chart1LineSeries1: TLineSeries;
@@ -29,10 +29,10 @@ type
     PopupMenu1: TPopupMenu;
     SaveDialog1: TSaveDialog;
     StringGrid1: TStringGrid;
-    procedure BitBtn1Click(Sender: TObject);
+    procedure btnOKform2Click(Sender: TObject);
     procedure Chart1DblClick(Sender: TObject);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+                            Shift: TShiftState; X, Y: Integer);
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -40,14 +40,14 @@ type
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure StringGrid1CompareCells(Sender: TObject; ACol, ARow, BCol,
-      BRow: Integer; var Result: integer);
+                                      BRow: Integer; var Result: integer);
     procedure StringGrid1DblClick(Sender: TObject);
     procedure StringGrid1KeyUp(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+                               Shift: TShiftState);
     procedure StringGrid1MouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+                                   Shift: TShiftState; X, Y: Integer);
     procedure StringGrid1PrepareCanvas(sender: TObject; aCol, aRow: Integer;
-      aState: TGridDrawState);
+                                       aState: TGridDrawState);
 
   private
     {private declarations}
@@ -104,12 +104,12 @@ begin
       (edTime.Width div 2)+Chart1.Left;
   if lft<Chart1.Left then                          {Left/right borders}
     lft:=Chart1.Left;
-  if lft+edTime.Width+BitBtn1.Width>Chart1.Width then
-    lft:=Chart1.Width-edTime.Width-BitBtn1.Width;
+  if lft+edTime.Width+btnOKform2.Width>Chart1.Width then
+    lft:=Chart1.Width-edTime.Width-btnOKform2.Width;
   edTime.Left:=lft;
 end;
 
-procedure TForm2.BitBtn1Click(Sender: TObject);
+procedure TForm2.btnOKform2Click(Sender: TObject);
 begin
   Close;
   st:='';

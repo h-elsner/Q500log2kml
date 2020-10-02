@@ -4,7 +4,7 @@
           {                                                        }
           {       Copyright (c) 2015-2020    Helmut Elsner         }
           {                                                        }
-          {       Compiler: FPC 3.0.4   /    Lazarus 2.0.6         }
+          {       Compiler: FPC 3.0.4   /    Lazarus 2.0.8         }
           {                                                        }
           { Pascal programmers tend to plan ahead, they think      }
           { before they type. We type a lot because of Pascal      }
@@ -39,8 +39,8 @@ wenn man in die ST10 eine Speicherkarte einlegt:
 ---FlightLog
    +---Remote      Remote_00001.csv       Stickbewegungen, einige Schalter
    +---RemoteGPS   RemoteGPS_00001.csv    GPS Daten von der Funke (Controler)
-   +---Telemetry   Telemetry_00001.csv    Telemetriedaten vom Kopter
    +---Sensor      Sensor_00001.bin       Sensordaten vom Kopter, Firmwarestände
+   +---Telemetry   Telemetry_00001.csv    Telemetriedaten vom Kopter
 
 Datenformat siehe Benutzerhandbuch, Anhang
 ------------------------------------------
@@ -140,16 +140,16 @@ History:
 2018-07-19       Sensor YTH Plus updated. Message ID and text messages
                  decoded.
                  Bug fix für menu item "Go to datapoint".
-2018-07-24  V3.8 AppLog added, Text messages from Sensor files listed there.
+2018-07-24  V3.8 AppLogHighlighter added, Text messages from Sensor files listed there.
                  MAV-Link Message IDs updated, Severity added to text messages.
 2018-08-15       Typhoon H Plus Smart Mode and Manual Mode added.
 2018-08-27	 Updates for Sensor files.
 2018-09-14       SHARPNESS for CGO3+ updated, TeamMode at Gimbal Pan Mode.
-2018-09-28	 Coordinates from GPS_RAW_INT in AppLog, Message names in Sensor
+2018-09-28	 Coordinates from GPS_RAW_INT in AppLogHighlighter, Message names in Sensor
                  file display for Typhoon H Plus.
 2018-10-02 V3.9  Mantis Q Support, H Plus sensor files renamed to PX4 sensor files
                  in menu. System health information from PX4 sensor files added
-                 to AppLog.
+                 to AppLogHighlighter.
 2018-10-24       Identification of Mantis Q flylog files improved. Flight path
                  from PX4 sensor files as KML/KMZ or GPX file.
 2018-10-28	 Show sensor files faster.
@@ -198,7 +198,7 @@ History:
 2020-07-07       Remarks in KML files from PX4 Sensor files
 2020-07-30 V4.5  Added Text messages overview for PX4 sensor files
 2020-08-21       Clean up KML files from PX4 sensor files
-2020-09-20       Message POSITION_TARGET_GLOBAL_INT added (only for AppLog)
+2020-09-20       Message POSITION_TARGET_GLOBAL_INT added (only for AppLogHighlighter)
 2020-09-21       Message ALTITUDE (141) added. Tools: List of used MAVlink messages.
 2020-09-30       Tools - Hexdump added. Bugfix Motorstatus hexacopter (223).
 
@@ -337,7 +337,7 @@ type
     GroupBox4: TGroupBox;
     GroupBox5: TGroupBox;
     GroupBox6: TGroupBox;
-    GroupBox7: TGroupBox;
+    rgFotoExt: TGroupBox;
     GroupBox8: TGroupBox;
     GroupBox9: TGroupBox;
     Image1: TImage;
@@ -345,23 +345,24 @@ type
     Image3: TImage;
     Image4: TImage;
     Label9: TLabel;
+    MenuItem1: TMenuItem;
     mnHexdump: TMenuItem;
     mnMAVlist: TMenuItem;
-    MenuItem57: TMenuItem;
+    mnSlideshow: TMenuItem;
     mnTR2: TMenuItem;
     mnCleanCSV: TMenuItem;
     ProgressBar1: TProgressBar;
-    RadioGroup10: TRadioGroup;
+    rgVehicleType: TRadioGroup;
     rgBlockSize: TRadioGroup;
-    RadioGroup8: TRadioGroup;
-    RadioGroup9: TRadioGroup;
-    rgVrule: TRadioGroup;
+    rgCSVtext: TRadioGroup;
+    rgErrType: TRadioGroup;
+    rgVoltRule: TRadioGroup;
     SpeedButton5: TSpeedButton;
     speBaseLoad: TSpinEdit;
     speBlockNum: TSpinEdit;
     StringGrid5: TStringGrid;
-    SynAnySyn1: TSynAnySyn;
-    SynEdit1: TSynEdit;
+    AppLogHighlighter: TSynAnySyn;
+    AppLog: TSynEdit;
     TabImages: TImageList;
     indGnouMeter1: TindGnouMeter;
     Label1: TLabel;
@@ -391,74 +392,74 @@ type
     ListBox1: TListBox;
     MainMenu1: TMainMenu;
     Memo1: TMemo;
-    MenuItem1: TMenuItem;
+    mnGoogleMap: TMenuItem;
     MenuItem14: TMenuItem;
     MenuItem15: TMenuItem;
-    MenuItem16: TMenuItem;
-    MenuItem17: TMenuItem;
-    MenuItem18: TMenuItem;
+    mnDelTab: TMenuItem;
+    mnStartTab: TMenuItem;
+    mnStopTab: TMenuItem;
     MenuItem19: TMenuItem;
-    MenuItem2: TMenuItem;
-    MenuItem20: TMenuItem;
+    mnCopyHist: TMenuItem;
+    mnDelHist: TMenuItem;
     MenuItem21: TMenuItem;
-    MenuItem22: TMenuItem;
-    MenuItem23: TMenuItem;
-    MenuItem24: TMenuItem;
-    MenuItem25: TMenuItem;
-    MenuItem26: TMenuItem;
-    MenuItem27: TMenuItem;
-    MenuItem28: TMenuItem;
+    mnMainFile: TMenuItem;
+    mnMainTools: TMenuItem;
+    mnConvert: TMenuItem;
+    mnMainScreenshot: TMenuItem;
+    mnMainHelp: TMenuItem;
+    mnManual: TMenuItem;
+    mnHomepage: TMenuItem;
     MenuItem29: TMenuItem;
-    MenuItem3: TMenuItem;            {"Als Bild speichern" im PopUp Menü HDiagr}
-    MenuItem30: TMenuItem;
+    mnSaveAsHist: TMenuItem;            {"Als Bild speichern" im PopUp Menü HDiagr}
+    mnInfo: TMenuItem;
     mnTR1: TMenuItem;
-    MenuItem32: TMenuItem;
-    MenuItem33: TMenuItem;
-    MenuItem34: TMenuItem;
+    mnMainDel: TMenuItem;
+    mnMainStart: TMenuItem;
+    mnMainStop: TMenuItem;
     mnCut: TMenuItem;
-    MenuItem36: TMenuItem;
+    mnArchive: TMenuItem;
     MenuItem37: TMenuItem;
-    MenuItem38: TMenuItem;
+    mnClose: TMenuItem;
     MenuItem39: TMenuItem;
-    MenuItem4: TMenuItem;
-    MenuItem40: TMenuItem;
-    MenuItem41: TMenuItem;
-    MenuItem44: TMenuItem;
-    MenuItem45: TMenuItem;
+    mnCursorEin: TMenuItem;
+    mnExploreLog: TMenuItem;
+    mnSelDirLog: TMenuItem;
+    mnMainScanRec: TMenuItem;
+    mnSelDirRec: TMenuItem;
     MenuItem46: TMenuItem;
-    MenuItem47: TMenuItem;
-    MenuItem5: TMenuItem;
-    MenuItem50: TMenuItem;
-    MenuItem10: TMenuItem;                         {Menü GoTo Settings}
-    MenuItem11: TMenuItem;                         {Menü Default Schnellanalyse}
-    MenuItem12: TMenuItem;                         {Menü Profiles - no action}
-    MenuItem13: TMenuItem;                         {Menü Profile FlightMode}
-    MenuItem42: TMenuItem;                         {Menü Profile Errors}
-    MenuItem43: TMenuItem;                         {Menü Profile GPS}
-    MenuItem48: TMenuItem;                         {Menü Profile Throttle}
-    MenuItem49: TMenuItem;                         {Menü Profile Pitch}
-    MenuItem51: TMenuItem;                         {Menü Profile Roll}
-    MenuItem52: TMenuItem;                         {Menü Profile Yaw}
-    MenuItem53: TMenuItem;                         {Menü Profile 3Axis}
-    MenuItem54: TMenuItem;                         {Menü Table Cut}
+    mnExploreRec: TMenuItem;
+    mnGoToTab: TMenuItem;
+    mnCopyTab: TMenuItem;
+    mnSaveAsQuick: TMenuItem;                         {Menü GoTo Settings}
+    mnResetProfile: TMenuItem;                         {Menü Default Schnellanalyse}
+    mnProfiles: TMenuItem;                         {Menü Profiles - no action}
+    mnProfMode: TMenuItem;                         {Menü Profile FlightMode}
+    mnProfErr: TMenuItem;                         {Menü Profile Errors}
+    mnProfGPS: TMenuItem;                         {Menü Profile GPS}
+    mnProfThr: TMenuItem;                         {Menü Profile Throttle}
+    mnProfPitch: TMenuItem;                         {Menü Profile Pitch}
+    mnProfRoll: TMenuItem;                         {Menü Profile Roll}
+    mnProfYaw: TMenuItem;                         {Menü Profile Yaw}
+    mnProf3Axis: TMenuItem;                         {Menü Profile 3Axis}
+    mnCutTab: TMenuItem;                         {Menü Table Cut}
     MenuItem55: TMenuItem;
-    MenuItem56: TMenuItem;                         {Menü Sensor file from YTH Plus}
-    MenuItem6: TMenuItem;
-    MenuItem7: TMenuItem;
-    MenuItem8: TMenuItem;
-    MenuItem9: TMenuItem;
+    mnSensorPX4: TMenuItem;                         {Menü Sensor file from YTH Plus}
+    mnAnalyseTab: TMenuItem;
+    mnGoToErr: TMenuItem;
+    mnGoTable: TMenuItem;
+    mnOSM: TMenuItem;
     OpenDialog1: TOpenDialog;
     PageControl1: TPageControl;
     PageControl2: TPageControl;
-    PopupMenu1: TPopupMenu;
-    PopupMenu2: TPopupMenu;
-    PopupMenu3: TPopupMenu;                        {Popup Menü Schellanalyse}
+    PopupMenuTab: TPopupMenu;
+    PopupMenuHist: TPopupMenu;
+    PopupMenuProfile: TPopupMenu;                        {Popup Menü Schellanalyse}
     RadioGroup1: TRadioGroup;
-    RadioGroup2: TRadioGroup;
-    RadioGroup3: TRadioGroup;
-    RadioGroup4: TRadioGroup;
-    RadioGroup5: TRadioGroup;
-    RadioGroup6: TRadioGroup;
+    rgOutFormat: TRadioGroup;
+    rgSpeedUnit: TRadioGroup;
+    rgTimeType: TRadioGroup;
+    rgAltitudeType: TRadioGroup;
+    rgVideoFoto: TRadioGroup;
     RadioGroup7: TRadioGroup;
     SaveDialog1: TSaveDialog;
     SelectDirectoryDialog1: TSelectDirectoryDialog;
@@ -489,8 +490,8 @@ type
     TabSheet8: TTabSheet;                          {Schnellanalyse}
     TabSheet9: TTabSheet;                          {Settings Konvert}
     Timer1: TTimer;                                {CGO3 Statusabfrage}
-    Timer2: TTimer;
-    Timer3: TTimer;
+    TimerDblClick: TTimer;
+    TimerDiashow: TTimer;
     TrackBar1: TTrackBar;
     TrackBar2: TTrackBar;
     TrackBar3: TTrackBar;
@@ -584,44 +585,44 @@ type
     procedure MAVmsgDblClick(Sender: TObject);
     procedure MAVmsgItemClick(Sender: TObject; Index: integer);
     procedure Memo1Change(Sender: TObject);
-    procedure MenuItem10Click(Sender: TObject);
-    procedure MenuItem11Click(Sender: TObject);
-    procedure MenuItem13Click(Sender: TObject);
-    procedure MenuItem16Click(Sender: TObject);
-    procedure MenuItem17Click(Sender: TObject);
-    procedure MenuItem18Click(Sender: TObject);
-    procedure MenuItem1Click(Sender: TObject);
-    procedure MenuItem28Click(Sender: TObject);
-    procedure MenuItem2Click(Sender: TObject);
+    procedure mnSaveAsQuickClick(Sender: TObject);
+    procedure mnResetProfileClick(Sender: TObject);
+    procedure mnProfModeClick(Sender: TObject);
+    procedure mnDelTabClick(Sender: TObject);
+    procedure mnStartTabClick(Sender: TObject);
+    procedure mnStopTabClick(Sender: TObject);
+    procedure mnGoogleMapClick(Sender: TObject);
+    procedure mnHomepageClick(Sender: TObject);
+    procedure mnCopyHistClick(Sender: TObject);
     procedure mnHexdumpClick(Sender: TObject);
     procedure mnMAVlistClick(Sender: TObject);
-    procedure MenuItem3Click(Sender: TObject);
-    procedure MenuItem40Click(Sender: TObject);
-    procedure MenuItem41Click(Sender: TObject);
-    procedure MenuItem42Click(Sender: TObject);
-    procedure MenuItem43Click(Sender: TObject);
-    procedure MenuItem45Click(Sender: TObject);
-    procedure MenuItem48Click(Sender: TObject);
-    procedure MenuItem49Click(Sender: TObject);
-    procedure MenuItem4Click(Sender: TObject);
-    procedure MenuItem50Click(Sender: TObject);
-    procedure MenuItem51Click(Sender: TObject);
-    procedure MenuItem52Click(Sender: TObject);
-    procedure MenuItem53Click(Sender: TObject);
-    procedure MenuItem56Click(Sender: TObject);
-    procedure MenuItem57Click(Sender: TObject);
-    procedure MenuItem5Click(Sender: TObject);
-    procedure MenuItem6Click(Sender: TObject);
-    procedure MenuItem7Click(Sender: TObject);
-    procedure MenuItem8Click(Sender: TObject);
-    procedure MenuItem9Click(Sender: TObject);
+    procedure mnSaveAsHistClick(Sender: TObject);
+    procedure mnExploreLogClick(Sender: TObject);
+    procedure mnSelDirLogClick(Sender: TObject);
+    procedure mnProfErrClick(Sender: TObject);
+    procedure mnProfGPSClick(Sender: TObject);
+    procedure mnSelDirRecClick(Sender: TObject);
+    procedure mnProfThrClick(Sender: TObject);
+    procedure mnProfPitchClick(Sender: TObject);
+    procedure mnCursorEinClick(Sender: TObject);
+    procedure mnCopyTabClick(Sender: TObject);
+    procedure mnProfRollClick(Sender: TObject);
+    procedure mnProfYawClick(Sender: TObject);
+    procedure mnProf3AxisClick(Sender: TObject);
+    procedure mnSensorPX4Click(Sender: TObject);
+    procedure mnSlideshowClick(Sender: TObject);
+    procedure mnGoToTabClick(Sender: TObject);
+    procedure mnAnalyseTabClick(Sender: TObject);
+    procedure mnGoToErrClick(Sender: TObject);
+    procedure mnGoTableClick(Sender: TObject);
+    procedure mnOSMClick(Sender: TObject);
     procedure mnCleanCSVClick(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
-    procedure RadioGroup2Click(Sender: TObject);
-    procedure RadioGroup3Click(Sender: TObject);
-    procedure RadioGroup5Click(Sender: TObject);
-    procedure RadioGroup6Click(Sender: TObject);
+    procedure rgOutFormatClick(Sender: TObject);
+    procedure rgSpeedUnitClick(Sender: TObject);
+    procedure rgAltitudeTypeClick(Sender: TObject);
+    procedure rgVideoFotoClick(Sender: TObject);
     procedure RadioGroup7Click(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
@@ -675,8 +676,8 @@ type
     procedure StringGrid5Resize(Sender: TObject);
     procedure TabSheet8Resize(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
-    procedure Timer2Timer(Sender: TObject);
-    procedure Timer3Timer(Sender: TObject);
+    procedure TimerDblClickTimer(Sender: TObject);
+    procedure TimerDiashowTimer(Sender: TObject);
     procedure TrackBar1Change(Sender: TObject);
     procedure TrackBar2Change(Sender: TObject);
     procedure TrackBar3Click(Sender: TObject);
@@ -771,7 +772,7 @@ type
                      var outlist: TStringList);    {Datenausgabe MsgID sortiert}
     procedure ShowSensorH(const fn: string; mode: integer); {Sensor File YTH}
     function ComplFN(st: string; tp: TDateTime): string;    {Dateinamen mit Nummer ergänzen}
-    procedure AppLogTimeStamp(s: string);          {AppLog einteilen}
+    procedure AppLogTimeStamp(s: string);          {AppLogHighlighter einteilen}
     procedure SendCGOcmd;                          {Command zu CGO3}
     procedure Sharpness;                           {SHARNESS ermitteln}
     procedure OpenSensorPlus;                      {Sensordatei vom YTH Plus öffnen}
@@ -1061,7 +1062,7 @@ begin
   topp:=nil;
   SetLength(topp, 4);                              {Topzeilen array}
   kpath:=IncludeTrailingPathDelimiter(dkpath);     {default setzen}
-  SynEdit1.Lines.Clear;
+  AppLog.Lines.Clear;
   AppLogTimeStamp(Application.ExeName+tab4+version);
   Caption:=capForm1+tab2+Version;                  {Name und Version}
   Hint:=capForm1;
@@ -1075,8 +1076,8 @@ begin
   BitBtn13.Hint:=hntBitBtn13;
 {$IFDEF DARWIN}                                    {MAC OS X}
   BitBtn13.Visible:=false;                         {Button Screenshot}
-  MenuItem25.Visible:=false;                       {Main Menu Screenshot}
-  MenuItem3.Visible:=false;                        {PopUp Menu Höhenprofil; geht das nun?}
+  mnMainScreenshot.Visible:=false;                       {Main Menu Screenshot}
+  mnSaveAsHist.Visible:=false;                        {PopUp Menu Höhenprofil; geht das nun?}
 {$ENDIF}
   BitBtn14.Caption:=capBitBtn14;                   {Ausschneiden / Cut}
   BitBtn14.Hint:=hntBitBtn14;
@@ -1093,43 +1094,43 @@ begin
   ComboBox2.Hint:=DefaultStatus;
   SpeedButton4.Hint:=DefaultStatus;
   SpeedButton5.Hint:=capSelProt;                   {Protokollverzeichnis}
-  MenuItem1.Caption:=rsToGMaps;
-  MenuItem2.Caption:=rsToClipBoard;
-  MenuItem3.Caption:=rsHDiaSave;
-  MenuItem4.Caption:=capCrossHairOn;
-  MenuItem4.Hint:=hntCrossHair;
-  MenuItem5.Caption:=capGoToZNr;
-  MenuItem6.Caption:=capTabSheet10;
-  MenuItem7.Caption:=capMenuItem7;
-  MenuItem8.Caption:=capMenuItem8;
-  MenuItem9.Caption:=rsToOSM;
-  MenuItem16.Caption:=rsResetCutBE;
-  MenuItem17.Caption:=rsStartTpunkt;
-  MenuItem18.Caption:=rsEndTPunkt;
-  MenuItem20.Caption:=rsResetCutBE;
-  MenuItem22.Caption:=capDatei;
-  MenuItem24.Caption:=capBitBtn2;
-  MenuItem25.Caption:=rsScreenshot;
-  MenuItem26.Caption:=capHelp;
-  MenuItem27.Caption:=capLabel7;
-  MenuItem30.Caption:=capInfo;
-  MenuItem32.Caption:=rsResetCutBE;
-  MenuItem33.Caption:=rsStartTPunkt;
-  MenuItem34.Caption:=rsEndTPunkt;
+  mnGoogleMap.Caption:=rsToGMaps;
+  mnCopyHist.Caption:=rsToClipBoard;
+  mnSaveAsHist.Caption:=rsHDiaSave;
+  mnCursorEin.Caption:=capCrossHairOn;
+  mnCursorEin.Hint:=hntCrossHair;
+  mnGoToTab.Caption:=capGoToZNr;
+  mnAnalyseTab.Caption:=capTabSheet10;
+  mnGoToErr.Caption:=capMenuItem7;
+  mnGoTable.Caption:=capMenuItem8;
+  mnOSM.Caption:=rsToOSM;
+  mnDelTab.Caption:=rsResetCutBE;
+  mnStartTab.Caption:=rsStartTpunkt;
+  mnStopTab.Caption:=rsEndTPunkt;
+  mnDelHist.Caption:=rsResetCutBE;
+  mnMainFile.Caption:=capDatei;
+  mnConvert.Caption:=capBitBtn2;
+  mnMainScreenshot.Caption:=rsScreenshot;
+  mnMainHelp.Caption:=capHelp;
+  mnManual.Caption:=capLabel7;
+  mnInfo.Caption:=capInfo;
+  mnMainDel.Caption:=rsResetCutBE;
+  mnMainStart.Caption:=rsStartTPunkt;
+  mnMainStop.Caption:=rsEndTPunkt;
   mnCut.Caption:=capBitBtn14;                      {Ausschneiden / Cut}
-  MenuItem54.Caption:=capBitBtn14;                 {Ausschneiden / Cut}
-  MenuItem36.Caption:=capBitBtn3;
-  MenuItem38.Caption:=capBitBtn1;
-  MenuItem40.Caption:=capOpen;
-  MenuItem41.Caption:=capSelDir;
-  MenuItem44.Caption:=capGroupBox10;
-  MenuItem45.Caption:=capSelProt;
-  MenuItem47.Caption:=capMI47;
-  MenuItem50.Caption:=rsCopy;
-  MenuItem11.Caption:=capBitBtn12;                 {Menü Default}
-  MenuItem10.Caption:=rsPC1Tab4;                   {Menü Settings}
-  MenuItem56.Caption:=capSensorPlus;               {Sensordatei für YTH Plus öffnen}
-  MenuItem57.Caption:=capDiashow;                  {alle Profiles anzeigen}
+  mnCutTab.Caption:=capBitBtn14;                 {Ausschneiden / Cut}
+  mnArchive.Caption:=capBitBtn3;
+  mnClose.Caption:=capBitBtn1;
+  mnExploreLog.Caption:=capOpen;
+  mnSelDirLog.Caption:=capSelDir;
+  mnMainScanRec.Caption:=capGroupBox10;
+  mnSelDirRec.Caption:=capSelProt;
+  mnExploreRec.Caption:=capMI47;
+  mnCopyTab.Caption:=rsCopy;
+  mnResetProfile.Caption:=capBitBtn12;                 {Menü Default}
+  mnSaveAsQuick.Caption:=rsPC1Tab4;                   {Menü Settings}
+  mnSensorPX4.Caption:=capSensorPlus;               {Sensordatei für YTH Plus öffnen}
+  mnSlideshow.Caption:=capDiashow;                  {alle Profiles anzeigen}
   mnCleanCSV.Caption:=capCleanCSV;
   mnCleanCSV.Hint:=hntCleanCSV;
   mnMAVlist.Caption:=capMAVlist;                   {Tools: List of used MAVlink messages}
@@ -1141,23 +1142,23 @@ begin
   RadioGroup1.Items[2]:=fpath;
   RadioGroup1.Items[3]:=npath;
   RadioGroup1.Tag:=0;                              {Autosize columns needed}
-  RadioGroup2.Caption:=capRadioGroup2+tab1+capBitBtn2;
-  RadioGroup2.Hint:=hntRadioGroup2;
-  RadioGroup3.Caption:=capRadioGroup3;
-  RadioGroup4.Caption:=capDirSuffix+tab1+capBitBtn3;
-  RadioGroup4.Hint:=hntDirSuffix;
-  RadioGroup5.Caption:=capGroupBox5;
-  RadioGroup5.Hint:=hntGroupBox5;
-  RadioGroup6.Caption:=rsMode;
-  RadioGroup6.Hint:=rsMode+' ('+rsVdo+'/'+capBitBtn22+')';
-  RadioGroup6.Items[1]:=capBitBtn22;
-  RadioGroup6.ItemIndex:=0;
+  rgOutFormat.Caption:=capRadioGroup2+tab1+capBitBtn2;
+  rgOutFormat.Hint:=hntRadioGroup2;
+  rgSpeedUnit.Caption:=capRadioGroup3;
+  rgTimeType.Caption:=capDirSuffix+tab1+capBitBtn3;
+  rgTimeType.Hint:=hntDirSuffix;
+  rgAltitudeType.Caption:=capGroupBox5;
+  rgAltitudeType.Hint:=hntGroupBox5;
+  rgVideoFoto.Caption:=rsMode;
+  rgVideoFoto.Hint:=rsMode+' ('+rsVdo+'/'+capBitBtn22+')';
+  rgVideoFoto.Items[1]:=capBitBtn22;
+  rgVideoFoto.ItemIndex:=0;
   RadioGroup7.Caption:=capRadioGroup2;
   RadioGroup7.Hint:=capRadioGroup2;
-  RadioGroup8.Caption:=capRadioGroup2+tab1+capNachweis;
-  RadioGroup8.Hint:=hntRadioGroup8;
-  rgVrule.Caption:=capVrule;
-  rgVrule.Hint:=hntVrule;
+  rgCSVtext.Caption:=capRadioGroup2+tab1+capNachweis;
+  rgCSVtext.Hint:=hntRadioGroup8;
+  rgVoltRule.Caption:=capVrule;
+  rgVoltRule.Hint:=hntVrule;
   StatusBar1.Hint:=hntStatus1;
   TabSheet1.Caption:=rsPC1Tab1;
   TabSheet2.Caption:=rsPC1Tab2;
@@ -1243,7 +1244,7 @@ begin
   CheckBox11.Hint:=hntCheckBox11;                  {add extrude 1 tag to KML}
   cbCap.Caption:=cbCapCaption;                     {Remaining capacity instead voltage}
   cbCap.Hint:=cbCapHint;
-  cbReduced.Caption:=capReduced;                   {Applog reduced, only text msg}
+  cbReduced.Caption:=capReduced;                   {AppLogHighlighter reduced, only text msg}
   cbReduced.Hint:=hntReduced;
   cbThunder.Caption:=capThunder;
   cbThunder.Hint:=hntThunder;
@@ -1253,8 +1254,8 @@ begin
   GroupBox4.Hint:=hntGroupBox4+capAnalyse;
   GroupBox5.Caption:=rsCGOstat;
   GroupBox5.Hint:=rsCGOstat;
-  GroupBox7.Caption:=capGroupBox7;
-  GroupBox7.Hint:=capGroupBox7;
+  rgFotoExt.Caption:=capGroupBox7;
+  rgFotoExt.Hint:=capGroupBox7;
   GroupBox8.Caption:=capTabSheet12;
   GroupBox8.Hint:=capTabSheet12;
   GroupBox9.Caption:=capGroupBox9;
@@ -1352,9 +1353,9 @@ begin
   BitBtn22.Caption:=capBitBtn22;
   BitBtn22.Hint:=hntBitBtn22;
   BitBtn26.Caption:=capScan;
-  BitBtn27.Caption:=rsSave;                        {AppLog speichern}
+  BitBtn27.Caption:=rsSave;                        {AppLogHighlighter speichern}
   BitBtn27.Hint:=hntBitBtn27;
-  BitBtn28.Caption:=capDel;                        {AppLog löschen}
+  BitBtn28.Caption:=capDel;                        {AppLogHighlighter löschen}
   BitBtn28.Hint:=hntDel;
   btnShowHex.Caption:=capHexdump;
   btnShowHex.Hint:=hntHexdump;
@@ -1369,7 +1370,7 @@ begin
   Edit3.TextHint:=hntEdit3;
   Edit4.TextHint:=hntEdit4;
   ProgressBar1.Hint:=hntProgrBar1;
-  RadioGroup9.Caption:=capProb;
+  rgErrType.Caption:=capProb;
   GroupBox6.Caption:=capProbScan;
   GroupBox6.Hint:=hntProb;
   Chart1BarSeries1.SeriesColor:=clAngle;           {Angle Mode – Purple status LED}
@@ -1385,10 +1386,10 @@ begin
     farbskala[2, i]:=HLStoColor(0,   255-round(i/High(farbskala[0])*150), 230);  {rot}
   end;
   tpos:=0;                                         {keine Position in der Tabelle}
-  StatusBar1.Panels[2].Text:=RadioGroup2.Items[RadioGroup2.ItemIndex];
+  StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
   BitBtn2.Hint:=hntBitBtn2+' (+ '+StatusBar1.Panels[2].Text+')';
-  BitBtn3.Hint:=hntBitBtn3+' (+ '+RadioGroup4.Items[RadioGroup4.ItemIndex]+')';
-  RadioGroup10.Enabled:=CheckBox1.Checked;
+  BitBtn3.Hint:=hntBitBtn3+' (+ '+rgTimeType.Items[rgTimeType.ItemIndex]+')';
+  rgVehicleType.Enabled:=CheckBox1.Checked;
   MAVmsgDefault;                                   {default: all MAV messages selected}
   MAVmsg.Hint:=hntMAVmsg;
   FreigabeCut(false);                              {ohne Statusausgabe}
@@ -1585,7 +1586,7 @@ begin
     ThBid: result:=capThunder;                     {H480 Thunderbird}
     H501ID: result:='Tom''s flight data recorder for Hubsan';  {flaretom Hubsan Recorder}
   else
-    SynEdit1.Lines.Add('''Unknown Vehicle type '+IntToStr(v)+' found');
+    AppLog.Lines.Add('''Unknown Vehicle type '+IntToStr(v)+' found');
   end;
 end;
 
@@ -1848,7 +1849,7 @@ begin
         result:=result+'Motor 4 off ';
 
       if (u and 64)<>1 then begin                  {Hexakopter}
-   if u<>255 then SynEdit1.Lines.Add(IntToStr(u));
+   if u<>255 then AppLog.Lines.Add(IntToStr(u));
        if (u and 16)=0 then
           result:=result+'Motor 5 off ';
         if (u and 32)=0 then
@@ -2820,18 +2821,18 @@ end;
 function VtoProz(const vt: integer; u: double): integer;
 begin                                              {Choose rule to convert V to %}
   result:=0;
-  case Form1.rgVrule.ItemIndex of
-    0: result:=VtoProzY(vt, u);
-    1: result:=VtoProzRC(vt, u);
+  case Form1.rgVoltRule.ItemIndex of
+    0: result:=VtoProzY(vt, u);                    {Yuneec rule}
+    1: result:=VtoProzRC(vt, u);                   {RC-Groups}
   end;
 end;
 
 function RSSIpToColor(Const r: integer): TColor;   {RSSI in Prozent einfärben}
 begin
   result:=Form1.StringGrid1.Color;
-  if r<30 then                                     {unter 30%}
+  if r<30 then                                     {below 30%}
     result:=clAttention;
-  if r<15 then                                     {unter 15%}
+  if r<15 then                                     {below 15%}
     result:=clRed;
 end;
 
@@ -2874,7 +2875,7 @@ begin
   end;
 end;
 
-function RSSItoColor(r: double): TColor;
+function RSSItoColor(r: double): TColor;           {Color code for RSSI value}
 begin
   result:=clRed;
   if r<85 then
@@ -2946,7 +2947,7 @@ end;
 
 
 function NichtLeer(const s: string): boolean; inline;
-                 {Identifikation eines leeren Feldes oder Feld mit 0 Wert}
+                    {Identifikation eines leeren Feldes oder Feld mit 0 Wert}
 var w: double;
 begin
   result:=true;
@@ -3011,7 +3012,7 @@ end;
 function TForm1.SpeedX(const sp: double): double; inline;
 begin                                              {Geschwindigkeit umrechnen}
   result:=sp;                                      {default m/s}
-  case RadioGroup3.ItemIndex of
+  case rgSpeedUnit.ItemIndex of
     1: result:=sp*fkmh;                            {km/h}
     2: result:=sp*fmph;                            {mph}
   end;
@@ -3091,7 +3092,7 @@ var e: integer;
     end;
   end;
 
-  procedure TabHintYTHP;
+  procedure TabHintYTHP;                           {Hint for H Plus}
   begin
     s:='';
     if (sp=0) or (sp=1) then begin                 {Fix=/1}
@@ -3214,7 +3215,7 @@ var e: integer;
           begin
             t:=H501velo(StrToFloatN(StringGrid1.Cells[sp, zl]));   {Velocity}
             s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 1)+'m/s = ';
-            if RadioGroup3.ItemIndex=2 then
+            if rgSpeedUnit.ItemIndex=2 then
               s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
             else
               s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
@@ -3253,7 +3254,7 @@ var e: integer;
                      StrToFloatN(StringGrid1.Cells[sp, zl]));
       3: s:=rsrest+tab1+StringGrid1.Cells[sp, zl]+'%';
       4: begin                                     {Altitude}
-           if RadioGroup3.ItemIndex=2 then begin
+           if rgSpeedUnit.ItemIndex=2 then begin
              try
                t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
              except
@@ -3271,7 +3272,7 @@ var e: integer;
              t:=0;
            end;
            s:=DefaultHnt+'m/s = ';
-           if RadioGroup3.ItemIndex=2 then
+           if rgSpeedUnit.ItemIndex=2 then
              s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
            else
              s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
@@ -3297,7 +3298,7 @@ var e: integer;
             if t>0 then s:=FloatToStrF(H920Amp(t), ffFixed, 3, 1)+'A';
           end;
        4: begin                                    {Altitude}
-            if RadioGroup3.ItemIndex=2 then begin
+            if rgSpeedUnit.ItemIndex=2 then begin
               try
                 t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
               except
@@ -3314,7 +3315,7 @@ var e: integer;
               t:=0;
             end;
             s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 2)+'m/s = ';
-            if RadioGroup3.ItemIndex=2 then
+            if rgSpeedUnit.ItemIndex=2 then
               s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
             else
               s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
@@ -3384,7 +3385,7 @@ var e: integer;
       1, 2: s:=HeaderHnt+ChrKoor(StringGrid1.Cells[sp, zl]);   {lat, lon}
       3: begin                                     {Altitude}
         s:=HeaderHnt;
-        if RadioGroup3.ItemIndex=2 then begin
+        if rgSpeedUnit.ItemIndex=2 then begin
              try
                t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
              except
@@ -3402,7 +3403,7 @@ var e: integer;
              t:=0;
            end;
            s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 2)+'m/s = ';
-           if RadioGroup3.ItemIndex=2 then
+           if rgSpeedUnit.ItemIndex=2 then
              s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
            else
              s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
@@ -3434,7 +3435,7 @@ var e: integer;
              t:=0;
            end;
            s:=DefaultHnt+'m/s = ';
-           if RadioGroup3.ItemIndex=2 then
+           if rgSpeedUnit.ItemIndex=2 then
              s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
            else
              s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
@@ -3507,13 +3508,13 @@ end;
 function TForm1.vms(const d: TDateTime; const w: double): string; {Weg in m --> V in m/s oder km/h}
 begin
   try
-    case RadioGroup3.ItemIndex of
+    case rgSpeedUnit.ItemIndex of
       1: result:=FloatToStrF(w/(d*Secpd)*fkmh, ffFixed, 3, 2); {in km/h}
       2: result:=FloatToStrF(w/(d*Secpd)*fmph, ffFixed, 3, 2); {in mph}
       else
         result:=FloatToStrF(w/(d*Secpd), ffFixed, 3, 2);       {in m/s, default}
     end;
-    result:=result+RadioGroup3.Items[RadioGroup3.ItemIndex];
+    result:=result+rgSpeedUnit.Items[rgSpeedUnit.ItemIndex];
   except
     result:='';
   end;
@@ -3570,7 +3571,7 @@ begin                                              {p=0 --> Breite Form1}
   Form2.Top:=Form1.Top-Form2.Height-20;            {20 Pixel von Fensterleiste Kopf zeigen}
   if Form2.Top<Screen.DesktopTop then
     Form2.Top:=Screen.DesktopTop;
-  Timer2.Enabled:=true;                            {Timer für Abfrage Doppelclick Form2}
+  TimerDblClick.Enabled:=true;                            {Timer für Abfrage Doppelclick Form2}
 end;
 
 {http://www.joerg-buchwitz.de/temp/googlemapssyntax.htm
@@ -3592,7 +3593,7 @@ begin
           gzoom+'/'+lati+'/'+long+'&layers=S';
 end;
 
-procedure TForm1.MenuItem9Click(Sender: TObject);  {zeige OSM Karte; lat/lon}
+procedure TForm1.mnOSMClick(Sender: TObject);  {zeige OSM Karte; lat/lon}
 begin
   if StringGrid1.ColCount=csvanz then begin        {Self-dev PX4 CSV format}
     OpenURL(URLosm(StringGrid1.Cells[5,StringGrid1.Selection.Top],
@@ -3840,13 +3841,13 @@ var x:integer;
     fnum: string;
 begin
   if (ComboBox2.Text>'') and DirectoryExists(ComboBox2.Text) then begin
-    Timer2.Enabled:=false;
+    TimerDblClick.Enabled:=false;
     if Form2<>nil then
       Form2.Close;              {zusätzliches Diagramm schließen beim Neuladen}
     RadioGroup1.Enabled:=false;
     BitBtn2.Enabled:=false;
     BitBtn3.Enabled:=true;
-    MenuItem24.Enabled:=false;
+    mnConvert.Enabled:=false;
     StatusBar1.Panels[5].Text:=DefaultStatus;
     RadioGroup1.ItemIndex:=0;                      {default Telemetry}
     GetDefVT;
@@ -3861,7 +3862,7 @@ begin
         fnum:=IncludeTrailingPathDelimiter(ComboBox2.Text);
         RadioGroup1.Enabled:=true;
         BitBtn2.Enabled:=true;
-        MenuItem24.Enabled:=true;
+        mnConvert.Enabled:=true;
         StatusBar1.Panels[5].Text:=rsFLDir;
 {FlightLog Verzeichnis in Dropdown-Liste eintragen}
         ComboBox2.Text:=ExcludeTrailingPathDelimiter(ComboBox2.Text);
@@ -3883,7 +3884,7 @@ begin
       end;
     except
       StatusBar1.Panels[5].Text:=rsError;
-      SynEdit1.Lines.Add('''3697'+suff+StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add('''3697'+suff+StatusBar1.Panels[5].Text);
     end;
   end else
     BitBtn3.Enabled:=false;                        {Archive Button ausblenden}
@@ -3920,7 +3921,7 @@ begin
         end;
       end;
     except
-      SynEdit1.Lines.Add(fn+' Check if Mantis Q failed, wrong record format');
+      AppLog.Lines.Add(fn+' Check if Mantis Q failed, wrong record format');
     end;
   finally
     inf.Free;
@@ -3955,7 +3956,7 @@ var dsbuf: array[0..264] of byte;
 begin
   n3:=Label3.Tag;                        {Suchspalte umkopieren, wird verändert}
   zhl:=0;
-  MenuItem7.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   if FileSize(fn)>lenfix then begin
     Screen.Cursor:=crHourGlass;
     ComboBox9.Text:=UpCase(trim(ComboBox9.Text));
@@ -3978,8 +3979,8 @@ begin
     infn:=TMemoryStream.Create;
     try
       infn.LoadFromFile(fn);
-      SynEdit1.Lines.Add('');
-      SynEdit1.Lines.Add(fn);
+      AppLog.Lines.Add('');
+      AppLog.Lines.Add(fn);
       StatusBar1.Panels[5].Text:=rsWait;
 
       StringGrid1.BeginUpdate;
@@ -4006,13 +4007,13 @@ begin
               end;
             except
               AusgabeSensor;                       {Kein Filter, alles ausgeben}
-              StatusBar1.Panels[2].Text:=RadioGroup2.Items[RadioGroup2.ItemIndex];
+              StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
               StatusBar1.Panels[5].Text:=errSelection;
-              SynEdit1.Lines.Add('''3821'+suff+StatusBar1.Panels[5].Text);
+              AppLog.Lines.Add('''3821'+suff+StatusBar1.Panels[5].Text);
             end;
           end;
         except
-          SynEdit1.Lines.Add(fn+': Abrupt sensor file end');  {Msg too short}
+          AppLog.Lines.Add(fn+': Abrupt sensor file end');  {Msg too short}
         end;
       end;
       StringGrid1.RowCount:=zhl+1;
@@ -4026,9 +4027,9 @@ begin
         StatusBar1.Panels[2].Text:=rsSelection;
         StatusBar1.Panels[5].Text:=StringGrid1.Cells[n3, 0]+' = "'+
                                    ComboBox9.Text+'"';
-        SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       end;
-      SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsMAVlink+tab1+rsDS);
+      AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsMAVlink+tab1+rsDS);
     finally
       infn.Free;
       Screen.Cursor:=crDefault;
@@ -4061,14 +4062,14 @@ https://github.com/mavlink/c_library_v2/tree/master/common
 - Double click on a file number in the list on the left side.
   Then this will be analysed.
 - Results of analysis (some status information, text messages and coordinates
-  as GoogleMaps link) will be listed in the AppLog page.
+  as GoogleMaps link) will be listed in the AppLogHighlighter page.
 - If 'Flight path from PX4 sensor' is set to true, a kml or gpx file
   (depending on settings) will be created in the same directory as the sensor
   files with the same name but with different extension (*.kml or *.gpx).
 - If needed, an additional CSV file can be created with those and some more
   data from the PX4 sensor files/flightlos Mantis Q or tlog files H520.
 
-- Check AppLog for error messages like motor errors or something like this.
+- Check AppLogHighlighter for error messages like motor errors or something like this.
   You can open Google Maps with the last coordinate that the Mantis has sent
   before it disappeared.
 
@@ -4168,7 +4169,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       if dsbuf[i-1]>9 then
         tm:=tm+Char(dsbuf[i-1]);                   {Textmessage zusammenstellen}
     end;
-    SynEdit1.Lines.Add(st+tm);                     {Textmessage speichern}
+    AppLog.Lines.Add(st+tm);                     {Textmessage speichern}
     result:=true;
   end;
 
@@ -4206,7 +4207,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       result:=true;
     end;
     if not ov10 then begin
-      SynEdit1.Lines.Add(st+'''');                 {Textmessage speichern}
+      AppLog.Lines.Add(st+'''');                 {Textmessage speichern}
       if pos(homeID, tm)>1 then begin              {Homepoint als Link}
         distg:=0;                                  {Entfernungswerte zurücksetzen}
         distmax:=0;
@@ -4236,7 +4237,7 @@ var dsbuf: array[0..YTHPcols] of byte;
         outlist.Add(sinfo);
       end;
       bglg:=bg;                                  {Last timestamp for GPS}
-      if RadioGroup2.ItemIndex=2 then begin      {GPX}
+      if rgOutFormat.ItemIndex=2 then begin      {GPX}
         skoor:=GPXlat+FloatToStr(lat2)+
                GPXlon+FloatToStr(lon2)+'"> ';
         if s='' then begin                       {Startpunkt erkannt}
@@ -4262,7 +4263,7 @@ var dsbuf: array[0..YTHPcols] of byte;
           maplist.Add(tab2+'<description>'+ExtractFileName(fn)+'</description>');
           maplist.Add(tab2+'<styleUrl>#Flightpath</styleUrl>');
           maplist.Add(tab2+'<gx:Track>');
-          maplist.Add(tab2+'<'+amtag+RadioGroup5.Items[RadioGroup5.ItemIndex]+
+          maplist.Add(tab2+'<'+amtag+rgAltitudeType.Items[rgAltitudeType.ItemIndex]+
                            '</'+amtag);
           if CheckBox11.Checked then maplist.Add(tab2+extru);
         end;
@@ -4368,7 +4369,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     csvarr[20]:=MLStoStr(dsbuf[lenfix+1]);         {MAV landed state}
     if dsbuf[lenfix+1]<>msl then begin
       if not cbReduced.Checked then
-        SynEdit1.Lines.Add(Format('%6d', [zhl])+tab2+
+        AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
                            FormatDateTime(zzf, bg)+tab2+
                            csvMAVland+' ($F5)'+suff+
                            csvarr[20]);
@@ -4415,7 +4416,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     if ival>=0 then
       csvarr[46]:=IntToStr(ival);                  {remaining capacity [%]}
     if not cbReduced.Checked then
-      Synedit1.Lines.Add(Format('%6d', [zhl])+tab2+
+      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
                          FormatDateTime(zzf, bg)+tab2+csvVolt+
                          suff+csvarr[2]+'V'+
                          tab4+csvAmp+suff+csvarr[3]+'A');
@@ -4433,11 +4434,11 @@ var dsbuf: array[0..YTHPcols] of byte;
            (dsbuf[lenfix+5]=12) then begin         {PX4}
           ismq:=true;
           if not cbReduced.Checked then
-            SynEdit1.Lines.Add(''''+Format('%17s', [''])+rsVType+suff+
+            AppLog.Lines.Add(''''+Format('%17s', [''])+rsVType+suff+
                                VtypeToStr(MQid));  {4 Rotor = Mantis Q}
         end;
         if not cbReduced.Checked then
-          SynEdit1.Lines.Add(Format('%6d', [zhl])+tab2+
+          AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
                              FormatDateTime(zzf, bg)+tab2+
                              MSTtoStr(dsbuf[lenfix+7]));
         hbt:=dsbuf[lenfix+7];                      {letzten Wert merken}
@@ -4451,7 +4452,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       end;
       if dsbuf[lenfix+6]<>mmf then begin           {nur ausgeben, wenn sich etwas ändert}
         if not cbReduced.Checked then
-          SynEdit1.Lines.Add(Format('%6d', [zhl])+tab2+
+          AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
                              FormatDateTime(zzf, bg)+tab2+
                              MMFtoStr(dsbuf[lenfix+6]));
         mmf:=dsbuf[lenfix+6];                      {letzten Wert merken}
@@ -4479,7 +4480,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       csvarr[45]:=it;
       if it<>itemp then begin                      {nur wenn Temp sich ändert}
         if not cbReduced.Checked then
-          Synedit1.Lines.Add(Format('%6d', [zhl])+tab2+
+          AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
                              FormatDateTime(zzf, bg)+tab2+csvIMUtemp+
                              suff+it+'°C');
         itemp:=it;                                 {Vergleichswert merken}
@@ -4513,7 +4514,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     end;
   end;
 
-{Only new waypoints for recording in AppLog, no CSV}
+{Only new waypoints for recording in AppLogHighlighter, no CSV}
   procedure PositionTargetGlobal;                  {POSITION_TARGET_GLOBAL_INT 87}
   var tme: uint32;
       lat, lon: integer;
@@ -4534,12 +4535,12 @@ var dsbuf: array[0..YTHPcols] of byte;
         yawsetp:=GetFloatFromBuf(40);              {Yaw setpoint}
         yawsetp:=RadToGrad(yawsetp);               {Conversion rad (+/- 180°) to °}
 
-        Synedit1.Lines.Add(Format('%6d', [zhl])+tab2+
+        AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
                            FormatDateTime(zzf, bg)+tab2+MsgIDtoStr(87)+suff+
                            rsGPSh+suff+FormatFloat(ctfl, ele)+'m'+tab2+
                            CoordFrameToStr(dsbuf[lenfix+50])+tab2+
                            'Yaw setpoint'+suff+FormatFloat(ctfl, yawsetp)+'°');
-        SynEdit1.Lines.Add(trnrApplog+URLGMap(FloatToStr(lat/10000000), FloatToStr(lon/10000000)));
+        AppLog.Lines.Add(trnrApplog+URLGMap(FloatToStr(lat/10000000), FloatToStr(lon/10000000)));
 
         latw1:=lat;
         lonw1:=lon;
@@ -4721,14 +4722,14 @@ var dsbuf: array[0..YTHPcols] of byte;
     csvarr[46]:=IntToStr(battremain);              {Battery remaining %}
     csvarr[47]:=FormatFloat(ctfl, ucap);;          {Battery used mAh}
     if not cbReduced.Checked then
-      Synedit1.Lines.Add(Format('%6d', [zhl])+tab2+
+      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
                          FormatDateTime(zzf, bg)+tab2+csvVolt+
                          suff+csvarr[2]+'V'+
                          tab4+csvAmp+suff+csvarr[3]+'A'+
                          tab4+csvUcap+suff+csvarr[47]+'mAh');
     sst:=GetIntFromBuf(0, 4);                      {Sensor present}
     if not cbReduced.Checked then
-      Synedit1.Lines.Add(trnrApplog+'onboard_control_sensors_present'+suff+
+      AppLog.Lines.Add(trnrApplog+'onboard_control_sensors_present'+suff+
                          MSenStat(sst));           {MAV_SYS_STATUS_SENSOR}
     sst:=GetIntFromBuf(4, 4);                      {Sensor enabled}
     if (sst and 32)>0  then                        {GPS status}
@@ -4736,7 +4737,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     else
       csvarr[16]:='false';
     if not cbReduced.Checked then
-      Synedit1.Lines.Add(trnrApplog+'onboard_control_sensors_enabled'+suff+
+      AppLog.Lines.Add(trnrApplog+'onboard_control_sensors_enabled'+suff+
                          MSenStat(sst));
 {[c%] Communication drop rate, (UART, I2C, SPI, CAN), dropped packets on all
  links (packets that were corrupted on reception on the MAV)}
@@ -4746,7 +4747,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     sst:=GetIntFromBuf(8, 4);                      {Sensor health}
     csvarr[15]:=IntToHex(sst, 2);
     if not cbReduced.Checked then
-      Synedit1.Lines.Add(trnrApplog+'onboard_control_sensors_health '+suff+
+      AppLog.Lines.Add(trnrApplog+'onboard_control_sensors_health '+suff+
                          MSenStat(sst));
     if tb then begin                               {Anzeige in Schnellanalyse}
       Chart3LineSeries1.AddXY(bg, volt);           {Spannung}
@@ -4802,7 +4803,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     end;
     csvarr[57]:=paramID;
     csvarr[58]:=wrt;
-    SynEdit1.Lines.Add(Format('%6d', [zhl])+tab2+  {Onboard parameter value}
+    AppLog.Lines.Add(Format('%6d', [zhl])+tab2+  {Onboard parameter value}
                        FormatDateTime(zzf, bg)+tab2+
                        Format('%-16s', [paramID])+suff+
                        'Type'+suff+IntToStr(dsbuf[lenfix+24])+kma+
@@ -4833,7 +4834,7 @@ var dsbuf: array[0..YTHPcols] of byte;
         33:  if MAVmsg.Checked[6] then GlobalPosInt;   {GLOBAL_POSITION_INT ($21)}
         65:  if MAVmsg.Checked[7] then RCchannels; {RC_CHANNELS ($41)}
         74:  if MAVmsg.Checked[8] then vfr_hud;    {VFR_HUD ($4A)}
-        87:  PositionTargetGlobal;                 {POSITION_TARGET_GLOBAL_INT 87 ($57), only AppLog}
+        87:  PositionTargetGlobal;                 {POSITION_TARGET_GLOBAL_INT 87 ($57), only AppLogHighlighter}
         105: if MAVmsg.Checked[9] then HighresIMU; {HIGHRES_IMU ($69)}
         141: if MAVmsg.Checked[10] then Altitude;  {MSG_ID_ALTITUDE 141 ($8D)}
         147: if MAVmsg.Checked[11] then Batt_Status;   {BATTERY_STATUS ($93)}
@@ -4864,7 +4865,7 @@ var dsbuf: array[0..YTHPcols] of byte;
   end;
 
 begin
-  MenuItem7.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   zhl:=0;
   msl:=0;                                          {MAV landed_state undef}
   hbt:=0;                                          {MAV state uninit/unknown}
@@ -4948,11 +4949,11 @@ begin
       infn.LoadFromFile(fn);
       StatusBar1.Panels[5].Text:=rsWait;
       StatusBar1.Update;
-      SynEdit1.Lines.Add('');
-      SynEdit1.Lines.Add(fn);
+      AppLog.Lines.Add('');
+      AppLog.Lines.Add(fn);
 
       if gx then begin                             {Eventuell KML oder GPX erzeugen}
-        if RadioGroup2.ItemIndex=2 then begin
+        if rgOutFormat.ItemIndex=2 then begin
           GPXHeader(ComboBox1.Text, fn, ftm, maplist)
         end else begin
           KMLHeader(fn, ftm, maplist);
@@ -4961,7 +4962,7 @@ begin
 
       if tb then
         StringGrid1.BeginUpdate;
-      SynEdit1.BeginUpdate(false);                 {Without UnDo Block}
+      AppLog.BeginUpdate(false);                 {Without UnDo Block}
       while infn.Position<(infn.Size-lenfixP) do begin {bis zum Ende der Datei}
         len:=0;                                    {Reset for error detection}
         try
@@ -4974,14 +4975,14 @@ begin
           AusgabeSensor;                           {alles anzeigen, ohne Filter}
         except
           if zhl>0 then
-            SynEdit1.Lines.Add('''Broken record No'''+suff+
+            AppLog.Lines.Add('''Broken record No'''+suff+
                                IntToStr(zhl)+', Byte'+suff+IntToHex(b, 2)+
                                ', Payload length'+suff+IntToStr(len));
 {Usually the last record in a tlog file is too short compared to payload length,
  thus this exception will be raised for each file at the end.}
         end;
       end;
-      SynEdit1.EndUpdate;
+      AppLog.EndUpdate;
       if tb then begin
         StringGrid1.RowCount:=zhl+1;
         StringGrid1.EndUpdate;
@@ -4989,7 +4990,7 @@ begin
 
       if gx and
          (skoor<>'') then begin                    {KML oder GPX speichern}
-        if RadioGroup2.ItemIndex=2 then begin      {GPX}
+        if rgOutFormat.ItemIndex=2 then begin      {GPX}
           GPXfooter1(maplist);
           maplist.Add('<wpt '+skoor);              {Landepunkt}
           maplist.Add(' <time>'+tstr+'</time>');
@@ -4997,7 +4998,7 @@ begin
           maplist.Add(GPXet1);
           GPXfooter2(maplist);
           maplist.SaveToFile(ChangeFileExt(fn,
-                             RadioGroup2.Items[RadioGroup2.ItemIndex]));
+                             rgOutFormat.Items[rgOutFormat.ItemIndex]));
         end else begin                             {KML/KMZ}
           for i:=0 to outlist.Count-1 do
             maplist.Add(outlist[i]);
@@ -5006,9 +5007,9 @@ begin
           placemark(maplist, '#landing', '',      {Landepunkt}
                     StringReplace(skoor, tab1, sep, [rfReplaceAll]), tstr);
           KMLFooter2(maplist);
-          maplist.SaveToFile(ChangeFileExt(fn, RadioGroup2.Items[0]));
-          if RadioGroup2.ItemIndex=1 then
-            MacheKMZ(ChangeFileExt(fn, RadioGroup2.Items[0]));
+          maplist.SaveToFile(ChangeFileExt(fn, rgOutFormat.Items[0]));
+          if rgOutFormat.ItemIndex=1 then
+            MacheKMZ(ChangeFileExt(fn, rgOutFormat.Items[0]));
         end;
       end;
 
@@ -5022,47 +5023,47 @@ begin
         if ismq then s:=vTypeToStr(MQid)+tab4;
         Chart1.Title.Text.Add(s+ExtractFileName(fn));
         if ele0<>0 then begin
-          SynEdit1.Lines.Add('');
-          Synedit1.Lines.add(Format('%-10s', [capLabel13+suff])+
+          AppLog.Lines.Add('');
+          AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                              URLGmap(FloatToStr(lat1),
                                      FloatToStr(lon1)));
-{GPS Datensatz in AppLog als Link mit Google Maps Adresse ablegen}
+{GPS Datensatz in AppLogHighlighter als Link mit Google Maps Adresse ablegen}
           if homestr<>'' then
-            SynEdit1.Lines.Add(homestr);
-          SynEdit1.Lines.add(Format('%-10s', [capLabel14+suff])+
+            AppLog.Lines.Add(homestr);
+          AppLog.Lines.add(Format('%-10s', [capLabel14+suff])+
                              URLGmap(FloatToStr(lat2),
                                      FloatToStr(lon2)));
-(*          SynEdit1.Lines.add(Format('%-10s', [capLabel14+suff])+
+(*          AppLog.Lines.add(Format('%-10s', [capLabel14+suff])+
                              URLosm(FloatToStr(lat2),
                                     FloatToStr(lon2))); *)
           s:=Format('%-25s', [rsGPSh+rsAbsh+suff])+
              Format('%7.1f', [ele0/1000])+'m';
           Chart1.Title.Text.Add(s);                {absolute Höhe für Null}
-          SynEdit1.Lines.Add(s);
-          SynEdit1.Lines.Add(Format('%-25s', ['Absolute '+rsGridCell5+suff])+
+          AppLog.Lines.Add(s);
+          AppLog.Lines.Add(Format('%-25s', ['Absolute '+rsGridCell5+suff])+
                              Format('%7.1f', [elemax/1000])+'m');
-          SynEdit1.Lines .Add(Format('%-25s', ['Relative '+rsGridCell5+suff])+
+          AppLog.Lines .Add(Format('%-25s', ['Relative '+rsGridCell5+suff])+
                               Format('%7.1f', [(elemax-ele0)/1000])+'m');
-          SynEdit1.Lines.Add('');
-          SynEdit1.Lines .Add(Format('%-25s', [rsGridCell6+suff])+
+          AppLog.Lines.Add('');
+          AppLog.Lines .Add(Format('%-25s', [rsGridCell6+suff])+
                               Format('%7.1f', [distmax])+'m');
-          SynEdit1.Lines .Add(Format('%-25s', [rsGridCell7+suff])+
+          AppLog.Lines .Add(Format('%-25s', [rsGridCell7+suff])+
                               Format('%7.1f', [distg])+'m');
-          SynEdit1.Lines.Add('');
+          AppLog.Lines.Add('');
           if ucap>0 then begin
-            SynEdit1.Lines.Add(Format('%-25s', [csvUcap+suff])+
+            AppLog.Lines.Add(Format('%-25s', [csvUcap+suff])+
                                Format('%7.0f', [ucap])+'mAh');
-            SynEdit1.Lines.Add(Format('%-25s', [csvCap+suff])+
+            AppLog.Lines.Add(Format('%-25s', [csvCap+suff])+
                                Format('%7.0d', [battremain])+'%');
             if battremain<100 then
-              SynEdit1.Lines.Add(Format('%-25s', [rsAbattCap+suff])+
+              AppLog.Lines.Add(Format('%-25s', [rsAbattCap+suff])+
                                  Format('%7.0f', [100*ucap/(100-battremain)])+'mAh');
           end;
         end;
         Chart1.Title.Visible:=true;                {Diagrammtitel anzeigen}
-        SynEdit1.Lines.Add('');
-        SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsMAVLink+tab1+rsDS);
-        SynEdit1.Lines.Add('');
+        AppLog.Lines.Add('');
+        AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsMAVLink+tab1+rsDS);
+        AppLog.Lines.Add('');
         if (datlist.Count>2) and
            CheckBox8.Checked then begin
            s:=csvTime+sep+csvRSSI+sep+csvVolt+sep+      {CSV Header generieren}
@@ -5140,11 +5141,11 @@ begin
         end;
       end;
       if msglist.Count>0 then begin
-        SynEdit1.Lines.Add(fn);
-        SynEdit1.Lines.Add(rsUsedMAV);
-        SynEdit1.Lines.Add('');
+        AppLog.Lines.Add(fn);
+        AppLog.Lines.Add(rsUsedMAV);
+        AppLog.Lines.Add('');
         s:=csvMsgID+#9+csvMsgID+#9+'*'+#9+'MAVlink Message';
-        SynEdit1.Lines.Add(s);
+        AppLog.Lines.Add(s);
         s:=StringReplace(s, #9, sep, [rfReplaceAll]);
         outlist.Add(s);
         StatusBar1.Panels[0].Text:=IntToStr(zhl);
@@ -5156,11 +5157,11 @@ begin
           if e in MAVmsgX then                     {extracted messages}
             s:=s+'x';
           s:=s+#9+UpCase(MsgIDtoStr(e));
- 	  SynEdit1.Lines.Add(s);
+ 	  AppLog.Lines.Add(s);
           s:=StringReplace(s, #9, sep, [rfReplaceAll]);
 	  outlist.Add(s);
         end;
-        SynEdit1.Lines.Add('');
+        AppLog.Lines.Add('');
       end;
     finally
       inf.Free;
@@ -5254,7 +5255,7 @@ end;
 procedure TForm1.SelDirSet;                        {FlightLog auswählen}
 begin
   StatusBar1.Panels[5].Text:=capSelDir;
-  SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+  AppLog.Lines.Add(StatusBar1.Panels[5].Text);
   SelectDirectoryDialog1.Title:=capSelDir;
   if SelectDirectoryDialog1.Execute then begin
     ComboBox2.Text:=SelectDirectoryDialog1.FileName;
@@ -5265,7 +5266,7 @@ end;
 procedure TForm1.SelDirProt;                       {Protokollverzeichnis auswählen}
 begin
   StatusBar1.Panels[5].Text:=capSelProt;
-  SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+  AppLog.Lines.Add(StatusBar1.Panels[5].Text);
   SelectDirectoryDialog1.Title:=capSelProt;
   if SelectDirectoryDialog1.Execute then
     ComboBox8.Text:=SelectDirectoryDialog1.FileName;
@@ -5275,7 +5276,7 @@ procedure TForm1.EnSave;                           {Speichern erlauben}
 begin
   if ListBox1.Items.Count>0 then begin
     BitBtn2.Enabled:=true;
-    MenuItem24.Enabled:=true;
+    mnConvert.Enabled:=true;
   end;
 end;
 
@@ -5320,11 +5321,11 @@ var inlist, outlist: TStringList;
       end;
       fno:=RandomFN(fn, brID, 0);
       outlist.SaveToFile(fno);
-      SynEdit1.Lines.Add(capBitBtn14+suff+rsGridCell2+tab1+      {von}
+      AppLog.Lines.Add(capBitBtn14+suff+rsGridCell2+tab1+      {von}
                          StatusBar1.Panels[3].Text+tab1+rsGridCell3+tab1+
                          StatusBar1.Panels[4].Text);             {bis}
       StatusBar1.Panels[5].Text:=ExtractFileName(fno)+tab1+rsSaved;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
   end;
 
@@ -5402,7 +5403,7 @@ var inlist, outlist: TStringList;
       outlist.SaveToFile(fno);
     end;
     if fno<>'' then begin
-      SynEdit1.Lines.Add(capBitBtn14+suff+rsGridCell2+tab1+      {von}
+      AppLog.Lines.Add(capBitBtn14+suff+rsGridCell2+tab1+      {von}
                          StatusBar1.Panels[3].Text+tab1+rsGridCell3+tab1+
                          StatusBar1.Panels[4].Text);             {bis}
       if Spinedit3.Tag=YTHPid then begin           {YTH Plus}
@@ -5410,7 +5411,7 @@ var inlist, outlist: TStringList;
       end else begin
         StatusBar1.Panels[5].Text:=mndir+wldcd+GetNr(ExtractFileName(fno))+tab1+rsSaved;
       end;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       SelDirAct('');
     end;
   end;
@@ -5458,7 +5459,7 @@ begin
     for x:=0 to ListBox1.Items.Count-1 do begin
       case SpinEdit3.Tag of
         brID: begin                                {Breeze}
-                case RadioGroup2.ItemIndex of
+                case rgOutFormat.ItemIndex of
                   2: MacheGPX(IncludeTrailingPathDelimiter(ComboBox2.Text)+
                             ListBox1.Items[x]+bext, x);    {GPX}
                   4: MacheRR(x);
@@ -5469,7 +5470,7 @@ begin
               end;
         H501ID:
               begin                                {Hubsan log recorder}
-                if RadioGroup2.ItemIndex=2 then    {GPX}
+                if rgOutFormat.ItemIndex=2 then    {GPX}
                   MacheGPX(IncludeTrailingPathDelimiter(ComboBox2.Text)+
                            H5file+ListBox1.Items[x]+fext, x)
                 else                               {ansonsten KML/KMZ}
@@ -5500,7 +5501,7 @@ begin
               end;
 
         else begin
-                case RadioGroup2.ItemIndex of
+                case rgOutFormat.ItemIndex of
                   0,1: MacheKML(IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
                                 kfile+ListBox1.Items[x]+fext, x);
                   2: MacheGPX(IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
@@ -5514,7 +5515,7 @@ begin
       end;                                         {case Vehicle Type}
     end;
     BitBtn2.Enabled:=false;
-    MenuItem24.Enabled:=false;
+    mnConvert.Enabled:=false;
   end;
 end;
 
@@ -5522,7 +5523,7 @@ function TForm1.ComplFN(st: string; tp: TDateTime): string;  {Namensstamm und Ze
                                                    {Dateinamen mit Nummer ergänzen}
 begin
   result:=st;
-  case RadioGroup4.ItemIndex of
+  case rgTimeType.ItemIndex of
     0: result:=st+FormatDateTime(dzf+'_hhnnss', tp);  {Datum und Zeit}
     1: result:=st+FormatDateTime(dzf, tp);            {nur Datum}
     2: result:=st+IntToStr(DateTimeToUnix(tp));       {UNIX Zeitstempel}
@@ -5561,11 +5562,11 @@ begin
         ComboBox2.Text:=newdir;
       end else begin
         StatusBar1.Panels[5].Text:=rsNotRename;
-        SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=rsNoArch;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
   end;
 end;
@@ -5573,10 +5574,10 @@ end;
 procedure TForm1.cbThunderChange(Sender: TObject); {Thunderbird Toggeln}
 begin
   if cbThunder.Checked then begin
-    cbThunder.Tag:=RadioGroup5.ItemIndex;          {save last setting}
-    RadioGroup5.ItemIndex:=0;                      {Set to 'Absolute'}
+    cbThunder.Tag:=rgAltitudeType.ItemIndex;          {save last setting}
+    rgAltitudeType.ItemIndex:=0;                      {Set to 'Absolute'}
   end else
-    RadioGroup5.ItemIndex:=cbThunder.Tag;          {restore setting}
+    rgAltitudeType.ItemIndex:=cbThunder.Tag;          {restore setting}
 end;
 
 function GetCGOStr(w, s: string): string;          {Werte auslesen aus Kamera}
@@ -5621,7 +5622,7 @@ end;
              nur bei Set Speed.
           2..CheckBox5 abfragen und ggf. RTSP-Stream an Browser senden,
              nur bei Start Video.
-          3..INDEX_PAGE mit Ausgabe an AppLog, nur beim Start Button. }
+          3..INDEX_PAGE mit Ausgabe an AppLogHighlighter, nur beim Start Button. }
 
 function TForm1.CGO3run(const CGO3cmd: string; const CGO3act: integer): integer;
 Var s, ff: string;
@@ -5634,19 +5635,19 @@ begin
   with TFPHttpClient.Create(Nil) do try
     IOTimeout:=6000;                               {Timeout if cam disconnected}
     try
-      SynEdit1.Lines.Add('');                      {Leerzeile im Protokoll}
+      AppLog.Lines.Add('');                      {Leerzeile im Protokoll}
       if CGO3cmd<>'' then begin                    {opt. Kommando ausführen}
         s:=Get(Edit5.Text+CGO3cgi+CGO3cmd);
         result:=StrToIntDef(GetCGOStr('rval', s), -1); {Returnwert überschreiben}
-        SynEdit1.Lines.Add(CGO3cmd);               {Ins LogFile schreiben}
-        SynEdit1.Lines.Add(s);                     {Ergebnis ins Logfile}
+        AppLog.Lines.Add(CGO3cmd);               {Ins LogFile schreiben}
+        AppLog.Lines.Add(s);                     {Ergebnis ins Logfile}
         Edit4.Text:=s;                             {Ergebnis unten anzeigen}
       end else begin                               {Initialisierung und Werte ausgeben}
         s:=Get(Edit5.Text+CGO3cgi+idxpage);
         if cgo3act=3 then begin                    {nur beim Button Start}
-          SynEdit1.Lines.Add(rsCGOdone+tab1+Edit5.Text);
-          SynEdit1.Lines.Add(idxpage);             {Ins LogFile schreiben}
-          SynEdit1.Lines.Add(s);                   {Ergebnis ins Logfile}
+          AppLog.Lines.Add(rsCGOdone+tab1+Edit5.Text);
+          AppLog.Lines.Add(idxpage);             {Ins LogFile schreiben}
+          AppLog.Lines.Add(s);                   {Ergebnis ins Logfile}
         end;
         s:=StringReplace(s, '}', sep, [rfReplaceAll]);
         result:=StrToIntDef(GetCGOStr('rval', s), -1);        {Returnwert Init}
@@ -5745,7 +5746,7 @@ begin
           BitBtn22.Enabled:=true;
           BitBtn23.Enabled:=true;
           BitBtn24.Enabled:=true;
-          RadioGroup6.Enabled:=true;
+          rgVideoFoto.Enabled:=true;
           RadioGroup7.Enabled:=true;
           SpeedButton6.Enabled:=true;
           StopLightSensor1.State:=slGREEN;         {WLAN Ampel auf Grün}
@@ -5754,7 +5755,7 @@ begin
           indGnouMeter1.ValueMax:=64;
           indGnouMeter1.Value:=0;
           StopLightSensor1.State:=slRED;
-          SynEdit1.Lines.Add(s);                   {Fehlerausgabe ins Logfile}
+          AppLog.Lines.Add(s);                   {Fehlerausgabe ins Logfile}
         end;
       end; {Ende Initalisierung}
       case CGO3act of
@@ -5765,7 +5766,7 @@ begin
       end;
     except
       StatusBar1.Panels[5].Text:=rsTimeOut;
-      SynEdit1.Lines.Add('''5242'+suff+StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add('''5242'+suff+StatusBar1.Panels[5].Text);
       result:=-1;                                  {Fehler, Timeout}
       StopLightSensor1.State:=slRED;
     end;
@@ -5778,7 +5779,7 @@ end;
 procedure TForm1.BitBtn15Click(Sender: TObject);   {Status}
 begin
   StatusBar1.Panels[5].Text:=rsCGOwait;
-  SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+  AppLog.Lines.Add(StatusBar1.Panels[5].Text);
   StatusBar1.Update;
   StopLightSensor1.State:=slYELLOW;
   StopLightSensor1.Update;
@@ -6000,7 +6001,7 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     ProgressBar1.Position:=ProgressBar1.Position+1;
     Application.ProcessMessages;
@@ -6086,7 +6087,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS; {Ende Konsistenz checken}
-            SynEdit1.Lines.Add(''''+capLabel6+Format('%6d', [x])+       {Datenpunkt ausgeben}
+            AppLog.Lines.Add(''''+capLabel6+Format('%6d', [x])+       {Datenpunkt ausgeben}
                                suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Einlesen}
@@ -6095,7 +6096,7 @@ begin
         tend:=ZeitToDT(splitlist[0], SpinEdit3.Tag); {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
-        SynEdit1.Lines.Add('''5572'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''5572'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
 
@@ -6131,7 +6132,7 @@ begin
         gstr:=gstr+(strecke/1000);                 {Flugstrecke in km}
         fln:=fln+1;                                {nächste Flugnummer}
         flt:=flt*24;                               {Dauer in Stunden}
-        if RadioGroup3.ItemIndex=2 then begin      {Imperial}
+        if rgSpeedUnit.ItemIndex=2 then begin      {Imperial}
           olist.Add(rsGridCell5+dstr+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+dstr);
           olist.Add(rsGridCell6+dstr+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+dstr);
           olist.Add(rsGridCell7+dstr+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+dstr);
@@ -6170,7 +6171,7 @@ begin
           if modestr<>'' then olist.Add(rsMode+dstr+modestr+dstr);
           fln:=fln+1;
           gflt:=gflt+flt;
-          if RadioGroup3.ItemIndex=2 then begin
+          if rgSpeedUnit.ItemIndex=2 then begin
             olist.Add(rsGridCell5+dstr+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+dstr);
             olist.Add(rsGridCell8+dstr+FloatToStrF(tasmax*fmph, ffFixed, 5, 1)+'mph'+dstr)
           end else begin
@@ -6234,7 +6235,7 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     ProgressBar1.Position:=ProgressBar1.Position+1;
     Application.ProcessMessages;
@@ -6288,7 +6289,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS; {Ende Konsistenz checken}
-            SynEdit1.Lines.Add('''5765'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''5765'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Einlesen}
         flt:=flt+ed-bg1;
@@ -6296,7 +6297,7 @@ begin
         tend:=dtm+ZeitToDT(splitlist[0], H501ID);  {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
-        SynEdit1.Lines.Add('''5773'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''5773'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
 
@@ -6324,7 +6325,7 @@ begin
         gstr:=gstr+(strecke/1000);                 {Flugstrecke in km}
         flt:=flt*24;                               {Dauer in Stunden}
         fln:=fln+1;
-        if RadioGroup3.ItemIndex=2 then begin      {Imperial}
+        if rgSpeedUnit.ItemIndex=2 then begin      {Imperial}
           olist.Add(rsGridCell5+dstr+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+dstr);
           olist.Add(rsGridCell6+dstr+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+dstr);
           olist.Add(rsGridCell7+dstr+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+dstr);
@@ -6358,7 +6359,7 @@ begin
           if modestr<>'' then olist.Add(rsMode+dstr+modestr+dstr);
           fln:=fln+1;
           gflt:=gflt+flt;
-          if RadioGroup3.ItemIndex=2 then begin
+          if rgSpeedUnit.ItemIndex=2 then begin
             olist.Add(rsGridCell5+dstr+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+dstr);
             olist.Add(rsGridCell8+dstr+FloatToStrF(velomax*fmph, ffFixed, 5, 1)+'mph'+dstr);
           end else begin
@@ -6419,7 +6420,7 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     ProgressBar1.Position:=ProgressBar1.Position+1;
     Application.ProcessMessages;
@@ -6483,7 +6484,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS; {Ende Konsistenz checken}
-            SynEdit1.Lines.Add('''5960'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''5960'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Einlesen}
         flt:=flt+ed-bg1;
@@ -6491,7 +6492,7 @@ begin
         tend:=ZeitToDT(splitlist[0], brID); {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
-        SynEdit1.Lines.Add('''5968'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''5968'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
 
@@ -6518,7 +6519,7 @@ begin
         gstr:=gstr+(strecke/1000);                 {Flugstrecke in km}
         flt:=flt*24;                               {Dauer in Stunden}
         fln:=fln+1;
-        if RadioGroup3.ItemIndex=2 then begin
+        if rgSpeedUnit.ItemIndex=2 then begin
           olist.Add(rsGridCell5+dstr+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+dstr);
           olist.Add(rsGridCell6+dstr+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+dstr);
           olist.Add(rsGridCell7+dstr+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+dstr);
@@ -6551,7 +6552,7 @@ begin
           if modestr<>'' then olist.Add(rsMode+dstr+modestr+dstr);
           fln:=fln+1;
           gflt:=gflt+flt;
-          if RadioGroup3.ItemIndex=2 then begin
+          if rgSpeedUnit.ItemIndex=2 then begin
             olist.Add(rsGridCell5+dstr+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+dstr);
           end else begin
             olist.Add(rsGridCell5+dstr+FloatToStrF(hmax, ffFixed, 5, 1)+'m'+dstr);
@@ -6583,7 +6584,7 @@ var vlist, flist, inlist, splitlist: TStringList;
       OverwriteVT;
   {zusätzlicher Filter nach Vehicle Type. Vehicle type 5 ist H oder H Plus}
       result:=CheckBox1.Checked and
-              (vt<>RadioGroup10.ItemIndex+1);
+              (vt<>rgVehicleType.ItemIndex+1);
     except
       result:=true;                                {Abbruch bei Fehler}
     end;
@@ -6715,7 +6716,8 @@ var vlist, flist, inlist, splitlist: TStringList;
       ComboBox9.Text:=vstr;                        {Suche vordefinieren}
       for k:=1 to inlist.Count-1 do begin          {Nach Fehlern suchen}
         splitlist.DelimitedText:=inlist[k];
-        if splitlist.Count<=(StringGrid1.Tag+3) then exit; {zerstörte Datensätze}
+        if splitlist.Count<=(StringGrid1.Tag+3) then
+          exit;                                    {zerstörte Datensätze}
         flag:=StrToIntDef(trim(splitlist[StringGrid1.Tag+3]), 0);
         if (flag and 2)>0 then begin               {Voltage warn 2 flag}
           inc(num);
@@ -6848,7 +6850,7 @@ begin
   Screen.Cursor:=crHourGlass;
   try
     CreateDirList(ComboBox8.Text, vlist);
-    case RadioGroup9.ItemIndex of
+    case rgErrType.ItemIndex of
       5, 6: begin
               RadioGroup1.ItemIndex:=2;            {File type: Remote}
               for i:=0 to vlist.Count-1 do SuchFile(vlist[i], ffile+wldcd+fext, flist);
@@ -6876,21 +6878,21 @@ begin
             Suchfile(vlist[i], nfile+wldcd+wext, flist);   {H Plus}
             Suchfile(vlist[i], mfile+wldcd+bext, flist);   {Mantis Q}
           end;
-      else begin
+      else begin                                   {default action}
         for i:=0 to vlist.Count-1 do SuchFile(vlist[i], kfile+wldcd+fext, flist);
       end;
     end;                                           {default file type Telemetry}
     StatusBar1.Panels[0].Text:=IntToStr(vlist.Count);  {Anzahl Verzeichnisse}
     StatusBar1.Panels[1].Text:=IntToStr(flist.Count);  {Anzahl Dateien}
-    Synedit1.Lines.Add('');
-    Synedit1.Lines.Add(RadioGroup9.Items[RadioGroup9.ItemIndex]);
-    Synedit1.Lines.Add(ComboBox8.Text);
-    SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDateien);
+    AppLog.Lines.Add('');
+    AppLog.Lines.Add(rgErrType.Items[rgErrType.ItemIndex]);
+    AppLog.Lines.Add(ComboBox8.Text);
+    AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDateien);
     StringGrid5.BeginUpdate;
     if flist.Count>0 then begin                        {Dateien vorhanden}
       ProgressBar1.Max:=flist.Count;
       for i:=0 to flist.Count-1 do begin
-        case RadioGroup9.ItemIndex of
+        case rgErrType.ItemIndex of
           0: if Emergency12(flist[i]) then Ausgabe;
           1: if CCWNum(flist[i]) then Ausgabe;
           2: if CCWTime(flist[i]) then Ausgabe;
@@ -6913,15 +6915,15 @@ begin
     StringGrid5.EndUpdate;
     if zhl>0 then begin                                     {Anzahl Treffer}
       StatusBar1.Panels[5].Text:=IntToStr(zhl)+rsSuspect;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       ComboBox8.Text:=ExcludeTrailingPathDelimiter(ComboBox8.Text);
       MerkListe(ComboBox8, AnzDirs);
     end else begin
       StatusBar1.Panels[5].Text:=rsNoFound;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     ProgressBar1.Position:= ProgressBar1.Max;
-    if RadioGroup9.ItemIndex=11 then             {Go to Applog}
+    if rgErrType.ItemIndex=11 then             {Go to AppLogHighlighter}
       PageControl1.ActivePageIndex:=7;
   finally
     FreeAndNil(flist);
@@ -6932,21 +6934,21 @@ begin
   end;
 end;
 
-procedure TForm1.BitBtn27Click(Sender: TObject);   {AppLog speichern}
+procedure TForm1.BitBtn27Click(Sender: TObject);   {AppLogHighlighter speichern}
 begin
   SaveDialog1.Title:=rsFileSave;
   SaveDialog1.FileName:=ComplFN(TabSheet6.Caption, now)+wext;
   if SaveDialog1.Execute then begin
-    SynEdit1.Lines.SaveToFile(SaveDialog1.FileName);
-    SynEdit1.Lines.Clear;
+    AppLog.Lines.SaveToFile(SaveDialog1.FileName);
+    AppLog.Lines.Clear;
     StatusBar1.Panels[5].Text:=TabSheet6.Caption+tab1+rsSaved+
                                suff+SaveDialog1.FileName;
   end;
 end;
 
-procedure TForm1.BitBtn28Click(Sender: TObject);   {Lösche AppLog}
+procedure TForm1.BitBtn28Click(Sender: TObject);   {Lösche AppLogHighlighter}
 begin
-  SynEdit1.Lines.Clear;
+  AppLog.Lines.Clear;
 end;
 
 procedure TForm1.YFlugBuch;
@@ -6988,7 +6990,7 @@ var vlist, flist, outlist: TStringList;
       outlist.Add(tabs(rsGFtime, suff, tabu)+IntToStr(gfd)+'d '+
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
-      if RadioGroup3.ItemIndex=2 then begin
+      if rgSpeedUnit.ItemIndex=2 then begin
         outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
       end else begin
         outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
@@ -7067,7 +7069,7 @@ var vlist, flist, outlist: TStringList;
       outlist.Add(rsGFtime+dstr+IntToStr(gfd)+'d '+
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
-      if RadioGroup3.ItemIndex=2 then begin
+      if rgSpeedUnit.ItemIndex=2 then begin
         outlist.Add(rsGFstr+dstr+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
       end else begin
         outlist.Add(rsGFstr+dstr+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
@@ -7101,7 +7103,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
       if flist.Count>1 then begin                  {genug Dateien?}
         StatusBar1.Panels[0].Text:=IntToStr(vlist.Count);  {Anzahl Verzeichnisse}
         StatusBar1.Panels[1].Text:=IntToStr(flist.Count);  {Anzahl Telemetrie}
-        SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+rsTurns);
+        AppLog.Lines.Add(StatusBar1.Panels[1].Text+rsTurns);
         StatusBar1.Update;
         vlist.Clear;  {brauchen wir hier nicht mehr, wird csv für Ausgabe benutzt}
         flist.Sort;
@@ -7115,7 +7117,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         flist.Clear;  {brauchen wir hier nicht mehr, wird splitlist}
         flist.Delimiter:=dstr;                     {Semicolon als Trenner}
         flist.StrictDelimiter:=True;               {keine Spaces als Trenner}
-        case RadioGroup8.ItemIndex of              {Ausgabeformat}
+        case rgCSVtext.ItemIndex of              {Ausgabeformat}
           0: TextAusgabe;
           1: CSVAusgabe;
         end;
@@ -7123,22 +7125,22 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         if gfd=0 then begin
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                                      FormatDateTime(zzf, gftime)+'h';
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                             IntToStr(gfd)+'d '+FormatDateTime(zzf, gftime)+'h';
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end;
         if gdist>0 then begin
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+' / '+rsGFstr+suff;
-          if RadioGroup3.ItemIndex=2 then begin
+          if rgSpeedUnit.ItemIndex=2 then begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                        FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi';
-            SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end else begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                        FloatToStrF(gdist, ffFixed, 10, 1)+'km';
-            SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end;
         end;
         Screen.Cursor:=crDefault;
@@ -7158,7 +7160,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     end;
   end else begin
     StatusBar1.Panels[5].Text:=rsError;
-    SynEdit1.Lines.Add('''6632'+suff+StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add('''6632'+suff+StatusBar1.Panels[5].Text);
   end;
 end;
 
@@ -7199,7 +7201,7 @@ var vlist, flist, outlist: TStringList;
       outlist.Add(tabs(rsGFtime, suff, tabu)+IntToStr(gfd)+'d '+
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
-      if RadioGroup3.ItemIndex=2 then begin
+      if rgSpeedUnit.ItemIndex=2 then begin
         outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
       end else begin
         outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
@@ -7275,7 +7277,7 @@ var vlist, flist, outlist: TStringList;
       outlist.Add(rsGFtime+dstr+IntToStr(gfd)+'d '+
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
-      if RadioGroup3.ItemIndex=2 then begin
+      if rgSpeedUnit.ItemIndex=2 then begin
         outlist.Add(rsGFstr+dstr+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
       end else begin
         outlist.Add(rsGFstr+dstr+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
@@ -7311,7 +7313,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         SuchFile(vlist[x], wldcd+bext, flist);
       if flist.Count>1 then begin                  {genug Dateien?}
         StatusBar1.Panels[1].Text:=IntToStr(flist.Count); {Anzahl BrTelemetrie}
-        SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+rsTurns);
+        AppLog.Lines.Add(StatusBar1.Panels[1].Text+rsTurns);
         StatusBar1.Panels[0].Text:=IntToStr(vlist.Count); {Anzahl Verzeichnisse}
         StatusBar1.Update;
         vlist.Clear;  {brauchen wir hier nicht mehr, wird csv für Ausgabe}
@@ -7326,7 +7328,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         flist.Clear;  {brauchen wir hier nicht mehr, wird splitlist}
         flist.Delimiter:=dstr;                     {Semicolon als Trenner}
         flist.StrictDelimiter:=True;               {keine Spaces als Trenner}
-        case RadioGroup8.ItemIndex of              {Ausgabeformat}
+        case rgCSVtext.ItemIndex of              {Ausgabeformat}
           0: TextAusgabe;
           1: CSVAusgabe;
         end;
@@ -7334,22 +7336,22 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         if gfd=0 then begin
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                                      FormatDateTime(zzf, gftime)+'h';
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                             IntToStr(gfd)+'d '+FormatDateTime(zzf, gftime)+'h';
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end;
         if gdist>0 then begin
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+' / '+rsGFstr+suff;
-          if RadioGroup3.ItemIndex=2 then begin
+          if rgSpeedUnit.ItemIndex=2 then begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                        FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi';
-            SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end else begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                        FloatToStrF(gdist, ffFixed, 10, 1)+'km';
-            SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end;
         end;
         Screen.Cursor:=crDefault;
@@ -7369,7 +7371,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     end;
   end else begin
     StatusBar1.Panels[5].Text:=rsError;
-    SynEdit1.Lines.Add('''6843'+suff+StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add('''6843'+suff+StatusBar1.Panels[5].Text);
   end;
 end;
 
@@ -7410,7 +7412,7 @@ var vlist, flist, outlist: TStringList;
       outlist.Add(tabs(rsGFtime, suff, tabu)+IntToStr(gfd)+'d '+
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
-      if RadioGroup3.ItemIndex=2 then begin
+      if rgSpeedUnit.ItemIndex=2 then begin
         outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
       end else begin
         outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
@@ -7486,7 +7488,7 @@ var vlist, flist, outlist: TStringList;
       outlist.Add(rsGFtime+dstr+IntToStr(gfd)+'d '+
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
-      if RadioGroup3.ItemIndex=2 then begin
+      if rgSpeedUnit.ItemIndex=2 then begin
         outlist.Add(rsGFstr+dstr+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
       end else begin
         outlist.Add(rsGFstr+dstr+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
@@ -7518,7 +7520,7 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
         SuchFile(vlist[x], h5file+wldcd+fext, flist);
       StatusBar1.Panels[1].Text:=IntToStr(flist.Count); {Anzahl H501 files}
       if flist.Count>1 then begin                  {genug Dateien?}
-        SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+rsTurns);
+        AppLog.Lines.Add(StatusBar1.Panels[1].Text+rsTurns);
         StatusBar1.Panels[0].Text:=IntToStr(vlist.Count); {Anzahl Verzeichnisse}
         StatusBar1.Update;
         vlist.Clear;  {brauchen wir hier nicht mehr, wird csv für Ausgabe}
@@ -7533,7 +7535,7 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
         flist.Clear;  {brauchen wir hier nicht mehr, wird splitlist}
         flist.Delimiter:=dstr;                     {Semicolon als Trenner}
         flist.StrictDelimiter:=True;               {keine Spaces als Trenner}
-        case RadioGroup8.ItemIndex of              {Ausgabeformat}
+        case rgCSVtext.ItemIndex of              {Ausgabeformat}
           0: TextAusgabe;
           1: CSVAusgabe;
         end;
@@ -7541,22 +7543,22 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
         if gfd=0 then begin
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                                      FormatDateTime(zzf, gftime)+'h';
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                             IntToStr(gfd)+'d '+FormatDateTime(zzf, gftime)+'h';
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end;
         if gdist>0 then begin
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+' / '+rsGFstr+suff;
-          if RadioGroup3.ItemIndex=2 then begin
+          if rgSpeedUnit.ItemIndex=2 then begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                        FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi';
-            SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end else begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
                        FloatToStrF(gdist, ffFixed, 10, 1)+'km';
-            SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end;
         end;
         Screen.Cursor:=crDefault;
@@ -7576,7 +7578,7 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
     end;
   end else begin
     StatusBar1.Panels[5].Text:=rsError;
-    SynEdit1.Lines.Add('''7050'+suff+StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add('''7050'+suff+StatusBar1.Panels[5].Text);
   end;
 end;
 
@@ -7590,10 +7592,10 @@ begin
   BrFlugBuch;                                      {noch Breeze und H501 versuchen}
 end;
 
-procedure TForm1.RadioGroup6Click(Sender: TObject); {Cam mode}
+procedure TForm1.rgVideoFotoClick(Sender: TObject); {Cam mode}
 begin
-  if RadioGroup6.Enabled then begin
-    if RadioGroup6.ItemIndex=0 then
+  if rgVideoFoto.Enabled then begin
+    if rgVideoFoto.ItemIndex=0 then
       CGO3run('SET_CAM_MODE&mode=video', 0)
     else
       CGO3run('SET_CAM_MODE&mode=photo', 0);
@@ -7642,7 +7644,7 @@ begin
   try
     if FileExists(fn)then begin
       inlist.LoadFromFile(fn);
-      SynEdit1.Lines.Add('');
+      AppLog.Lines.Add('');
       if pos(plfAndr, inlist[2])>0 then
         BitBtn3.Tag:=1
       else
@@ -7650,7 +7652,7 @@ begin
       for x:=1 to 5 do begin
         s1:='';
         s2:=inlist[x];
-        SynEdit1.Lines.Add(s2);
+        AppLog.Lines.Add(s2);
         if length(s2)>3 then begin
           for k:=1 to length(s2) do begin
             if s2[k]<>':' then
@@ -7681,11 +7683,11 @@ begin
     StringGrid4.Cells[0, 5]:=rsRealSense;
     az:=GetFW(FWarr);
     if az>2 then begin
-      SynEdit1.Lines.Add('');
+      AppLog.Lines.Add('');
       for i:=0 to az do begin
         StringGrid4.Cells[1, i+1]:=FWarr[i];
         if FWarr[i]<>'' then
-          SynEdit1.Lines.Add(StringGrid4.Cells[0, i+1]+suff+FWArr[i]);
+          AppLog.Lines.Add(StringGrid4.Cells[0, i+1]+suff+FWArr[i]);
       end;
     end;
   end;
@@ -7824,13 +7826,13 @@ end;
 procedure TForm1.CheckBox11Change(Sender: TObject);  {Extrude für KML geändert}
 begin
   if CheckBox11.Checked then
-    RadioGroup5.ItemIndex:=1;                      {Set relative to ground}
+    rgAltitudeType.ItemIndex:=1;                      {Set relative to ground}
   EnSave;
 end;
 
 procedure TForm1.CheckBox1Change(Sender: TObject); {Filteranzeige}
 begin
-  RadioGroup10.Enabled:=CheckBox1.Checked;
+  rgVehicleType.Enabled:=CheckBox1.Checked;
 end;
 
 function nahe(lat1, lon1, lat2, lon2: double): boolean; {Wert in der Nähe}
@@ -7850,7 +7852,7 @@ end;
 
 procedure TForm1.BitBtn12Click(Sender: TObject);   {Defaulteinstellung}
 begin                  {Reset Schnellanalyse für alle drei Histogramme}
-  Timer3.Enabled:=false;
+  TimerDiashow.Enabled:=false;
   SetProfile(0);
   ComboBox10.ItemIndex:=0;                         {Profiles rücksetzen}
 end;
@@ -7904,7 +7906,7 @@ procedure TForm1.SetProfile(idx: integer);         {Profile ausgewählt}
            LabeledEdit3.Text:='gpsAccH';
            DefaultCl;
          end;
-  {** Hier Profiles editieren ** :: ** Profiles auch in PopupMenu3 **}
+  {** Hier Profiles editieren ** :: ** Profiles auch in PopupMenuProfile **}
       1: begin                                     {Profile: FlightMode}
            LabeledEdit1.Text:='fMode';
            LabeledEdit2.Text:='CH4';               {Flight Mode Switch}
@@ -7962,7 +7964,7 @@ procedure TForm1.SetProfile(idx: integer);         {Profile ausgewählt}
            LabeledEdit3.Text:='gps_accH';
            DefaultCl;
          end;
-  {** Hier Profiles editieren ** :: ** Profiles auch in PopupMenu3 **}
+  {** Hier Profiles editieren ** :: ** Profiles auch in PopupMenuProfile **}
       1: begin                                     {Profile: FlightMode}
            LabeledEdit1.Text:='f_mode';
            LabeledEdit2.Text:='CH4';               {Flight Mode Switch}
@@ -8027,10 +8029,10 @@ begin
   end;
   PageControl1.ActivePageIndex:=3;                 {Umschalten auf Schnellanalyse}
   Anzeige;                                         {Schnellanalyse ausführen}
-  if Timer3.Enabled and
+  if TimerDiashow.Enabled and
      (idx>0) then begin
     StatusBar1.Panels[5].Text:=rsProfile+suff+ComboBox10.Items[idx];
-    SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add(StatusBar1.Panels[5].Text);
   end;
 end;
 
@@ -8102,10 +8104,10 @@ begin
       KursorAus;                                   {Fadenkreuz aus}
   end;
   if PageControl1.ActivePageIndex=3 then begin     {Schellanalyse}
-    if key=vk_ESCAPE then Timer3.Enabled:=false;   {Diashow Profiles stoppen}
+    if key=vk_ESCAPE then TimerDiashow.Enabled:=false;   {Diashow Profiles stoppen}
     if (key=vk_F5) and
        (SpinEdit3.Tag<>BrID) then                  {H501 ???}
-      Timer3.Enabled:=true;                        {Weiter}
+      TimerDiashow.Enabled:=true;                        {Weiter}
   end;
 end;
 
@@ -8358,11 +8360,11 @@ begin
     TreeView1.BeginDrag(true);
 end;
 
-procedure TForm1.AppLogTimeStamp(s: string);       {AppLog einteilen}
+procedure TForm1.AppLogTimeStamp(s: string);       {AppLogHighlighter einteilen}
 begin
-  SynEdit1.Lines.Add(s);
-  SynEdit1.Lines.Add(trenner+tab1+FormatDateTime(vzf+zzz, now)+tab1+trenner);
-  SynEdit1.Lines.Add('');
+  AppLog.Lines.Add(s);
+  AppLog.Lines.Add(trenner+tab1+FormatDateTime(vzf+zzz, now)+tab1+trenner);
+  AppLog.Lines.Add('');
 end;
 
 procedure TForm1.SetSensorEnv;    {Bedienoberfläche für Sensor Anzeige anpassen}
@@ -8373,30 +8375,30 @@ begin
   Chart1BarSeries4.Clear;
   Chart1BarSeries5.Clear;
   Chart1BarSeries7.Clear;
-  PopUpMenu1.Items[0].Enabled:=false;              {GoogleMaps}
-  PopUpMenu1.Items[1].Enabled:=false;              {OSM}
-  PopUpMenu1.Items[4].Enabled:=false;              {Datenanalyse}
-  PopUpMenu1.Items[5].Enabled:=false;              {GoTo #}
-  PopUpMenu1.Items[6].Enabled:=false;              {GoTo Errorflags}
-  PopUpMenu1.Items[9].Enabled:=false;              {Start}
-  PopUpMenu1.Items[10].Enabled:=false;             {Stop}
-  MenuItem4.Enabled:= false;                       {HDiagamm Kursor}
-  MenuItem12.Enabled:=false;                       {Profiles}
-  MenuItem57.Enabled:=false;                       {Diashow}
+  PopupMenuTab.Items[0].Enabled:=false;              {GoogleMaps}
+  PopupMenuTab.Items[1].Enabled:=false;              {OSM}
+  PopupMenuTab.Items[4].Enabled:=false;              {Datenanalyse}
+  PopupMenuTab.Items[5].Enabled:=false;              {GoTo #}
+  PopupMenuTab.Items[6].Enabled:=false;              {GoTo Errorflags}
+  PopupMenuTab.Items[9].Enabled:=false;              {Start}
+  PopupMenuTab.Items[10].Enabled:=false;             {Stop}
+  mnCursorEin.Enabled:= false;                       {HDiagamm Kursor}
+  mnProfiles.Enabled:=false;                       {Profiles}
+  mnSlideshow.Enabled:=false;                       {Diashow}
 end;
 
 procedure TForm1.ResetSensorEnv;
 begin
-  PopUpMenu1.Items[0].Enabled:=true;               {GoogleMaps}
-  PopUpMenu1.Items[1].Enabled:=true;               {OSM}
-  PopUpMenu1.Items[4].Enabled:=true;               {Datenanalyse}
-  PopUpMenu1.Items[5].Enabled:=true;               {GoTo #}
-  PopUpMenu1.Items[6].Enabled:=true;               {GoTo Errorflags}
-  PopUpMenu1.Items[9].Enabled:=true;               {Start}
-  PopUpMenu1.Items[10].Enabled:=true;              {Stop}
-  MenuItem4.Enabled:= true;                        {HDiagamm Kursor}
-  MenuItem12.Enabled:=true;                        {Profiles}
-  MenuItem57.Enabled:=true;                        {Diashow}
+  PopupMenuTab.Items[0].Enabled:=true;               {GoogleMaps}
+  PopupMenuTab.Items[1].Enabled:=true;               {OSM}
+  PopupMenuTab.Items[4].Enabled:=true;               {Datenanalyse}
+  PopupMenuTab.Items[5].Enabled:=true;               {GoTo #}
+  PopupMenuTab.Items[6].Enabled:=true;               {GoTo Errorflags}
+  PopupMenuTab.Items[9].Enabled:=true;               {Start}
+  PopupMenuTab.Items[10].Enabled:=true;              {Stop}
+  mnCursorEin.Enabled:= true;                        {HDiagamm Kursor}
+  mnProfiles.Enabled:=true;                        {Profiles}
+  mnSlideshow.Enabled:=true;                        {Diashow}
 end;
 
 procedure TForm1.Anzeige;                          {neu anzeigen}
@@ -8462,8 +8464,8 @@ begin
       1: ResetSensorEnv;                           {ST10 - RemoteGPS}
       2: begin                                     {Funk - Remote}
            ResetSensorEnv;
-           PopUpMenu1.Items[0].Enabled:=false;     {GoogleMaps}
-           PopUpMenu1.Items[1].Enabled:=false;     {OSM}
+           PopupMenuTab.Items[0].Enabled:=false;     {GoogleMaps}
+           PopupMenuTab.Items[1].Enabled:=false;     {OSM}
          end;
       3: SetSensorEnv;                             {Sensor files}
     end;
@@ -8474,9 +8476,9 @@ begin
       AnzYLegacy;                                  {Rest der Yuneec Welt}
     end;
     ComboBox10.Enabled:=RadioGroup1.Enabled;       {Profiles nicht bei Breeze}
-    MenuItem33.Enabled:=RadioGroup1.Enabled;       {Menüs abh. von Type}
-    MenuItem34.Enabled:=RadioGroup1.Enabled;
-    MenuItem12.Enabled:=RadioGroup1.Enabled;       {Menü Profiles nicht für Breeze}
+    mnMainStart.Enabled:=RadioGroup1.Enabled;       {Menüs abh. von Type}
+    mnMainStop.Enabled:=RadioGroup1.Enabled;
+    mnProfiles.Enabled:=RadioGroup1.Enabled;       {Menü Profiles nicht für Breeze}
     StatusBar1.Tag:=0;                             {Zeiten nicht mit kopieren}
     LoadTree;                                      {Spaltenliste aktualisieren}
   end;                                             {Ende keine Dateien}
@@ -8486,13 +8488,13 @@ procedure TForm1.ShowMQ;                           {Anzeige SensorFile Mantis Q}
 var fn: string;
 begin
   if ListBox1.Tag<>ListBox1.ItemIndex then begin   {nur neue Datei}
-    PopUpMenu1.Items[0].Enabled:=false;            {GoogleMaps}
-    PopUpMenu1.Items[1].Enabled:=false;            {OSM}
-    PopUpMenu1.Items[4].Enabled:=false;            {Datenanalyse}
-    PopUpMenu1.Items[5].Enabled:=false;            {GoTo #}
-    PopUpMenu1.Items[6].Enabled:=false;            {GoTo Errorflags}
-    PopUpMenu1.Items[9].Enabled:=false;            {Start}
-    PopUpMenu1.Items[10].Enabled:=false;           {Stop}
+    PopupMenuTab.Items[0].Enabled:=false;            {GoogleMaps}
+    PopupMenuTab.Items[1].Enabled:=false;            {OSM}
+    PopupMenuTab.Items[4].Enabled:=false;            {Datenanalyse}
+    PopupMenuTab.Items[5].Enabled:=false;            {GoTo #}
+    PopupMenuTab.Items[6].Enabled:=false;            {GoTo Errorflags}
+    PopupMenuTab.Items[9].Enabled:=false;            {Start}
+    PopupMenuTab.Items[10].Enabled:=false;           {Stop}
     PageControl1.ActivePageIndex:=1;               {Detail}
     RadioGroup1.ItemIndex:=3;                      {Sensor Files}
     RadioGroup1.Enabled:=false;
@@ -8517,13 +8519,13 @@ procedure TForm1.ShowH520;                         {Anzeige TLOG File H520}
 var fn: string;
 begin
   if ListBox1.Tag<>ListBox1.ItemIndex then begin   {nur neue Datei}
-    PopUpMenu1.Items[0].Enabled:=false;            {GoogleMaps}
-    PopUpMenu1.Items[1].Enabled:=false;            {OSM}
-    PopUpMenu1.Items[4].Enabled:=false;            {Datenanalyse}
-    PopUpMenu1.Items[5].Enabled:=false;            {GoTo #}
-    PopUpMenu1.Items[6].Enabled:=false;            {GoTo Errorflags}
-    PopUpMenu1.Items[9].Enabled:=false;            {Start}
-    PopUpMenu1.Items[10].Enabled:=false;           {Stop}
+    PopupMenuTab.Items[0].Enabled:=false;            {GoogleMaps}
+    PopupMenuTab.Items[1].Enabled:=false;            {OSM}
+    PopupMenuTab.Items[4].Enabled:=false;            {Datenanalyse}
+    PopupMenuTab.Items[5].Enabled:=false;            {GoTo #}
+    PopupMenuTab.Items[6].Enabled:=false;            {GoTo Errorflags}
+    PopupMenuTab.Items[9].Enabled:=false;            {Start}
+    PopupMenuTab.Items[10].Enabled:=false;           {Stop}
     PageControl1.ActivePageIndex:=1;               {Detail}
     RadioGroup1.ItemIndex:=3;                      {Sensor Files}
     RadioGroup1.Enabled:=false;
@@ -8541,8 +8543,8 @@ procedure TForm1.ListBox1Click(Sender: TObject);   {Anzeige wenn Dateiwechsel}
 begin
   if (ListBox1.Items.Count>0) and
      (ListBox1.ItemIndex<>ListBox1.Tag) then begin {nur bei neuer Datei}
-    Timer2.Enabled:=false;
-    Timer3.Enabled:=false;                         {Stop Diashow Profiles}
+    TimerDblClick.Enabled:=false;
+    TimerDiashow.Enabled:=false;                         {Stop Diashow Profiles}
     if Form2<>nil then
       Form2.Close;                                 {Detailfenster schließen}
     cutb:=0;                                       {Zeitstempel zum Ausschneiden}
@@ -8601,15 +8603,15 @@ begin
   ComboBox1.Items.Assign(Memo1.Lines);
 end;
 
-procedure TForm1.MenuItem10Click(Sender: TObject); {Menü: GoTo Settings}
+procedure TForm1.mnSaveAsQuickClick(Sender: TObject); {Menü: GoTo Settings}
 begin
   PageControl1.ActivePageIndex:=6;
   PageControl2.ActivePageIndex:=1;
 end;
 
-procedure TForm1.MenuItem11Click(Sender: TObject); {Menü: Default}
+procedure TForm1.mnResetProfileClick(Sender: TObject); {Menü: Default}
 begin
-  Timer3.Enabled:=false;
+  TimerDiashow.Enabled:=false;
   if (SpinEdit3.Tag=MQid) or                       {nichts tun für MantisQ}
      (SpinEdit3.Tag=H5id) then                     {nichts tun für H520}
        exit;
@@ -8617,9 +8619,9 @@ begin
   ComboBox10.ItemIndex:=0;                         {Profiles rücksetzen}
 end;
 
-procedure TForm1.MenuItem13Click(Sender: TObject); {Menü Profile FlightModes}
+procedure TForm1.mnProfModeClick(Sender: TObject); {Menü Profile FlightModes}
 begin
-  Timer3.Enabled:=false;
+  TimerDiashow.Enabled:=false;
   SetProfile(1);
   ComboBox10.ItemIndex:=0;
 end;
@@ -8648,7 +8650,7 @@ begin
     Label15.Caption:=rsDauer+tab1+FormatDateTime('= nn:ss'+zzz, cute-cutb);
     if a then begin
       StatusBar1.Panels[5].Text:=Label15.Caption;  {Textfeld überschreiben}
-      SynEdit1.Lines.Add(capBitBtn14+tab1+StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(capBitBtn14+tab1+StatusBar1.Panels[5].Text);
     end;
   end else
     StatusBar1.Tag:=0;                             {nicht kopieren}
@@ -8657,18 +8659,18 @@ begin
     StatusBar1.Panels[4].Text:=Label14.Caption;
   end;
   mnCut.Enabled:=BitBtn14.Enabled;
-  MenuItem54.Enabled:=BitBtn14.Enabled;
+  mnCutTab.Enabled:=BitBtn14.Enabled;
   StatusBar1.Tag:=0;                               {nicht kopieren}
 end;
 
-procedure TForm1.MenuItem16Click(Sender: TObject); {Reset Beginn/Ende}
+procedure TForm1.mnDelTabClick(Sender: TObject); {Reset Beginn/Ende}
 begin
   cutb:=0;
   cute:=0;
   FreigabeCut(true);
 end;
 
-procedure TForm1.MenuItem17Click(Sender: TObject); {Startpunkt setzen}
+procedure TForm1.mnStartTabClick(Sender: TObject); {Startpunkt setzen}
 begin
   SetStartP;
 end;
@@ -8683,7 +8685,7 @@ begin
   FreigabeCut(true);
 end;
 
-procedure TForm1.MenuItem18Click(Sender: TObject); {Endpunkt setzen}
+procedure TForm1.mnStopTabClick(Sender: TObject); {Endpunkt setzen}
 begin
   SetEndP;
 end;
@@ -8702,11 +8704,11 @@ procedure TForm1.PageControl1Change(Sender: TObject);
 begin                                              {Tabs umschalten}
   if StringGrid1.ColCount>=csvanz then             {nichts tun bei Anzeige Sensor}
     exit;
-  Timer3.Enabled:=false;                           {Diashow Profiles stoppen}
+  TimerDiashow.Enabled:=false;                           {Diashow Profiles stoppen}
   GroupBox11.Tag:=0;                               {Suche zurücksetzen}
   ProgressBar1.Position:=0;
   ComboBox10.ItemIndex:=0;                         {Profiles zurücksetzen}
-  RadioGroup10.Enabled:=CheckBox1.Checked;
+  rgVehicleType.Enabled:=CheckBox1.Checked;
   ComboBox9.Enabled:=false;
   case PageControl1.ActivePageIndex of     {alle anderen Fälle ohne Änderung}
     1: begin                                       {Datentabelle}
@@ -8751,7 +8753,7 @@ const bgid=999999;
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     vld:=(pos(brsnid, inlist[5])>0) and (pos(brfmode, inlist[8])>0);
     StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
@@ -8823,7 +8825,7 @@ const bgid=999999;
         end;                                       {Ende realer Flug}
       end else begin
         StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-        SynEdit1.Lines.Add('''8287'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''8287'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
     flt:=flt+ed-bg1;
@@ -8841,7 +8843,7 @@ const bgid=999999;
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
     for x:=1 to inlist.count-1 do begin            {Daten einlesen}
@@ -8906,7 +8908,7 @@ const bgid=999999;
         end;                                     {Ende realer Flug}
       end else begin
         StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-        SynEdit1.Lines.Add('''8370'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''8370'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
     flt:=flt+ed-bg1;
@@ -8923,7 +8925,7 @@ const bgid=999999;
        inlist.LoadFromFile(fn);
      except
        StatusBar1.Panels[5].Text:=fn+nixda;
-       SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
      end;
      if inlist.count>2 then begin                 {Überschrift und mind. 2 Zeile}
        StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
@@ -9041,7 +9043,7 @@ const bgid=999999;
          tend:=ZeitToDT(splitlist[0], SpinEdit3.Tag); {letzten Zeitstempel merken}
        end else begin
          StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;    {Ende Konsistenz checken}
-         SynEdit1.Lines.Add('''8505'+suff+StatusBar1.Panels[5].Text);
+         AppLog.Lines.Add('''8505'+suff+StatusBar1.Panels[5].Text);
        end;
      end;
    end;
@@ -9096,7 +9098,7 @@ begin
           grdOverview.Cells[2,z+1]:=FormatDateTime(zzf, bg);
           grdOverview.Cells[3,z+1]:=FormatDateTime(zzf, ed);
           grdOverview.Cells[4,z+1]:=FormatDateTime('nn:ss', flt);     {Flugzeit}
-          if RadioGroup3.ItemIndex=2 then begin
+          if rgSpeedUnit.ItemIndex=2 then begin
             grdOverview.Cells[5,z+1]:=FloatToStrF(hmaxg/fft, ffFixed, 4, 1)+'ft';
             grdOverview.Cells[6,z+1]:=FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft';
             grdOverview.Cells[7,z+1]:=FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft';
@@ -9126,7 +9128,7 @@ begin
             grdOverview.Cells[2,z+1]:=FormatDateTime(zzf, bg);
             grdOverview.Cells[3,z+1]:=FormatDateTime(zzf, ed);
             grdOverview.Cells[4,z+1]:=FormatDateTime('nn:ss', flt);
-            if RadioGroup3.ItemIndex=2 then begin
+            if rgSpeedUnit.ItemIndex=2 then begin
               grdOverview.Cells[5,z+1]:=FloatToStrF(hmax/fft, ffFixed, 4, 1)+'ft';
               grdOverview.Cells[8,z+1]:=FloatToStrF(tasmax*fmph, ffFixed, 4, 1)+'mph'
             end else begin
@@ -9336,7 +9338,7 @@ begin                                              {Datenanalyse ausgewählter B
       n:=SpinEdit3.Value+SpinEdit2.Value+1;
       if n>StringGrid1.RowCount-1 then
         n:=StringGrid1.RowCount-1;                 {Ende der Datei}
-      SynEdit1.Lines.Add(capTabSheet10+tab1+rsFor+tab1+
+      AppLog.Lines.Add(capTabSheet10+tab1+rsFor+tab1+
                          IntToStr(SpinEdit3.Value)+'-'+      {von}
                          IntToStr(n));             {bis}
       for x:=SpinEdit3.Value to n do begin         {Liste zur Auswertung füllen}
@@ -9362,7 +9364,7 @@ begin                                              {Datenanalyse ausgewählter B
         end;
         StatusBar1.Panels[5].Text:=capTabSheet10+tab1+rsFor+tab1+
                                    NumSec(dur)+'s'+suff+an;
-        SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       end;
       StatusBar1.Tag:=1;                           {Zeiten zum Kopieren freigeben}
     finally                                        {alles wieder freigeben}
@@ -9372,7 +9374,7 @@ begin                                              {Datenanalyse ausgewählter B
     end;
   except
     StatusBar1.Panels[5].Text:=capTabSheet10+suff+rsError;
-    SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add(StatusBar1.Panels[5].Text);
   end;
 end;
 
@@ -9415,7 +9417,7 @@ begin
   n:=Label3.Tag;                        {zwischenspeichern, wird sonst zerstört}
   tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des StringGrid1 überschrieben}
   screen.Cursor:=crHourGlass;
-  MenuItem7.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   StringGrid1.ColCount:=0;                         {alles löschen}
   StringGrid1.RowCount:=14;
   StringGrid1.ColCount:=defaultcol;
@@ -9444,14 +9446,14 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>1 then begin
       StatusBar1.Panels[5].Text:=fn;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end else begin
       StatusBar1.Panels[5].Text:=fn+tab1+rsEmpty;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>2 then begin
       try
@@ -9469,7 +9471,7 @@ begin
             OverWriteVT;                           {Overwrite for PX4 Thunderbird}
           end else
             if CheckBox9.Checked then
-              SynEdit1.Lines.Add(capCheckBox9);    {Bei YTH Plus anzeigen, ob bereinigt}
+              AppLog.Lines.Add(capCheckBox9);    {Bei YTH Plus anzeigen, ob bereinigt}
           StaticText1.Caption:=vtypeToStr(SpinEdit3.Tag);  {anzeigen}
           splitlist.DelimitedText:=inlist[0];      {Überschrift wiederherstellen}
         end;
@@ -9477,7 +9479,7 @@ begin
         SpinEdit2.MaxValue:=inlist.Count-10;
         SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
-        SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
+        AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
         StringGrid1.RowCount:=inlist.Count;        {vorbelegen}
         StringGrid1.ColCount:=splitlist.Count;
         StringGrid1.Cells[0,0]:=rsHDcell0;
@@ -9503,7 +9505,7 @@ begin
                 if (SpinEdit3.Tag=5) and           {RealSense erkennen beim YTH}
                    (splitlist[StringGrid1.Tag-1]='245') then rs:=true;
                 if (StrToIntDef(splitlist[StringGrid1.Tag+3], 0) shr 1)>0 then begin
-                  MenuItem7.Enabled:=true;
+                  mnGoToErr.Enabled:=true;
                   if topp[ListBox1.ItemIndex, 5]=0 then
                     topp[ListBox1.ItemIndex, 5]:=x;
                 end;
@@ -9547,24 +9549,24 @@ begin
           end else begin
             StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsEmpty+tab1+
                                        capLabel6+Format('%6d', [x]);
-            SynEdit1.Lines.Add('''9011'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9011'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
         if mode=1 then begin
           StatusBar1.Panels[1].Text:=IntToStr(p-1 );
           StatusBar1.Panels[2].Text:=rsSelection;
-          SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
+          AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
           if p>1 then begin
             StringGrid1.RowCount:=p;
           end else StringGrid1.RowCount:=5;        {leere Tabelle}
           StringGrid1.TopRow:=1;                   {nach oben springen}
           StatusBar1.Panels[5].Text:=StringGrid1.Cells[n,0]+' = "'+
                                      ComboBox9.Text+'"';
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
           if rs then
             StaticText1.Caption:=StaticText1.Caption+'+'+rsRealSense;
-          StatusBar1.Panels[2].Text:=RadioGroup2.Items[RadioGroup2.ItemIndex];
+          StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
           StringGrid1.TopRow:=topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]; {gemerkten Top setzen}
           if tpos1>0 then begin          {Scrollen zu letzter Zeit im voriger Tabelle}
             for i:=1 to StringGrid1.RowCount-1 do
@@ -9576,19 +9578,19 @@ begin
         StringGrid1.AutoSizeColumn(0);
         StringGrid1.EndUpdate;
 
-        Synedit1.Lines.add(Format('%-10s', [capLabel13+suff])+
+        AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLGmap(slat, slon));   {Anzeige Start und Ende}
-        Synedit1.Lines.add(Format('%-10s', [capLabel14+suff])+
+        AppLog.Lines.add(Format('%-10s', [capLabel14+suff])+
                            URLGmap(splitlist[5], splitlist[6]));
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [zhl]);
-        SynEdit1.Lines.Add('''9050'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9050'+suff+StatusBar1.Panels[5].Text);
       end;
       if PageControl1.ActivePageIndex=1 then StringGrid1.SetFocus;
     end else begin                                 {Datei leer}
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
   finally
     FreeAndNil(inlist);
@@ -9605,9 +9607,9 @@ begin
   n:=Label3.Tag;                        {zwischenspeichern, wird sonst zerstört}
   Screen.Cursor:=crHourGlass;
   SetSensorEnv;
-  MenuItem1.Enabled:=true;                         {GoogleMaps Link}
-  MenuItem9.Enabled:=true;                         {OSM Link}
-  MenuItem7.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  mnGoogleMap.Enabled:=true;                         {GoogleMaps Link}
+  mnOSM.Enabled:=true;                         {OSM Link}
+  mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   inlist:=TStringList.Create;
   try
     inlist.LoadFromFile(fn);
@@ -9629,9 +9631,9 @@ begin
 
     StatusBar1.Panels[1].Text:=IntToStr(inlist.Count-1);
     StatusBar1.Panels[5].Text:=fn;
-    SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
-    SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+' PX4 '+rsMAVlink+tab1+rsDS);
-    SynEdit1.Lines.Add('');
+    AppLog.Lines.Add(StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add(StatusBar1.Panels[1].Text+' PX4 '+rsMAVlink+tab1+rsDS);
+    AppLog.Lines.Add('');
   finally
     Label3.Tag:=n;
     FreeAndNil(inlist);
@@ -9651,7 +9653,7 @@ begin
   tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des StringGrid1 überschrieben}
   screen.Cursor:=crHourGlass;
   for i:=0 to StringGrid1.ColCount-1 do StringGrid1.Cols[i].Clear;
-  MenuItem7.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   StringGrid1.RowCount:=1;
   StringGrid1.ColCount:=0;                         {alles löschen}
   slat:='';
@@ -9665,7 +9667,7 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>10 then begin
       try
@@ -9684,13 +9686,13 @@ begin
         SpinEdit2.MaxValue:=inlist.Count-10;
         SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-10);
-        SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
+        AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
         if inlist.count>10 then begin
           StatusBar1.Panels[5].Text:=fn;
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
           StatusBar1.Panels[5].Text:=fn+tab1+rsEmpty;
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end;
         StringGrid1.RowCount:=inlist.Count-8;      {vorbelegen}
         StringGrid1.ColCount:=splitlist.Count;
@@ -9723,7 +9725,7 @@ begin
                 StringGrid1.Cells[i,x-8]:=splitlist[i];
               if (RadioGroup1.ItemIndex=0) and
                  ((StrToIntDef(splitlist[19], 0) shr 1)>0) then begin
-                MenuItem7.Enabled:=true;           {Go to error flag}
+                mnGoToErr.Enabled:=true;           {Go to error flag}
                 if topp[ListBox1.ItemIndex, 5]=0 then
                   topp[ListBox1.ItemIndex, 5]:=x-8;
               end;
@@ -9751,13 +9753,13 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-            SynEdit1.Lines.Add('''9217'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9217'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
         if mode=1 then begin
           StatusBar1.Panels[1].Text:=IntToStr(p-1);
           StatusBar1.Panels[2].Text:=rsSelection;
-         SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
+         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
          if p>1 then begin
             StringGrid1.RowCount:=p;
           end else
@@ -9765,9 +9767,9 @@ begin
           StringGrid1.TopRow:=1;                   {nach oben springen}
           StatusBar1.Panels[5].Text:=StringGrid1.Cells[n,0]+' = "'+
                                      ComboBox9.Text+'"';
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
-          StatusBar1.Panels[2].Text:=RadioGroup2.Items[RadioGroup2.ItemIndex];
+          StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
           x:=(inlist.count-9) div 2;               {Daten irgendwo in der Mitte}
           if tpos1>0 then begin     {Scrollen zu letzter Zeit im voriger Tabelle}
             for i:=1 to StringGrid1.RowCount-1 do
@@ -9778,20 +9780,20 @@ begin
         end;
         StringGrid1.EndUpdate;
 
-        Synedit1.Lines.add(Format('%-10s', [capLabel13+suff])+
+        AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLGmap(BrCoordFormat(slat),
                            BrCoordFormat(slon)));  {Anzeige Start und Ende}
-        Synedit1.Lines.add(Format('%-10s', [capLabel14+suff])+
+        AppLog.Lines.add(Format('%-10s', [capLabel14+suff])+
                            URLGmap(BrCoordFormat(splitlist[12]),
                            BrCoordFormat(splitlist[13])));
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        SynEdit1.Lines.Add('''9253'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9253'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     StringGrid1.TopRow:=topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]; {Top setzen}
     if PageControl1.ActivePageIndex=1 then
@@ -9842,7 +9844,7 @@ begin
   screen.Cursor:=crHourGlass;
   for i:=0 to StringGrid1.ColCount-1 do
     StringGrid1.Cols[i].Clear;
-  MenuItem7.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   StringGrid1.RowCount:=1;
   StringGrid1.ColCount:=0;                         {alles löschen}
   slat:='';
@@ -9857,7 +9859,7 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>1 then begin
       try
@@ -9869,7 +9871,7 @@ begin
         SpinEdit2.MaxValue:=inlist.Count-10;
         SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
-        SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
+        AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
         StringGrid1.RowCount:=inlist.Count;        {vorbelegen}
         StringGrid1.ColCount:=splitlist.Count;
         StatusBar1.Panels[5].Text:=fn;
@@ -9907,13 +9909,13 @@ begin
             inc(p);
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-            SynEdit1.Lines.Add('''9378'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9378'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
         if mode=1 then begin
           StatusBar1.Panels[1].Text:=IntToStr(p-1);
           StatusBar1.Panels[2].Text:=rsSelection;
-         SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
+         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
          if p>1 then begin
             StringGrid1.RowCount:=p;
           end else
@@ -9921,9 +9923,9 @@ begin
           StringGrid1.TopRow:=1;                   {nach oben springen}
           StatusBar1.Panels[5].Text:=StringGrid1.Cells[n,0]+' = "'+
                                      ComboBox9.Text+'"';
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
-          StatusBar1.Panels[2].Text:=RadioGroup2.Items[RadioGroup2.ItemIndex];
+          StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
           x:=(inlist.count-1) div 2;               {Daten irgendwo in der Mitte}
           if tpos1>0 then begin     {Scrollen zu letzter Zeit im voriger Tabelle}
             for i:=1 to StringGrid1.RowCount-1 do
@@ -9934,18 +9936,18 @@ begin
         end;
         StringGrid1.EndUpdate;
 
-        Synedit1.Lines.add(Format('%-10s', [capLabel13+suff])+
+        AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLGmap(slat, slon));   {Anzeige Start und Ende}
-        Synedit1.Lines.add(Format('%-10s', [capLabel14+suff])+
+        AppLog.Lines.add(Format('%-10s', [capLabel14+suff])+
                            URLGmap(splitlist[2], splitlist[3]));
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        SynEdit1.Lines.Add('''9412'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9412'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     StringGrid1.TopRow:=topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]; {Top setzen}
     if PageControl1.ActivePageIndex=1 then
@@ -9971,7 +9973,7 @@ begin
   n:=Label3.Tag;                        {zwischenspeichern, wird sonst zerstört}
   tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des StringGrid1 überschrieben}
   screen.Cursor:=crHourGlass;
-  MenuItem7.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   StringGrid1.RowCount:=1;
   StringGrid1.ColCount:=0;                         {alles löschen}
   slat:='';
@@ -9985,7 +9987,7 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>15 then begin
       try
@@ -10004,13 +10006,13 @@ begin
         SpinEdit2.MaxValue:=inlist.Count-17;
         SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-17);
-        SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
+        AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
         if inlist.count>18 then begin
           StatusBar1.Panels[5].Text:=fn;
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
           StatusBar1.Panels[5].Text:=fn+tab1+rsEmpty;
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end;
         StringGrid1.RowCount:=inlist.Count-15;     {vorbelegen}
         StringGrid1.ColCount:=splitlist.Count;
@@ -10036,13 +10038,13 @@ begin
 
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-            SynEdit1.Lines.Add('''9513'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9513'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
         if mode=1 then begin
           StatusBar1.Panels[1].Text:=IntToStr(p-1);
           StatusBar1.Panels[2].Text:=rsSelection;
-         SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
+         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
          if p>1 then begin
             StringGrid1.RowCount:=p;
           end else
@@ -10050,9 +10052,9 @@ begin
           StringGrid1.TopRow:=1;                   {nach oben springen}
           StatusBar1.Panels[5].Text:=StringGrid1.Cells[n,0]+' = "'+
                                      ComboBox9.Text+'"';
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
-          StatusBar1.Panels[2].Text:=RadioGroup2.Items[RadioGroup2.ItemIndex];
+          StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
           x:=(inlist.count-9) div 2;               {Daten irgendwo in der Mitte}
           if tpos1>0 then begin     {Scrollen zu letzter Zeit im voriger Tabelle}
             for i:=1 to StringGrid1.RowCount-1 do
@@ -10063,20 +10065,20 @@ begin
         end;
         StringGrid1.EndUpdate;
 
-        Synedit1.Lines.add(Format('%-10s', [capLabel13+suff])+
+        AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLGmap(BrCoordFormat(slat),
                            BrCoordFormat(slon)));  {Anzeige Start und Ende}
-        Synedit1.Lines.add(Format('%-10s', [capLabel14+suff])+
+        AppLog.Lines.add(Format('%-10s', [capLabel14+suff])+
                            URLGmap(BrCoordFormat(splitlist[12]),
                            BrCoordFormat(splitlist[13])));
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        SynEdit1.Lines.Add('''9549'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9549'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     StringGrid1.TopRow:=topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]; {Top setzen}
     if PageControl1.ActivePageIndex=1 then
@@ -10257,11 +10259,11 @@ begin
       inlist.LoadFromFile(fn);                     {Telemtry Datei laden}
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>2 then begin
       KursorAus;                                   {Fadenkreuz aus bei neuem Flug}
-      MenuItem4.Enabled:=true;                     {Analyse erlauben}
+      mnCursorEin.Enabled:=true;                     {Analyse erlauben}
       splitlist.DelimitedText:=inlist[0];  {Überschrift einlesen zum f_mode ermitteln}
       fModeFinden(splitlist);                      {Position f-mode merken}
       SpinEdit3.MaxValue:=inlist.Count;
@@ -10279,13 +10281,13 @@ begin
       Chart1BarSeries5.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       Chart1BarSeries7.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       StatusBar1.Panels[5].Text:=rsHProfil+fn;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
-      SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
+      AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
 
       if SpinEdit3.Tag=ThBid then begin            {check data for Thunderbird}
         baseh:=GethFromST10(ListBox1.ItemIndex, 0);{From begin of the Remote CSV file}
-        SynEdit1.Lines.Add(rsGCSalt+suff+
+        AppLog.Lines.Add(rsGCSalt+suff+
                            FormatFloat(ctfl, baseh)+'m');
         for x:=1 to inlist.count-1 do begin        {erstmal Daten checken}
           try
@@ -10301,7 +10303,7 @@ begin
             end;
           except
             StatusBar1.Panels[5].Text:=rsInvalid;
-            SynEdit1.Lines.Add('''10013'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+            AppLog.Lines.Add('''10013'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                                suff+StatusBar1.Panels[5].Text);
           end;
         end;
@@ -10328,13 +10330,13 @@ begin
             end;
           except
             StatusBar1.Panels[5].Text:=rsInvalid;
-            SynEdit1.Lines.Add('''10040'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+            AppLog.Lines.Add('''10040'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                                suff+StatusBar1.Panels[5].Text);
           end;
         end;
       end;
       hmxg:=hmxg-baseh;
-      if RadioGroup3.ItemIndex=2 then              {Überschrift im Diagramm ausgeben}
+      if rgSpeedUnit.ItemIndex=2 then              {Überschrift im Diagramm ausgeben}
         Chart1.Title.Text.Add(rsGridCell5+suff+Format('%f', [hmxg/fft])+'ft')
       else
         Chart1.Title.Text.Add(rsGridCell5+suff+Format('%f', [hmxg])+'m');
@@ -10348,7 +10350,7 @@ begin
       end;
       if (SpinEdit3.Tag=ThBid) and
          (baseh<>0) then begin
-        if RadioGroup3.ItemIndex=2 then            {GCS altitude im Diagramm ausgeben}
+        if rgSpeedUnit.ItemIndex=2 then            {GCS altitude im Diagramm ausgeben}
           Chart1.Title.Text.Add(rsGCSalt+suff+Format('%f', [baseh/fft])+'ft')
         else
           Chart1.Title.Text.Add(rsGCSalt+suff+Format('%f', [baseh])+'m');
@@ -10379,7 +10381,7 @@ begin
           end;
         except
           StatusBar1.Panels[5].Text:=rsInvalid;
-          SynEdit1.Lines.Add('''10091'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
+          AppLog.Lines.Add('''10091'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
                              suff+StatusBar1.Panels[5].Text);
         end;
       end;
@@ -10417,7 +10419,7 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>10 then begin
       KursorAus;                                   {Fadenkreuz aus bei neuem Flug}
@@ -10434,9 +10436,9 @@ begin
       Chart1BarSeries5.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       Chart1BarSeries7.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       StatusBar1.Panels[5].Text:=rsHProfil+fn;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       StatusBar1.Panels[1].Text:=IntToStr(inlist.count-10);
-      SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
+      AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
       for x:=9 to inlist.count-1 do                {Dateneinlesen}
       try
         splitlist.DelimitedText:=inlist[x];
@@ -10459,17 +10461,17 @@ begin
           end;
         end else begin
           StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end;
       except
         StatusBar1.Panels[5].Text:=rsInvalid;
-        SynEdit1.Lines.Add('''9927'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+        AppLog.Lines.Add('''9927'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                            suff+StatusBar1.Panels[5].Text);
       end;
       if not gps then
         Chart1LineSeries1.SeriesColor:=clRed;    {ohne GPS: Voltage rot}
     end;
-    if RadioGroup3.ItemIndex=2 then                {Überschrift im Diagramm ausgeben}
+    if rgSpeedUnit.ItemIndex=2 then                {Überschrift im Diagramm ausgeben}
       Chart1.Title.Text.Add(rsGridCell5+suff+Format('%f', [hmxg/fft])+'ft')
     else
       Chart1.Title.Text.Add(rsGridCell5+suff+Format('%f', [hmxg])+'m');
@@ -10504,7 +10506,7 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>10 then begin
       KursorAus;                                   {Fadenkreuz aus bei neuem Flug}
@@ -10521,9 +10523,9 @@ begin
       Chart1BarSeries5.BarPen.Width:=Chart1BarSeries1.BarPen.Width;  {orange}
       Chart1BarSeries7.BarPen.Width:=Chart1BarSeries1.BarPen.Width;  {blue}
       StatusBar1.Panels[5].Text:=rsHProfil+fn;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
-      SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
+      AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
       for x:=1 to inlist.count-1 do                {Read all data}
       try
         splitlist.DelimitedText:=inlist[x];
@@ -10550,17 +10552,17 @@ begin
           end;
         end else begin
           StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end;
       except
         StatusBar1.Panels[5].Text:=rsInvalid;
-        SynEdit1.Lines.Add('''10018'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+        AppLog.Lines.Add('''10018'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                            suff+StatusBar1.Panels[5].Text);
       end;
       if not gps then
         Chart1LineSeries1.SeriesColor:=clRed;      {ohne GPS: Voltage rot}
     end;
-    if RadioGroup3.ItemIndex=2 then                {Überschrift im Diagramm ausgeben}
+    if rgSpeedUnit.ItemIndex=2 then                {Überschrift im Diagramm ausgeben}
       Chart1.Title.Text.Add(rsGridCell5+suff+Format('%f', [hmxg/fft])+'ft')
     else
       Chart1.Title.Text.Add(rsGridCell5+suff+Format('%f', [hmxg])+'m');
@@ -10765,7 +10767,7 @@ begin
       end;
     except
       StatusBar1.Panels[5].Text:=rsCheckSettings+capAnalyse;
-      SynEdit1.Lines.Add('''10248'+suff+StatusBar1.Panels[5].Text+tab1+rsDS);
+      AppLog.Lines.Add('''10248'+suff+StatusBar1.Panels[5].Text+tab1+rsDS);
     end;
   finally
     Chart3LineSeries1.EndUpdate;
@@ -10859,7 +10861,7 @@ const
              ChrKoor(splitlist[5])+tab1+splitlist[4]; {lon + lat + alt}
       if stime='' then begin             {Startpunkt merken}
         stime:=ltime;
-        if RadioGroup5.ItemIndex=0 then
+        if rgAltitudeType.ItemIndex=0 then
           absh:=GethFromST10(z, bg);
         skoor:=ChrKoor(splitlist[6])+sep+
                ChrKoor(splitlist[5])+sep+dzfl;  {ohne Höhe}
@@ -11009,7 +11011,7 @@ begin
         inlist.LoadFromFile(fn);
       except
         StatusBar1.Panels[5].Text:=fn+nixda;
-        SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       end;
       if inlist.count>12 then
       try
@@ -11037,7 +11039,7 @@ begin
               kmlLegacy;
             end;
           end else begin
-             SynEdit1.Lines.Add(rsNotUsed+suff+inlist[x]);
+             AppLog.Lines.Add(rsNotUsed+suff+inlist[x]);
           end;
         end;
         placemark(kmllist, '#starting', '', skoor, stime);
@@ -11049,16 +11051,16 @@ begin
         kmllist.Add(tab2+'<gx:Track>');            {Start playable track}
 {wenn absolute Höhe aus ST10 kommt und es eingestellt ist}
         if (absh<>0) and
-           (RadioGroup5.ItemIndex=0) then begin
+           (rgAltitudeType.ItemIndex=0) then begin
           kmllist.Add(tab4+'<gx:altitudeOffset>'+
                       FloatToStrF(absh, ffFixed, 5, 1)+
                       '</gx:altitudeOffset>');
-          kmllist.Add(tab4+'<'+amtag+RadioGroup5.Items[0]+'</'+amtag);
+          kmllist.Add(tab4+'<'+amtag+rgAltitudeType.Items[0]+'</'+amtag);
         end else begin
-          if RadioGroup5.ItemIndex=2 then
-            kmllist.Add(tab4+'<'+amtag+RadioGroup5.Items[2]+'</'+amtag)
+          if rgAltitudeType.ItemIndex=2 then
+            kmllist.Add(tab4+'<'+amtag+rgAltitudeType.Items[2]+'</'+amtag)
           else
-            kmllist.Add(tab4+'<'+amtag+RadioGroup5.Items[1]+'</'+amtag);
+            kmllist.Add(tab4+'<'+amtag+rgAltitudeType.Items[1]+'</'+amtag);
         end;
         if CheckBox11.Checked then kmllist.Add(tab4+extru);
         if n>10 then begin
@@ -11083,7 +11085,7 @@ begin
               inlist.LoadFromFile(dn);
             except
               StatusBar1.Panels[5].Text:=dn+nixda;
-              SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+              AppLog.Lines.Add(StatusBar1.Panels[5].Text);
             end;
             if inlist.count>5 then begin
               kmllist.Add('<'+pmtag);
@@ -11106,19 +11108,19 @@ begin
         end;           {Ende wenn Pilotenpfad angezeigt werden kann/soll}
         KMLfooter2(kmllist);
         if n>10 then begin                         {kleine Dateien ausblenden}
-          dn:=ResultDN(fn, RadioGroup2.Items[0]);  {Always recreate because of settings}
+          dn:=ResultDN(fn, rgOutFormat.Items[0]);  {Always recreate because of settings}
           try
             kmllist.SaveToFile(dn);
             StatusBar1.Panels[5].Text:=dn+tab1+rsSaved;
-            SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
-            if RadioGroup2.ItemIndex=1 then MacheKMZ(dn);
+            AppLog.Lines.Add(StatusBar1.Panels[5].Text);
+            if rgOutFormat.ItemIndex=1 then MacheKMZ(dn);
           except
             StatusBar1.Panels[5].Text:=dn+tab1+rsNotSaved;
-            SynEdit1.Lines.Add('''10617'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''10617'+suff+StatusBar1.Panels[5].Text);
           end;
         end;
       except
-        SynEdit1.Lines.Add('''10610'+suff+rsInvalid+tab1+rsDS);
+        AppLog.Lines.Add('''10610'+suff+rsInvalid+tab1+rsDS);
       end;
     end;
   finally
@@ -11139,7 +11141,7 @@ var
 begin
   KMLZipper := TZipper.Create;
   try
-    KMLZipper.FileName:=ChangeFileExt(fn, RadioGroup2.Items[1]);
+    KMLZipper.FileName:=ChangeFileExt(fn, rgOutFormat.Items[1]);
     KMLZipper.Entries.AddFileEntry(fn, ExtractFileName(fn));
     KMLZipper.ZipAllFiles;
     DeleteFile(fn);
@@ -11272,7 +11274,7 @@ var
   end;
 
 begin
-  rdn:=ResultDN(fn, RadioGroup2.Items[RadioGroup2.ItemIndex]);
+  rdn:=ResultDN(fn, rgOutFormat.Items[rgOutFormat.ItemIndex]);
   if FileExists(rdn) then
     exit;                                          {Do nothing if file already exists}
   Screen.Cursor:=crHourGlass;
@@ -11303,7 +11305,7 @@ begin
         inlist.LoadFromFile(fn);
       except
         StatusBar1.Panels[5].Text:=fn+nixda;
-        SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       end;
       if inlist.count>10 then
       try
@@ -11331,7 +11333,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid;
-            SynEdit1.Lines.Add('''10818'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''10818'+suff+StatusBar1.Panels[5].Text);
           end;
         end;
         kmllist.Add('<wpt'+skoor);                 {Startpunkt}
@@ -11356,7 +11358,7 @@ begin
             inlist.LoadFromFile(dn);
           except
             StatusBar1.Panels[5].Text:=dn+nixda;
-            SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end;
           if inlist.count>5 then begin
             kmllist.Add('<trk>');
@@ -11389,14 +11391,14 @@ begin
           try
             kmllist.SaveToFile(rdn);
             StatusBar1.Panels[5].Text:=rdn+tab1+rsSaved;
-            SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           except
             StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-            SynEdit1.Lines.Add('''10894'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''10894'+suff+StatusBar1.Panels[5].Text);
           end;
         end;
       except
-        SynEdit1.Lines.Add('''10898'+suff+rsInvalid+tab1+rsDS);
+        AppLog.Lines.Add('''10898'+suff+rsInvalid+tab1+rsDS);
       end;
     end;
   finally
@@ -11444,7 +11446,7 @@ begin
       result:=(hw/n)-1;                            {Durchschnittswert}
     except
       result:=0;
-      SynEdit1.Lines.Add('Altitude taken from RC GPS failed! Requested time stamp: '+
+      AppLog.Lines.Add('Altitude taken from RC GPS failed! Requested time stamp: '+
                          FormatDateTime(zzf, dt));
     end;
   finally
@@ -11467,7 +11469,7 @@ var
 begin
   fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
       kpath+kfile+ListBox1.Items[z]+fext;
-  rdn:=ResultDN(fn, RadioGroup2.Items[RadioGroup2.ItemIndex]); {+dashw.csv}
+  rdn:=ResultDN(fn, rgOutFormat.Items[rgOutFormat.ItemIndex]); {+dashw.csv}
   if FileExists(rdn) then             {Do nothing if target file already exists}
     exit;
   Screen.Cursor:=crHourGlass;
@@ -11484,7 +11486,7 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>2 then
     try
@@ -11544,7 +11546,7 @@ begin
               dashlist.add(s);
             end;
           except
-           SynEdit1.Lines.Add(''''+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
+           AppLog.Lines.Add(''''+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
                              suff+StatusBar1.Panels[5].Text);
          end;
         end else begin
@@ -11555,10 +11557,10 @@ begin
         try
           dashlist.SaveToFile(rdn);
           StatusBar1.Panels[5].Text:=rdn+tab1+rsSaved;
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         except
           StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-          SynEdit1.Lines.Add('''11060'+suff+StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add('''11060'+suff+StatusBar1.Panels[5].Text);
         end;
       end;
     except
@@ -11693,7 +11695,7 @@ begin
     fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
         kpath+kfile+ListBox1.Items[z]+fext;
   end;
-  rdn:=ResultDN(fn, RadioGroup2.Items[RadioGroup2.ItemIndex]); {+_rr.csv}
+  rdn:=ResultDN(fn, rgOutFormat.Items[rgOutFormat.ItemIndex]); {+_rr.csv}
   if FileExists(rdn) then
     exit;
   Screen.Cursor:=crHourGlass;
@@ -11709,7 +11711,7 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>2 then
     try
@@ -11738,14 +11740,14 @@ begin
         try
           dashlist.SaveToFile(rdn);
           StatusBar1.Panels[5].Text:=rdn+tab1+rsSaved;
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         except
           StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-          SynEdit1.Lines.Add('''11447'+suff+StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add('''11447'+suff+StatusBar1.Panels[5].Text);
         end;
       end;
     except
-      SynEdit1.Lines.Add('''11451'+suff+rsInvalid);
+      AppLog.Lines.Add('''11451'+suff+rsInvalid);
     end;
   finally
     FreeAndNil(inlist);
@@ -11822,7 +11824,7 @@ begin
       except
         SetLength(ahwp, 0);                        {bei Fehler nichts laden}
         StatusBar1.Panels[5].Text:=rsInvalid;
-        SynEdit1.Lines.Add(''''+capLabel6+Format('%6d', [x])+ {Datenpunkt ausgeben}
+        AppLog.Lines.Add(''''+capLabel6+Format('%6d', [x])+ {Datenpunkt ausgeben}
                            suff+StatusBar1.Panels[5].Text);
       end;
       SetLength(ahwp, High(ahwp));                 {letzten Eintrag löschen}
@@ -11850,17 +11852,17 @@ begin
         try
           inlist.SaveToFile(rdn);
           StatusBar1.Panels[5].Text:=rdn+tab1+rsSaved;
-          SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         except
           StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-          SynEdit1.Lines.Add('''11559'+suff+StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add('''11559'+suff+StatusBar1.Panels[5].Text);
         end;
       end else begin
         StatusBar1.Panels[5].Text:=rsError;
-        SynEdit1.Lines.Add('''11563'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''11563'+suff+StatusBar1.Panels[5].Text);
       end;
       StatusBar1.Panels[5].Text:=IntToStr(np)+rsNumWP;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
   finally
     ahwp:=nil;
@@ -11884,19 +11886,19 @@ begin
   RadioGroup1.Tag:=0;                              {Resize columns needed again}
 end;
 
-procedure TForm1.RadioGroup2Click(Sender: TObject);    {Format geändert}
+procedure TForm1.rgOutFormatClick(Sender: TObject);    {Format geändert}
 begin
   EnSave;
-  StatusBar1.Panels[2].Text:=RadioGroup2.Items[RadioGroup2.ItemIndex];
+  StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
   BitBtn2.Hint:=hntBitBtn2+' ('+StatusBar1.Panels[2].Text+')';
 end;
 
-procedure TForm1.RadioGroup3Click(Sender: TObject);    {MPH updaten}
+procedure TForm1.rgSpeedUnitClick(Sender: TObject);    {MPH updaten}
 begin
   SelDirAct('');
 end;
 
-procedure TForm1.RadioGroup5Click(Sender: TObject);
+procedure TForm1.rgAltitudeTypeClick(Sender: TObject);
 begin
   EnSave;                                              {Speichern erlauben}
 end;
@@ -11934,7 +11936,7 @@ begin
       CGO3run('', 0);
     end else begin
       StatusBar1.Panels[5].Text:='Command not possible';
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
 end;
 
@@ -12003,7 +12005,7 @@ end;
 procedure TForm1.StringGrid1DblClick(Sender: TObject); {Hilfe zum Zelleninhalt}
 begin
   StatusBar1.Panels[5].Text:=GetCellInfo(StringGrid1.Col, StringGrid1.Row);
-  SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);   {in AppLog aufnehmen}
+  AppLog.Lines.Add(StatusBar1.Panels[5].Text);   {in AppLogHighlighter aufnehmen}
 end;
 
 procedure TForm1.StringGrid1PrepareCanvas(sender: TObject; aCol, aRow: Integer;
@@ -12067,7 +12069,7 @@ const mxw=1365;
          end;
       4: begin                                     {Elevaton}
            try
-             if RadioGroup3.ItemIndex=2 then
+             if rgSpeedUnit.ItemIndex=2 then
                h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])/fft  {in ft}
              else
                h:=StrToFloatN(StringGrid1.Cells[aCol, aRow]);     {in m}
@@ -12110,7 +12112,7 @@ const mxw=1365;
             end;
          4: begin                                  {Höhe}
               try
-                if RadioGroup3.ItemIndex=2 then
+                if rgSpeedUnit.ItemIndex=2 then
                   h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])/fft  {in ft}
                 else
                   h:=StrToFloatN(StringGrid1.Cells[aCol, aRow]);     {in m}
@@ -12127,7 +12129,7 @@ const mxw=1365;
             end;
          7: begin                     {True Air Speed, nicht für vSpeed, hSpeed}
               try
-                if RadioGroup3.ItemIndex=2 then
+                if rgSpeedUnit.ItemIndex=2 then
                   h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])*fmph  {in mph}
                 else
                   h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])*fkmh; {in km/h}
@@ -12204,7 +12206,7 @@ const mxw=1365;
             end;
          4: begin                                  {Altitude}
               try
-                if RadioGroup3.ItemIndex=2 then
+                if rgSpeedUnit.ItemIndex=2 then
                   h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])/fft  {in ft}
                 else
                   h:=StrToFloatN(StringGrid1.Cells[aCol, aRow]);     {in m}
@@ -12221,7 +12223,7 @@ const mxw=1365;
             end;
          7: begin                                  {True Air Speed}
               try
-                if RadioGroup3.ItemIndex=2 then
+                if rgSpeedUnit.ItemIndex=2 then
                   h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])*fmph  {in mph}
                 else
                   h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])*fkmh; {in km/h}
@@ -12383,7 +12385,7 @@ const mxw=1365;
           (aCol=lenfix-1) then
         StringGrid1.Canvas.Brush.Color:=clOlive;   {Message ID 1 und 2}
       if (aCol=lenfix) then
-       StringGrid1.Canvas.Brush.Color:=clMoneyGreen;    {Message Name YTH Plus}
+       StringGrid1.Canvas.Brush.Color:=clMoneyGreen; {Message Name YTH Plus}
       if (aCol=lenfix+1) then
         StringGrid1.Canvas.Brush.Color:=clSilver;  {Längenspalte YTH Plus}
     end else begin
@@ -12498,7 +12500,7 @@ var x: integer;
               3: s:=rsRest+' [%]';
               4: s:=s+' [m]';
               5, 6: s:=rsDistHome+' [m]';
-              7, 24, 25: s:=s+' ['+RadioGroup3.Items[RadioGroup3.ItemIndex]+']';  {selected speed}
+              7, 24, 25: s:=s+' ['+rgSpeedUnit.Items[rgSpeedUnit.ItemIndex]+']'; {selected speed}
               11, 12, 13: s:=s+' [°]';
             end;
          end;
@@ -12507,7 +12509,7 @@ var x: integer;
               1, 2: s:=rsDistHome+' [m]';
               3: s:=s+' [m]';
               5: s:=s+' [cm]';                     {Accuracy GPS ST16}
-              6: s:=s+' ['+RadioGroup3.Items[RadioGroup3.ItemIndex]+']';
+              6: s:=s+' ['+rgSpeedUnit.Items[rgSpeedUnit.ItemIndex]+']';
               7: s:=s+' [°]';
             end;
          end;
@@ -12528,7 +12530,7 @@ var x: integer;
                    then s:=s+' [A]';               {nur H920}
               4: s:=s+' [m]';
               5, 6: s:=rsDistHome+' [m]';
-              7, 24, 25: s:=s+' ['+RadioGroup3.Items[RadioGroup3.ItemIndex]+']';  {selected speed}
+              7, 24, 25: s:=s+' ['+rgSpeedUnit.Items[rgSpeedUnit.ItemIndex]+']';  {selected speed}
               11, 12, 13: s:=s+' [°]';
             end;
          end;
@@ -12537,7 +12539,7 @@ var x: integer;
               1, 2: s:=rsDistHome+' [m]';
               3: s:=s+' [m]';
               4: s:=s+' [cm]';                     {Accuracy GPS ST10}
-              5: s:=s+' ['+RadioGroup3.Items[RadioGroup3.ItemIndex]+']';
+              5: s:=s+' ['+rgSpeedUnit.Items[rgSpeedUnit.ItemIndex]+']';
               6: s:=s+' [°]';
             end;
          end;
@@ -12924,7 +12926,7 @@ var
               end;
         end;
       except
-        SynEdit1.Lines.Add(rsError+' during count of values at Breeze');
+        AppLog.Lines.Add(rsError+' during count of values at Breeze');
       end;
     end;
 
@@ -12939,7 +12941,7 @@ var
               end;
         end;
       except
-        SynEdit1.Lines.Add(rsError+' during count of values at Hubsan Log Recorder');
+        AppLog.Lines.Add(rsError+' during count of values at Hubsan Log Recorder');
       end;
     end;
 
@@ -12974,7 +12976,7 @@ var
           vbd;
         end;
       except
-        SynEdit1.Lines.Add(rsError+' during count of values at Telemetry');
+        AppLog.Lines.Add(rsError+' during count of values at Telemetry');
       end;
       if RadioGroup1.ItemIndex=2 then
       try
@@ -12990,7 +12992,7 @@ var
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
             LandGearToStr(ag.Value);
       except
-        SynEdit1.Lines.Add(rsError+' during count of values at Remote');
+        AppLog.Lines.Add(rsError+' during count of values at Remote');
       end;
     end;
 
@@ -13013,7 +13015,7 @@ var
           end;
         end;
       except
-        SynEdit1.Lines.Add(rsError+' during count of PX4 CSV values');
+        AppLog.Lines.Add(rsError+' during count of PX4 CSV values');
       end;
     end else begin
       case SpinEdit3.Tag of
@@ -13321,7 +13323,7 @@ begin
       grSel.Right:=StringGrid1.ColCount;
       grSel.Bottom:=iRow;
       StringGrid1.Selection:=grSel;
-      PopUpMenu1.Popup(Mouse.CursorPos.x, Mouse.CursorPos.y); {AutoPopup:=false!}
+      PopupMenuTab.Popup(Mouse.CursorPos.x, Mouse.CursorPos.y); {AutoPopup:=false!}
       SpinEdit3.Value:=iRow;                       {Zeile für Start/Endpunkt}
     end;
     if Button=mbLeft then begin
@@ -13390,7 +13392,7 @@ begin
     end else
       if (SpinEdit3.Tag<>MQid) and
          (SpinEdit3.Tag<>H5id) then
-        grdOverview.Canvas.Brush.Color:=clMoneyGreen;   {Summenzeile}
+        grdOverview.Canvas.Brush.Color:=clMoneyGreen; {Summenzeile}
   end;
 end;
 
@@ -13504,13 +13506,13 @@ begin
       else OpenDocument(IncludeTrailingPathDelimiter(ComboBox8.Text));
   end else begin                                   {Dateiliste}
     if (StringGrid5.Tag>0) then begin              {Es wurde etwas gefunden}
-      if (RadioGroup9.ItemIndex=10) or
-         (RadioGroup9.ItemIndex=11) then begin
+      if (rgErrType.ItemIndex=10) or
+         (rgErrType.ItemIndex=11) then begin
         fn:=StringGrid5.Cells[1, StringGrid5.Tag];
         ShowSensorPlus(fn, 0, false, true, false, false);
-        PageControl1.ActivePageIndex:=7;           {Springe zum AppLog}
+        PageControl1.ActivePageIndex:=7;           {Springe zum AppLogHighlighter}
       end else
-      if (RadioGroup9.ItemIndex<8) or              {Sensor Dateien}
+      if (rgErrType.ItemIndex<8) or              {Sensor Dateien}
          (SpinEdit3.Tag<>YTHPid) then begin        {H Plus}
         fn:=StringGrid5.Cells[1, StringGrid5.Tag];
         ComboBox2.Text:=GetFlightLogDir(fn);
@@ -13562,7 +13564,7 @@ begin
     CGO3run('', 0);
 end;
 
-procedure TForm1.Timer2Timer(Sender: TObject);     {Abfrage Doppelclick Form2}
+procedure TForm1.TimerDblClickTimer(Sender: TObject); {Abfrage Doppelclick Form2}
 var tp: TDateTime;
     i: integer;
 begin
@@ -13591,13 +13593,13 @@ begin
   end;     {nichts tun, wenn kein Zeitstring durch Doppelclick vorhanden ist}
 end;
 
-procedure TForm1.Timer3Timer(Sender: TObject);     {Diashow Profiles}
+procedure TForm1.TimerDiashowTimer(Sender: TObject); {Diashow Profiles}
 begin
   if ListBox1.Items.Count>0 then begin
-    SetProfile(Timer3.Tag);
-    Timer3.Tag:=Timer3.Tag+1;
-    if Timer3.Tag>=ComboBox10.Items.Count then Timer3.Tag:=0; {wieder von vorn}
-  end else Timer3.Enabled:=false;                  {Ohne Daten nix anzeigen}
+    SetProfile(TimerDiashow.Tag);
+    TimerDiashow.Tag:=TimerDiashow.Tag+1;
+    if TimerDiashow.Tag>=ComboBox10.Items.Count then TimerDiashow.Tag:=0; {wieder von vorn}
+  end else TimerDiashow.Enabled:=false;            {Ohne Daten nix anzeigen}
 end;
 
 procedure TForm1.TrackBar1Change(Sender: TObject); {Saturation verstellt}
@@ -13611,12 +13613,12 @@ var s: string;
 begin
   TrackBar2.SelEnd:=TrackBar2.Position;
   s:=IntToStr(TrackBar2.Position)+'m';
-  if RadioGroup3.ItemIndex=2 then s:=IntToStr(Round(TrackBar2.Position/fft))+'ft';
+  if rgSpeedUnit.ItemIndex=2 then s:=IntToStr(Round(TrackBar2.Position/fft))+'ft';
   TrackBar2.Hint:=s;
   Label12.Caption:=capLabel12+tab2+s;
 end;
 
-procedure TForm1.MenuItem1Click(Sender: TObject);  {Zeige in GoogleMaps}
+procedure TForm1.mnGoogleMapClick(Sender: TObject); {Zeige in GoogleMaps}
 begin
   if StringGrid1.ColCount=csvanz then begin        {Self-dev PX4 CSV format}
     OpenURL(URLGMap(StringGrid1.Cells[5,StringGrid1.Selection.Top],
@@ -13644,12 +13646,12 @@ begin
   end;
 end;
 
-procedure TForm1.MenuItem28Click(Sender: TObject); {Homepage aufrufen}
+procedure TForm1.mnHomepageClick(Sender: TObject); {Homepage aufrufen}
 begin
   OpenURL(homepage);
 end;
 
-procedure TForm1.MenuItem2Click(Sender: TObject);  {Höhenprofil in Zwischenablage}
+procedure TForm1.mnCopyHistClick(Sender: TObject); {Höhenprofil in Zwischenablage}
 begin
   Chart1.CopyToClipboardBitmap;                    {Höhenprofil}
 end;
@@ -13670,8 +13672,8 @@ begin
         if SaveDialog1.Execute then begin
           mlist.SaveToFile(SaveDialog1.FileName);
         end;
-        PageControl1.ActivePageIndex:=7;           {Switch to AppLog}
-        SynEdit1.TopLine:=SynEdit1.Lines.Count;
+        PageControl1.ActivePageIndex:=7;           {Switch to AppLogHighlighter}
+        AppLog.TopLine:=AppLog.Lines.Count;
       end;
     end;
   finally
@@ -13679,7 +13681,7 @@ begin
   end;
 end;
 
-procedure TForm1.MenuItem3Click(Sender: TObject);  {PopUp Höhenprofil als Datei}
+procedure TForm1.mnSaveAsHistClick(Sender: TObject); {PopUp Höhenprofil als Datei}
 begin
   SaveDialog1.Title:=rsHDiaSave;
   SaveDialog1.FileName:=CleanDN(PageControl1.Page[2].Caption+pngdef);
@@ -13687,45 +13689,45 @@ begin
     Chart1.SaveToFile(TPortableNetworkGraphic, SaveDialog1.FileName);
 end;
 
-procedure TForm1.MenuItem40Click(Sender: TObject); {Arbeitsverzeichnis öffnen}
+procedure TForm1.mnExploreLogClick(Sender: TObject); {Arbeitsverzeichnis öffnen}
 begin
   OpenDocument(IncludeTrailingPathDelimiter(ComboBox2.Text));
 end;
 
-procedure TForm1.MenuItem41Click(Sender: TObject); {Menü SelDir}
+procedure TForm1.mnSelDirLogClick(Sender: TObject); {Menü SelDir}
 begin
   SelDirSet;
 end;
 
-procedure TForm1.MenuItem42Click(Sender: TObject); {Menü Profile Errors}
+procedure TForm1.mnProfErrClick(Sender: TObject);  {Menü Profile Errors}
 begin
-  Timer3.Enabled:=false;
+  TimerDiashow.Enabled:=false;
   SetProfile(2);
   ComboBox10.ItemIndex:=0;
 end;
 
-procedure TForm1.MenuItem43Click(Sender: TObject); {Menü Profile GPS}
+procedure TForm1.mnProfGPSClick(Sender: TObject);  {Menü Profile GPS}
 begin
-  Timer3.Enabled:=false;
+  TimerDiashow.Enabled:=false;
   SetProfile(3);
   ComboBox10.ItemIndex:=0;
 end;
 
-procedure TForm1.MenuItem45Click(Sender: TObject); {Menü Protokollverzeichnis}
+procedure TForm1.mnSelDirRecClick(Sender: TObject); {Menü Protokollverzeichnis}
 begin
   SelDirProt;
 end;
 
-procedure TForm1.MenuItem48Click(Sender: TObject); {Menü Profile Throttle}
+procedure TForm1.mnProfThrClick(Sender: TObject);  {Menü Profile Throttle}
 begin
-  Timer3.Enabled:=false;
+  TimerDiashow.Enabled:=false;
   SetProfile(4);
   ComboBox10.ItemIndex:=0;
 end;
 
-procedure TForm1.MenuItem49Click(Sender: TObject); {Menü Profile Pitch}
+procedure TForm1.mnProfPitchClick(Sender: TObject); {Menü Profile Pitch}
 begin
-  Timer3.Enabled:=false;
+  TimerDiashow.Enabled:=false;
   SetProfile(5);
   ComboBox10.ItemIndex:=0;
 end;
@@ -13787,13 +13789,13 @@ begin
     s:=' in '+StringGrid1.Cells[Label3.Tag, 0];
     if GroupBox11.Tag>0 then begin
       StatusBar1.Panels[5].Text:='"'+ComboBox9.Text+'"'+s;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end else begin
       StatusBar1.Panels[5].Text:='"'+ComboBox9.Text+'"'+nixda+s;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     StatusBar1.Panels[1].Text:=IntToStr(GroupBox11.Tag);  {Anzahl Treffer}
-    SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsFound);
+    AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsFound);
     if ComboBox9.Tag>StringGrid1.RowCount-2 then ComboBox9.Tag:=1;
   end else GroupBox11.Tag:=0;                      {leer - Suche zurücksetzen}
 end;
@@ -13803,7 +13805,7 @@ begin
   Chart1ConstantLine1.Active:=false;
   ChartToolset2DataPointCrosshairTool1.CrosshairPen.Visible:=false;
   ChartToolset2DataPointCrosshairTool1.Enabled:=false;
-  MenuItem4.Caption:=capCrossHairOn;
+  mnCursorEin.Caption:=capCrossHairOn;
   Chart1.Cursor:=crDefault;
   if cutb>0 then StatusBar1.Panels[3].Text:=FormatDateTime(vzf, cutb);
   if cute>0 then StatusBar1.Panels[4].Text:=FormatDateTime(vzf, cute);
@@ -13814,41 +13816,41 @@ begin
   end;
 end;
 
-procedure TForm1.MenuItem4Click(Sender: TObject);  {Menü: Cursor ein}
+procedure TForm1.mnCursorEinClick(Sender: TObject);  {Menü: Cursor ein}
 begin
   if ChartToolset2DataPointCrosshairTool1.Enabled=false then begin {Fadenkreuz ein}
     ChartToolset2DataPointCrosshairTool1.CrosshairPen.Visible:=true;
     ChartToolset2DataPointCrosshairTool1.Enabled:=true;
-    MenuItem4.Caption:=capCrossHairOff;
+    mnCursorEin.Caption:=capCrossHairOff;
     StatusBar1.Panels[5].Text:='';
     Chart1.Cursor:=crCross;
     StatusBar1.Tag:=1;                             {Zeiten zum Kopieren vorhanden}
   end else KursorAus;                              {Fadenkreuz aus}
 end;
 
-procedure TForm1.MenuItem50Click(Sender: TObject); {Tabelle kopieren}
+procedure TForm1.mnCopyTabClick(Sender: TObject); {Tabelle kopieren}
 begin
   if RadioGroup1.ItemIndex=3 then StringGrid1.CopyToClipboard(false) {Sensor: Alles}
                              else StringGrid1.CopyToClipboard(true); {nur Zeile}
 end;
 
-procedure TForm1.MenuItem51Click(Sender: TObject); {Menü Profile Roll}
+procedure TForm1.mnProfRollClick(Sender: TObject); {Menü Profile Roll}
 begin
-  Timer3.Enabled:=false;
+  TimerDiashow.Enabled:=false;
   SetProfile(6);
   ComboBox10.ItemIndex:=0;
 end;
 
-procedure TForm1.MenuItem52Click(Sender: TObject); {Menü Profile Yaw}
+procedure TForm1.mnProfYawClick(Sender: TObject);  {Menü Profile Yaw}
 begin
-  Timer3.Enabled:=false;
+  TimerDiashow.Enabled:=false;
   SetProfile(7);
   ComboBox10.ItemIndex:=0;
 end;
 
-procedure TForm1.MenuItem53Click(Sender: TObject); {Menü Profile 3Axis}
+procedure TForm1.mnProf3AxisClick(Sender: TObject); {Menü Profile 3Axis}
 begin
-  Timer3.Enabled:=false;
+  TimerDiashow.Enabled:=false;
   SetProfile(8);
   ComboBox10.ItemIndex:=0;
 end;
@@ -13873,19 +13875,19 @@ begin
   end;
 end;
 
-procedure TForm1.MenuItem56Click(Sender: TObject); {Sensordatei vom YTH Plus}
+procedure TForm1.mnSensorPX4Click(Sender: TObject); {Sensordatei vom YTH Plus}
 begin
   OpenSensorPlus;
 end;
 
-procedure TForm1.MenuItem57Click(Sender: TObject); {Menu Diashow Profiles}
+procedure TForm1.mnSlideshowClick(Sender: TObject); {Menu Diashow Profiles}
 begin
   if (SpinEdit3.Tag=MQid) or                       {nichts tun für MantisQ}
      (SpinEdit3.Tag=H5id) or                       {nichts tun für H520}
      (SpinEdit3.Tag=BrID) then                     {nichts tun für Breeze}
        exit;
-  Timer3.Tag:=0;
-  Timer3.Enabled:=true;
+  TimerDiashow.Tag:=0;
+  TimerDiashow.Enabled:=true;
 end;
 
 procedure TForm1.GoToZ(a: integer); {Gehe zu Zeilennummer, a..freie Zeilen oben}
@@ -13909,12 +13911,12 @@ begin
   topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]:=StringGrid1.TopRow; {Top merken}
 end;
 
-procedure TForm1.MenuItem5Click(Sender: TObject);  {zur Zeilennummer scrollen}
+procedure TForm1.mnGoToTabClick(Sender: TObject);  {zur Zeilennummer scrollen}
 begin
   if ListBox1.Items.Count>0 then GoToZ(4);
 end;
 
-procedure TForm1.MenuItem6Click(Sender: TObject);  {Datenanalyse im StringGrid1}
+procedure TForm1.mnAnalyseTabClick(Sender: TObject);  {Datenanalyse im StringGrid1}
 begin
   if ListBox1.Items.Count>0 then begin
     GoToZ(0);
@@ -13922,7 +13924,7 @@ begin
   end;
 end;
 
-procedure TForm1.MenuItem7Click(Sender: TObject);  {Gehe zum nächsten Fehler}
+procedure TForm1.mnGoToErrClick(Sender: TObject);  {Gehe zum nächsten Fehler}
 var x: integer;
 begin
   if RadioGroup1.ItemIndex=0 then begin            {nur bei Telemetrie}
@@ -13940,7 +13942,7 @@ begin
   end;
 end;
 
-procedure TForm1.MenuItem8Click(Sender: TObject);  {gehe zur Tabelle}
+procedure TForm1.mnGoTableClick(Sender: TObject);  {gehe zur Tabelle}
 begin
   if ListBox1.Items.Count>0 then begin
     PageControl1.ActivePageIndex:=1;
@@ -14157,7 +14159,7 @@ begin
           grdOverview.Cells[4, grdOverview.RowCount-1]:=
                               FormatDateTime(zzf, gtm);
         gtm:=gtm*24;                               {in Stunden}
-        if RadioGroup3.ItemIndex=2 then begin
+        if rgSpeedUnit.ItemIndex=2 then begin
           wrt:=wrt/5280;
           grdOverview.Cells[7, grdOverview.RowCount-1]:=
                               FloatToStrF(wrt, ffFixed, 6, 2)+'mi';
@@ -14175,22 +14177,22 @@ begin
         grdOverview.Cells[0,0]:=rsDateien+suff+IntToStr(n);
         StatusBar1.Panels[0].Text:=rsDateien+suff+IntToStr(n);
         tpos:=0;                                   {zeitl. Pos im StringGrid1}
-        SynEdit1.Lines.Add('{');                   {Tabelle als Comment für
+        AppLog.Lines.Add('{');                     {Tabelle als Comment für
                                                     SynAnySyn-Highlighter}
         for p:=0 to grdOverview.RowCount-1 do begin  {Übersicht ausgeben}
           s:='';                                   {Datenzeile neu}
           for x:=0 to grdOverview.ColCount-1 do begin
             s:=s+Format('%14.13s', [grdOverview.Cells[x, p]]);  {Datenzeile füllen}
           end;
-          SynEdit1.Lines.Add(s);                   {Ausgeben in AppLog}
+          AppLog.Lines.Add(s);                   {Ausgeben in AppLogHighlighter}
         end;
-        SynEdit1.Lines.Add('}');
+        AppLog.Lines.Add('}');
       end;
       ListBox1.ItemIndex:=0;                       {Default: 1. Zeile auswählen}
     end;                                           {Ende Übersichtstabelle}
   except
     n:=0;                                          {nix gefunden}
-    SynEdit1.Lines.Add('''13611'+suff+'File error CheckNumTurns');
+    AppLog.Lines.Add('''13611'+suff+'File error CheckNumTurns');
   end;
   result:=n;                                       {Anzahl übergeben}
   if n>0 then
@@ -14209,7 +14211,7 @@ var i, j, zhl: integer;
     wrt, wrtv, ddist, tdiff, rslt1, rslt2: double;
 begin
   screen.Cursor:=crHourGlass;
-  MenuItem7.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   StringGrid1.ColCount:=0;                         {alles löschen}
   StringGrid1.RowCount:=14;
   zhl:=0;
@@ -14232,14 +14234,14 @@ begin
       inlist.LoadFromFile(fn);
     except
       StatusBar1.Panels[5].Text:=fn+nixda;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>1 then begin
       StatusBar1.Panels[5].Text:=fn;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end else begin
       StatusBar1.Panels[5].Text:=fn+tab1+rsEmpty;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     if inlist.count>10 then begin
       try
@@ -14248,7 +14250,7 @@ begin
         SpinEdit2.MaxValue:=inlist.Count-10;
         SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
-        SynEdit1.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
+        AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
         StringGrid1.RowCount:=inlist.Count;        {vorbelegen}
         StringGrid1.ColCount:=splitlist.Count;
         for i:=1 to splitlist.Count-1 do
@@ -14306,7 +14308,7 @@ begin
           end else begin
             StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsEmpty+tab1+
                                        capLabel6+Format('%6d', [i]);
-            SynEdit1.Lines.Add('''9011'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9011'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
 
@@ -14316,26 +14318,26 @@ begin
         StringGrid1.AutoSizeColumn(0);
         StringGrid1.EndUpdate;
 
-        Synedit1.Lines.add(Format('%-10s', [capLabel13+suff])+
+        AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLGmap(slat, slon));   {Anzeige Start und Ende}
-        Synedit1.Lines.add(Format('%-10s', [capLabel13+suff])+
+        AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLosm(slat, slon));
-        Synedit1.Lines.add('');
-        Synedit1.Lines.add(Format('%-10s', [capLabel14+suff])+
+        AppLog.Lines.add('');
+        AppLog.Lines.add(Format('%-10s', [capLabel14+suff])+
                            URLGmap(splitlist[5], splitlist[6]));
-        Synedit1.Lines.add(Format('%-10s', [capLabel14+suff])+
+        AppLog.Lines.add(Format('%-10s', [capLabel14+suff])+
                            URLosm(splitlist[5], splitlist[6]));
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [zhl]);
-        SynEdit1.Lines.Add('''13909'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''13909'+suff+StatusBar1.Panels[5].Text);
       end;
       PageControl1.ActivePageIndex:=1;
       StringGrid1.SetFocus;
       StringGrid1.CopyToClipboard(false);          {Tabelle im Clipboard ablegen}
     end else begin                                 {Datei leer}
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
-      SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
   finally
     FreeAndNil(inlist);
@@ -14364,25 +14366,25 @@ begin
     HexAusgabe(OpenDialog1.FileName);
 end;
 
-procedure TForm1.HexHeader(const fn: string); {all actions before hexdump}
+procedure TForm1.HexHeader(const fn: string);      {all actions before hexdump}
 var fnsize, numblk: integer;
 begin
-  PageControl1.ActivePageIndex:=7;                 {Switch to AppLog}
-  SynEdit1.Lines.Clear;
+  PageControl1.ActivePageIndex:=7;                 {Switch to AppLogHighlighter}
+  AppLog.Lines.Clear;
   fnsize:=FileSize(fn);
   btnShowHex.Tag:=2048;                            {File selected}
   btnShowHex.Tag:=btnShowHex.Tag shl rgBlockSize.ItemIndex;  {Block size at 1st run}
   numblk:=fnsize div btnShowHex.Tag + 1;
   speBlockNum.Value:=1;
   speBlockNum.MaxValue:=numblk;
-  SynEdit1.Lines.Add('');
+  AppLog.Lines.Add('');
   StatusBar1.Panels[0].Text:=IntToStr(fnsize);
   StatusBar1.Panels[1].Text:=IntToStr(numblk);
   StatusBar1.Panels[5].Text:=CapHexdump+suff+ExtractFileName(fn);
-  SynEdit1.Lines.Add(StatusBar1.Panels[5].Text);
-  SynEdit1.Lines.Add(rsFilesize+suff+StatusBar1.Panels[0].Text+
+  AppLog.Lines.Add(StatusBar1.Panels[5].Text);
+  AppLog.Lines.Add(rsFilesize+suff+StatusBar1.Panels[0].Text+
                      ' bytes = '+StatusBar1.Panels[1].Text+' blocks');
-  SynEdit1.Lines.Add('');
+  AppLog.Lines.Add('');
 end;
 
 procedure TForm1.HexAusgabe(const fn: string);     {Display a binary file as hex print}
@@ -14399,10 +14401,10 @@ const
   numbyte=16;                                      {Number of bytes in one line}
 begin
   zeile:='Block No: '+IntToStr(speBlockNum.Value); {write block header}
-  SynEdit1.Lines.Add(zeile);
-  SynEdit1.Lines.Add(hdrstr1);
-  SynEdit1.Lines.Add(hdrstr2);
-  SynEdit1.Lines.Add(strstr);
+  AppLog.Lines.Add(zeile);
+  AppLog.Lines.Add(hdrstr1);
+  AppLog.Lines.Add(hdrstr2);
+  AppLog.Lines.Add(strstr);
   zhl:=4;
   instream:=TFileStream.Create(fn, fmOpenRead or fmShareDenyWrite); {file open}
   try
@@ -14411,7 +14413,7 @@ begin
     adr:=0;                                        {Address counter offset}
     p1:=1;                                         {position in buffer for Hex}
     p2:=1;                                         {position in buffer for Char}
-    SynEdit1.BeginUpdate(false);
+    AppLog.BeginUpdate(false);
       repeat                                       {Go through the whole read buffer}
         zeile:=IntToHex(adr+(speBlockNum.Value-1)*btnShowhex.Tag, adrlen)+tab2;
         for i:=1 to numbyte do begin               {Hex dump of one line á 16 bytes}
@@ -14434,12 +14436,12 @@ begin
             zeile:=Zeile+zch;
           inc(p2);
         end;
-        SynEdit1.Lines.Add(zeile);
+        AppLog.Lines.Add(zeile);
         inc(zhl);
       until p1>bytesread;                          {all copied bytes read}
-      SynEdit1.Lines.Add('');
-      SynEdit1.TopLine:=SynEdit1.Lines.Count-zhl;
-    SynEdit1.EndUpdate;
+      AppLog.Lines.Add('');
+      AppLog.TopLine:=AppLog.Lines.Count-zhl;
+    AppLog.EndUpdate;
     if speBlockNum.Value=speBlockNum.MaxValue then {last block dumped, end file}
       btnShowhex.Tag:=0;                           {next file?}
     speBlockNum.Value:=speBlockNum.Value+1;        {next block}
