@@ -1,12 +1,12 @@
 object Form1: TForm1
-  Left = 851
-  Height = 831
+  Left = 912
+  Height = 814
   Top = 117
-  Width = 1041
+  Width = 980
   AllowDropFiles = True
   Anchors = [akTop, akRight]
-  ClientHeight = 811
-  ClientWidth = 1041
+  ClientHeight = 794
+  ClientWidth = 980
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
   KeyPreview = True
@@ -19,45 +19,45 @@ object Form1: TForm1
   OnShow = FormShow
   ParentBiDiMode = False
   Position = poDefaultPosOnly
-  SessionProperties = 'cbCap.Checked;cbReduced.Checked;cbThunder.Checked;CheckBox1.Checked;CheckBox10.Checked;CheckBox11.Checked;CheckBox3.Checked;CheckBox6.Checked;CheckBox7.Checked;CheckBox8.Checked;CheckBox9.Checked;CheckGroup1.Tag;ColorButton1.ButtonColor;ComboBox1.Items;ComboBox1.Text;ComboBox2.Items;ComboBox2.Text;ComboBox8.Items;ComboBox8.Text;ComboBox9.Items;ComboBox9.Text;Edit5.Text;Height;LabeledEdit1.Tag;LabeledEdit1.Text;LabeledEdit2.Tag;LabeledEdit2.Text;LabeledEdit3.Tag;LabeledEdit3.Text;MAVmsg.Tag;Memo1.Lines;PageControl1.ActivePage;PageControl2.ActivePage;RadioGroup10.ItemIndex;RadioGroup2.ItemIndex;RadioGroup3.ItemIndex;RadioGroup4.ItemIndex;RadioGroup5.ItemIndex;RadioGroup8.ItemIndex;RadioGroup9.ItemIndex;rgVrule.ItemIndex;SelectDirectoryDialog1.FileName;SelectDirectoryDialog1.InitialDir;speBaseLoad.Value;SpinEdit1.Value;SpinEdit2.Value;TrackBar1.Position;TrackBar2.Position;Width;rgBlockSize.ItemIndex'
+  SessionProperties = 'cbCap.Checked;cbCleanHplus.Checked;cbDashw.Checked;cbExpoAuto.Checked;cbExtrude.Checked;cbFileList.Checked;cbMAVasCSV.Checked;cbPilot.Checked;cbReduced.Checked;cbRTSP.Checked;cbSensorKML.Checked;cbSimu.Checked;cbThunder.Checked;cbVehicleType.Checked;cbxCGO3Color.ItemIndex;cbxCGO3Color.Text;cbxCGO3ISO.ItemIndex;cbxCGO3ISO.Text;cbxCGO3Shutter.ItemIndex;cbxCGO3Shutter.Text;cbxCGO3Video.ItemIndex;cbxCGO3Video.Text;cbxCGO3WB.ItemIndex;cbxCGO3WB.Text;cbxLogDir.ItemIndex;cbxLogDir.Items;cbxLogDir.Text;cbxProfiles.ItemIndex;cbxProfiles.Text;cbxScanDir.ItemIndex;cbxScanDir.Items;cbxScanDir.Text;cbxSearch.ItemIndex;cbxSearch.Items;cbxSearch.Text;cbxText.ItemIndex;cbxText.Items;cbxText.Text;ColorButton1.ButtonColor;ColorButton2.ButtonColor;ColorButton3.ButtonColor;ColorButton4.ButtonColor;edCGOURL.Text;Height;LabeledEdit1.Tag;LabeledEdit1.Text;LabeledEdit2.Tag;LabeledEdit2.Text;LabeledEdit3.Tag;LabeledEdit3.Text;MAVmsg.Tag;PageControl1.TabIndex;PageControl2.TabIndex;rgAltitudeType.ItemIndex;rgBlockSize.ItemIndex;rgCSVtext.ItemIndex;rgErrType.ItemIndex;rgOutFormat.ItemIndex;rgPicFormat.ItemIndex;rgQuelle.ItemIndex;rgSpeedUnit.ItemIndex;rgTimeType.ItemIndex;rgVehicleType.ItemIndex;rgVideoFoto.ItemIndex;rgVoltRule.ItemIndex;speAnalyze.Value;speBaseLoad.Value;speBlockNum.Value;speDataPoint.Value;speExpo.Value;speLinePath.Value;tbrDistWP.Position;tbrSaturation.Position;tbrSharpness.Position;Width;SelectDirectoryDialog1.InitialDir;SelectDirectoryDialog1.FileName'
   ShowHint = True
   LCLVersion = '2.0.8.0'
   object PageControl1: TPageControl
     Left = 152
-    Height = 685
+    Height = 668
     Top = 96
-    Width = 882
-    ActivePage = TabSheet4
+    Width = 821
+    ActivePage = TabSheet3
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 6
+    TabIndex = 1
     TabOrder = 1
     OnChange = PageControl1Change
     Options = [nboKeyboardTabSwitch]
     object TabSheet1: TTabSheet
-      ClientHeight = 657
-      ClientWidth = 874
+      ClientHeight = 640
+      ClientWidth = 813
       ImageIndex = 0
-      object grdOverview: TStringGrid
+      object gridOverview: TStringGrid
         Left = 0
-        Height = 657
+        Height = 640
         Top = 0
-        Width = 874
+        Width = 813
         Align = alClient
         Color = clCream
         ColCount = 11
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColSpanning, goDblClickAutoSize, goSmoothScroll]
         TabOrder = 0
         TitleFont.Style = [fsBold]
-        OnCompareCells = grdOverviewCompareCells
-        OnDblClick = grdOverviewDblClick
-        OnHeaderClick = grdOverviewHeaderClick
-        OnKeyUp = grdOverviewKeyUp
-        OnMouseMove = grdOverviewMouseMove
-        OnMouseUp = grdOverviewMouseUp
-        OnPrepareCanvas = grdOverviewPrepareCanvas
+        OnCompareCells = gridOverviewCompareCells
+        OnDblClick = gridOverviewDblClick
+        OnHeaderClick = gridOverviewHeaderClick
+        OnKeyUp = gridOverviewKeyUp
+        OnMouseMove = gridOverviewMouseMove
+        OnMouseUp = gridOverviewMouseUp
+        OnPrepareCanvas = gridOverviewPrepareCanvas
         ColWidths = (
           62
           65
@@ -74,15 +74,15 @@ object Form1: TForm1
       end
     end
     object TabSheet3: TTabSheet
-      ClientHeight = 657
-      ClientWidth = 874
+      ClientHeight = 640
+      ClientWidth = 813
       ImageIndex = 1
-      object StringGrid1: TStringGrid
+      object gridDetails: TStringGrid
         Cursor = crHelp
         Left = 0
-        Height = 657
+        Height = 640
         Top = 0
-        Width = 874
+        Width = 813
         Align = alClient
         Color = clCream
         ColCount = 2
@@ -92,14 +92,14 @@ object Form1: TForm1
         RowCount = 14
         TabOrder = 0
         TitleFont.Style = [fsBold]
-        OnClick = StringGrid1Click
-        OnDblClick = StringGrid1DblClick
-        OnHeaderClick = StringGrid1HeaderClick
-        OnKeyUp = StringGrid1KeyUp
-        OnMouseMove = StringGrid1MouseMove
-        OnMouseUp = StringGrid1MouseUp
-        OnPrepareCanvas = StringGrid1PrepareCanvas
-        OnSelection = StringGrid1Selection
+        OnClick = gridDetailsClick
+        OnDblClick = gridDetailsDblClick
+        OnHeaderClick = gridDetailsHeaderClick
+        OnKeyUp = gridDetailsKeyUp
+        OnMouseMove = gridDetailsMouseMove
+        OnMouseUp = gridDetailsMouseUp
+        OnPrepareCanvas = gridDetailsPrepareCanvas
+        OnSelection = gridDetailsSelection
         ColWidths = (
           413
           413
@@ -107,14 +107,14 @@ object Form1: TForm1
       end
     end
     object TabSheet2: TTabSheet
-      ClientHeight = 657
-      ClientWidth = 874
+      ClientHeight = 640
+      ClientWidth = 813
       ImageIndex = 2
       object Chart1: TChart
         Left = 0
-        Height = 657
+        Height = 640
         Top = 0
-        Width = 874
+        Width = 813
         AxisList = <        
           item
             Marks.LabelBrush.Style = bsClear
@@ -230,8 +230,8 @@ object Form1: TForm1
       end
     end
     object TabSheet8: TTabSheet
-      ClientHeight = 657
-      ClientWidth = 874
+      ClientHeight = 640
+      ClientWidth = 813
       ImageIndex = 3
       OnResize = TabSheet8Resize
       PopupMenu = PopupMenuProfile
@@ -239,7 +239,7 @@ object Form1: TForm1
         Left = 0
         Height = 176
         Top = 0
-        Width = 874
+        Width = 813
         AxisList = <        
           item
             Marks.Format = '%0:.4g'
@@ -282,7 +282,7 @@ object Form1: TForm1
         Left = 0
         Height = 168
         Top = 184
-        Width = 734
+        Width = 673
         AxisList = <        
           item
             Marks.Format = '%0:.4g'
@@ -322,8 +322,8 @@ object Form1: TForm1
       object Chart5: TChart
         Left = 0
         Height = 156
-        Top = 501
-        Width = 874
+        Top = 484
+        Width = 813
         AxisList = <        
           item
             Marks.Format = '%0:.4g'
@@ -364,8 +364,8 @@ object Form1: TForm1
     end
     object TabSheet5: TTabSheet
       Caption = 'Scan'
-      ClientHeight = 657
-      ClientWidth = 874
+      ClientHeight = 640
+      ClientWidth = 813
       ImageIndex = 9
       object GroupBox10: TGroupBox
         Left = 0
@@ -376,7 +376,7 @@ object Form1: TForm1
         ClientHeight = 92
         ClientWidth = 358
         TabOrder = 0
-        object BitBtn25: TBitBtn
+        object btnFlugBuch: TBitBtn
           Left = 168
           Height = 32
           Top = 48
@@ -384,10 +384,10 @@ object Form1: TForm1
           Caption = 'fr'
           Images = TabImages
           ImageIndex = 31
-          OnClick = BitBtn25Click
+          OnClick = btnFlugBuchClick
           TabOrder = 0
         end
-        object CheckBox6: TCheckBox
+        object cbSimu: TCheckBox
           Left = 8
           Height = 19
           Top = 21
@@ -417,61 +417,34 @@ object Form1: TForm1
             'Text'
             'CSV'
           )
+          OnClick = rgCSVtextClick
           TabOrder = 2
         end
       end
-      object ComboBox8: TComboBox
+      object cbxScanDir: TComboBox
         Left = 8
         Height = 23
         Top = 14
-        Width = 397
+        Width = 336
         Anchors = [akTop, akLeft, akRight]
         Color = clCream
         ItemHeight = 15
-        OnDblClick = ComboBox8DblClick
-        OnMouseUp = ComboBox8MouseUp
+        OnDblClick = cbxScanDirDblClick
+        OnMouseUp = cbxScanDirMouseUp
         TabOrder = 1
       end
-      object SpeedButton5: TSpeedButton
-        Left = 404
+      object sbtnScanDir: TSpeedButton
+        Left = 343
         Height = 25
         Top = 13
         Width = 25
         Anchors = [akTop, akRight]
-        Glyph.Data = {
-          36030000424D3603000000000000360000002800000010000000100000000100
-          18000000000000030000000000000000000000000000000000008F8F8F9F9F9F
-          9F9F9F9F9F9F9F9F9F9F9F9F9F9F9F9F9F9F9F9F9F9F9F9F202020FFFFFFFFFF
-          FFFFFFFFFFFFFFFFFFFFEFEFEFA0A0A0A0A0A0CFCFCFA0A0A0A0A0A0CFCFCFA0
-          A0A0A0A0A0CFCFCF202020FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFEFEFA0A0A0
-          A0A0A0CFCFCFA0A0A0A0A0A0CFCFCFA0A0A0A0A0A0CFCFCF202020FFFFFFFFFF
-          FFFFFFFFFFFFFFFFFFFFEFEFEFA0A0A0A0A0A0CFCFCFA0A0A0A0A0A0CFCFCF7F
-          7F9F7F7F9FBFBFBF202020000000000000000000000000000000EFEFEF606080
-          6060806F6F8F606080606080AFAFAFA0A0A0A0A0A0CFCFCF50707030AFAF30AF
-          AF30AFAF30AFAF004040EFEFEF0020200080400080400020200060207F9F7FA0
-          A0A0A0A0A0CFCFCF508F8F60DFDF60DFDF60DFDF60DFDF004040EFEFEF204040
-          0020200040400020200080407FBF9FA0A0A0A0A0A0CFCFCF508F8F60DFDF60DF
-          DF60DFDF60DFDF004040EFEFEF2040402040402040402020200020207F7F9FA0
-          A0A0A0A0A0CFCFCF508F8F60DFDF60DFDF60DFDF60DFDF004040EFEFEF406040
-          4060404060404060402020609F9F9F606080606080AFAFCF508F8F60DFDF60DF
-          DF60DFDF60DFDF004040EFEFEFBFBFBF7F7F7FBFBFBF9F9F9FDFDFDF9F9F9F9F
-          9F9FBFBFBFBFBFBF508F8F60DFDF60DFDF60DFDF60DFDF004040EFEFEF3F3F3F
-          5F5F5F9F9F9F9F9F9F3F3F3F6060607F7F7F3F3F3FBFBFBF508F8F60DFDF60DF
-          DF60DFDF60DFDF004040EFEFEF3F3F3F5F5F5FDFDFDF5F5F5F5F5F5F3F3F3F5F
-          5F5F3F3F3F9F9F9F508F8F60DFDF60DFDF60DFDF60DFDF004040EFEFEFFFFFFF
-          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF508F8F60DFDF60DF
-          DF60DFDF60DFDF0040406F6F6FBFBFBFCFCFCFCFCFCFCFCFCFCFCFCFCFCFCFCF
-          CFCFCFCFCFAFAFAF9F9F9FBFBFBFBFBFBFBFBFBFBFBFBF000000FFFFFF202020
-          9FDFDF60DFDF60DFDF60DFDF60DFDF60DFDF707070FFFFFFFFFFFFFFFFFFFFFF
-          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF202020BFBFBFBFBFBFBFBFBFBFBFBF7F
-          7F7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        }
         Images = TabImages
         ImageIndex = 28
-        OnClick = SpeedButton5Click
+        OnClick = sbtnScanDirClick
       end
-      object ProgressBar1: TProgressBar
-        Left = 461
+      object ProgressBarScan: TProgressBar
+        Left = 400
         Height = 23
         Top = 14
         Width = 349
@@ -523,7 +496,7 @@ object Form1: TForm1
           )
           TabOrder = 0
         end
-        object BitBtn26: TBitBtn
+        object btnScanErr: TBitBtn
           Left = 224
           Height = 32
           Top = 272
@@ -531,7 +504,7 @@ object Form1: TForm1
           Caption = 'scan'
           Images = TabImages
           ImageIndex = 32
-          OnClick = BitBtn26Click
+          OnClick = btnScanErrClick
           TabOrder = 1
         end
         object GroupBox12: TGroupBox
@@ -543,13 +516,13 @@ object Form1: TForm1
           ClientHeight = 205
           ClientWidth = 124
           TabOrder = 2
-          object CheckBox1: TCheckBox
+          object cbVehicleType: TCheckBox
             Left = 8
             Height = 19
             Top = 6
             Width = 84
             Caption = 'Vehicle type'
-            OnChange = CheckBox1Change
+            OnChange = cbVehicleTypeChange
             TabOrder = 0
           end
           object rgVehicleType: TRadioGroup
@@ -579,11 +552,11 @@ object Form1: TForm1
           end
         end
       end
-      object StringGrid5: TStringGrid
+      object gridScanResult: TStringGrid
         Left = 376
-        Height = 590
+        Height = 573
         Top = 48
-        Width = 432
+        Width = 371
         Anchors = [akTop, akLeft, akRight, akBottom]
         Color = clCream
         ColCount = 2
@@ -591,10 +564,10 @@ object Form1: TForm1
         FixedCols = 0
         ScrollBars = ssAutoVertical
         TabOrder = 4
-        OnDblClick = StringGrid5DblClick
-        OnKeyUp = StringGrid5KeyUp
-        OnMouseUp = StringGrid5MouseUp
-        OnResize = StringGrid5Resize
+        OnDblClick = gridScanResultDblClick
+        OnKeyUp = gridScanResultKeyUp
+        OnMouseUp = gridScanResultMouseUp
+        OnResize = gridScanResultResize
         ColWidths = (
           50
           366
@@ -603,10 +576,10 @@ object Form1: TForm1
     end
     object TabSheet11: TTabSheet
       Caption = 'CGO3'
-      ClientHeight = 657
-      ClientWidth = 874
+      ClientHeight = 640
+      ClientWidth = 813
       ImageIndex = 5
-      object GroupBox5: TGroupBox
+      object gbCGO3Status: TGroupBox
         Left = 8
         Height = 218
         Top = 8
@@ -616,7 +589,7 @@ object Form1: TForm1
         ClientWidth = 604
         ParentColor = False
         TabOrder = 0
-        object BitBtn15: TBitBtn
+        object btnCGO3Status: TBitBtn
           Left = 16
           Height = 24
           Top = 8
@@ -658,10 +631,10 @@ object Form1: TForm1
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
           }
-          OnClick = BitBtn15Click
+          OnClick = btnCGO3StatusClick
           TabOrder = 0
         end
-        object StringGrid3: TStringGrid
+        object gridCGO3: TStringGrid
           Left = 256
           Height = 192
           Top = 0
@@ -673,13 +646,13 @@ object Form1: TForm1
           RowCount = 8
           ScrollBars = ssNone
           TabOrder = 3
-          OnKeyUp = StringGrid3KeyUp
+          OnKeyUp = gridCGO3KeyUp
           ColWidths = (
             186
             145
           )
         end
-        object indGnouMeter1: TindGnouMeter
+        object indGnouMeterSDused: TindGnouMeter
           Left = 136
           Height = 184
           Top = 0
@@ -721,7 +694,7 @@ object Form1: TForm1
           Caption = 'WLAN'
           ParentColor = False
         end
-        object BitBtn18: TBitBtn
+        object btnCGO3Reset: TBitBtn
           Left = 16
           Height = 24
           Top = 152
@@ -764,10 +737,10 @@ object Form1: TForm1
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
           }
-          OnClick = BitBtn18Click
+          OnClick = btnCGO3ResetClick
           TabOrder = 2
         end
-        object BitBtn24: TBitBtn
+        object btnFormatSD: TBitBtn
           Left = 16
           Height = 24
           Top = 112
@@ -810,11 +783,11 @@ object Form1: TForm1
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
           }
-          OnClick = BitBtn24Click
+          OnClick = btnFormatSDClick
           TabOrder = 1
         end
       end
-      object rgFotoExt: TGroupBox
+      object gbVideoRecord: TGroupBox
         Left = 8
         Height = 280
         Top = 232
@@ -823,7 +796,7 @@ object Form1: TForm1
         ClientHeight = 260
         ClientWidth = 220
         TabOrder = 1
-        object BitBtn16: TBitBtn
+        object btnVideoStart: TBitBtn
           Left = 8
           Height = 24
           Top = 8
@@ -866,18 +839,18 @@ object Form1: TForm1
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
           }
-          OnClick = BitBtn16Click
+          OnClick = btnVideoStartClick
           TabOrder = 0
         end
-        object CheckBox2: TCheckBox
-          Left = 126
+        object cbRTSP: TCheckBox
+          Left = 128
           Height = 19
           Top = 8
           Width = 46
           Caption = 'RTSP'
           TabOrder = 1
         end
-        object BitBtn17: TBitBtn
+        object btnVideoStop: TBitBtn
           Left = 8
           Height = 24
           Top = 40
@@ -920,7 +893,7 @@ object Form1: TForm1
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
           }
-          OnClick = BitBtn17Click
+          OnClick = btnVideoStopClick
           TabOrder = 2
         end
         object AdvLed1: TAdvLed
@@ -934,7 +907,7 @@ object Form1: TForm1
           Center = True
           Visible = False
         end
-        object BitBtn21: TBitBtn
+        object btnAudio: TBitBtn
           Left = 8
           Height = 24
           Top = 72
@@ -977,7 +950,7 @@ object Form1: TForm1
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
           }
-          OnClick = BitBtn21Click
+          OnClick = btnAudioClick
           TabOrder = 3
         end
         object Image1: TImage
@@ -1002,7 +975,7 @@ object Form1: TForm1
             59AD3DE09FC833DF37155181301A60DCBD0000000049454E44AE426082
           }
         end
-        object BitBtn22: TBitBtn
+        object btnFoto: TBitBtn
           Left = 8
           Height = 24
           Top = 104
@@ -1045,7 +1018,7 @@ object Form1: TForm1
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
           }
-          OnClick = BitBtn22Click
+          OnClick = btnFotoClick
           TabOrder = 4
         end
         object Label20: TLabel
@@ -1142,13 +1115,13 @@ object Form1: TForm1
             0777D8945591440CAA0000000049454E44AE426082
           }
         end
-        object RadioGroup7: TRadioGroup
+        object rgPicFormat: TRadioGroup
           Left = 120
           Height = 82
           Top = 136
           Width = 89
           AutoFill = True
-          Caption = 'RadioGroup7'
+          Caption = 'rgPicFormat'
           ChildSizing.LeftRightSpacing = 6
           ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
           ChildSizing.EnlargeVertical = crsHomogenousChildResize
@@ -1164,10 +1137,10 @@ object Form1: TForm1
             'jpg'
             'dng+jpg'
           )
-          OnClick = RadioGroup7Click
+          OnClick = rgPicFormatClick
           TabOrder = 6
         end
-        object TrackBar3: TTrackBar
+        object tbrSharpness: TTrackBar
           Left = 8
           Height = 32
           Top = 224
@@ -1175,11 +1148,11 @@ object Form1: TForm1
           Min = 1
           Position = 6
           Enabled = False
-          OnClick = TrackBar3Click
+          OnClick = tbrSharpnessClick
           TabOrder = 7
         end
       end
-      object GroupBox8: TGroupBox
+      object gbVideoSettings: TGroupBox
         Left = 248
         Height = 280
         Top = 232
@@ -1188,7 +1161,7 @@ object Form1: TForm1
         ClientHeight = 260
         ClientWidth = 364
         TabOrder = 2
-        object BitBtn20: TBitBtn
+        object btnWiFiSpeedReset: TBitBtn
           Left = 8
           Height = 24
           Top = 40
@@ -1231,10 +1204,10 @@ object Form1: TForm1
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
           }
-          OnClick = BitBtn20Click
+          OnClick = btnWiFiSpeedResetClick
           TabOrder = 2
         end
-        object BitBtn19: TBitBtn
+        object btnWiFiSpeedUp: TBitBtn
           Left = 8
           Height = 24
           Top = 8
@@ -1277,10 +1250,10 @@ object Form1: TForm1
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
           }
-          OnClick = BitBtn19Click
+          OnClick = btnWiFiSpeedUpClick
           TabOrder = 0
         end
-        object CheckBox4: TCheckBox
+        object cbFileList: TCheckBox
           Left = 144
           Height = 19
           Top = 11
@@ -1288,7 +1261,7 @@ object Form1: TForm1
           Caption = 'File'
           TabOrder = 1
         end
-        object BitBtn23: TBitBtn
+        object btnCGO3Time: TBitBtn
           Left = 192
           Height = 24
           Top = 40
@@ -1331,10 +1304,10 @@ object Form1: TForm1
             F40200B5F48000B5F4D100B5F4CA00B5F407FFFFFF00FFFFFF00FFFFFF00FFFF
             FF0000B5F41700B5F4D100B5F4C900B5F427FFFFFF00FFFFFF00
           }
-          OnClick = BitBtn23Click
+          OnClick = btnCGO3TimeClick
           TabOrder = 3
         end
-        object ComboBox3: TComboBox
+        object cbxCGO3Video: TComboBox
           Left = 8
           Height = 23
           Top = 143
@@ -1361,7 +1334,7 @@ object Form1: TForm1
             '1920x1080F25'
             '1920x1080F24'
           )
-          OnChange = ComboBox3Change
+          OnChange = cbxCGO3VideoChange
           TabOrder = 6
           Text = 'Video'
         end
@@ -1373,7 +1346,7 @@ object Form1: TForm1
           Caption = 'Video'
           ParentColor = False
         end
-        object ComboBox4: TComboBox
+        object cbxCGO3Color: TComboBox
           Left = 8
           Height = 23
           Top = 191
@@ -1385,7 +1358,7 @@ object Form1: TForm1
             'RAW'
             'Night'
           )
-          OnChange = ComboBox4Change
+          OnChange = cbxCGO3ColorChange
           TabOrder = 7
           Text = 'IQ'
         end
@@ -1397,7 +1370,7 @@ object Form1: TForm1
           Caption = 'IQ'
           ParentColor = False
         end
-        object FloatSpinEdit1: TFloatSpinEdit
+        object speExpo: TFloatSpinEdit
           Left = 8
           Height = 23
           Top = 95
@@ -1406,7 +1379,7 @@ object Form1: TForm1
           Increment = 0.5
           MaxValue = 2
           MinValue = -2
-          OnChange = FloatSpinEdit1Change
+          OnChange = speExpoChange
           TabOrder = 4
           Value = 0
         end
@@ -1418,7 +1391,7 @@ object Form1: TForm1
           Caption = 'Expo'
           ParentColor = False
         end
-        object ComboBox5: TComboBox
+        object cbxCGO3WB: TComboBox
           Left = 192
           Height = 23
           Top = 95
@@ -1433,7 +1406,7 @@ object Form1: TForm1
             'Incandescent'
             'Sunset/Sunrise'
           )
-          OnChange = ComboBox5Change
+          OnChange = cbxCGO3WBChange
           TabOrder = 8
           Text = 'WB'
         end
@@ -1445,7 +1418,7 @@ object Form1: TForm1
           Caption = 'WB'
           ParentColor = False
         end
-        object ComboBox6: TComboBox
+        object cbxCGO3ISO: TComboBox
           Left = 192
           Height = 23
           Top = 191
@@ -1464,7 +1437,7 @@ object Form1: TForm1
             'ISO_3200'
             'ISO_6400'
           )
-          OnChange = ComboBox6Change
+          OnChange = cbxCGO3ISOChange
           TabOrder = 10
           Text = 'ISO_100'
         end
@@ -1484,7 +1457,7 @@ object Form1: TForm1
           Caption = 'Sh'
           ParentColor = False
         end
-        object ComboBox7: TComboBox
+        object cbxCGO3Shutter: TComboBox
           Left = 192
           Height = 23
           Top = 143
@@ -1516,17 +1489,17 @@ object Form1: TForm1
             '6400'
             '8000'
           )
-          OnChange = ComboBox7Change
+          OnChange = cbxCGO3ShutterChange
           TabOrder = 9
           Text = 'Shutter'
         end
-        object CheckBox5: TCheckBox
+        object cbExpoAuto: TCheckBox
           Left = 72
           Height = 19
           Top = 98
           Width = 46
           Caption = 'Auto'
-          OnChange = CheckBox5Change
+          OnChange = cbExpoAutoChange
           TabOrder = 5
         end
       end
@@ -1539,18 +1512,18 @@ object Form1: TForm1
         ClientHeight = 92
         ClientWidth = 604
         TabOrder = 3
-        object Edit3: TEdit
+        object edSendCGO3: TEdit
           Left = 8
           Height = 23
           Top = 8
           Width = 544
           Anchors = [akTop, akLeft, akRight]
           Color = clCream
-          OnKeyUp = Edit3KeyUp
+          OnKeyUp = edSendCGO3KeyUp
           TabOrder = 0
           TextHint = 'Send test command body to CGO3'
         end
-        object SpeedButton6: TSpeedButton
+        object sbtnSendCGO3: TSpeedButton
           Left = 552
           Height = 40
           Top = 0
@@ -1593,16 +1566,16 @@ object Form1: TForm1
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
             FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
           }
-          OnClick = SpeedButton6Click
+          OnClick = sbtnSendCGO3Click
         end
-        object Edit4: TEdit
+        object edReceiveCGO3: TEdit
           Left = 8
           Height = 23
           Top = 48
           Width = 580
           Anchors = [akTop, akLeft, akRight]
           Color = clMoneyGreen
-          OnDblClick = Edit4DblClick
+          OnDblClick = edReceiveCGO3DblClick
           ReadOnly = True
           TabOrder = 1
           TextHint = 'Test result sent from CGO3'
@@ -1610,23 +1583,23 @@ object Form1: TForm1
       end
     end
     object TabSheet4: TTabSheet
-      ClientHeight = 657
-      ClientWidth = 874
+      ClientHeight = 640
+      ClientWidth = 813
       ImageIndex = 4
       object PageControl2: TPageControl
         Left = 0
-        Height = 657
+        Height = 640
         Top = 0
-        Width = 874
-        ActivePage = TabSheet12
+        Width = 813
+        ActivePage = TabSheet10
         Align = alClient
         Images = TabImages
-        TabIndex = 2
+        TabIndex = 1
         TabOrder = 0
         Options = [nboKeyboardTabSwitch]
         object TabSheet9: TTabSheet
-          ClientHeight = 629
-          ClientWidth = 866
+          ClientHeight = 612
+          ClientWidth = 805
           ImageIndex = 6
           object rgOutFormat: TRadioGroup
             Left = 8
@@ -1656,13 +1629,13 @@ object Form1: TForm1
             OnClick = rgOutFormatClick
             TabOrder = 0
           end
-          object CheckBox3: TCheckBox
+          object cbDashw: TCheckBox
             Left = 8
             Height = 19
             Top = 320
             Width = 34
             Caption = 'C3'
-            OnChange = CheckBox3Change
+            OnChange = cbDashwChange
             TabOrder = 1
           end
           object GroupBox2: TGroupBox
@@ -1687,17 +1660,17 @@ object Form1: TForm1
               Layout = blGlyphRight
               OnClick = ColorButton1Click
             end
-            object TrackBar1: TTrackBar
+            object tbrSaturation: TTrackBar
               Left = 16
               Height = 25
               Top = 184
               Width = 376
               Max = 255
-              OnChange = TrackBar1Change
+              OnChange = tbrSaturationChange
               Position = 255
               TabOrder = 0
             end
-            object SpinEdit1: TSpinEdit
+            object speLinePath: TSpinEdit
               Left = 232
               Height = 23
               Top = 121
@@ -1706,7 +1679,7 @@ object Form1: TForm1
               Color = clCream
               MaxValue = 20
               MinValue = 1
-              OnChange = SpinEdit1Change
+              OnChange = speLinePathChange
               TabOrder = 1
               Value = 2
             end
@@ -1751,24 +1724,24 @@ object Form1: TForm1
               OnClick = rgAltitudeTypeClick
               TabOrder = 2
             end
-            object CheckBox7: TCheckBox
+            object cbPilot: TCheckBox
               Left = 232
               Height = 19
               Top = 72
               Width = 44
               Caption = 'Pilot'
               Checked = True
-              OnChange = CheckBox7Change
+              OnChange = cbPilotChange
               State = cbChecked
               TabOrder = 3
             end
-            object CheckBox11: TCheckBox
+            object cbExtrude: TCheckBox
               Left = 24
               Height = 19
               Top = 125
               Width = 60
               Caption = 'Extrude'
-              OnChange = CheckBox11Change
+              OnChange = cbExtrudeChange
               TabOrder = 4
             end
           end
@@ -1780,20 +1753,20 @@ object Form1: TForm1
             Caption = 'Label12'
             ParentColor = False
           end
-          object TrackBar2: TTrackBar
+          object tbrDistWP: TTrackBar
             Left = 0
             Height = 34
             Top = 272
             Width = 560
             Max = 200
             Min = 5
-            OnChange = TrackBar2Change
+            OnChange = tbrDistWPChange
             Position = 30
             SelEnd = 1
             SelStart = 1
             TabOrder = 3
           end
-          object CheckBox10: TCheckBox
+          object cbSensorKML: TCheckBox
             Left = 7
             Height = 19
             Top = 352
@@ -1803,8 +1776,8 @@ object Form1: TForm1
           end
         end
         object TabSheet10: TTabSheet
-          ClientHeight = 629
-          ClientWidth = 866
+          ClientHeight = 612
+          ClientWidth = 805
           ImageIndex = 7
           object GroupBox3: TGroupBox
             Left = 8
@@ -1823,7 +1796,7 @@ object Form1: TForm1
               Caption = 'Label5'
               ParentColor = False
             end
-            object SpinEdit2: TSpinEdit
+            object speAnalyze: TSpinEdit
               Left = 8
               Height = 23
               Top = 32
@@ -1863,12 +1836,12 @@ object Form1: TForm1
           end
           object GroupBox4: TGroupBox
             Left = 232
-            Height = 595
+            Height = 578
             Top = 24
             Width = 384
             Anchors = [akTop, akLeft, akBottom]
             Caption = 'sel'
-            ClientHeight = 575
+            ClientHeight = 558
             ClientWidth = 380
             TabOrder = 1
             object LabeledEdit1: TLabeledEdit
@@ -1919,7 +1892,7 @@ object Form1: TForm1
             end
             object TreeView1: TTreeView
               Left = 8
-              Height = 555
+              Height = 538
               Top = 8
               Width = 216
               Anchors = [akTop, akLeft, akBottom]
@@ -1940,34 +1913,8 @@ object Form1: TForm1
               Top = 32
               Width = 31
               Enabled = False
-              Glyph.Data = {
-                36030000424D3603000000000000360000002800000010000000100000000100
-                18000000000000030000C11E0000C11E00000000000000000000FF00FFFF00FF
-                CA7A37CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A
-                38CA7A38C77734FF00FFFF00FFD08447FF9865FCA36EFCA36EFCA36EFCA36EFC
-                A36EFCA36EFCA36EFCA36EFCA36EFCA36EFCA36EFF9865C77734FF00FFD4854A
-                FFA16FFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E
-                6BFF9E6BFC9C68CC7936FF00FFD5874AFF9B6AFF9865FF9865FF9865FFFFFFFF
-                FFFFFF9865FF9865FF9865FF9865FF9865FF9865FC9662CE7934FF00FFD6874A
-                FF9969FF9563FF9563FF9563FFFFFFFFFFFFFFFFFFFF9563FF9563FF9563FF95
-                63FF9563FC9361CF7834FF00FFD6884AFF9767FF9361FF9361FF9361FFFFFFFF
-                FFFFFFFFFFFFFFFFFF9361FF9361FF9361FF9361FC925ECF7833FF00FFD6884B
-                FF9565FF915FFF915FFF915FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF915FFF91
-                5FFF915FFC8F5CCF7733FF00FFD78C50FFA173FF9E6EFF9E6EFF9E6EFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF9E6EFF9E6EFC9C6BD07C38FF00FFD79055
-                FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAD7FFFAD
-                7FFFAD7FFCAA7BD0813DFF00FFD89155FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFF
-                FFFFFFFFFFFFFFFFFFAD7FFFAD7FFFAD7FFFAD7FFCAA7BD1823DFF00FFD89155
-                FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFFFFFFFFFFFFFFAD7FFFAD7FFFAD7FFFAD
-                7FFFAD7FFCAA7BD1823DFF00FFD89155FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFF
-                FFFFFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFCAA7BD1833DFF00FFD99255
-                FFAF84FFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD
-                7FFFAD7FFCAA7BD2833DFF00FFD79051FCA36EFFAF84FFAF84FFAF84FFAF84FF
-                AF84FFAF84FFAF84FFAF84FFAF84FFAF84FFAF84FCA36ED1823AFF00FFFF00FF
-                D89151DA9355DA9355DA9355DA9355DA9355DA9355DA9355DA9355DA9355DA93
-                55DA9355D89151FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF
-                00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
-              }
+              Images = TabImages
+              ImageIndex = 40
               OnClick = SpeedButton1Click
             end
             object SpeedButton2: TSpeedButton
@@ -1976,34 +1923,8 @@ object Form1: TForm1
               Top = 120
               Width = 31
               Enabled = False
-              Glyph.Data = {
-                36030000424D3603000000000000360000002800000010000000100000000100
-                18000000000000030000C11E0000C11E00000000000000000000FF00FFFF00FF
-                CA7A37CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A
-                38CA7A38C77734FF00FFFF00FFD08447FF9865FCA36EFCA36EFCA36EFCA36EFC
-                A36EFCA36EFCA36EFCA36EFCA36EFCA36EFCA36EFF9865C77734FF00FFD4854A
-                FFA16FFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E
-                6BFF9E6BFC9C68CC7936FF00FFD5874AFF9B6AFF9865FF9865FF9865FFFFFFFF
-                FFFFFF9865FF9865FF9865FF9865FF9865FF9865FC9662CE7934FF00FFD6874A
-                FF9969FF9563FF9563FF9563FFFFFFFFFFFFFFFFFFFF9563FF9563FF9563FF95
-                63FF9563FC9361CF7834FF00FFD6884AFF9767FF9361FF9361FF9361FFFFFFFF
-                FFFFFFFFFFFFFFFFFF9361FF9361FF9361FF9361FC925ECF7833FF00FFD6884B
-                FF9565FF915FFF915FFF915FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF915FFF91
-                5FFF915FFC8F5CCF7733FF00FFD78C50FFA173FF9E6EFF9E6EFF9E6EFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF9E6EFF9E6EFC9C6BD07C38FF00FFD79055
-                FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAD7FFFAD
-                7FFFAD7FFCAA7BD0813DFF00FFD89155FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFF
-                FFFFFFFFFFFFFFFFFFAD7FFFAD7FFFAD7FFFAD7FFCAA7BD1823DFF00FFD89155
-                FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFFFFFFFFFFFFFFAD7FFFAD7FFFAD7FFFAD
-                7FFFAD7FFCAA7BD1823DFF00FFD89155FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFF
-                FFFFFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFCAA7BD1833DFF00FFD99255
-                FFAF84FFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD
-                7FFFAD7FFCAA7BD2833DFF00FFD79051FCA36EFFAF84FFAF84FFAF84FFAF84FF
-                AF84FFAF84FFAF84FFAF84FFAF84FFAF84FFAF84FCA36ED1823AFF00FFFF00FF
-                D89151DA9355DA9355DA9355DA9355DA9355DA9355DA9355DA9355DA9355DA93
-                55DA9355D89151FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF
-                00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
-              }
+              Images = TabImages
+              ImageIndex = 40
               OnClick = SpeedButton2Click
             end
             object SpeedButton3: TSpeedButton
@@ -2012,45 +1933,19 @@ object Form1: TForm1
               Top = 208
               Width = 31
               Enabled = False
-              Glyph.Data = {
-                36030000424D3603000000000000360000002800000010000000100000000100
-                18000000000000030000C11E0000C11E00000000000000000000FF00FFFF00FF
-                CA7A37CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A38CA7A
-                38CA7A38C77734FF00FFFF00FFD08447FF9865FCA36EFCA36EFCA36EFCA36EFC
-                A36EFCA36EFCA36EFCA36EFCA36EFCA36EFCA36EFF9865C77734FF00FFD4854A
-                FFA16FFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E6BFF9E
-                6BFF9E6BFC9C68CC7936FF00FFD5874AFF9B6AFF9865FF9865FF9865FFFFFFFF
-                FFFFFF9865FF9865FF9865FF9865FF9865FF9865FC9662CE7934FF00FFD6874A
-                FF9969FF9563FF9563FF9563FFFFFFFFFFFFFFFFFFFF9563FF9563FF9563FF95
-                63FF9563FC9361CF7834FF00FFD6884AFF9767FF9361FF9361FF9361FFFFFFFF
-                FFFFFFFFFFFFFFFFFF9361FF9361FF9361FF9361FC925ECF7833FF00FFD6884B
-                FF9565FF915FFF915FFF915FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF915FFF91
-                5FFF915FFC8F5CCF7733FF00FFD78C50FFA173FF9E6EFF9E6EFF9E6EFFFFFFFF
-                FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF9E6EFF9E6EFC9C6BD07C38FF00FFD79055
-                FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAD7FFFAD
-                7FFFAD7FFCAA7BD0813DFF00FFD89155FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFF
-                FFFFFFFFFFFFFFFFFFAD7FFFAD7FFFAD7FFFAD7FFCAA7BD1823DFF00FFD89155
-                FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFFFFFFFFFFFFFFAD7FFFAD7FFFAD7FFFAD
-                7FFFAD7FFCAA7BD1823DFF00FFD89155FFAF84FFAD7FFFAD7FFFAD7FFFFFFFFF
-                FFFFFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFCAA7BD1833DFF00FFD99255
-                FFAF84FFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD7FFFAD
-                7FFFAD7FFCAA7BD2833DFF00FFD79051FCA36EFFAF84FFAF84FFAF84FFAF84FF
-                AF84FFAF84FFAF84FFAF84FFAF84FFAF84FFAF84FCA36ED1823AFF00FFFF00FF
-                D89151DA9355DA9355DA9355DA9355DA9355DA9355DA9355DA9355DA9355DA93
-                55DA9355D89151FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF
-                00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
-              }
+              Images = TabImages
+              ImageIndex = 40
               OnClick = SpeedButton3Click
             end
-            object BitBtn12: TBitBtn
+            object btnDefaultProfile: TBitBtn
               Left = 256
               Height = 31
               Top = 344
               Width = 112
-              Caption = 'BitBtn12'
+              Caption = 'btnDefaultProfile'
               Images = TabImages
               ImageIndex = 10
-              OnClick = BitBtn12Click
+              OnClick = btnDefaultProfileClick
               TabOrder = 4
             end
             object ColorButton2: TColorButton
@@ -2080,7 +1975,7 @@ object Form1: TForm1
               ButtonColorSize = 16
               ButtonColor = clTeal
             end
-            object ComboBox10: TComboBox
+            object cbxProfiles: TComboBox
               Left = 256
               Height = 23
               Top = 296
@@ -2098,8 +1993,8 @@ object Form1: TForm1
                 'Yaw'
                 '3Axis'
               )
-              OnChange = ComboBox10Change
-              OnDblClick = ComboBox10DblClick
+              OnChange = cbxProfilesChange
+              OnDblClick = cbxProfilesDblClick
               TabOrder = 5
               Text = 'None'
             end
@@ -2128,7 +2023,7 @@ object Form1: TForm1
             Caption = 'ed'
             ParentColor = False
           end
-          object BitBtn14: TBitBtn
+          object btnCut: TBitBtn
             Left = 8
             Height = 30
             Top = 392
@@ -2137,7 +2032,7 @@ object Form1: TForm1
             Enabled = False
             Images = TabImages
             ImageIndex = 14
-            OnClick = BitBtn14Click
+            OnClick = btnCutClick
             TabOrder = 2
           end
           object Label15: TLabel
@@ -2148,7 +2043,7 @@ object Form1: TForm1
             Caption = 'dur'
             ParentColor = False
           end
-          object CheckBox9: TCheckBox
+          object cbCleanHplus: TCheckBox
             Left = 8
             Height = 19
             Top = 272
@@ -2198,7 +2093,7 @@ object Form1: TForm1
               0D00000002020202020202020202020202
             }
           end
-          object CheckBox8: TCheckBox
+          object cbMAVasCSV: TCheckBox
             Left = 632
             Height = 19
             Top = 328
@@ -2220,22 +2115,22 @@ object Form1: TForm1
             OnMouseEnter = lblMAVcommonMouseEnter
             OnMouseLeave = lblMAVcommonMouseLeave
           end
-          object btSpecial: TButton
+          object btnSpecial: TButton
             Left = 8
             Height = 32
             Hint = 'Special computings to fill columns'
             Top = 440
             Width = 107
             Caption = 'Special'
-            OnClick = btSpecialClick
+            OnClick = btnSpecialClick
             TabOrder = 6
             Visible = False
           end
         end
         object TabSheet12: TTabSheet
           Caption = 'allg'
-          ClientHeight = 629
-          ClientWidth = 866
+          ClientHeight = 612
+          ClientWidth = 805
           ImageIndex = 8
           object rgTimeType: TRadioGroup
             Left = 8
@@ -2266,28 +2161,28 @@ object Form1: TForm1
             Left = 544
             Height = 344
             Top = 8
-            Width = 316
+            Width = 255
             Anchors = [akTop, akLeft, akRight]
             Caption = 'GroupBox1'
             ClientHeight = 324
-            ClientWidth = 312
+            ClientWidth = 251
             TabOrder = 1
-            object Memo1: TMemo
+            object mmoText: TMemo
               Left = 0
               Height = 324
               Top = 0
-              Width = 312
+              Width = 251
               Align = alClient
               Color = clCream
               Lines.Strings = (
                 'Typhoon H'
               )
-              OnChange = Memo1Change
+              OnChange = mmoTextChange
               ScrollBars = ssAutoVertical
               TabOrder = 0
             end
           end
-          object Edit5: TEdit
+          object edCGOURL: TEdit
             Left = 240
             Height = 23
             Top = 208
@@ -2508,7 +2403,7 @@ object Form1: TForm1
               D84F16DA9FFDDCBFFDDEDFFD617117E23FFEE45FFEE67FFE01010000
             }
           end
-          object StringGrid4: TStringGrid
+          object gridFirmware: TStringGrid
             Left = 240
             Height = 152
             Top = 16
@@ -2519,9 +2414,9 @@ object Form1: TForm1
             ScrollBars = ssNone
             TabOrder = 3
             TitleFont.Style = [fsBold]
-            OnHeaderClick = StringGrid4HeaderClick
-            OnKeyUp = StringGrid4KeyUp
-            OnMouseUp = StringGrid4MouseUp
+            OnHeaderClick = gridFirmwareHeaderClick
+            OnKeyUp = gridFirmwareKeyUp
+            OnMouseUp = gridFirmwareMouseUp
             ColWidths = (
               75
               263
@@ -2609,26 +2504,26 @@ object Form1: TForm1
     end
     object TabSheet6: TTabSheet
       Caption = 'AppLog'
-      ClientHeight = 657
-      ClientWidth = 874
+      ClientHeight = 640
+      ClientWidth = 813
       ImageIndex = 11
-      object BitBtn27: TBitBtn
-        Left = 760
+      object btnSaveApplog: TBitBtn
+        Left = 699
         Height = 30
-        Top = 621
+        Top = 604
         Width = 107
         Anchors = [akRight, akBottom]
         Caption = 'Sv'
         Images = TabImages
         ImageIndex = 30
-        OnClick = BitBtn27Click
+        OnClick = btnSaveApplogClick
         TabOrder = 0
       end
       inline AppLog: TSynEdit
         Left = 0
-        Height = 613
+        Height = 596
         Top = 0
-        Width = 874
+        Width = 813
         Align = alTop
         Anchors = [akTop, akLeft, akRight, akBottom]
         Color = clMoneyGreen
@@ -3128,22 +3023,22 @@ object Form1: TForm1
           end
         end
       end
-      object BitBtn28: TBitBtn
+      object btnDelAppLog: TBitBtn
         Left = 8
         Height = 30
-        Top = 621
+        Top = 604
         Width = 107
         Anchors = [akLeft, akBottom]
         Caption = 'del'
         Images = TabImages
         ImageIndex = 19
-        OnClick = BitBtn28Click
+        OnClick = btnDelAppLogClick
         TabOrder = 2
       end
       object cbReduced: TCheckBox
         Left = 136
         Height = 19
-        Top = 632
+        Top = 615
         Width = 79
         Anchors = [akLeft, akBottom]
         Caption = 'cbReduced'
@@ -3152,7 +3047,7 @@ object Form1: TForm1
       object rgBlockSize: TRadioGroup
         Left = 232
         Height = 40
-        Top = 616
+        Top = 599
         Width = 128
         Anchors = [akLeft, akBottom]
         AutoFill = True
@@ -3178,7 +3073,7 @@ object Form1: TForm1
       object speBlockNum: TSpinEdit
         Left = 369
         Height = 23
-        Top = 628
+        Top = 611
         Width = 66
         Anchors = [akLeft, akBottom]
         Color = clCream
@@ -3190,7 +3085,7 @@ object Form1: TForm1
       object btnShowHex: TBitBtn
         Left = 448
         Height = 30
-        Top = 621
+        Top = 604
         Width = 107
         Anchors = [akLeft, akBottom]
         Caption = 'hex'
@@ -3204,8 +3099,8 @@ object Form1: TForm1
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
-    Top = 788
-    Width = 1041
+    Top = 771
+    Width = 980
     Anchors = [akRight, akBottom]
     Panels = <    
       item
@@ -3230,21 +3125,21 @@ object Form1: TForm1
     OnDblClick = StatusBar1DblClick
     OnHint = StatusBar1Hint
   end
-  object ListBox1: TListBox
+  object lbFlights: TListBox
     Left = 11
-    Height = 509
+    Height = 492
     Top = 272
     Width = 134
     Anchors = [akTop, akLeft, akBottom]
     Color = clCream
     ItemHeight = 0
-    OnClick = ListBox1Click
-    OnDblClick = ListBox1DblClick
+    OnClick = lbFlightsClick
+    OnDblClick = lbFlightsDblClick
     ScrollWidth = 132
     Sorted = True
     TabOrder = 2
   end
-  object RadioGroup1: TRadioGroup
+  object rgQuelle: TRadioGroup
     Left = 11
     Height = 112
     Top = 96
@@ -3268,20 +3163,20 @@ object Form1: TForm1
       'Funk'
       'Sensor'
     )
-    OnClick = RadioGroup1Click
+    OnClick = rgQuelleClick
     ParentColor = False
     TabOrder = 3
   end
-  object BitBtn1: TBitBtn
-    Left = 927
+  object btnClose: TBitBtn
+    Left = 866
     Height = 30
-    Top = 1
+    Top = 0
     Width = 107
     Anchors = [akTop, akRight]
     Caption = 'End'
     Images = TabImages
     ImageIndex = 27
-    OnClick = BitBtn1Click
+    OnClick = btnCloseClick
     TabOrder = 4
   end
   object Label2: TLabel
@@ -3292,45 +3187,17 @@ object Form1: TForm1
     Caption = 'FlightLog'
     ParentColor = False
   end
-  object BitBtn2: TBitBtn
-    Left = 802
+  object btnConv: TBitBtn
+    Left = 741
     Height = 30
     Top = 1
     Width = 107
     Anchors = [akTop, akRight]
     Caption = 'Conv'
     Enabled = False
-    Glyph.Data = {
-      36030000424D3603000000000000360000002800000010000000100000000100
-      1800000000000003000000000000000000000000000000000000FFFFFFFFFFFF
-      FFFFFF000000002020004040004040004040002020000000000000000000FFFF
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3F7F7F3FDFDF00DFDF00BFBF00
-      BFBF007F7F005F5F008080004040000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-      FFFFFF007F7F7FBFBF3FDFDF00BFBF009F9F007F7F0060600040400040400000
-      00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0020200040403F9F9F00
-      BFBF006060002020000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-      FFFFFFFFFFFFFFFFFF002020004040002020000000000000FFFFFFFFFFFFFFFF
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF002020007F7F00BFBF005F5F00
-      4040004040004040002020000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-      0020203FDFDF009F9F7F3F3FBFBF207F7F40BF9F207F3F402040200060600000
-      00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3F407FBFBF00BF7F5FBF7F5FFF
-      FF00DFBF20DFBF209F5F40204020004040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-      FFFFFF7F3F3FBF7F5FBFBF20FFFF00FF7F7FFFBF3FBFDF007FBF006040400040
-      40000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBFBF20BF7F5FCFCF90EFAFAFFF
-      BF7FFF7F7F3F9F002060209F9F20400040004040FFFFFFFFFFFFFFFFFFFFFFFF
-      FFFFFF7F7F40FFFF00EF6FAFDF9FDFCFCFCF6FAF307F407F3F603F3FBF003F3F
-      20004040FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBF9F3FFFBF3FFFBF7FFF7FFFCF
-      CFCFAF8F6FBF9F3F7F5F7F00BF203F3F20006060FFFFFFFFFFFFFFFFFFFFFFFF
-      FFFFFF7F207F7F7F3FBFDF00FFFF7FEF6FEFFFBF7F7FFF0000BF20BF7F5F3F5F
-      2000BFBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3F3F00BF5F7F008000FFBF3FFF
-      BF3FFF7FBFBFBF20BFBF20BF7F3F00BFBF004040FFFFFFFFFFFFFFFFFFFFFFFF
-      FFFFFFFFFFFF3F3F00BF5F7F7F7F3FFFFF00BFBF20BF7F5FBF7F3F3F7F7F00BF
-      BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F007F00
-      20203F3F206F6F30FFFFFF3F7F7F002020FFFFFFFFFFFFFFFFFF
-    }
     Images = TabImages
     ImageIndex = 24
-    OnClick = BitBtn2Click
+    OnClick = btnConvClick
     TabOrder = 5
   end
   object Label3: TLabel
@@ -3341,8 +3208,8 @@ object Form1: TForm1
     Caption = 'Kopter:'
     ParentColor = False
   end
-  object BitBtn3: TBitBtn
-    Left = 674
+  object btnArchive: TBitBtn
+    Left = 613
     Height = 30
     Top = 1
     Width = 107
@@ -3351,12 +3218,12 @@ object Form1: TForm1
     Enabled = False
     Images = TabImages
     ImageIndex = 25
-    OnClick = BitBtn3Click
+    OnClick = btnArchiveClick
     TabOrder = 6
   end
-  object SpinEdit3: TSpinEdit
+  object speDataPoint: TSpinEdit
     Tag = 2
-    Left = 674
+    Left = 613
     Height = 23
     Top = 60
     Width = 107
@@ -3369,7 +3236,7 @@ object Form1: TForm1
     Value = 1
   end
   object Label6: TLabel
-    Left = 747
+    Left = 686
     Height = 15
     Top = 38
     Width = 34
@@ -3378,7 +3245,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object Label7: TLabel
-    Left = 1000
+    Left = 939
     Height = 15
     Top = 38
     Width = 34
@@ -3392,18 +3259,18 @@ object Form1: TForm1
     OnMouseEnter = Label7MouseEnter
     OnMouseLeave = Label7MouseLeave
   end
-  object ComboBox1: TComboBox
+  object cbxText: TComboBox
     Left = 152
     Height = 23
     Top = 60
-    Width = 468
+    Width = 407
     Anchors = [akTop, akLeft, akRight]
     Color = clCream
     ItemHeight = 15
     TabOrder = 8
   end
   object Label8: TLabel
-    Left = 1000
+    Left = 939
     Height = 15
     Top = 63
     Width = 34
@@ -3417,8 +3284,8 @@ object Form1: TForm1
     OnMouseEnter = Label8MouseEnter
     OnMouseLeave = Label8MouseLeave
   end
-  object BitBtn13: TBitBtn
-    Left = 802
+  object btnScreenshot: TBitBtn
+    Left = 741
     Height = 30
     Top = 56
     Width = 107
@@ -3426,30 +3293,30 @@ object Form1: TForm1
     Caption = 'Sc'
     Images = TabImages
     ImageIndex = 16
-    OnClick = BitBtn13Click
+    OnClick = btnScreenshotClick
     TabOrder = 9
   end
-  object SpeedButton4: TSpeedButton
-    Left = 619
+  object sbtnLogDir: TSpeedButton
+    Left = 558
     Height = 25
     Top = 5
     Width = 25
     Anchors = [akTop, akRight]
     Images = TabImages
     ImageIndex = 21
-    OnClick = SpeedButton4Click
+    OnClick = sbtnLogDirClick
   end
-  object ComboBox2: TComboBox
+  object cbxLogDir: TComboBox
     Left = 152
     Height = 23
     Top = 6
-    Width = 468
+    Width = 407
     Anchors = [akTop, akLeft, akRight]
     Color = clCream
     ItemHeight = 15
-    OnChange = ComboBox2Change
-    OnDblClick = ComboBox2DblClick
-    OnMouseUp = ComboBox2MouseUp
+    OnChange = cbxLogDirChange
+    OnDblClick = cbxLogDirDblClick
+    OnMouseUp = cbxLogDirMouseUp
     TabOrder = 10
   end
   object StaticText1: TStaticText
@@ -3470,7 +3337,7 @@ object Form1: TForm1
     ClientHeight = 26
     ClientWidth = 137
     TabOrder = 12
-    object ComboBox9: TComboBox
+    object cbxSearch: TComboBox
       Left = 0
       Height = 23
       Top = 0
@@ -3478,7 +3345,7 @@ object Form1: TForm1
       CharCase = ecLowerCase
       Color = clCream
       ItemHeight = 15
-      OnMouseUp = ComboBox9MouseUp
+      OnMouseUp = cbxSearchMouseUp
       TabOrder = 0
     end
   end
@@ -3552,7 +3419,7 @@ object Form1: TForm1
       Caption = 'Cut'
       Enabled = False
       ImageIndex = 14
-      OnClick = BitBtn14Click
+      OnClick = btnCutClick
     end
   end
   object DateTimeIntervalChartSource1: TDateTimeIntervalChartSource
@@ -3654,7 +3521,7 @@ object Form1: TForm1
       object mnExploreRec: TMenuItem
         Caption = 'OpenF'
         ImageIndex = 20
-        OnClick = ComboBox8DblClick
+        OnClick = cbxScanDirDblClick
       end
       object MenuItem55: TMenuItem
         Caption = '-'
@@ -3671,12 +3538,12 @@ object Form1: TForm1
         Caption = 'Konv'
         Enabled = False
         ImageIndex = 24
-        OnClick = BitBtn2Click
+        OnClick = btnConvClick
       end
       object mnArchive: TMenuItem
         Caption = 'Arch'
         ImageIndex = 25
-        OnClick = BitBtn3Click
+        OnClick = btnArchiveClick
       end
       object MenuItem37: TMenuItem
         Caption = '-'
@@ -3684,7 +3551,7 @@ object Form1: TForm1
       object mnClose: TMenuItem
         Caption = 'Close'
         ImageIndex = 27
-        OnClick = BitBtn1Click
+        OnClick = btnCloseClick
       end
     end
     object mnMainTools: TMenuItem
@@ -3692,12 +3559,12 @@ object Form1: TForm1
       object mnMainScreenshot: TMenuItem
         Caption = 'Sc'
         ImageIndex = 16
-        OnClick = BitBtn13Click
+        OnClick = btnScreenshotClick
       end
       object mnMainScanRec: TMenuItem
         Caption = 'FB'
         ImageIndex = 9
-        OnClick = BitBtn25Click
+        OnClick = btnFlugBuchClick
       end
       object mnTR1: TMenuItem
         Caption = '-'
@@ -3723,7 +3590,7 @@ object Form1: TForm1
         Caption = 'Cut'
         Enabled = False
         ImageIndex = 14
-        OnClick = BitBtn14Click
+        OnClick = btnCutClick
       end
       object mnTR2: TMenuItem
         Caption = '-'
@@ -3788,7 +3655,7 @@ object Form1: TForm1
     left = 864
     top = 192
     Bitmap = {
-      4C69280000001000000010000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+      4C69290000001000000010000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFBFBFBFFF7F7F7FFF7F7F7FFFFFFFFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFDFDFBF00FFFFFFFFC0C0C0FFC0C0C0FFC0C0C0FF6060
       60FF606060FF606060FF303030FFBFBFBFFF3F3F3FFF606060FF606060FF6060
@@ -5068,7 +4935,39 @@ object Form1: TForm1
       FF00317A360A2D753207FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-      FF00FFFFFF00FFFFFF00FFFFFF00
+      FF00FFFFFF00FFFFFF00FFFFFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
+      FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00
+      FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00D89151FFDA9355FFDA93
+      55FFDA9355FFDA9355FFDA9355FFDA9355FFDA9355FFDA9355FFDA9355FFDA93
+      55FFDA9355FFD89151FFFF00FF00FF00FF00D79051FFFCA36EFFFFAF84FFFFAF
+      84FFFFAF84FFFFAF84FFFFAF84FFFFAF84FFFFAF84FFFFAF84FFFFAF84FFFFAF
+      84FFFFAF84FFFCA36EFFD1823AFFFF00FF00D99255FFFFAF84FFFFAD7FFFFFAD
+      7FFFFFAD7FFFFFAD7FFFFFAD7FFFFFAD7FFFFFAD7FFFFFAD7FFFFFAD7FFFFFAD
+      7FFFFFAD7FFFFCAA7BFFD2833DFFFF00FF00D89155FFFFAF84FFFFAD7FFFFFAD
+      7FFFFFAD7FFFFFFFFFFFFFFFFFFFFFAD7FFFFFAD7FFFFFAD7FFFFFAD7FFFFFAD
+      7FFFFFAD7FFFFCAA7BFFD1833DFFFF00FF00D89155FFFFAF84FFFFAD7FFFFFAD
+      7FFFFFAD7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFAD7FFFFFAD7FFFFFAD7FFFFFAD
+      7FFFFFAD7FFFFCAA7BFFD1823DFFFF00FF00D89155FFFFAF84FFFFAD7FFFFFAD
+      7FFFFFAD7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAD7FFFFFAD7FFFFFAD
+      7FFFFFAD7FFFFCAA7BFFD1823DFFFF00FF00D79055FFFFAF84FFFFAD7FFFFFAD
+      7FFFFFAD7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAD7FFFFFAD
+      7FFFFFAD7FFFFCAA7BFFD0813DFFFF00FF00D78C50FFFFA173FFFF9E6EFFFF9E
+      6EFFFF9E6EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF9E
+      6EFFFF9E6EFFFC9C6BFFD07C38FFFF00FF00D6884BFFFF9565FFFF915FFFFF91
+      5FFFFF915FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF915FFFFF91
+      5FFFFF915FFFFC8F5CFFCF7733FFFF00FF00D6884AFFFF9767FFFF9361FFFF93
+      61FFFF9361FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF9361FFFF9361FFFF93
+      61FFFF9361FFFC925EFFCF7833FFFF00FF00D6874AFFFF9969FFFF9563FFFF95
+      63FFFF9563FFFFFFFFFFFFFFFFFFFFFFFFFFFF9563FFFF9563FFFF9563FFFF95
+      63FFFF9563FFFC9361FFCF7834FFFF00FF00D5874AFFFF9B6AFFFF9865FFFF98
+      65FFFF9865FFFFFFFFFFFFFFFFFFFF9865FFFF9865FFFF9865FFFF9865FFFF98
+      65FFFF9865FFFC9662FFCE7934FFFF00FF00D4854AFFFFA16FFFFF9E6BFFFF9E
+      6BFFFF9E6BFFFF9E6BFFFF9E6BFFFF9E6BFFFF9E6BFFFF9E6BFFFF9E6BFFFF9E
+      6BFFFF9E6BFFFC9C68FFCC7936FFFF00FF00D08447FFFF9865FFFCA36EFFFCA3
+      6EFFFCA36EFFFCA36EFFFCA36EFFFCA36EFFFCA36EFFFCA36EFFFCA36EFFFCA3
+      6EFFFCA36EFFFF9865FFC77734FFFF00FF00FF00FF00CA7A37FFCA7A38FFCA7A
+      38FFCA7A38FFCA7A38FFCA7A38FFCA7A38FFCA7A38FFCA7A38FFCA7A38FFCA7A
+      38FFCA7A38FFC77734FFFF00FF00
     }
   end
   object PopupMenuProfile: TPopupMenu

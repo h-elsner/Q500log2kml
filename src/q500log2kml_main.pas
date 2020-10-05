@@ -51,12 +51,12 @@ YTH waypoints: http://www.eegalmc2.com/us/typhoonh/
 
 Hilfsvariablen:
 Form1.Tag:        Original Dezimal Separator zwischenspeichern (ob das nötig ist?)
-BitBtn1.Tag:      1=Breeze telemetry als ft, sonst Meter
-BitBtn3.Tag:      Plattform for Breeze: 1: Android, 0: iOS
-StringGrid1.Tag:  Spaltennummer, wo f_mode steht.
+btnClose.Tag:      1=Breeze telemetry als ft, sonst Meter
+btnArchive.Tag:      Plattform for Breeze: 1: Android, 0: iOS
+gridDetails.Tag:  Spaltennummer, wo f_mode steht.
 StringGrid2.Tag:  Merker für zuletzt benutztes Tabsheet, gesetzt beim Umschalten
 PageControl1.Tag: Indikator, ob Form2 angezeigt wurde (0 .. nein, >0 .. ja)
-SpinEdit3.Tag:    Vehicle Type as Integer (default = 5, YTH Plus = 10,
+speDataPoint.Tag:    Vehicle Type as Integer (default = 5, YTH Plus = 10,
                                            Breeze = 90 = brID)
 Label3.Tag:       Spalte für Suche/Filter in Tabelle merken.
 StatusBar1.Tag:   Legt fest, ob StatusPanel 3 und 4 (Zeiten) mit ins
@@ -238,28 +238,28 @@ type
 
   TForm1 = class(TForm)
     AdvLed1: TAdvLed;
-    BitBtn1: TBitBtn;
-    BitBtn12: TBitBtn;
-    BitBtn13: TBitBtn;
-    BitBtn14: TBitBtn;                             {Ausschneiden}
-    BitBtn15: TBitBtn;
-    BitBtn16: TBitBtn;
-    BitBtn17: TBitBtn;
-    BitBtn18: TBitBtn;
-    BitBtn19: TBitBtn;
-    BitBtn2: TBitBtn;
-    BitBtn20: TBitBtn;
-    BitBtn21: TBitBtn;
-    BitBtn22: TBitBtn;
-    BitBtn23: TBitBtn;
-    BitBtn24: TBitBtn;
-    BitBtn25: TBitBtn;
-    BitBtn26: TBitBtn;
-    BitBtn27: TBitBtn;
-    BitBtn28: TBitBtn;
-    BitBtn3: TBitBtn;
+    btnClose: TBitBtn;
+    btnDefaultProfile: TBitBtn;
+    btnScreenshot: TBitBtn;
+    btnCut: TBitBtn;                               {Ausschneiden}
+    btnCGO3Status: TBitBtn;
+    btnVideoStart: TBitBtn;
+    btnVideoStop: TBitBtn;
+    btnCGO3Reset: TBitBtn;
+    btnWiFiSpeedUp: TBitBtn;
+    btnConv: TBitBtn;
+    btnWiFiSpeedReset: TBitBtn;
+    btnAudio: TBitBtn;
+    btnFoto: TBitBtn;
+    btnCGO3Time: TBitBtn;
+    btnFormatSD: TBitBtn;
+    btnFlugBuch: TBitBtn;
+    btnScanErr: TBitBtn;
+    btnSaveApplog: TBitBtn;
+    btnDelAppLog: TBitBtn;
+    btnArchive: TBitBtn;
     btnShowHex: TBitBtn;
-    btSpecial: TButton;
+    btnSpecial: TButton;
     cbCap: TCheckBox;
     Chart1: TChart;
     Chart1BarSeries1: TBarSeries;
@@ -289,19 +289,19 @@ type
     ChartToolset2DataPointCrosshairTool1: TDataPointCrosshairTool;
     ChartToolset2PanDragTool1: TPanDragTool;
     ChartToolset2ZoomMouseWheelTool1: TZoomMouseWheelTool;
-    CheckBox1: TCheckBox;
-    CheckBox10: TCheckBox;
-    CheckBox11: TCheckBox;
+    cbVehicleType: TCheckBox;
+    cbSensorKML: TCheckBox;
+    cbExtrude: TCheckBox;
     cbReduced: TCheckBox;
     cbThunder: TCheckBox;
-    CheckBox2: TCheckBox;
-    CheckBox3: TCheckBox;
-    CheckBox4: TCheckBox;
-    CheckBox5: TCheckBox;
-    CheckBox6: TCheckBox;
-    CheckBox7: TCheckBox;
-    CheckBox8: TCheckBox;
-    CheckBox9: TCheckBox;
+    cbRTSP: TCheckBox;
+    cbDashw: TCheckBox;
+    cbFileList: TCheckBox;
+    cbExpoAuto: TCheckBox;
+    cbSimu: TCheckBox;
+    cbPilot: TCheckBox;
+    cbMAVasCSV: TCheckBox;
+    cbCleanHplus: TCheckBox;
     gbBatt: TGroupBox;
     lblBaseLoad: TLabel;
     lblMAVcommon: TLabel;
@@ -310,24 +310,24 @@ type
     ColorButton2: TColorButton;
     ColorButton3: TColorButton;
     ColorButton4: TColorButton;
-    ComboBox1: TComboBox;                          {Kopter ID - Hint}
-    ComboBox10: TComboBox;                         {Schnellanalyse Profiles}
-    ComboBox2: TComboBox;                          {FlightLog Directory}
-    ComboBox3: TComboBox;                          {CGO3 Video}
-    ComboBox4: TComboBox;                          {CGO3 Farbeinstellung}
-    ComboBox5: TComboBox;                          {CGO3 Weißabgleich}
-    ComboBox6: TComboBox;                          {CGO3 ISO}
-    ComboBox7: TComboBox;                          {CGO3 Shutter}
-    ComboBox8: TComboBox;
-    ComboBox9: TComboBox;                          {Find input}
+    cbxText: TComboBox;                            {Kopter ID - Hint}
+    cbxProfiles: TComboBox;                        {Schnellanalyse Profiles}
+    cbxLogDir: TComboBox;                          {FlightLog Directory}
+    cbxCGO3Video: TComboBox;                       {CGO3 Video}
+    cbxCGO3Color: TComboBox;                       {CGO3 Farbeinstellung}
+    cbxCGO3WB: TComboBox;                          {CGO3 Weißabgleich}
+    cbxCGO3ISO: TComboBox;                         {CGO3 ISO}
+    cbxCGO3Shutter: TComboBox;                     {CGO3 Shutter}
+    cbxScanDir: TComboBox;
+    cbxSearch: TComboBox;                          {Find input}
     DateTimeIntervalChartSource1: TDateTimeIntervalChartSource;
     DateTimeIntervalChartSource2: TDateTimeIntervalChartSource;
     DateTimeIntervalChartSource3: TDateTimeIntervalChartSource;
     DateTimeIntervalChartSource4: TDateTimeIntervalChartSource;
-    Edit3: TEdit;
-    Edit4: TEdit;
-    Edit5: TEdit;
-    FloatSpinEdit1: TFloatSpinEdit;
+    edSendCGO3: TEdit;
+    edReceiveCGO3: TEdit;
+    edCGOURL: TEdit;
+    speExpo: TFloatSpinEdit;
     GroupBox1: TGroupBox;
     GroupBox10: TGroupBox;
     GroupBox11: TGroupBox;
@@ -335,10 +335,10 @@ type
     GroupBox2: TGroupBox;
     GroupBox3: TGroupBox;
     GroupBox4: TGroupBox;
-    GroupBox5: TGroupBox;
+    gbCGO3Status: TGroupBox;
     GroupBox6: TGroupBox;
-    rgFotoExt: TGroupBox;
-    GroupBox8: TGroupBox;
+    gbVideoRecord: TGroupBox;
+    gbVideoSettings: TGroupBox;
     GroupBox9: TGroupBox;
     Image1: TImage;
     Image2: TImage;
@@ -351,20 +351,20 @@ type
     mnSlideshow: TMenuItem;
     mnTR2: TMenuItem;
     mnCleanCSV: TMenuItem;
-    ProgressBar1: TProgressBar;
+    ProgressBarScan: TProgressBar;
     rgVehicleType: TRadioGroup;
     rgBlockSize: TRadioGroup;
     rgCSVtext: TRadioGroup;
     rgErrType: TRadioGroup;
     rgVoltRule: TRadioGroup;
-    SpeedButton5: TSpeedButton;
+    sbtnScanDir: TSpeedButton;
     speBaseLoad: TSpinEdit;
     speBlockNum: TSpinEdit;
-    StringGrid5: TStringGrid;
+    gridScanResult: TStringGrid;
     AppLogHighlighter: TSynAnySyn;
     AppLog: TSynEdit;
     TabImages: TImageList;
-    indGnouMeter1: TindGnouMeter;
+    indGnouMeterSDused: TindGnouMeter;
     Label1: TLabel;
     Label12: TLabel;
     Label13: TLabel;
@@ -389,9 +389,9 @@ type
     LabeledEdit1: TLabeledEdit;
     LabeledEdit2: TLabeledEdit;
     LabeledEdit3: TLabeledEdit;
-    ListBox1: TListBox;
+    lbFlights: TListBox;
     MainMenu1: TMainMenu;
-    Memo1: TMemo;
+    mmoText: TMemo;
     mnGoogleMap: TMenuItem;
     MenuItem14: TMenuItem;
     MenuItem15: TMenuItem;
@@ -430,20 +430,20 @@ type
     mnExploreRec: TMenuItem;
     mnGoToTab: TMenuItem;
     mnCopyTab: TMenuItem;
-    mnSaveAsQuick: TMenuItem;                         {Menü GoTo Settings}
-    mnResetProfile: TMenuItem;                         {Menü Default Schnellanalyse}
+    mnSaveAsQuick: TMenuItem;                      {Menü GoTo Settings}
+    mnResetProfile: TMenuItem;                     {Menü Default Schnellanalyse}
     mnProfiles: TMenuItem;                         {Menü Profiles - no action}
     mnProfMode: TMenuItem;                         {Menü Profile FlightMode}
-    mnProfErr: TMenuItem;                         {Menü Profile Errors}
-    mnProfGPS: TMenuItem;                         {Menü Profile GPS}
-    mnProfThr: TMenuItem;                         {Menü Profile Throttle}
-    mnProfPitch: TMenuItem;                         {Menü Profile Pitch}
+    mnProfErr: TMenuItem;                          {Menü Profile Errors}
+    mnProfGPS: TMenuItem;                          {Menü Profile GPS}
+    mnProfThr: TMenuItem;                          {Menü Profile Throttle}
+    mnProfPitch: TMenuItem;                        {Menü Profile Pitch}
     mnProfRoll: TMenuItem;                         {Menü Profile Roll}
-    mnProfYaw: TMenuItem;                         {Menü Profile Yaw}
-    mnProf3Axis: TMenuItem;                         {Menü Profile 3Axis}
-    mnCutTab: TMenuItem;                         {Menü Table Cut}
+    mnProfYaw: TMenuItem;                          {Menü Profile Yaw}
+    mnProf3Axis: TMenuItem;                        {Menü Profile 3Axis}
+    mnCutTab: TMenuItem;                           {Menü Table Cut}
     MenuItem55: TMenuItem;
-    mnSensorPX4: TMenuItem;                         {Menü Sensor file from YTH Plus}
+    mnSensorPX4: TMenuItem;                        {Menü Sensor file from YTH Plus}
     mnAnalyseTab: TMenuItem;
     mnGoToErr: TMenuItem;
     mnGoTable: TMenuItem;
@@ -453,31 +453,31 @@ type
     PageControl2: TPageControl;
     PopupMenuTab: TPopupMenu;
     PopupMenuHist: TPopupMenu;
-    PopupMenuProfile: TPopupMenu;                        {Popup Menü Schellanalyse}
-    RadioGroup1: TRadioGroup;
+    PopupMenuProfile: TPopupMenu;                  {Popup Menü Schellanalyse}
+    rgQuelle: TRadioGroup;
     rgOutFormat: TRadioGroup;
     rgSpeedUnit: TRadioGroup;
     rgTimeType: TRadioGroup;
     rgAltitudeType: TRadioGroup;
     rgVideoFoto: TRadioGroup;
-    RadioGroup7: TRadioGroup;
+    rgPicFormat: TRadioGroup;
     SaveDialog1: TSaveDialog;
     SelectDirectoryDialog1: TSelectDirectoryDialog;
     SpeedButton1: TSpeedButton;
     SpeedButton2: TSpeedButton;
     SpeedButton3: TSpeedButton;
-    SpeedButton4: TSpeedButton;
-    SpeedButton6: TSpeedButton;
-    SpinEdit1: TSpinEdit;
-    SpinEdit2: TSpinEdit;
-    SpinEdit3: TSpinEdit;
+    sbtnLogDir: TSpeedButton;
+    sbtnSendCGO3: TSpeedButton;
+    speLinePath: TSpinEdit;
+    speAnalyze: TSpinEdit;
+    speDataPoint: TSpinEdit;
     StaticText1: TStaticText;
     StatusBar1: TStatusBar;
     StopLightSensor1: TStopLightSensor;
-    StringGrid1: TStringGrid;
-    grdOverview: TStringGrid;
-    StringGrid3: TStringGrid;
-    StringGrid4: TStringGrid;
+    gridDetails: TStringGrid;
+    gridOverview: TStringGrid;
+    gridCGO3: TStringGrid;
+    gridFirmware: TStringGrid;
     TabSheet1: TTabSheet;                          {Übersicht}
     TabSheet10: TTabSheet;                         {Settings Analyse}
     TabSheet11: TTabSheet;                         {CGO3}
@@ -492,33 +492,33 @@ type
     Timer1: TTimer;                                {CGO3 Statusabfrage}
     TimerDblClick: TTimer;
     TimerDiashow: TTimer;
-    TrackBar1: TTrackBar;
-    TrackBar2: TTrackBar;
-    TrackBar3: TTrackBar;
+    tbrSaturation: TTrackBar;
+    tbrDistWP: TTrackBar;
+    tbrSharpness: TTrackBar;
     TreeView1: TTreeView;
     XMLPropStorage1: TXMLPropStorage;
-    procedure BitBtn12Click(Sender: TObject);
-    procedure BitBtn13Click(Sender: TObject);
-    procedure BitBtn14Click(Sender: TObject);      {Ausschneiden}
-    procedure BitBtn15Click(Sender: TObject);
-    procedure BitBtn16Click(Sender: TObject);
-    procedure BitBtn17Click(Sender: TObject);
-    procedure BitBtn18Click(Sender: TObject);
-    procedure BitBtn19Click(Sender: TObject);
-    procedure BitBtn1Click(Sender: TObject);
-    procedure BitBtn20Click(Sender: TObject);
-    procedure BitBtn21Click(Sender: TObject);
-    procedure BitBtn22Click(Sender: TObject);
-    procedure BitBtn23Click(Sender: TObject);
-    procedure BitBtn24Click(Sender: TObject);
-    procedure BitBtn25Click(Sender: TObject);
-    procedure BitBtn26Click(Sender: TObject);
-    procedure BitBtn27Click(Sender: TObject);
-    procedure BitBtn28Click(Sender: TObject);
-    procedure BitBtn2Click(Sender: TObject);
-    procedure BitBtn3Click(Sender: TObject);
+    procedure btnDefaultProfileClick(Sender: TObject);
+    procedure btnScreenshotClick(Sender: TObject);
+    procedure btnCutClick(Sender: TObject);        {Ausschneiden}
+    procedure btnCGO3StatusClick(Sender: TObject);
+    procedure btnVideoStartClick(Sender: TObject);
+    procedure btnVideoStopClick(Sender: TObject);
+    procedure btnCGO3ResetClick(Sender: TObject);
+    procedure btnWiFiSpeedUpClick(Sender: TObject);
+    procedure btnCloseClick(Sender: TObject);
+    procedure btnWiFiSpeedResetClick(Sender: TObject);
+    procedure btnAudioClick(Sender: TObject);
+    procedure btnFotoClick(Sender: TObject);
+    procedure btnCGO3TimeClick(Sender: TObject);
+    procedure btnFormatSDClick(Sender: TObject);
+    procedure btnFlugBuchClick(Sender: TObject);
+    procedure btnScanErrClick(Sender: TObject);
+    procedure btnSaveApplogClick(Sender: TObject);
+    procedure btnDelAppLogClick(Sender: TObject);
+    procedure btnConvClick(Sender: TObject);
+    procedure btnArchiveClick(Sender: TObject);
     procedure btnShowHexClick(Sender: TObject);
-    procedure btSpecialClick(Sender: TObject);
+    procedure btnSpecialClick(Sender: TObject);
     procedure cbThunderChange(Sender: TObject);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -530,31 +530,32 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure ChartToolset2DataPointCrosshairTool1Draw(
       ASender: TDataPointDrawTool);
-    procedure CheckBox11Change(Sender: TObject);
-    procedure CheckBox1Change(Sender: TObject);
-    procedure CheckBox3Change(Sender: TObject);
-    procedure CheckBox5Change(Sender: TObject);
-    procedure CheckBox7Change(Sender: TObject);
+    procedure cbExtrudeChange(Sender: TObject);
+    procedure cbVehicleTypeChange(Sender: TObject);
+    procedure cbDashwChange(Sender: TObject);
+    procedure cbExpoAutoChange(Sender: TObject);
+    procedure cbPilotChange(Sender: TObject);
     procedure ColorButton1Click(Sender: TObject);
-    procedure ComboBox10Change(Sender: TObject);
-    procedure ComboBox10DblClick(Sender: TObject);
-    procedure ComboBox2Change(Sender: TObject);
-    procedure ComboBox2DblClick(Sender: TObject);
-    procedure ComboBox2MouseUp(Sender: TObject; Button: TMouseButton;
+    procedure cbxProfilesChange(Sender: TObject);
+    procedure cbxProfilesDblClick(Sender: TObject);
+    procedure cbxLogDirChange(Sender: TObject);
+    procedure cbxLogDirDblClick(Sender: TObject);
+    procedure cbxLogDirMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure ComboBox3Change(Sender: TObject);
-    procedure ComboBox4Change(Sender: TObject);
-    procedure ComboBox5Change(Sender: TObject);
-    procedure ComboBox6Change(Sender: TObject);
-    procedure ComboBox7Change(Sender: TObject);
-    procedure ComboBox8DblClick(Sender: TObject);
-    procedure ComboBox8MouseUp(Sender: TObject; Button: TMouseButton;
+    procedure cbxCGO3VideoChange(Sender: TObject);
+    procedure cbxCGO3ColorChange(Sender: TObject);
+    procedure cbxCGO3WBChange(Sender: TObject);
+    procedure cbxCGO3ISOChange(Sender: TObject);
+    procedure cbxCGO3ShutterChange(Sender: TObject);
+    procedure cbxScanDirDblClick(Sender: TObject);
+    procedure cbxScanDirMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure ComboBox9MouseUp(Sender: TObject; Button: TMouseButton;
+    procedure cbxSearchMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure Edit3KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure Edit4DblClick(Sender: TObject);
-    procedure FloatSpinEdit1Change(Sender: TObject);
+    procedure edSendCGO3KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure edReceiveCGO3DblClick(Sender: TObject);
+    procedure rgCSVtextClick(Sender: TObject);
+    procedure speExpoChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDblClick(Sender: TObject);
@@ -580,11 +581,11 @@ type
       State: TDragState; var Accept: Boolean);
     procedure lblMAVcommonMouseEnter(Sender: TObject);
     procedure lblMAVcommonMouseLeave(Sender: TObject);
-    procedure ListBox1Click(Sender: TObject);
-    procedure ListBox1DblClick(Sender: TObject);
+    procedure lbFlightsClick(Sender: TObject);
+    procedure lbFlightsDblClick(Sender: TObject);
     procedure MAVmsgDblClick(Sender: TObject);
     procedure MAVmsgItemClick(Sender: TObject; Index: integer);
-    procedure Memo1Change(Sender: TObject);
+    procedure mmoTextChange(Sender: TObject);
     procedure mnSaveAsQuickClick(Sender: TObject);
     procedure mnResetProfileClick(Sender: TObject);
     procedure mnProfModeClick(Sender: TObject);
@@ -618,69 +619,69 @@ type
     procedure mnOSMClick(Sender: TObject);
     procedure mnCleanCSVClick(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
-    procedure RadioGroup1Click(Sender: TObject);
+    procedure rgQuelleClick(Sender: TObject);
     procedure rgOutFormatClick(Sender: TObject);
     procedure rgSpeedUnitClick(Sender: TObject);
     procedure rgAltitudeTypeClick(Sender: TObject);
     procedure rgVideoFotoClick(Sender: TObject);
-    procedure RadioGroup7Click(Sender: TObject);
+    procedure rgPicFormatClick(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
     procedure SpeedButton3Click(Sender: TObject);
-    procedure SpeedButton4Click(Sender: TObject);
-    procedure SpeedButton5Click(Sender: TObject);
-    procedure SpeedButton6Click(Sender: TObject);
-    procedure SpinEdit1Change(Sender: TObject);
+    procedure sbtnLogDirClick(Sender: TObject);
+    procedure sbtnScanDirClick(Sender: TObject);
+    procedure sbtnSendCGO3Click(Sender: TObject);
+    procedure speLinePathChange(Sender: TObject);
     procedure StaticText1DblClick(Sender: TObject);
     procedure StatusBar1DblClick(Sender: TObject);
     procedure StatusBar1Hint(Sender: TObject);
-    procedure StringGrid1Click(Sender: TObject);
-    procedure StringGrid1DblClick(Sender: TObject);
-    procedure StringGrid1HeaderClick(Sender: TObject; IsColumn: Boolean;
+    procedure gridDetailsClick(Sender: TObject);
+    procedure gridDetailsDblClick(Sender: TObject);
+    procedure gridDetailsHeaderClick(Sender: TObject; IsColumn: Boolean;
       Index: Integer);
-    procedure StringGrid1KeyUp(Sender: TObject; var Key: Word;
+    procedure gridDetailsKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure StringGrid1MouseMove(Sender: TObject; Shift: TShiftState;
+    procedure gridDetailsMouseMove(Sender: TObject; Shift: TShiftState;
       X, Y: Integer);
-    procedure StringGrid1MouseUp(Sender: TObject; Button: TMouseButton;
+    procedure gridDetailsMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure StringGrid1PrepareCanvas(sender: TObject; aCol, aRow: Integer;
+    procedure gridDetailsPrepareCanvas(sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
-    procedure StringGrid1Selection(Sender: TObject; aCol, aRow: Integer);
-    procedure grdOverviewCompareCells(Sender: TObject; ACol, ARow, BCol,
+    procedure gridDetailsSelection(Sender: TObject; aCol, aRow: Integer);
+    procedure gridOverviewCompareCells(Sender: TObject; ACol, ARow, BCol,
       BRow: Integer; var Result: integer);
-    procedure grdOverviewDblClick(Sender: TObject);
-    procedure grdOverviewHeaderClick(Sender: TObject; IsColumn: Boolean;
+    procedure gridOverviewDblClick(Sender: TObject);
+    procedure gridOverviewHeaderClick(Sender: TObject; IsColumn: Boolean;
       Index: Integer);
-    procedure grdOverviewKeyUp(Sender: TObject; var Key: Word;
+    procedure gridOverviewKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure grdOverviewMouseMove(Sender: TObject; Shift: TShiftState; X,
+    procedure gridOverviewMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-    procedure grdOverviewMouseUp(Sender: TObject; Button: TMouseButton;
+    procedure gridOverviewMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure grdOverviewPrepareCanvas(sender: TObject; aCol, aRow: Integer;
+    procedure gridOverviewPrepareCanvas(sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
-    procedure StringGrid3KeyUp(Sender: TObject; var Key: Word;
+    procedure gridCGO3KeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure StringGrid4HeaderClick(Sender: TObject; IsColumn: Boolean;
+    procedure gridFirmwareHeaderClick(Sender: TObject; IsColumn: Boolean;
       Index: Integer);
-    procedure StringGrid4KeyUp(Sender: TObject; var Key: Word;
+    procedure gridFirmwareKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure StringGrid4MouseUp(Sender: TObject; Button: TMouseButton;
+    procedure gridFirmwareMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure StringGrid5DblClick(Sender: TObject);
-    procedure StringGrid5KeyUp(Sender: TObject; var Key: Word;
+    procedure gridScanResultDblClick(Sender: TObject);
+    procedure gridScanResultKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure StringGrid5MouseUp(Sender: TObject; Button: TMouseButton;
+    procedure gridScanResultMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure StringGrid5Resize(Sender: TObject);
+    procedure gridScanResultResize(Sender: TObject);
     procedure TabSheet8Resize(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure TimerDblClickTimer(Sender: TObject);
     procedure TimerDiashowTimer(Sender: TObject);
-    procedure TrackBar1Change(Sender: TObject);
-    procedure TrackBar2Change(Sender: TObject);
-    procedure TrackBar3Click(Sender: TObject);
+    procedure tbrSaturationChange(Sender: TObject);
+    procedure tbrDistWPChange(Sender: TObject);
+    procedure tbrSharpnessClick(Sender: TObject);
     procedure TreeView1Click(Sender: TObject);
     procedure TreeView1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -835,20 +836,20 @@ const
   anzsp=20;                                        {Mindestanzahl Spalten}
   lzbr=19;                                         {Länge Zeitstempel Breeze}
   lzyu=21;                                         {Länge Zeitstempel Yuneec}
-  fw0=80;                {Breite linke Spalte Übersicht default}
-  fw1=160;               {Breite linke Spalte Übersicht bei alter FW}
+  fw0=80;                                          {Breite linke Spalte Übersicht default}
+  fw1=160;                                         {Breite linke Spalte Übersicht bei alter FW}
   maxxh=7999;                                      {Höhe validieren --> testh(a)}
-  minnh=-1000;           {gefähliche Annahme, tritt aber bei YTH Plus als Fehler auf}
+  minnh=-1000;                                     {gefähliche Annahme, tritt aber bei YTH Plus als Fehler auf}
   distmax=1000;                                    {Plasicheck: Koord dist in m}
-  fmode='f_mode';        {Spalte Flightmode, Position der Spalte in StringGrid1.Tag}
-  pfmode='fMode';        {Spaltenbezeichnung beim YTH Plus}
-  brfmode='flightMode';  {FlightMode beim Breeze}
+  fmode='f_mode';                                  {Spalte Flightmode, Position der Spalte in gridDetails.Tag}
+  pfmode='fMode';                                  {Spaltenbezeichnung beim YTH Plus}
+  brfmode='flightMode';                            {FlightMode beim Breeze}
   brsnid='DroneSN';
-  lcol='gps_accH';       {letzte Spalte in Überschrift, wegen ST16-FW Fehler}
-  hsw=2;                 {Höhen-Schwellwert für Analyse in m}
+  lcol='gps_accH';                                 {letzte Spalte in Überschrift, wegen ST16-FW Fehler}
+  hsw=2;                                           {Höhen-Schwellwert für Analyse in m}
   Secpd=86400;                                     {Sekunden per Tag}
-  tsdelta1=6/864000;     {Schwellwert für Zeitstempel in Zehntelsekunden,
-                          default 6=600ms}
+  tsdelta1=6/864000;                               {Schwellwert für Zeitstempel in
+                                                    Zehntelsekunden, default 6=600ms}
   tsdelta2=2/86400;                                {> 2sec Telemtrie verloren}
   tsdelta3=5/86400;                                {5 sec für Breeze}
   minflt=10/86400;                                 {Mindestflugzeit beim YTH Plus 10s}
@@ -868,12 +869,12 @@ const
 
 {http://docwiki.embarcadero.com/RADStudio/Seattle/de/Farben_in_der_VCL}
   osmURL='https://www.openstreetmap.org/';         {als Karte}
-//  osmURL='https://opentopomap.org/';               {als topografische Karte}
+//  osmURL='https://opentopomap.org/';             {als topografische Karte}
 //  https://opentopomap.org/#map=17/48.92523/14.26150
 
   gzoom='16';
   starticon='https://maps.google.com/mapfiles/dir_0.png';       {blau}
-  stopicon= 'https://maps.google.com/mapfiles/dir_walk_60.png';  {grau}
+  stopicon= 'https://maps.google.com/mapfiles/dir_walk_60.png'; {grau}
   alerticon='https://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_red.png';
   infoicon= 'https://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_yellow.png';
   aircrafticon='https://earth.google.com/images/kml-icons/track-directional/track-0.png';
@@ -894,7 +895,7 @@ const
   idxpage='INDEX_PAGE';
   getshpn='GET_SHARPNESS';
 
-  xmlvers='<?xml version="1.0" encoding="UTF-8"?>'; {ID XML/GPX header}
+  xmlvers='<?xml version="1.0" encoding="UTF-8"?>';  {ID XML/GPX header}
   kmlvers='<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">';
   gpxvers='<gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"';
   GPXlat='lat="';
@@ -936,20 +937,20 @@ const
   m45val=1433;                                     {Pan -45% TeamMode}
   p50val=2730;                                     {+50%}
   m50val=1365;                                     {-50%}
-  spt=10;                    {zusätzliche Spaltenbreite  für Telemetrie in pix}
-  rrk='# ';                  {RaceRender Kommentar}
-  defaultcol=5;              {muss kleiner als die Mindestmenge der Spalten sein}
-  defVT=5;                   {Default vehicle YTH, need 5 for Thunderbird}
-  YTHPid=10;                 {YTH Plus ID}
-  MQid=11;                   {MantisQ ID, PX4 Quadcopter}
-  H5id=12;                   {Yuneec H520, *.tlog files (PX4)}
-  MQcsvID=13;                {neues CSV Format beim MQ}
-  ThBid=14;                  {Thunderbird, H480 customized firmware on base of PX4}
-  brID=90;                   {Breeze ID}
-  H501ID=91;                 {Hubsan flaretom Rekorder}
-  YTHPcols=276;              {Anzahl Spalten bei YTH Plus Sensorfiles = ID für Anzeige}
-  AnzDirs=12;                {Anzahl der letzen Verzeichnisse}
-  FWsz=18;                   {Mindestgröße Datei für FW}
+  spt=10;                                          {zusätzliche Spaltenbreite  für Telemetrie in pix}
+  rrk='# ';                                        {RaceRender Kommentar}
+  defaultcol=5;                                    {muss kleiner als die Mindestmenge der Spalten sein}
+  defVT=5;                                         {Default vehicle YTH, need 5 for Thunderbird}
+  YTHPid=10;                                       {YTH Plus ID}
+  MQid=11;                                         {MantisQ ID, PX4 Quadcopter}
+  H5id=12;                                         {Yuneec H520, *.tlog files (PX4)}
+  MQcsvID=13;                                      {neues CSV Format beim MQ}
+  ThBid=14;                                        {Thunderbird, H480 customized firmware on base of PX4}
+  brID=90;                                         {Breeze ID}
+  H501ID=91;                                       {Hubsan flaretom Rekorder}
+  YTHPcols=276;                                    {Anzahl Spalten bei YTH Plus Sensorfiles = ID für Anzeige}
+  AnzDirs=12;                                      {Anzahl der letzen Verzeichnisse}
+  FWsz=18;                                         {Mindestgröße Datei für FW}
   CGO3dir='100MEDIA/';
   CGO3cgi='cgi-bin/cgi?CMD=';
   trenner='--------------------';
@@ -960,13 +961,13 @@ const
   vzf=dzf+' '+zzf;
   zzz='.zzz';
 
-  dzfl='0.0';                {Formatierung für FormatFloat}
+  dzfl='0.0';                                      {Formatierung für FormatFloat}
   ctfl='0.00';
   mlfl='0.000';
 
   tabu=19;
-  dstr=';';                  {Datentrenner für Flugprotokoll}
-  lblsize=35;                {LabelSize zum Ausrichten der Y-Achsen bei Schnellanalyse}
+  dstr=';';                                        {Datentrenner für Flugprotokoll}
+  lblsize=35;                                      {LabelSize zum Ausrichten der Y-Achsen bei Schnellanalyse}
                                                    {Sensordateien: }
   dsID=$BC;                                        {ID für einen Datensatz}
   lenfix=8;                                        {Länge Fixpart}
@@ -979,9 +980,9 @@ const
 
 var
   Form1: TForm1;
-  tend, tpos, cutb, cute: TDateTime;        {Ende-Zeit, Zeit-Position in Tabellen}
+  tend, tpos, cutb, cute: TDateTime;               {Ende-Zeit, Zeit-Position in Tabellen}
   kpath: string;
-  topp: array of array[0..6] of integer;    {Positionen Topzeile der Tabellen
+  topp: array of array[0..6] of integer;           {Positionen Topzeile der Tabellen
   i..Index der Datei mit Null beginnend i, 0  Pos TopRow Telemetrie
                                         i, 1  Pos TopRow ST10
                                         i, 2  Pos TopRow Funk
@@ -994,8 +995,8 @@ var
                                               256..Emergency
                                               512..  frei
                                               1024.. usw}
-  nhw: double;                              {Delta für Koordinaten in der Nähe}
-  farbskala: array [0..2, 0..63] of TColor; {Farbeverlauf entspreched Werte}
+  nhw: double;                                     {Delta für Koordinaten in der Nähe}
+  farbskala: array [0..2, 0..63] of TColor;        {Farbeverlauf entspreched Werte}
 
 implementation
 
@@ -1022,7 +1023,7 @@ begin
       for i:=splitlist.Count-2 downto 0 do         {YTH Plus probieren}
         if pos(mndirp, splitlist[i])=1 then begin
           result:='';                              {Pfad zusammenbauen}
-          SpinEdit3.Tag:=YTHPid;
+          speDataPoint.Tag:=YTHPid;
           for k:=0 to i do
             result:=result+splitlist[k]+Pathdelim;
           exit;
@@ -1039,13 +1040,13 @@ begin
     end;
     if ExtractFileExt(fn)=bext then begin
       result:=ExtractFilePath(fn);                 {Breeze}
-      SpinEdit3.Tag:=BRid;
+      speDataPoint.Tag:=BRid;
       exit;
     end;
     if (pos(h5file, fn)=1) and
        (ExtractFileExt(fn)=fext) then begin        {Hubsam 501 flaretom Recorder}
       result:=ExtractFilePath(fn);
-      SpinEdit3.Tag:=H501ID;                       {Vehicle ID für <> legacy setzen}
+      speDataPoint.Tag:=H501ID;                    {Vehicle ID für <> legacy setzen}
     end;
   finally
     FreeAndNil(splitlist);
@@ -1066,34 +1067,34 @@ begin
   AppLogTimeStamp(Application.ExeName+tab4+version);
   Caption:=capForm1+tab2+Version;                  {Name und Version}
   Hint:=capForm1;
-  BitBtn1.Caption:=capBitBtn1;
-  BitBtn1.Hint:=hntBitBtn1;
-  BitBtn2.Caption:=capBitBtn2;
-  BitBtn3.Caption:=capBitBtn3;
-  BitBtn12.Caption:=capBitBtn12;                   {Schnellanalyse Defaulteinstellung}
-  BitBtn12.Hint:=hntBitBtn12;
-  BitBtn13.Caption:=rsScreenshot;
-  BitBtn13.Hint:=hntBitBtn13;
+  btnClose.Caption:=capBitBtn1;
+  btnClose.Hint:=hntBitBtn1;
+  btnConv.Caption:=capBitBtn2;
+  btnArchive.Caption:=capBitBtn3;
+  btnDefaultProfile.Caption:=capBitBtn12;          {Schnellanalyse Defaulteinstellung}
+  btnDefaultProfile.Hint:=hntBitBtn12;
+  btnScreenshot.Caption:=rsScreenshot;
+  btnScreenshot.Hint:=hntBitBtn13;
 {$IFDEF DARWIN}                                    {MAC OS X}
-  BitBtn13.Visible:=false;                         {Button Screenshot}
+  btnScreenshot.Visible:=false;                         {Button Screenshot}
   mnMainScreenshot.Visible:=false;                       {Main Menu Screenshot}
   mnSaveAsHist.Visible:=false;                        {PopUp Menu Höhenprofil; geht das nun?}
 {$ENDIF}
-  BitBtn14.Caption:=capBitBtn14;                   {Ausschneiden / Cut}
-  BitBtn14.Hint:=hntBitBtn14;
-  BitBtn18.Caption:=capBitBtn18;
-  BitBtn18.Hint:=hntBitBtn18;
-  BitBtn23.Caption:=capBitBtn23;
-  BitBtn23.Hint:=hntBitBtn23;
-  BitBtn24.Caption:=capBitBtn24;
-  BitBtn24.Hint:=hntBitBtn24;
-  BitBtn25.Caption:=capNachweis;                   {Flugprotokoll}
-  ListBox1.Hint:=hntListBox1;
+  btnCut.Caption:=capBitBtn14;                     {Ausschneiden / Cut}
+  btnCut.Hint:=hntBitBtn14;
+  btnCGO3Reset.Caption:=capBitBtn18;
+  btnCGO3Reset.Hint:=hntBitBtn18;
+  btnCGO3Time.Caption:=capBitBtn23;
+  btnCGO3Time.Hint:=hntBitBtn23;
+  btnFormatSD.Caption:=capBitBtn24;
+  btnFormatSD.Hint:=hntBitBtn24;
+  btnFlugBuch.Caption:=capNachweis;                {Flugprotokoll}
+  lbFlights.Hint:=hntListBox1;
   ColorButton1.Hint:=hntColorBtn1;
   StatusBar1.Panels[5].Text:=DefaultStatus;
-  ComboBox2.Hint:=DefaultStatus;
-  SpeedButton4.Hint:=DefaultStatus;
-  SpeedButton5.Hint:=capSelProt;                   {Protokollverzeichnis}
+  cbxLogDir.Hint:=DefaultStatus;
+  sbtnLogDir.Hint:=DefaultStatus;
+  sbtnScanDir.Hint:=capSelProt;                    {Protokollverzeichnis}
   mnGoogleMap.Caption:=rsToGMaps;
   mnCopyHist.Caption:=rsToClipBoard;
   mnSaveAsHist.Caption:=rsHDiaSave;
@@ -1118,7 +1119,7 @@ begin
   mnMainStart.Caption:=rsStartTPunkt;
   mnMainStop.Caption:=rsEndTPunkt;
   mnCut.Caption:=capBitBtn14;                      {Ausschneiden / Cut}
-  mnCutTab.Caption:=capBitBtn14;                 {Ausschneiden / Cut}
+  mnCutTab.Caption:=capBitBtn14;                   {Ausschneiden / Cut}
   mnArchive.Caption:=capBitBtn3;
   mnClose.Caption:=capBitBtn1;
   mnExploreLog.Caption:=capOpen;
@@ -1127,21 +1128,21 @@ begin
   mnSelDirRec.Caption:=capSelProt;
   mnExploreRec.Caption:=capMI47;
   mnCopyTab.Caption:=rsCopy;
-  mnResetProfile.Caption:=capBitBtn12;                 {Menü Default}
-  mnSaveAsQuick.Caption:=rsPC1Tab4;                   {Menü Settings}
-  mnSensorPX4.Caption:=capSensorPlus;               {Sensordatei für YTH Plus öffnen}
-  mnSlideshow.Caption:=capDiashow;                  {alle Profiles anzeigen}
+  mnResetProfile.Caption:=capBitBtn12;             {Menü Default}
+  mnSaveAsQuick.Caption:=rsPC1Tab4;                {Menü Settings}
+  mnSensorPX4.Caption:=capSensorPlus;              {Sensordatei für YTH Plus öffnen}
+  mnSlideshow.Caption:=capDiashow;                 {alle Profiles anzeigen}
   mnCleanCSV.Caption:=capCleanCSV;
   mnCleanCSV.Hint:=hntCleanCSV;
   mnMAVlist.Caption:=capMAVlist;                   {Tools: List of used MAVlink messages}
   mnMAVlist.Hint:=hntMAVlist;
-  RadioGroup1.Caption:=capRadioGroup1;
-  RadioGroup1.Hint:=hntRadioGroup1;
-  RadioGroup1.Items[0]:=dkpath;
-  RadioGroup1.Items[1]:=spath;
-  RadioGroup1.Items[2]:=fpath;
-  RadioGroup1.Items[3]:=npath;
-  RadioGroup1.Tag:=0;                              {Autosize columns needed}
+  rgQuelle.Caption:=capRadioGroup1;
+  rgQuelle.Hint:=hntRadioGroup1;
+  rgQuelle.Items[0]:=dkpath;
+  rgQuelle.Items[1]:=spath;
+  rgQuelle.Items[2]:=fpath;
+  rgQuelle.Items[3]:=npath;
+  rgQuelle.Tag:=0;                                 {Autosize columns needed}
   rgOutFormat.Caption:=capRadioGroup2+tab1+capBitBtn2;
   rgOutFormat.Hint:=hntRadioGroup2;
   rgSpeedUnit.Caption:=capRadioGroup3;
@@ -1153,8 +1154,8 @@ begin
   rgVideoFoto.Hint:=rsMode+' ('+rsVdo+'/'+capBitBtn22+')';
   rgVideoFoto.Items[1]:=capBitBtn22;
   rgVideoFoto.ItemIndex:=0;
-  RadioGroup7.Caption:=capRadioGroup2;
-  RadioGroup7.Hint:=capRadioGroup2;
+  rgPicFormat.Caption:=capRadioGroup2;
+  rgPicFormat.Hint:=capRadioGroup2;
   rgCSVtext.Caption:=capRadioGroup2+tab1+capNachweis;
   rgCSVtext.Hint:=hntRadioGroup8;
   rgVoltRule.Caption:=capVrule;
@@ -1176,10 +1177,10 @@ begin
   GroupBox1.Caption:=capGroupBox1;
   TabSheet12.Caption:=capTabSheet12;
   TabSheet12.Hint:=capTabSheet12;
-  Memo1.Hint:=hntMemo1;
+  mmoText.Hint:=hntMemo1;
   Label1.Caption:=capLabel1;
   Label1.Hint:=hntLabel1;
-  SpinEdit1.Hint:=hntLabel1;
+  speLinePath.Hint:=hntLabel1;
   Label2.Caption:=capLabel2;
   Label3.Caption:=capLabel3;
   Label4.Caption:=capLabel4;
@@ -1207,41 +1208,41 @@ begin
   Label8.Hint:=homepage+downURL;
   lblMAVcommon.Hint:=MAVurl;
   StaticText1.Caption:='';
-  TrackBar3.Hint:=hntSharpness;
+  tbrSharpness.Hint:=hntSharpness;
   Label21.Caption:=rsWB;
   Label21.Hint:=rsWB;
-  ComboBox5.Text:=rsWB;
-  ComboBox5.Hint:=rsWB;
+  cbxCGO3WB.Text:=rsWB;
+  cbxCGO3WB.Hint:=rsWB;
   Label25.Caption:=rsShutter;
   Label25.Hint:=rsShutter;
-  ComboBox7.Text:=rsShutter;
-  ComboBox7.Hint:=rsShutter;
-  ComboBox8.Hint:=capSelProt;
-  ComboBox9.Hint:=hntComboBox9;
+  cbxCGO3Shutter.Text:=rsShutter;
+  cbxCGO3Shutter.Hint:=rsShutter;
+  cbxScanDir.Hint:=capSelProt;
+  cbxSearch.Hint:=hntComboBox9;
   Label24.Caption:=rsISO;
   Label24.Hint:=rsISO;
-  ComboBox6.Text:=rsISO;
-  ComboBox6.Hint:=rsISO;
-  TrackBar1.SelEnd:=TrackBar1.Position;
-  TrackBar2.SelEnd:=TrackBar2.Position;
-  TrackBar2.Hint:=hntTrackBar2;
-  ComboBox1.Hint:=hntEdit1;
-  CheckBox2.Hint:=hntCheckBox2;
-  CheckBox3.Caption:=capCheckBox3;
-  CheckBox3.Hint:=hntCheckBox3;
-  CheckBox4.Caption:=capCheckBox4;
-  CheckBox4.Hint:=hntCheckBox4;
-  CheckBox6.Caption:=capCheckBox6;
-  CheckBox6.Hint:=hntCheckBox6;
-  CheckBox7.Caption:=capCheckBox7;
-  CheckBox7.Hint:=hntCheckBox7;
-  CheckBox8.Caption:=capCheckBox8;                 {Save Sensor as CSV}
-  CheckBox8.Hint:=hntCheckBox8;
-  CheckBox9.Caption:=capCheckBox9;                 {YZH Plus Datenbereinigung}
-  CheckBox9.Hint:=hntCheckBox9;
-  CheckBox10.Caption:=capCheckBox10;               {Flight path from PX4 sensor}
-  CheckBox10.Hint:=hntCheckBox10;
-  CheckBox11.Hint:=hntCheckBox11;                  {add extrude 1 tag to KML}
+  cbxCGO3ISO.Text:=rsISO;
+  cbxCGO3ISO.Hint:=rsISO;
+  tbrSaturation.SelEnd:=tbrSaturation.Position;
+  tbrDistWP.SelEnd:=tbrDistWP.Position;
+  tbrDistWP.Hint:=hntTrackBar2;
+  cbxText.Hint:=hntEdit1;
+  cbRTSP.Hint:=hntCheckBox2;
+  cbDashw.Caption:=capCheckBox3;
+  cbDashw.Hint:=hntCheckBox3;
+  cbFileList.Caption:=capCheckBox4;
+  cbFileList.Hint:=hntCheckBox4;
+  cbSimu.Caption:=capCheckBox6;
+  cbSimu.Hint:=hntCheckBox6;
+  cbPilot.Caption:=capCheckBox7;
+  cbPilot.Hint:=hntCheckBox7;
+  cbMAVasCSV.Caption:=capCheckBox8;                {Save Sensor as CSV}
+  cbMAVasCSV.Hint:=hntCheckBox8;
+  cbCleanHplus.Caption:=capCheckBox9;              {YZH Plus Datenbereinigung}
+  cbCleanHplus.Hint:=hntCheckBox9;
+  cbSensorKML.Caption:=capCheckBox10;              {Flight path from PX4 sensor}
+  cbSensorKML.Hint:=hntCheckBox10;
+  cbExtrude.Hint:=hntCheckBox11;                   {add extrude 1 tag to KML}
   cbCap.Caption:=cbCapCaption;                     {Remaining capacity instead voltage}
   cbCap.Hint:=cbCapHint;
   cbReduced.Caption:=capReduced;                   {AppLogHighlighter reduced, only text msg}
@@ -1252,12 +1253,12 @@ begin
   GroupBox3.Caption:=rsPC1Tab2;
   GroupBox4.Caption:=capAnalyse;
   GroupBox4.Hint:=hntGroupBox4+capAnalyse;
-  GroupBox5.Caption:=rsCGOstat;
-  GroupBox5.Hint:=rsCGOstat;
-  rgFotoExt.Caption:=capGroupBox7;
-  rgFotoExt.Hint:=capGroupBox7;
-  GroupBox8.Caption:=capTabSheet12;
-  GroupBox8.Hint:=capTabSheet12;
+  gbCGO3Status.Caption:=rsCGOstat;
+  gbCGO3Status.Hint:=rsCGOstat;
+  gbVideoRecord.Caption:=capGroupBox7;
+  gbVideoRecord.Hint:=capGroupBox7;
+  gbVideoSettings.Caption:=capTabSheet12;
+  gbVideoSettings.Hint:=capTabSheet12;
   GroupBox9.Caption:=capGroupBox9;
   GroupBox9.Hint:=hntEdit3;
   GroupBox10.Caption:=capGroupBox10;               {Flugprotokoll}
@@ -1270,8 +1271,8 @@ begin
   lblBaseLoad.Hint:=hntBaseLoad;
   speBaseLoad.Hint:=hntbaseLoad;
   ColorButton1.Caption:=capColorButton1;
-  TrackBar1.Hint:=hntTrackBar1;
-  SpinEdit3.Hint:=hntSpinEdit3;
+  tbrSaturation.Hint:=hntTrackBar1;
+  speDataPoint.Hint:=hntSpinEdit3;
   Label6.Hint:=hntSpinEdit3;
   LabeledEdit1.EditLabel.Caption:=capTopDia;
   LabeledEdit2.EditLabel.Caption:=capMiddleDia;
@@ -1279,27 +1280,27 @@ begin
   Tag:=ord(DefaultFormatSettings.DecimalSeparator); {Original zwischenspeichern}
   DefaultFormatSettings.DecimalSeparator:='.';
   tend:=0;
-  RadioGroup1.ItemIndex:=0;
-  StringGrid1.Tag:=19;                    {default Position bei neuer FW ST10+}
-  StringGrid1.ColWidths[0]:=130;
-//  StringGrid1.Columns[0].Width:=130;             {Besser, aber dann überall!
+  rgQuelle.ItemIndex:=0;
+  gridDetails.Tag:=19;                             {default Position bei neuer FW ST10+}
+  gridDetails.ColWidths[0]:=130;
+//  gridDetails.Columns[0].Width:=130;             {Besser, aber dann überall!
 //  Und das Indexkonzept ist anders, weil FixedColumns nicht beim Index mitzählt}
-  StringGrid1.Hint:=hntGrid1;                      {Default Hint data}
-  StringGrid1.ColCount:=defaultcol;
-  grdOverview.ColWidths[0]:=fw0;
-  grdOverview.Hint:=rsPC1Tab1;                     {Default Hint Overview}
-  grdOverview.Cells[1,0]:=rsGridCell1;             {Übersichtstabelle aufbauen}
-  grdOverview.Cells[2,0]:=rsGridCell2;
-  grdOverview.Cells[3,0]:=rsGridCell3;
-  grdOverview.Cells[4,0]:=rsDauer;
-  grdOverview.Cells[5,0]:=rsGridCell5;
-  grdOverview.Cells[6,0]:=rsGridCell6;
-  grdOverview.Cells[7,0]:=rsGridCell7;
-  grdOverview.Cells[8,0]:=rsGridCell8;
-  grdOverview.Cells[9,0]:=rsGridCell9;
-  grdOverview.Cells[10,0]:=rsGridCell10;
-  grdOverview.Tag:=2;                              {Used Tab; default: Tabelle}
-  StringGrid4.Hint:=hntStringGrid4;
+  gridDetails.Hint:=hntGrid1;                      {Default Hint data}
+  gridDetails.ColCount:=defaultcol;
+  gridOverview.ColWidths[0]:=fw0;
+  gridOverview.Hint:=rsPC1Tab1;                    {Default Hint Overview}
+  gridOverview.Cells[1,0]:=rsGridCell1;            {Übersichtstabelle aufbauen}
+  gridOverview.Cells[2,0]:=rsGridCell2;
+  gridOverview.Cells[3,0]:=rsGridCell3;
+  gridOverview.Cells[4,0]:=rsDauer;
+  gridOverview.Cells[5,0]:=rsGridCell5;
+  gridOverview.Cells[6,0]:=rsGridCell6;
+  gridOverview.Cells[7,0]:=rsGridCell7;
+  gridOverview.Cells[8,0]:=rsGridCell8;
+  gridOverview.Cells[9,0]:=rsGridCell9;
+  gridOverview.Cells[10,0]:=rsGridCell10;
+  gridOverview.Tag:=2;                             {Used Tab; default: Tabelle}
+  gridFirmware.Hint:=hntStringGrid4;
   PageControl1.ActivePageIndex:=0;
   PageControl2.ActivePageIndex:=0;
   PageControl2.Hint:=rsPC1Tab4;                    {Einstellungen}
@@ -1308,68 +1309,68 @@ begin
   Image2.Hint:=rsVdo;
   Image3.Hint:=capBitBtn22;
   Image4.Hint:=LazURL;
-  Edit5.Hint:=hntCGO3URL;
+  edCGOURL.Hint:=hntCGO3URL;
   Label19.Hint:=hntCGO3URL;
   Label19.Caption:=rsCGO3URL;
   Label16.Caption:=rsExpo;
   Label16.Hint:=rsExpo;
-  FloatSpinEdit1.Hint:=rsExpo;
-  CheckBox5.Hint:=rsExpo;
-  BitBtn15.Hint:=hntStatus;
+  speExpo.Hint:=rsExpo;
+  cbExpoAuto.Hint:=rsExpo;
+  btnCGO3Status.Hint:=hntStatus;
   StopLightSensor1.Hint:=hntWLAN;
   Label18.Hint:=hntWLAN;
   Label22.Caption:=rsVideo;
   Label22.Hint:=rsVideo;
-  ComboBox3.Text:=rsVideo;
-  ComboBox3.Hint:=rsVideo;
+  cbxCGO3Video.Text:=rsVideo;
+  cbxCGO3Video.Hint:=rsVideo;
   Label20.Hint:=capRadioGroup2;
   Label23.Caption:=rsFarbFormat;
   Label23.Hint:=rsFarbFormat;
-  ComboBox4.Text:=rsFarbFormat;
-  ComboBox4.Hint:=rsFarbFormat;
-  indGnouMeter1.Caption:=capGnou;                  {SD card usage}
-  indGnouMeter1.Hint:=hntGnou;
+  cbxCGO3Color.Text:=rsFarbFormat;
+  cbxCGO3Color.Hint:=rsFarbFormat;
+  indGnouMeterSDused.Caption:=capGnou;             {SD card usage}
+  indGnouMeterSDused.Hint:=hntGnou;
   Chart3.AxisList[0].LabelSize:=lblsize;           {y-Achsen ausrichten}
   Chart4.AxisList[0].LabelSize:=lblsize;
   Chart5.AxisList[0].LabelSize:=lblsize;
-  StringGrid3.Hint:=hntStringGrid3;
-  StringGrid3.Cells[0,0]:='Firmware';
-  StringGrid3.Cells[0,1]:=rsWLANSpeed;
-  StringGrid3.Cells[0,2]:=rsKStatus;
-  StringGrid3.Cells[0,3]:=rsRecTime;
-  StringGrid3.Cells[0,4]:='AWB lock';
-  StringGrid3.Cells[0,5]:='AE enable';
-  StringGrid3.Cells[0,6]:=rsShutter;
-  StringGrid3.Cells[0,7]:=rsSharpness;
-  StringGrid5.Hint:=rsResult;
-  StringGrid5.Cells[0,0]:=rsNum;
-  StringGrid5.Cells[1,0]:=rsResult;
-  BitBtn16.Hint:=hntBitBtn16;
-  BitBtn17.Hint:=hntBitBtn17;
-  BitBtn19.Caption:=capBitBtn19;
-  BitBtn19.Hint:=hntBitBtn19;
-  BitBtn20.Caption:=capBitBtn20;
-  BitBtn20.Hint:=hntBitBtn20;
-  BitBtn22.Caption:=capBitBtn22;
-  BitBtn22.Hint:=hntBitBtn22;
-  BitBtn26.Caption:=capScan;
-  BitBtn27.Caption:=rsSave;                        {AppLogHighlighter speichern}
-  BitBtn27.Hint:=hntBitBtn27;
-  BitBtn28.Caption:=capDel;                        {AppLogHighlighter löschen}
-  BitBtn28.Hint:=hntDel;
+  gridCGO3.Hint:=hntStringGrid3;
+  gridCGO3.Cells[0,0]:='Firmware';
+  gridCGO3.Cells[0,1]:=rsWLANSpeed;
+  gridCGO3.Cells[0,2]:=rsKStatus;
+  gridCGO3.Cells[0,3]:=rsRecTime;
+  gridCGO3.Cells[0,4]:='AWB lock';
+  gridCGO3.Cells[0,5]:='AE enable';
+  gridCGO3.Cells[0,6]:=rsShutter;
+  gridCGO3.Cells[0,7]:=rsSharpness;
+  gridScanResult.Hint:=rsResult;
+  gridScanResult.Cells[0,0]:=rsNum;
+  gridScanResult.Cells[1,0]:=rsResult;
+  btnVideoStart.Hint:=hntBitBtn16;
+  btnVideoStop.Hint:=hntBitBtn17;
+  btnWiFiSpeedUp.Caption:=capBitBtn19;
+  btnWiFiSpeedUp.Hint:=hntBitBtn19;
+  btnWiFiSpeedReset.Caption:=capBitBtn20;
+  btnWiFiSpeedReset.Hint:=hntBitBtn20;
+  btnFoto.Caption:=capBitBtn22;
+  btnFoto.Hint:=hntBitBtn22;
+  btnScanErr.Caption:=capScan;
+  btnSaveApplog.Caption:=rsSave;                   {AppLogHighlighter speichern}
+  btnSaveApplog.Hint:=hntBitBtn27;
+  btnDelAppLog.Caption:=capDel;                    {AppLogHighlighter löschen}
+  btnDelAppLog.Hint:=hntDel;
   btnShowHex.Caption:=capHexdump;
   btnShowHex.Hint:=hntHexdump;
   rgBlockSize.Hint:=hntBlockSize;
   speBlockNum.Hint:=hntBlockNum;
   mnHexDump.Hint:=hntHexdump;
   mnHexDump.Caption:=capHexdump;
-  Image1.Hint:=BitBtn21.Caption;
-  SpeedButton6.Hint:=hntSpeed6;
-  Edit3.Hint:=hntEdit3;
-  Edit4.Hint:=hntEdit4;
-  Edit3.TextHint:=hntEdit3;
-  Edit4.TextHint:=hntEdit4;
-  ProgressBar1.Hint:=hntProgrBar1;
+  Image1.Hint:=btnAudio.Caption;
+  sbtnSendCGO3.Hint:=hntSpeed6;
+  edSendCGO3.Hint:=hntEdit3;
+  edReceiveCGO3.Hint:=hntEdit4;
+  edSendCGO3.TextHint:=hntEdit3;
+  edReceiveCGO3.TextHint:=hntEdit4;
+  ProgressBarScan.Hint:=hntProgrBar1;
   rgErrType.Caption:=capProb;
   GroupBox6.Caption:=capProbScan;
   GroupBox6.Hint:=hntProb;
@@ -1387,9 +1388,9 @@ begin
   end;
   tpos:=0;                                         {keine Position in der Tabelle}
   StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
-  BitBtn2.Hint:=hntBitBtn2+' (+ '+StatusBar1.Panels[2].Text+')';
-  BitBtn3.Hint:=hntBitBtn3+' (+ '+rgTimeType.Items[rgTimeType.ItemIndex]+')';
-  rgVehicleType.Enabled:=CheckBox1.Checked;
+  btnConv.Hint:=hntBitBtn2+' (+ '+StatusBar1.Panels[2].Text+')';
+  btnArchive.Hint:=hntBitBtn3+' (+ '+rgTimeType.Items[rgTimeType.ItemIndex]+')';
+  rgVehicleType.Enabled:=cbVehicleType.Checked;
   MAVmsgDefault;                                   {default: all MAV messages selected}
   MAVmsg.Hint:=hntMAVmsg;
   FreigabeCut(false);                              {ohne Statusausgabe}
@@ -1432,10 +1433,10 @@ begin
   end;
 end;
 
-function testh(const a: double): boolean; inline; {Datensätze mit unsinniger Höhe ausblenden}
+function testh(const a: double): boolean; inline;  {Datensätze mit unsinniger Höhe ausblenden}
 begin
   result:=true;
-  if (a<minnh) or                                 {tritt bei VTH Plus als Fehler auf}
+  if (a<minnh) or                                  {tritt bei VTH Plus als Fehler auf}
      (a>maxxh) then result:=false;
 end;
 
@@ -1457,7 +1458,7 @@ begin
     case vt of
       brID: begin                                  {Breeze}
               result:=ScanDateTime(vzf, s);
-              if BitBtn3.Tag=1 then                {Platform Android}
+              if btnArchive.Tag=1 then             {Platform Android}
                 result:=result-nowUTC+now;         {UTC to local time}
             end;
       MQcsvID: result:=ScanDateTime(dzf+' '+zzf+zzz, s);
@@ -1503,8 +1504,8 @@ begin
 end;
 
 {Finde einen Zeitstempel in den Dateien mit Datum/Zeit in der 1. Spalte}
-function TForm1.FindTP(wlist: TStringList;        {Data list as strings}
-                       tp: TDateTime;             {Time looking for}
+function TForm1.FindTP(wlist: TStringList;         {Data list as strings}
+                       tp: TDateTime;              {Time looking for}
                        const vt: integer): integer;   {Vehicle type}
 var k, pos, len: integer;
     s: string;
@@ -1558,11 +1559,11 @@ begin
   if s='' then
     result:='Ch'+IntToStr(p);
 
-  case p of                                {Liste der Channels zum Umbenennen}
+  case p of                                        {Liste der Channels zum Umbenennen}
     1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12: result:=result+bind+ChNoToStr(p);
     6: result:=result+' - A02';   {alle unbezeichneten, einstelligen Channels}
     else
-      result:=result+' - A'+IntToStr(p-4);     {die restlichen unbezeichneten}
+      result:=result+' - A'+IntToStr(p-4);         {die restlichen unbezeichneten}
   end;
 end;
 
@@ -1680,7 +1681,7 @@ function TForm1.fmodeToStr(const f: integer): string; {Flight Mode abh. vom Typ 
 
 begin
   result:='';
-  case SpinEdit3.Tag of
+  case speDataPoint.Tag of
     3: Mode350;
     YTHPid: ModeYTHP;
     ThBid: ModeThB;
@@ -1820,8 +1821,8 @@ begin
         result:=result+'Mag fail ';
       if (u and 16)=0 then
         result:=result+'GPS fail ';
-      if (SpinEdit3.Tag=5) or
-         (SpinEdit3.Tag=YTHPid) then begin         {nur Typhoon H oder H Plus}
+      if (speDataPoint.Tag=5) or
+         (speDataPoint.Tag=YTHPid) then begin         {nur Typhoon H oder H Plus}
         if (u and 32)=0 then
           result:=result+'RealSense error';
         if (u and 64)=0 then
@@ -2281,7 +2282,7 @@ begin
     3:	Result:='3D position';
     4:	Result:='DGPS/SBAS aided 3D position';
     5:	Result:='RTK float, 3D position';
-    6:	Result:='RTK Fixed, 3D position';
+    6:	Result:='RTK fixed, 3D position';
     7:	Result:='Static fixed, typically used for base stations';
     8:	Result:='PPP, 3D position';
   end;
@@ -2319,7 +2320,7 @@ end;
 
 function FramesToColor(c: integer): TColor;        {Colors for the frame settings}
 begin
-  result:=Form1.StringGrid1.Color;
+  result:=Form1.gridDetails.Color;
   case c of
     0: result:=clRed;                              {No frame}
     1, 2, 4: result:=clOrange;                     {One frame}
@@ -2330,7 +2331,7 @@ end;
 
 function BladeCol(const fm: integer): TColor; inline;
 begin
-  result:=Form1.StringGrid1.Color;
+  result:=Form1.gridDetails.Color;
   case fm of                                       {flight modes; wie Chart1BarSeries}
     25:             result:=clAngle;
     11:             result:=clSport;
@@ -2343,7 +2344,7 @@ end;
 
 function LegacyCol(const fm: integer): TColor; inline;
 begin
-  result:=Form1.StringGrid1.Color;
+  result:=Form1.gridDetails.Color;
   case fm of                                       {flight modes wie Chart1BarSeries}
     3, 4:                  result:=clAngle;
     2, 5, 7, 22, 24, 32:   result:=clNoGPS;
@@ -2358,7 +2359,7 @@ end;
 
 function ThunderCol(const fm: integer): TColor; inline;
 begin
-  result:=Form1.StringGrid1.Color;
+  result:=Form1.gridDetails.Color;
   case fm of                                       {flight modes; wie Chart1BarSeries}
     0:      result:=clSport;                       {Stabilized blue}
     1:      result:=clNoGPS;                       {Altitude orange}
@@ -2405,7 +2406,7 @@ begin
            stkntrl: result:=fmAngle;
            stkdown: result:=fmRTH;
          end;
-         case SpinEdit3.Tag of                     {Overwrite}
+         case speDataPoint.Tag of                     {Overwrite}
            ThBid: case stk of
                     0..stkdown: result:=fmRTH;     {-150 .. -100%}
                     m50val:  result:=fmStabilized; {-50%}
@@ -2424,7 +2425,7 @@ begin
            stkntrl: result:=rsNeutral;
            stkmax:  result:=fmRTH;
          end;
-         case SpinEdit3.Tag of                     {abhängig vom vehicle type}
+         case speDataPoint.Tag of                     {abhängig vom vehicle type}
            1: case stk of                          {H920}
                 p50val: result:=rsNoGPS;
                 stkup:  result:=rsNeutral;
@@ -2603,7 +2604,7 @@ end;
 function TForm1.CheckE7(const s: string): boolean; inline;
                                                    {prüft einen string auf Fehler}
 begin
-  result:=(not CheckBox9.Checked) or               {Prüfung ggf. abschalten}
+  result:=(not cbCleanHplus.Checked) or            {Prüfung ggf. abschalten}
           (pos('E7', s)=0);                        {E7 darf in Telemetrie nicht vorkommen}
 end;
 
@@ -2750,9 +2751,9 @@ begin
            result:=round( ((u-s44)* 5)/(s43-s44));
        end;
      H501ID: begin
-               m:=2*lipomax;                             {2S}
+               m:=2*lipomax;                       {2S}
                if  u>=m then
-                 result:=100;                            {100%}
+                 result:=100;                      {100%}
                if (u>=s21) and
                   (u< m)   then
                  result:=round((((u-s21)*75)/(m-s21))+25);
@@ -2829,7 +2830,7 @@ end;
 
 function RSSIpToColor(Const r: integer): TColor;   {RSSI in Prozent einfärben}
 begin
-  result:=Form1.StringGrid1.Color;
+  result:=Form1.gridDetails.Color;
   if r<30 then                                     {below 30%}
     result:=clAttention;
   if r<15 then                                     {below 15%}
@@ -2844,7 +2845,7 @@ const
   thr_attention=3.61;
   thr_red=3.26;
 begin
-  result:=Form1.StringGrid1.Color;
+  result:=Form1.gridDetails.Color;
   case vt of                                       {Volts per cell}
     1, 6:   w:=v/6;                                {H920 6S}
     5, YTHPid, ThBid, H5id:
@@ -2918,7 +2919,7 @@ function GetNr(const s: string): string; {filtert Ziffern aus einem String für 
 begin
   result:='';
   if s<>'' then begin
-    case Form1.SpinEdit3.Tag of
+    case Form1.speDataPoint.Tag of
        MQid: begin                                 {MantisQ}
                result:=ChangeFileExt(s, '');
                result:=StringReplace(result, nfile, '', [rfIgnoreCase]);
@@ -2935,7 +2936,7 @@ end;
 
 function ResultDN(const s, ex: string): string;    {erzeuge Ergebnis-Dateinamen}
 begin
-  case Form1.SpinEdit3.Tag of
+  case Form1.speDataPoint.Tag of
      brID: result:=ExtractFileDir(s)+PathDelim+    {im gleichen Verzeichnis}
                   '#'+GetNr(ExtractFileName(s))+ex;
 
@@ -3045,7 +3046,7 @@ var e: integer;
 
   function Lunit: string; inline;                  {Lenght measurement unit}
   begin
-    if BitBtn1.Tag=0 then
+    if btnClose.Tag=0 then
       result:='m'
     else
       result:='ft';
@@ -3053,25 +3054,25 @@ var e: integer;
 
   function HeaderHnt: string; inline;
   begin
-    result:=StringGrid1.Cells[sp, 0]+'=';
+    result:=gridDetails.Cells[sp, 0]+'=';
   end;
 
   function DefaultHnt: string; inline;
   begin
-    result:=HeaderHnt+StringGrid1.Cells[sp, zl];
+    result:=HeaderHnt+gridDetails.Cells[sp, zl];
   end;
 
   procedure PayLoad;                               {Payload detailliert anzeigen}
   begin
-    if StringGrid1.Cells[sp, zl]='' then           {leere Zellen}
+    if gridDetails.Cells[sp, zl]='' then           {leere Zellen}
       s:=rsN_A
     else begin                                     {gefüllte Zellen}
       try
-        e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl])
+        e:=Hex2Dec('$'+gridDetails.Cells[sp, zl])
       except
         e:=0;
       end;
-      s:='Payload - '+StringGrid1.Cells[sp, 0]+': $'+StringGrid1.Cells[sp, zl]+
+      s:='Payload - '+gridDetails.Cells[sp, 0]+': $'+gridDetails.Cells[sp, zl]+
          ' = '+IntToStr(e);
       if (e>31) and
          (e<128) then
@@ -3082,12 +3083,12 @@ var e: integer;
   procedure Zeitstempel;                           {Zeitstempel legacy anzeigen}
   begin
     if sp=0 then begin
-      case SpinEdit3.Tag of
+      case speDataPoint.Tag of
         h501ID: s:=FormatDateTime(vzf,
-                   ZeitToDT(StringGrid1.Cells[0, zl], H501ID)+
-                            GetDateFile(ListBox1.Items[ListBox1.ItemIndex]));
+                   ZeitToDT(gridDetails.Cells[0, zl], H501ID)+
+                            GetDateFile(lbFlights.Items[lbFlights.ItemIndex]));
       else
-        s:=FormatDateTime(vzf+zzz, ZeitToDT(StringGrid1.Cells[0, zl], SpinEdit3.Tag));
+        s:=FormatDateTime(vzf+zzz, ZeitToDT(gridDetails.Cells[0, zl], speDataPoint.Tag));
       end;
     end;
   end;
@@ -3100,7 +3101,7 @@ var e: integer;
     end;
     if sp=lenfix-6 then begin                      {Sequenz number}
       try
-        e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl]); {dezimal}
+        e:=Hex2Dec('$'+gridDetails.Cells[sp, zl]); {dezimal}
         s:=rsRecordNo+IntToStr(zl)+kma+
            HeaderHnt+IntToStr(e);
       except
@@ -3109,7 +3110,7 @@ var e: integer;
     end;
     if sp=lenfix-4 then                            {MAV Component ID}
       try
-        e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl]);
+        e:=Hex2Dec('$'+gridDetails.Cells[sp, zl]);
         s:=MAVcompID(e);
       except
         s:=rsError;
@@ -3118,102 +3119,102 @@ var e: integer;
        (sp=lenfix-2) or
        (sp=lenfix-3) then begin                    {Message ID 3 Byte}
       try
-        e:=Hex2Dec('$'+StringGrid1.Cells[lenfix-1, zl]+
-                       StringGrid1.Cells[lenfix-2, zl]+
-                       StringGrid1.Cells[lenfix-3, zl]);
-        s:=IntToStr(e)+suff+StringGrid1.Cells[lenfix, zl];
+        e:=Hex2Dec('$'+gridDetails.Cells[lenfix-1, zl]+
+                       gridDetails.Cells[lenfix-2, zl]+
+                       gridDetails.Cells[lenfix-3, zl]);
+        s:=IntToStr(e)+suff+gridDetails.Cells[lenfix, zl];
       except
-        s:=StringGrid1.Cells[lenfix, zl];
+        s:=gridDetails.Cells[lenfix, zl];
       end;
     end;
     if sp>lenfix-1 then
       Payload;                                     {Payload anzeigen}
     if sp=lenfix then
-      s:='mavlink_msg_'+StringGrid1.Cells[sp, zl]; {Message Name}
+      s:='mavlink_msg_'+gridDetails.Cells[sp, zl]; {Message Name}
     if sp=lenfix+1 then
-      s:=rsLenPL+StringGrid1.Cells[sp, zl];        {Payloadlänge}
+      s:=rsLenPL+gridDetails.Cells[sp, zl];        {Payloadlänge}
   end;
 
   procedure TabHintBreeze;
   begin
     case sp of
        2: begin
-            e:=StrToIntDef(StringGrid1.Cells[sp, zl], 99);
+            e:=StrToIntDef(gridDetails.Cells[sp, zl], 99);
             s:=BrfmodeToStr(e);
           end;
        3, 4, 6, 7, 8:
           begin
-            t:=StrToFloatN(StringGrid1.Cells[sp, zl])/10;
+            t:=StrToFloatN(gridDetails.Cells[sp, zl])/10;
             s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 1);
             s:=s+Lunit;
           end;
        9: begin                                    {maxSpeed}
-            t:=StrToFloatN(StringGrid1.Cells[sp, zl])/100;
+            t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
             s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 1);
-            if BitBtn1.Tag=0 then
+            if btnClose.Tag=0 then
               s:=s+'m/s'
             else
               s:=s+'ft/s';
           end;
       10: begin                                    {Altitude}
-            t:=StrToFloatN(StringGrid1.Cells[sp, zl])/100;
+            t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
             s:=HeaderHnt+FloatToStrF(t, ffFixed, 4, 1);
             s:=s+Lunit;
           end;
-      11: s:='IMU Status='+KorrSigned(StringGrid1.Cells[sp, zl], 255);
+      11: s:='IMU Status='+KorrSigned(gridDetails.Cells[sp, zl], 255);
       12: begin
-            t:=BrCoordToFloat(StringGrid1.Cells[sp, zl]);
+            t:=BrCoordToFloat(gridDetails.Cells[sp, zl]);
             s:=HeaderHnt+KoToStr(t);
           end;
       13: begin
-            t:=BrCoordToFloat(StringGrid1.Cells[sp, zl]);
+            t:=BrCoordToFloat(gridDetails.Cells[sp, zl]);
             s:=HeaderHnt+KoToStr(t);
           end;
       14: begin                                    {AutoTakeOff}
-            e:=StrToIntDef(StringGrid1.Cells[sp, zl], 99);
+            e:=StrToIntDef(gridDetails.Cells[sp, zl], 99);
             s:=AutoTakeOffToStr(e);
           end;
       15: begin                                    {roll}
-            t:=StrToFloatN(StringGrid1.Cells[sp, zl])/100;
+            t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
             s:=HeaderHnt+FloatToStrF(t, ffFixed, 4, 2);
           end;
       16: begin                                    {pitch}
-            t:=StrToFloatN(StringGrid1.Cells[sp, zl])/100;
+            t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
             s:=HeaderHnt+FloatToStrF(t, ffFixed, 4, 2);
           end;
       17: begin                                    {yaw}
-            t:=StrToFloatN(StringGrid1.Cells[sp, zl])/100;
+            t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
             s:=HeaderHnt+FloatToStrF(t, ffFixed, 4, 2);
           end;
       18: begin                                    {MotorStatus}
-            e:=StrToIntDef(StringGrid1.Cells[sp, zl], 0);
+            e:=StrToIntDef(gridDetails.Cells[sp, zl], 0);
             s:=MotStatusToStr(e);
           end;
-      19: s:=eflagToStr(StringGrid1.Cells[sp, zl]); {Error Flags}
-      20: s:='Number Sats='+KorrSigned(StringGrid1.Cells[sp, zl], 63);
-      21: s:=rsRest+' ~'+BrKorrV(StringGrid1.Cells[sp, zl])+'%';
+      19: s:=eflagToStr(gridDetails.Cells[sp, zl]); {Error Flags}
+      20: s:='Number Sats='+KorrSigned(gridDetails.Cells[sp, zl], 63);
+      21: s:=rsRest+' ~'+BrKorrV(gridDetails.Cells[sp, zl])+'%';
     end;
   end;
 
   procedure TabHintH501;                           {Hubsan H501}
   begin
     case sp of
-       1: s:='Frames: '+FrameToStr(StrToInt(StringGrid1.Cells[1, zl]));
+       1: s:='Frames: '+FrameToStr(StrToInt(gridDetails.Cells[1, zl]));
        4: begin                                    {Elevation}
-            t:=H501alt(StrToFloatN(StringGrid1.Cells[sp, zl]));
+            t:=H501alt(StrToFloatN(gridDetails.Cells[sp, zl]));
             s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 1);
             s:=s+Lunit;
           end;
        5: begin                                    {Distance}
-            t:=H501dist(StrToFloatN(StringGrid1.Cells[sp, zl]));
+            t:=H501dist(StrToFloatN(gridDetails.Cells[sp, zl]));
             s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 1);
             s:=s+Lunit;
           end;
        6, 7, 8: s:=DefaultHnt+'°';
-       9: s:=ShowVoltage(StringGrid1.Cells[sp, zl], SpinEdit3.Tag);
+       9: s:=ShowVoltage(gridDetails.Cells[sp, zl], speDataPoint.Tag);
        19:
           begin
-            t:=H501velo(StrToFloatN(StringGrid1.Cells[sp, zl]));   {Velocity}
+            t:=H501velo(StrToFloatN(gridDetails.Cells[sp, zl]));   {Velocity}
             s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 1)+'m/s = ';
             if rgSpeedUnit.ItemIndex=2 then
               s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
@@ -3228,7 +3229,7 @@ var e: integer;
     s:='';
     if sp=0 then begin                             {Sequenz number}
       try
-        e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl]); {dezimal}
+        e:=Hex2Dec('$'+gridDetails.Cells[sp, zl]); {dezimal}
         s:=rsRecordNo+IntToStr(zl)+kma+HeaderHnt+IntToStr(e);
       except
         s:='';                                     {bei Fehler Standardausgabe}
@@ -3240,34 +3241,34 @@ var e: integer;
     if sp>lenfix-2 then
       PayLoad;                                     {Payload anzeigen}
     if sp=lenfix-2 then
-      s:=rsLenPL+StringGrid1.Cells[sp, zl];        {Payloadlänge ohne CRC}
+      s:=rsLenPL+gridDetails.Cells[sp, zl];        {Payloadlänge ohne CRC}
   end;
 
   procedure TabHltYTHP;                            {Typhoon H Plus}
   begin
     case sp of
       0: s:=rsTimeToBoot+suff+
-            FormatDateTime(zzf+zzz, ZeitToDT(StringGrid1.Cells[0, zl], YTHPid)-
-                                    ZeitToDT(StringGrid1.Cells[0, 1], YTHPid));
-      2: s:=StringGrid1.Cells[sp, zl]+'V, '+
-            VperCell(SpinEdit3.Tag,                {V per cell}
-                     StrToFloatN(StringGrid1.Cells[sp, zl]));
-      3: s:=rsrest+tab1+StringGrid1.Cells[sp, zl]+'%';
+            FormatDateTime(zzf+zzz, ZeitToDT(gridDetails.Cells[0, zl], YTHPid)-
+                                    ZeitToDT(gridDetails.Cells[0, 1], YTHPid));
+      2: s:=gridDetails.Cells[sp, zl]+'V, '+
+            VperCell(speDataPoint.Tag,             {V per cell}
+                     StrToFloatN(gridDetails.Cells[sp, zl]));
+      3: s:=rsrest+tab1+gridDetails.Cells[sp, zl]+'%';
       4: begin                                     {Altitude}
            if rgSpeedUnit.ItemIndex=2 then begin
              try
-               t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
+               t:=StrToFloatN(gridDetails.Cells[sp, zl]);
              except
                t:=0;
              end;
              s:=FloatToStrF(t/fft, ffFixed, 4, 2)+'ft'
            end else
-             s:=StringGrid1.Cells[sp, zl]+'m';
+             s:=gridDetails.Cells[sp, zl]+'m';
          end;
       7, 24, 25:
          begin                                     {tas, hspeed, hspeed}
            try
-             t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
+             t:=StrToFloatN(gridDetails.Cells[sp, zl]);
            except
              t:=0;
            end;
@@ -3277,8 +3278,8 @@ var e: integer;
            else
              s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
          end;
-       9: s:=GPSfixType(StringGrid1.Cells[sp, zl]);
-      19: s:=fmodeToStr(StrToIntDef(StringGrid1.Cells[sp, zl], 99)); {fMode}
+       9: s:=GPSfixType(gridDetails.Cells[sp, zl]);
+      19: s:=fmodeToStr(StrToIntDef(gridDetails.Cells[sp, zl], 99)); {fMode}
       21: s:=vtypeToStr(YTHPid);                   {fix eingestellt}
     end;
   end;
@@ -3286,12 +3287,12 @@ var e: integer;
   procedure TabHltLegacy;                          {Q500, YTH und andere Kopter}
   begin
     case sp of                                     {beginnt mit fixen Spalten}
-       1: if (StringGrid1.Cells[sp, zl]='0')
+       1: if (gridDetails.Cells[sp, zl]='0')
             then s:='Dual Band Control Redundancy (5.8G WiFi)';
-       2: s:=ShowVoltage(StringGrid1.Cells[sp, zl], SpinEdit3.Tag);
-       3: if SpinEdit3.Tag=1 then begin            {H920: Current}
+       2: s:=ShowVoltage(gridDetails.Cells[sp, zl], speDataPoint.Tag);
+       3: if speDataPoint.Tag=1 then begin            {H920: Current}
             try
-              t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
+              t:=StrToFloatN(gridDetails.Cells[sp, zl]);
             except
               t:=0;
             end;
@@ -3300,7 +3301,7 @@ var e: integer;
        4: begin                                    {Altitude}
             if rgSpeedUnit.ItemIndex=2 then begin
               try
-                t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
+                t:=StrToFloatN(gridDetails.Cells[sp, zl]);
               except
                 t:=0;
               end;
@@ -3310,7 +3311,7 @@ var e: integer;
           end;
        7: begin                                    {tas=true air speed}
             try
-              t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
+              t:=StrToFloatN(gridDetails.Cells[sp, zl]);
             except
               t:=0;
             end;
@@ -3320,36 +3321,36 @@ var e: integer;
             else
               s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
           end;
-       9: s:=GPSfixType(StringGrid1.Cells[sp, zl]);
+       9: s:=GPSfixType(gridDetails.Cells[sp, zl]);
       11,12,13: s:=DefaultHnt+'°';                 {Pitch, roll, yaw}
       14: begin                                    {MotorStatus}
-            e:=StatusToByte(StringGrid1.Cells[sp, zl]);
+            e:=StatusToByte(gridDetails.Cells[sp, zl]);
             s:=MotStatusToStr(e);
           end;
-      15: if (SpinEdit3.Tag>1) then begin          {imu_status}
-            e:=StatusToByte(StringGrid1.Cells[sp, zl]);
+      15: if (speDataPoint.Tag>1) then begin          {imu_status}
+            e:=StatusToByte(gridDetails.Cells[sp, zl]);
             s:=IMUstatusToStr(e);
           end;
       else begin    {case else: für variable Spalten abh. vom Typ}
-        if (sp=StringGrid1.Tag-1) and
-           (SpinEdit3.Tag>1) then begin            {press_compass_status}
-          e:=StatusToByte(StringGrid1.Cells[sp, zl]);
+        if (sp=gridDetails.Tag-1) and
+           (speDataPoint.Tag>1) then begin         {press_compass_status}
+          e:=StatusToByte(gridDetails.Cells[sp, zl]);
           s:=PCGstatusToStr(e);
         end;
-        if (sp=StringGrid1.Tag-2) and              {CGPS}
-           (SpinEdit3.Tag=2) then begin            {nur bei Q500 gefüllt}
-          e:=StatusToByte(StringGrid1.Cells[sp, zl]);
+        if (sp=gridDetails.Tag-2) and              {CGPS}
+           (speDataPoint.Tag=2) then begin         {nur bei Q500 gefüllt}
+          e:=StatusToByte(gridDetails.Cells[sp, zl]);
           s:=CGPSToStr(e);
         end;
-        if sp=StringGrid1.Tag then begin           {Flight Mode}
-          e:=StrToIntDef(StringGrid1.Cells[sp, zl], 99);
+        if sp=gridDetails.Tag then begin           {Flight Mode}
+          e:=StrToIntDef(gridDetails.Cells[sp, zl], 99);
           s:=fmodeToStr(e);
         end;
-        if sp=StringGrid1.Tag+2 then begin         {vehicle type}
-          s:=vtypeToStr(SpinEdit3.Tag);
+        if sp=gridDetails.Tag+2 then begin         {vehicle type}
+          s:=vtypeToStr(speDataPoint.Tag);
         end;
-        if sp=StringGrid1.Tag+3 then               {error flags}
-          s:=eflagToStr(StringGrid1.Cells[sp, zl]);
+        if sp=gridDetails.Tag+3 then               {error flags}
+          s:=eflagToStr(gridDetails.Cells[sp, zl]);
       end;
     end;
   end;
@@ -3357,7 +3358,7 @@ var e: integer;
   procedure TabHLTelemetry;                        {Hints für Telemetrie}
   begin
     Zeitstempel;                                   {Default, can be overwritten}
-    case SpinEdit3.Tag of                          {Vehicle type}
+    case speDataPoint.Tag of                       {Vehicle type}
       brID: TabHintBreeze;                         {Breeze}
       H501ID: TabHintH501;                         {flaretom Hubsan}
       YTHPid: TabHltYTHP;                          {YTH Plus}
@@ -3370,11 +3371,11 @@ var e: integer;
   begin
     Zeitstempel;
     case sp of
-      1:       s:=StickToStr(sp, StringGrid1.Cells[sp, zl]);
-      2..4, 8: s:=StickToStr(sp, StringGrid1.Cells[sp, zl]);
-      7:    s:=RadToStr(sp, StringGrid1.Cells[sp, zl]);
-      5, 6, 9, 10: s:=SwitchToStr(sp, StringGrid1.Cells[sp, zl]);
-      11:   s:=LandGearToStr(StringGrid1.Cells[sp, zl]);
+      1:       s:=StickToStr(sp, gridDetails.Cells[sp, zl]);
+      2..4, 8: s:=StickToStr(sp, gridDetails.Cells[sp, zl]);
+      7:    s:=RadToStr(sp, gridDetails.Cells[sp, zl]);
+      5, 6, 9, 10: s:=SwitchToStr(sp, gridDetails.Cells[sp, zl]);
+      11:   s:=LandGearToStr(gridDetails.Cells[sp, zl]);
     end;
   end;
 
@@ -3382,12 +3383,12 @@ var e: integer;
   begin
     case sp of
       0: Zeitstempel;
-      1, 2: s:=HeaderHnt+ChrKoor(StringGrid1.Cells[sp, zl]);   {lat, lon}
+      1, 2: s:=HeaderHnt+ChrKoor(gridDetails.Cells[sp, zl]);   {lat, lon}
       3: begin                                     {Altitude}
         s:=HeaderHnt;
         if rgSpeedUnit.ItemIndex=2 then begin
              try
-               t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
+               t:=StrToFloatN(gridDetails.Cells[sp, zl]);
              except
                t:=0;
              end;
@@ -3398,7 +3399,7 @@ var e: integer;
       4: s:=DefaultHnt+'cm';
       5: begin                                     {Speed in cm/s}
            try
-             t:=StrToFloatN(StringGrid1.Cells[sp, zl])/100;
+             t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
            except
              t:=0;
            end;
@@ -3414,7 +3415,7 @@ var e: integer;
 
   procedure TabHintLegacy;                         {CSV-Dateien (Tm/Rm/Rm-GPS)}
   begin
-    case RadioGroup1.ItemIndex of
+    case rgQuelle.ItemIndex of
       0: TabHLTelemetry;                           {Telemetrie Kopter}
       1: TabHintRemoteGPS;                         {RemoteGPS}
       2: TabHLFunk;                                {Rawdata RF Funk}
@@ -3430,7 +3431,7 @@ var e: integer;
       4, 37..40: s:=DefaultHnt+'m';
       7: begin                                    {tas=true air speed}
            try
-             t:=StrToFloatN(StringGrid1.Cells[sp, zl]);
+             t:=StrToFloatN(gridDetails.Cells[sp, zl]);
            except
              t:=0;
            end;
@@ -3444,42 +3445,42 @@ var e: integer;
       11..13: s:=DefaultHnt+'rad';
       1, 14, 46, 47, 49: s:=DefaultHnt+'%';
       15: begin
-            if StringGrid1.Cells[sp, zl]<>'' then begin
-              e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl]);
+            if gridDetails.Cells[sp, zl]<>'' then begin
+              e:=Hex2Dec('$'+gridDetails.Cells[sp, zl]);
               s:=MSenStat(e);
             end else s:=rsEmpty;
           end;
       17: begin
-            if StringGrid1.Cells[sp, zl]<>'' then begin
-              e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl]);
-              s:=StringGrid1.Cells[sp, 0]+': $'+
-                 StringGrid1.Cells[sp, zl]+'='+IntToStr(e);
+            if gridDetails.Cells[sp, zl]<>'' then begin
+              e:=Hex2Dec('$'+gridDetails.Cells[sp, zl]);
+              s:=gridDetails.Cells[sp, 0]+': $'+
+                 gridDetails.Cells[sp, zl]+'='+IntToStr(e);
             end else s:=rsEmpty;
           end;
       18: begin
-            if StringGrid1.Cells[sp, zl]<>'' then begin
-              e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl]);
+            if gridDetails.Cells[sp, zl]<>'' then begin
+              e:=Hex2Dec('$'+gridDetails.Cells[sp, zl]);
               s:=MSTtoStr(e);
             end else s:=rsEmpty;
           end;
       19: begin
-            if StringGrid1.Cells[sp, zl]<>'' then begin
-              e:=Hex2Dec('$'+StringGrid1.Cells[sp, zl]);
+            if gridDetails.Cells[sp, zl]<>'' then begin
+              e:=Hex2Dec('$'+gridDetails.Cells[sp, zl]);
               s:=MMFtoStr(e);
             end else s:=rsEmpty;
           end;
-      21: s:='Vertical accuracy'+suff+StringGrid1.Cells[sp, zl]+'m';
-      22: s:='Horizontal accuracy'+suff+StringGrid1.Cells[sp, zl]+'m';
-      25: s:='Ground speed'+suff+StringGrid1.Cells[sp, zl]+'m/s';
+      21: s:='Vertical accuracy'+suff+gridDetails.Cells[sp, zl]+'m';
+      22: s:='Horizontal accuracy'+suff+gridDetails.Cells[sp, zl]+'m';
+      25: s:='Ground speed'+suff+gridDetails.Cells[sp, zl]+'m/s';
       26..28: s:=DefaultHnt+'m/s²';
       29..31: s:=DefaultHnt+'rad/s';
       32..34: s:=DefaultHnt+'gauss';
       35, 36: s:=DefaultHnt+'mbar';
-      44: s:='Course over ground'+suff+StringGrid1.Cells[sp, zl]+'°';
+      44: s:='Course over ground'+suff+gridDetails.Cells[sp, zl]+'°';
       45: s:=DefaultHnt+'°C';
       48, 41..43: s:=DefaultHnt+'m/s';
       posChan-1: begin                             {MAV message ID decimal}
-                   e:=StrToIntDef(StringGrid1.Cells[sp, zl], 10000000);
+                   e:=StrToIntDef(gridDetails.Cells[sp, zl], 10000000);
                    s:=MsgIDtoStr(e);
                  end;
 
@@ -3488,13 +3489,13 @@ var e: integer;
 
 begin                                              {grundlegende Verzweigungen}
   result:='';
-  if StringGrid1.Cells[sp, zl]<>'' then begin
+  if gridDetails.Cells[sp, zl]<>'' then begin
     result:=DefaultHnt;                            {default Hint}
     s:='';                                         {default bei nix gefunden}
-    if StringGrid1.ColCount=csvanz then begin
+    if gridDetails.ColCount=csvanz then begin
       TabHintPX4csv;
     end else begin
-      if StringGrid1.ColCount>=YTHPcols then begin {Sensor PX4 überschreibt alles}
+      if gridDetails.ColCount>=YTHPcols then begin {Sensor PX4 überschreibt alles}
         TabHintYTHP;
       end else begin
         TabHintLegacy;
@@ -3548,15 +3549,15 @@ end;
 procedure TForm1.OverwriteVT;                      {Overwrite vehicle type for PX4 Thunderbird}
 begin
   if cbThunder.Checked and
-     (SpinEdit3.Tag=defVT) then begin              {Overwrite for PX4 Thunderbird}
-    SpinEdit3.Tag:=ThBid;                          {Set to SpinEdit3.Tag}
+     (speDataPoint.Tag=defVT) then begin           {Overwrite for PX4 Thunderbird}
+    speDataPoint.Tag:=ThBid;                       {Set to speDataPoint.Tag}
     StaticText1.Caption:=capThunder;               {Type hard wired}
   end;
 end;
 
 procedure TForm1.GetDefVT;                         {Fill defVT depending on settings}
 begin
-  SpinEdit3.Tag:=defVT;                            {default legacy Yuneec}
+  speDataPoint.Tag:=defVT;                            {default legacy Yuneec}
   OverwriteVT;                                     {Overwrite vehicle type for PX4 Thunderbird}
 end;
 
@@ -3571,7 +3572,7 @@ begin                                              {p=0 --> Breite Form1}
   Form2.Top:=Form1.Top-Form2.Height-20;            {20 Pixel von Fensterleiste Kopf zeigen}
   if Form2.Top<Screen.DesktopTop then
     Form2.Top:=Screen.DesktopTop;
-  TimerDblClick.Enabled:=true;                            {Timer für Abfrage Doppelclick Form2}
+  TimerDblClick.Enabled:=true;                     {Timer für Abfrage Doppelclick Form2}
 end;
 
 {http://www.joerg-buchwitz.de/temp/googlemapssyntax.htm
@@ -3593,27 +3594,27 @@ begin
           gzoom+'/'+lati+'/'+long+'&layers=S';
 end;
 
-procedure TForm1.mnOSMClick(Sender: TObject);  {zeige OSM Karte; lat/lon}
+procedure TForm1.mnOSMClick(Sender: TObject);      {zeige OSM Karte; lat/lon}
 begin
-  if StringGrid1.ColCount=csvanz then begin        {Self-dev PX4 CSV format}
-    OpenURL(URLosm(StringGrid1.Cells[5,StringGrid1.Selection.Top],
-                   StringGrid1.Cells[6,StringGrid1.Selection.Top]));
+  if gridDetails.ColCount=csvanz then begin        {Self-dev PX4 CSV format}
+    OpenURL(URLosm(gridDetails.Cells[5,gridDetails.Selection.Top],
+                   gridDetails.Cells[6,gridDetails.Selection.Top]));
     exit;
   end;
-  if ListBox1.Items.Count>0 then begin
-    case SpinEdit3.Tag of
-      brID: OpenURL(URLosm(BrCoordFormat(StringGrid1.Cells[12,StringGrid1.Selection.Top]),
-                           BrCoordFormat(StringGrid1.Cells[13,StringGrid1.Selection.Top])));
-      H501ID:  OpenURL(URLosm(StringGrid1.Cells[2, StringGrid1.Selection.Top],
-                              StringGrid1.Cells[3, StringGrid1.Selection.Top]));
-      MQcsvID: OpenURL(URLosm(StringGrid1.Cells[9, StringGrid1.Selection.Top],
-                              StringGrid1.Cells[10, StringGrid1.Selection.Top]));
+  if lbFlights.Items.Count>0 then begin
+    case speDataPoint.Tag of
+      brID: OpenURL(URLosm(BrCoordFormat(gridDetails.Cells[12,gridDetails.Selection.Top]),
+                           BrCoordFormat(gridDetails.Cells[13,gridDetails.Selection.Top])));
+      H501ID:  OpenURL(URLosm(gridDetails.Cells[2, gridDetails.Selection.Top],
+                              gridDetails.Cells[3, gridDetails.Selection.Top]));
+      MQcsvID: OpenURL(URLosm(gridDetails.Cells[9, gridDetails.Selection.Top],
+                              gridDetails.Cells[10, gridDetails.Selection.Top]));
     else
-      case Radiogroup1.ItemIndex of
-        0: OpenURL(URLosm(StringGrid1.Cells[5, StringGrid1.Selection.Top],
-                          StringGrid1.Cells[6, StringGrid1.Selection.Top]));
-        1: OpenURL(URLosm(KoToStr(StrToFloatN(StringGrid1.Cells[2, StringGrid1.Selection.Top])),
-                          KoToStr(StrToFloatN(StringGrid1.Cells[1, StringGrid1.Selection.Top]))));
+      case rgQuelle.ItemIndex of
+        0: OpenURL(URLosm(gridDetails.Cells[5, gridDetails.Selection.Top],
+                          gridDetails.Cells[6, gridDetails.Selection.Top]));
+        1: OpenURL(URLosm(KoToStr(StrToFloatN(gridDetails.Cells[2, gridDetails.Selection.Top])),
+                          KoToStr(StrToFloatN(gridDetails.Cells[1, gridDetails.Selection.Top]))));
       end;
     end;
   end;
@@ -3631,7 +3632,7 @@ begin
   Screen.Cursor:=crHourGlass;
   try
     OpenDialog1.Title:=capCleanCSV;
-    OpenDialog1.InitialDir:=ComboBox2.Text;
+    OpenDialog1.InitialDir:=cbxLogDir.Text;
     if OpenDialog1.Execute then begin
       btnShowhex.Tag:=0;                           {No file selected for Block --> Hex}
       inlist.LoadFromFile(OpenDialog1.FileName);   {Load telemetry file}
@@ -3711,13 +3712,13 @@ begin
   klist.Add('</metadata>');
 end;
 
-procedure GPXfooter1(klist: TStringList); inline;
+procedure GPXfooter1(klist: TStringList); inline;  {Write final lines to GPX file}
 begin
   klist.Add('  </trkseg>');
   klist.Add('</trk>');
 end;
 
-procedure GPXfooter2(klist: TStringList); inline;
+procedure GPXfooter2(klist: TStringList); inline;  {Write last final line to GPX file}
 begin
   klist.Add('</gpx>');
 end;
@@ -3729,7 +3730,7 @@ begin
   klist.Add('</'+pmtag);
 end;
 
-procedure KMLfooter2(klist: TStringList); inline;
+procedure KMLfooter2(klist: TStringList); inline;  {Write last final line to KML file}
 begin
   klist.Add('</'+doctag);
   klist.Add('</kml>');
@@ -3743,7 +3744,7 @@ end;
 
 function TForm1.ColorToKMLColor(const AColor: TColor): string; {Google Farbcodierung}
 begin
-  Result:=IntToHex(TrackBar1.Position, 2)+IntToHex(ColorToRgb(AColor), 6);
+  Result:=IntToHex(tbrSaturation.Position, 2)+IntToHex(ColorToRgb(AColor), 6);
 end;
 
 function GetRFM(fm: string; vt: integer; infl: boolean): boolean; {reale fModes, in flight}
@@ -3773,7 +3774,7 @@ const minAltp=1;                                   {Altitude in Meter}
       minTas=0.5;                                  {minimum tas absolut}
 begin                                              {Flug: Mindesthöhe oder tas}
   result:=true;
-  if Form1.CheckBox9.Checked then                  {YTH Plus bereinigen}
+  if Form1.cbCleanHplus.Checked then               {YTH Plus bereinigen}
     result:=((abs(alt)>minAltm) and                {Höhe - oder +, hier für -}
              (alt>minAltp)) or                     {Mindesthöhe +}
             ((abs(tas)>minTas) and                 {Mindest-tas und}
@@ -3805,14 +3806,14 @@ begin
   Result:=FindFirst(Path+wldcd, faDirectory, SR);
   try
     while Result=0 do begin
-      if ((SR.Attr and faDirectory)=faDirectory) and    {nur Verzeichnisse}
+      if ((SR.Attr and faDirectory)=faDirectory) and       {nur Verzeichnisse}
          (SR.Name<>'.') and
          (SR.Name<>'..') then begin  {die nicht}
         DirList.Add(Path+SR.Name);
         CreateDirList(Path+SR.Name,DirList);  {rekursiver Aufruf, um auch die
                                               Unterverzeichnisse zu durchsuchen}
       end;
-      Result:=FindNext(SR);                          {Fehlercode übergeben}
+      Result:=FindNext(SR);                        {Fehlercode übergeben}
     end;
   finally
     FindClose(SR);
@@ -3840,43 +3841,43 @@ procedure TForm1.SelDirAct(const fn: string);      {Alles neu laden}
 var x:integer;
     fnum: string;
 begin
-  if (ComboBox2.Text>'') and DirectoryExists(ComboBox2.Text) then begin
+  if (cbxLogDir.Text>'') and DirectoryExists(cbxLogDir.Text) then begin
     TimerDblClick.Enabled:=false;
     if Form2<>nil then
       Form2.Close;              {zusätzliches Diagramm schließen beim Neuladen}
-    RadioGroup1.Enabled:=false;
-    BitBtn2.Enabled:=false;
-    BitBtn3.Enabled:=true;
+    rgQuelle.Enabled:=false;
+    btnConv.Enabled:=false;
+    btnArchive.Enabled:=true;
     mnConvert.Enabled:=false;
     StatusBar1.Panels[5].Text:=DefaultStatus;
-    RadioGroup1.ItemIndex:=0;                      {default Telemetry}
+    rgQuelle.ItemIndex:=0;                         {default Telemetry}
     GetDefVT;
     try
-      if ComboBox2.Items.Count>0 then
-        for x:=ComboBox2.Items.Count-1 downto 0 do {Liste putzen}
-          if not DirectoryExists(ComboBox2.Items[x]) then
-            ComboBox2.Items.Delete(x);
-      SelectDirectoryDialog1.InitialDir:=ComboBox2.Text;
-      if CheckNumTurns(ComboBox2.Text)>0 then begin
-        OpenDialog1.InitialDir:=ComboBox2.Text;
-        fnum:=IncludeTrailingPathDelimiter(ComboBox2.Text);
-        RadioGroup1.Enabled:=true;
-        BitBtn2.Enabled:=true;
+      if cbxLogDir.Items.Count>0 then
+        for x:=cbxLogDir.Items.Count-1 downto 0 do {Liste putzen}
+          if not DirectoryExists(cbxLogDir.Items[x]) then
+            cbxLogDir.Items.Delete(x);
+      SelectDirectoryDialog1.InitialDir:=cbxLogDir.Text;
+      if CheckNumTurns(cbxLogDir.Text)>0 then begin
+        OpenDialog1.InitialDir:=cbxLogDir.Text;
+        fnum:=IncludeTrailingPathDelimiter(cbxLogDir.Text);
+        rgQuelle.Enabled:=true;
+        btnConv.Enabled:=true;
         mnConvert.Enabled:=true;
         StatusBar1.Panels[5].Text:=rsFLDir;
 {FlightLog Verzeichnis in Dropdown-Liste eintragen}
-        ComboBox2.Text:=ExcludeTrailingPathDelimiter(ComboBox2.Text);
-        Merkliste(ComboBox2, AnzDirs);             {DropDownListe füllen}
+        cbxLogDir.Text:=ExcludeTrailingPathDelimiter(cbxLogDir.Text);
+        Merkliste(cbxLogDir, AnzDirs);             {DropDownListe füllen}
         if PageControl1.ActivePageIndex>4 then
           PageControl1.ActivePageIndex:=0;
         if fn<>'' then begin                       {Index der Datei, wenn übergeben}
           fnum:=GetNr(ExtractFileName(fn));
           if fnum<>'' then
-            ListBox1.ItemIndex:=ListBox1.Items.IndexOf(fnum);
+            lbFlights.ItemIndex:=lbFlights.Items.IndexOf(fnum);
         end;
-        if ListBox1.ItemIndex<0 then
-          ListBox1.ItemIndex:=0;                   {Garantiert eine Datei auswählen}
-        case SpinEdit3.Tag of
+        if lbFlights.ItemIndex<0 then
+          lbFlights.ItemIndex:=0;                  {Garantiert eine Datei auswählen}
+        case speDataPoint.Tag of
           MQid: ShowMQ;                            {Sensor_*.txt vom Mantis Q}
           H5id: ShowH520;                          {*.tlog vom H520}
           else Anzeige;                            {alle anderen herkömmlich}
@@ -3887,7 +3888,7 @@ begin
       AppLog.Lines.Add('''3697'+suff+StatusBar1.Panels[5].Text);
     end;
   end else
-    BitBtn3.Enabled:=false;                        {Archive Button ausblenden}
+    btnArchive.Enabled:=false;                     {Archive Button ausblenden}
 end;
 
 function TForm1.IsMantisQ(const fn: string): boolean; {Auf PX4 Quadcopter prüfen}
@@ -3901,7 +3902,7 @@ begin
   try
     inf.LoadFromFile(fn);
     try
-      while inf.Position<(inf.Size-20)  do begin     {bis zum Ende der Datei}
+      while inf.Position<(inf.Size-20)  do begin   {bis zum Ende der Datei}
         repeat
           b:=inf.ReadByte;
         until (b=dsIDP) or (inf.Position>=inf.Size-lenfixP);
@@ -3938,19 +3939,19 @@ var dsbuf: array[0..264] of byte;
   procedure AusgabeSensor;
   var i: integer;
   begin
-    if StringGrid1.RowCount<(zhl+2) then
-      StringGrid1.RowCount:=StringGrid1.RowCount+2000;    {neue Zeilen}
+    if gridDetails.RowCount<(zhl+2) then
+      gridDetails.RowCount:=gridDetails.RowCount+2000;    {neue Zeilen}
     inc(zhl);                                             {Datensätze zählen}
     if (zhl=10) and                                       {Check till line 10}
-       (RadioGroup1.Tag=0) then begin
-      StringGrid1.AutoSizeColumns;                        {as soon as possible}
-      RadioGroup1.Tag:=1;
+       (rgQuelle.Tag=0) then begin
+      gridDetails.AutoSizeColumns;                        {as soon as possible}
+      rgQuelle.Tag:=1;
     end;
     for i:=0 to lenfix-3 do
-      StringGrid1.Cells[i, zhl]:=IntToHex(dsbuf[i], 2);   {Header Hex}
-    StringGrid1.Cells[lenfix-2, zhl]:=IntToStr(len-2);    {Payload Länge ohne CRC}
+      gridDetails.Cells[i, zhl]:=IntToHex(dsbuf[i], 2);   {Header Hex}
+    gridDetails.Cells[lenfix-2, zhl]:=IntToStr(len-2);    {Payload Länge ohne CRC}
     for i:=lenfix-2 to len+lenfix-5 do
-      StringGrid1.Cells[i+1, zhl]:=IntToHex(dsbuf[i], 2); {Payload in Hex}
+      gridDetails.Cells[i+1, zhl]:=IntToHex(dsbuf[i], 2); {Payload in Hex}
   end;
 
 begin
@@ -3959,21 +3960,21 @@ begin
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   if FileSize(fn)>lenfix then begin
     Screen.Cursor:=crHourGlass;
-    ComboBox9.Text:=UpCase(trim(ComboBox9.Text));
+    cbxSearch.Text:=UpCase(trim(cbxSearch.Text));
 
-    StringGrid1.BeginUpdate;
-    StringGrid1.RowCount:=1;
-    StringGrid1.ColCount:=105;                     {Spalten vorbelegen}
-    StringGrid1.Cells[0, 0]:='SeqNo';
-    StringGrid1.Cells[1, 0]:='SysID';
-    StringGrid1.Cells[2, 0]:='CompID';
-    StringGrid1.Cells[3, 0]:='TargetID';
-    StringGrid1.Cells[4, 0]:='TgtSubID';
-    StringGrid1.Cells[5, 0]:=csvMsgID;
-    StringGrid1.Cells[lenfix-2, 0]:='lenPL';       {Länge Payload Header}
-    for i:=1 to StringGrid1.ColCount-lenfix+1 do   {Payload Byte Nummern}
-      StringGrid1.Cells[i+lenfix-2, 0]:='PL'+IntToStr(i);
-    StringGrid1.EndUpdate;
+    gridDetails.BeginUpdate;
+    gridDetails.RowCount:=1;
+    gridDetails.ColCount:=105;                     {Spalten vorbelegen}
+    gridDetails.Cells[0, 0]:='SeqNo';
+    gridDetails.Cells[1, 0]:='SysID';
+    gridDetails.Cells[2, 0]:='CompID';
+    gridDetails.Cells[3, 0]:='TargetID';
+    gridDetails.Cells[4, 0]:='TgtSubID';
+    gridDetails.Cells[5, 0]:=csvMsgID;
+    gridDetails.Cells[lenfix-2, 0]:='lenPL';       {Länge Payload Header}
+    for i:=1 to gridDetails.ColCount-lenfix+1 do   {Payload Byte Nummern}
+      gridDetails.Cells[i+lenfix-2, 0]:='PL'+IntToStr(i);
+    gridDetails.EndUpdate;
 
     FillChar(dsbuf, length(dsbuf), 0);             {Datenbuffer löschen}
     infn:=TMemoryStream.Create;
@@ -3983,7 +3984,7 @@ begin
       AppLog.Lines.Add(fn);
       StatusBar1.Panels[5].Text:=rsWait;
 
-      StringGrid1.BeginUpdate;
+      gridDetails.BeginUpdate;
       while infn.Position<(infn.Size-lenfix) do begin
         repeat                                     {RecordID suchen}
           b:=infn.ReadByte;
@@ -3996,13 +3997,13 @@ begin
           else if mode=1 then begin                {mit Filter}
             try
               case n3 of                           {Spaltennummer}
-                0..5: if StrToInt(ComboBox9.Text)=dsbuf[n3] then
+                0..5: if StrToInt(cbxSearch.Text)=dsbuf[n3] then
                      AusgabeSensor;                {dezimal}
-                6: if StrToInt(ComboBox9.Text)=len-2 then
+                6: if StrToInt(cbxSearch.Text)=len-2 then
                      AusgabeSensor;                {Länge Payload mit CRC}
                 else
                   if (n3<(len+lenfix-3)) and
-                        (Hex2Dec('$'+ComboBox9.Text)=dsbuf[n3-1]) then
+                        (Hex2Dec('$'+cbxSearch.Text)=dsbuf[n3-1]) then
                     AusgabeSensor;                 {Hexadezimal}
               end;
             except
@@ -4016,17 +4017,17 @@ begin
           AppLog.Lines.Add(fn+': Abrupt sensor file end');  {Msg too short}
         end;
       end;
-      StringGrid1.RowCount:=zhl+1;
-      StringGrid1.EndUpdate;
+      gridDetails.RowCount:=zhl+1;
+      gridDetails.EndUpdate;
 
       StatusBar1.Panels[0].Text:=IntToStr(FileSize(fn));
       StatusBar1.Panels[1].Text:=IntToStr(zhl);
       StatusBar1.Panels[5].Text:=IntToStr(FileSize(fn));
-      SpinEdit3.MaxValue:=zhl;
+      speDataPoint.MaxValue:=zhl;
       if mode=1 then begin                         {Filterinfo in Statusbar}
         StatusBar1.Panels[2].Text:=rsSelection;
-        StatusBar1.Panels[5].Text:=StringGrid1.Cells[n3, 0]+' = "'+
-                                   ComboBox9.Text+'"';
+        StatusBar1.Panels[5].Text:=gridDetails.Cells[n3, 0]+' = "'+
+                                   cbxSearch.Text+'"';
         AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       end;
       AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsMAVlink+tab1+rsDS);
@@ -4108,10 +4109,10 @@ var dsbuf: array[0..YTHPcols] of byte;
   begin
     if tb then begin
       for i:=lenfix+1 to len+lenfixP-2 do          {Fixpart Teil 2 + Payload}
-      StringGrid1.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2); {Payload in Hex}
+      gridDetails.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2); {Payload in Hex}
     end;
     if zhl=10 then
-      StringGrid1.AutoSizeColumns;                 {as soon as possible}
+      gridDetails.AutoSizeColumns;                 {as soon as possible}
   end;
 
   procedure SenCSVausgabe;                         {Ausgabe Werte aus Sensor}
@@ -4169,7 +4170,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       if dsbuf[i-1]>9 then
         tm:=tm+Char(dsbuf[i-1]);                   {Textmessage zusammenstellen}
     end;
-    AppLog.Lines.Add(st+tm);                     {Textmessage speichern}
+    AppLog.Lines.Add(st+tm);                       {Textmessage speichern}
     result:=true;
   end;
 
@@ -4183,14 +4184,14 @@ var dsbuf: array[0..YTHPcols] of byte;
     st:=Format('%6d', [zhl])+tab2+
         FormatDateTime(zzf, bg)+tab2+
         MAVseverity(dsbuf[lenfix])+suff+'''';
-    StringGrid1.Cells[lenfix+2, zhl]:=IntToStr(dsbuf[lenfix]); {Severity dezimal}
+    gridDetails.Cells[lenfix+2, zhl]:=IntToStr(dsbuf[lenfix]); {Severity dezimal}
     tm:='';
     for i:=lenfix+2 to len+lenfixP-12 do begin     {Fixpart Teil 2 + Payload}
       if dsbuf[i-1]>9 then begin
-        StringGrid1.Cells[i+1, zhl]:=Char(dsbuf[i-1]); {Rest Payload als Text}
+        gridDetails.Cells[i+1, zhl]:=Char(dsbuf[i-1]); {Rest Payload als Text}
         tm:=tm+Char(dsbuf[i-1]);                   {Textmessage zusammenstellen}
       end else
-        StringGrid1.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
+        gridDetails.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
                                                    {nicht druckbare Zeichen als Hex};
     end;
     if gx then begin
@@ -4200,14 +4201,14 @@ var dsbuf: array[0..YTHPcols] of byte;
     csvarr[posChan]:='"'+tm+'"';
     st:=st+tm;
     for i:=len+lenfixP-11 to len+lenfixP-2 do      {8 Byte Sig + 2 CRC}
-      StringGrid1.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
+      gridDetails.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
 //    wx:=GetIntFromBuf(len+lenfixP-12-lenfix, 8); {Aufsteigende Nummer hinten dran?}
     if pos(emcyID, st)>0 then begin                {EMERGECY gefunden}
       topp[z, 6]:=topp[z, 6] or 256;
       result:=true;
     end;
     if not ov10 then begin
-      AppLog.Lines.Add(st+'''');                 {Textmessage speichern}
+      AppLog.Lines.Add(st+'''');                   {Textmessage speichern}
       if pos(homeID, tm)>1 then begin              {Homepoint als Link}
         distg:=0;                                  {Entfernungswerte zurücksetzen}
         distmax:=0;
@@ -4259,13 +4260,13 @@ var dsbuf: array[0..YTHPcols] of byte;
           placemark(maplist, '#starting', '',
                     StringReplace(skoor, tab1, sep, [rfReplaceAll]), tstr);
           maplist.Add('<'+pmtag);
-          maplist.Add(write_nme(ComboBox1.Text));
+          maplist.Add(write_nme(cbxText.Text));
           maplist.Add(tab2+'<description>'+ExtractFileName(fn)+'</description>');
           maplist.Add(tab2+'<styleUrl>#Flightpath</styleUrl>');
           maplist.Add(tab2+'<gx:Track>');
           maplist.Add(tab2+'<'+amtag+rgAltitudeType.Items[rgAltitudeType.ItemIndex]+
                            '</'+amtag);
-          if CheckBox11.Checked then maplist.Add(tab2+extru);
+          if cbExtrude.Checked then maplist.Add(tab2+extru);
         end;
         s:=tab4+'<gx:coord>'+skoor+tab1+csvarr[4]+'</gx:coord>';
         outlist.Add(s);
@@ -4568,7 +4569,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       altr:=GetIntFromBuf(16, 4);                  {relative alt [mm]}
       csvarr[51]:=FormatFloat(ctfl, ele/1000);     {altitude MSL}
 
-      if ((lat<>0) or (lon<>0)) and                  {nur bei gültigen Koordinaten}
+      if ((lat<>0) or (lon<>0)) and                {nur bei gültigen Koordinaten}
          (altr<maxxh*1000) then begin              {nur sinnvolle Höhe}
         lat2:=lat/10000000;                        {nur einmal rechnen}
         lon2:=lon/10000000;                        {und überall verfügbar}
@@ -4803,7 +4804,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     end;
     csvarr[57]:=paramID;
     csvarr[58]:=wrt;
-    AppLog.Lines.Add(Format('%6d', [zhl])+tab2+  {Onboard parameter value}
+    AppLog.Lines.Add(Format('%6d', [zhl])+tab2+    {Onboard parameter value}
                        FormatDateTime(zzf, bg)+tab2+
                        Format('%-16s', [paramID])+suff+
                        'Type'+suff+IntToStr(dsbuf[lenfix+24])+kma+
@@ -4819,8 +4820,8 @@ var dsbuf: array[0..YTHPcols] of byte;
     e:=GetIntFromBuf(-3, 3);                       {MsgID 3 Byte als Zahl}
     csvarr[posChan-1]:=IntToStr(e);                {Message ID dezimal hinten}
     if tb then begin                               {Alle Datenanzeigen füllen}
-      if StringGrid1.RowCount<(zhl+2) then
-        StringGrid1.RowCount:=StringGrid1.RowCount+2000; {neue Zeilen}
+      if gridDetails.RowCount<(zhl+2) then
+        gridDetails.RowCount:=gridDetails.RowCount+2000; {neue Zeilen}
       inc(zhl);                                    {Datensätze zählen}
       case e of                               {Ausgabe bekannter Messages}
         0:   if MAVmsg.Checked[0] then Heartbeat;  {HEARTBEAT (0) ohne Zeitstempel}
@@ -4844,11 +4845,11 @@ var dsbuf: array[0..YTHPcols] of byte;
         StandardAusgabe;                           {Hexwerte für alle anderen Msg}
       end;
       for i:=0 to lenfix-1 do begin                {FixPart Teil 1 für alle}
-        StringGrid1.Cells[i, zhl]:=IntToHex(dsbuf[i], 2);           {in Hex}
-//        StringGrid1.Cells[i, zhl]:=IntToStr(dsbuf[i]);            {in Dec}
+        gridDetails.Cells[i, zhl]:=IntToHex(dsbuf[i], 2);           {in Hex}
+//        gridDetails.Cells[i, zhl]:=IntToStr(dsbuf[i]);            {in Dec}
       end;
-      StringGrid1.Cells[lenfix+1, zhl]:=IntToStr(len); {Payload Länge eintragen}
-      StringGrid1.Cells[lenfix, zhl]:=MsgIDtoStr(e);   {Message Name}
+      gridDetails.Cells[lenfix+1, zhl]:=IntToStr(len); {Payload Länge eintragen}
+      gridDetails.Cells[lenfix, zhl]:=MsgIDtoStr(e);   {Message Name}
     end else begin
       if ov10 then begin
         if e=253 then TextAusgabe;
@@ -4916,28 +4917,28 @@ begin
          (PageControl1.ActivePageIndex=0) then
         PageControl1.ActivePageIndex:=1;           {Zur Tabelle springen}
 
-      StringGrid1.BeginUpdate;
-      StringGrid1.RowCount:=1;
-      StringGrid1.ColCount:=YTHPcols;              {Spaltenanzahl vorbelegen}
-      StringGrid1.Cells[0, 0]:=Fix+'1';            {Wirklicher FixPart}
-      StringGrid1.Cells[1, 0]:=Fix+'2';
-      StringGrid1.Cells[2, 0]:='SeqNo';            {bekannte Spalten}
-      StringGrid1.Cells[3, 0]:='SysID';            {The H520 uses the mavlink
+      gridDetails.BeginUpdate;
+      gridDetails.RowCount:=1;
+      gridDetails.ColCount:=YTHPcols;              {Spaltenanzahl vorbelegen}
+      gridDetails.Cells[0, 0]:=Fix+'1';            {Wirklicher FixPart}
+      gridDetails.Cells[1, 0]:=Fix+'2';
+      gridDetails.Cells[2, 0]:='SeqNo';            {bekannte Spalten}
+      gridDetails.Cells[3, 0]:='SysID';            {The H520 uses the mavlink
                 system ID 1. This is currently set fixed and can't be changed}
-      StringGrid1.Cells[4, 0]:='CompID';
-      StringGrid1.Cells[5, 0]:=csvMsgID+'0';
-      StringGrid1.Cells[6, 0]:=csvMsgID+'1';
-      StringGrid1.Cells[7, 0]:=csvMsgID+'2';
-      StringGrid1.Cells[8, 0]:='MsgName';
-      StringGrid1.Cells[lenfix+1, 0]:='lenPL';     {Länge Payload Header als Trenner}
+      gridDetails.Cells[4, 0]:='CompID';
+      gridDetails.Cells[5, 0]:=csvMsgID+'0';
+      gridDetails.Cells[6, 0]:=csvMsgID+'1';
+      gridDetails.Cells[7, 0]:=csvMsgID+'2';
+      gridDetails.Cells[8, 0]:='MsgName';
+      gridDetails.Cells[lenfix+1, 0]:='lenPL';     {Länge Payload Header als Trenner}
 
       for i:=lenfix+1 to lenfixP-2 do              {Rest Fixpart, aber mit Daten}
-        StringGrid1.Cells[i+1, 0]:=fix+IntToStr(i);
-      for i:=lenfixP-1 to StringGrid1.ColCount-2 do        {Payload Byte Nummern}
-        StringGrid1.Cells[i+1, 0]:='PL'+IntToStr(i-lenfixP+2);
+        gridDetails.Cells[i+1, 0]:=fix+IntToStr(i);
+      for i:=lenfixP-1 to gridDetails.ColCount-2 do        {Payload Byte Nummern}
+        gridDetails.Cells[i+1, 0]:='PL'+IntToStr(i-lenfixP+2);
 
-      StringGrid1.ColWidths[8]:=110;               {Msg Name}
-      StringGrid1.EndUpdate;
+      gridDetails.ColWidths[8]:=110;               {Msg Name}
+      gridDetails.EndUpdate;
     end;
     FillChar(dsbuf, length(dsbuf), 0);             {Datenbuffer löschen}
     maplist:=TStringList.Create;
@@ -4954,15 +4955,15 @@ begin
 
       if gx then begin                             {Eventuell KML oder GPX erzeugen}
         if rgOutFormat.ItemIndex=2 then begin
-          GPXHeader(ComboBox1.Text, fn, ftm, maplist)
+          GPXHeader(cbxText.Text, fn, ftm, maplist)
         end else begin
           KMLHeader(fn, ftm, maplist);
         end;
       end;
 
       if tb then
-        StringGrid1.BeginUpdate;
-      AppLog.BeginUpdate(false);                 {Without UnDo Block}
+        gridDetails.BeginUpdate;
+      AppLog.BeginUpdate(false);                   {Without UnDo Block}
       while infn.Position<(infn.Size-lenfixP) do begin {bis zum Ende der Datei}
         len:=0;                                    {Reset for error detection}
         try
@@ -4984,8 +4985,8 @@ begin
       end;
       AppLog.EndUpdate;
       if tb then begin
-        StringGrid1.RowCount:=zhl+1;
-        StringGrid1.EndUpdate;
+        gridDetails.RowCount:=zhl+1;
+        gridDetails.EndUpdate;
       end;
 
       if gx and
@@ -5014,7 +5015,7 @@ begin
       end;
 
       if tb then begin
-        SpinEdit3.MaxValue:=zhl;
+        speDataPoint.MaxValue:=zhl;
         StatusBar1.Panels[5].Text:=fn;
         StatusBar1.Panels[0].Text:=IntToStr(FileSize(fn));
         StatusBar1.Panels[1].Text:=IntToStr(zhl);
@@ -5065,7 +5066,7 @@ begin
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsMAVLink+tab1+rsDS);
         AppLog.Lines.Add('');
         if (datlist.Count>2) and
-           CheckBox8.Checked then begin
+           cbMAVasCSV.Checked then begin
            s:=csvTime+sep+csvRSSI+sep+csvVolt+sep+      {CSV Header generieren}
               csvAmp+sep+csvAlt+sep+csvLat+sep+csvLon+sep+
               csvTas+sep+'8'+sep+csvGPSfixT+sep+
@@ -5174,9 +5175,9 @@ end;
 procedure TForm1.ReadMAV(const mode: integer);     {Sensor Datei H auslesen}
 var fn: string;
 begin
-  if ListBox1.Items.Count>0 then begin
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+npath+
-        PathDelim+nfile+ListBox1.Items[ListBox1.ItemIndex]+sext;  {Sensor}
+  if lbFlights.Items.Count>0 then begin
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+npath+
+        PathDelim+nfile+lbFlights.Items[lbFlights.ItemIndex]+sext;  {Sensor}
     ShowSensorH(fn, mode);
   end;
 end;
@@ -5220,20 +5221,20 @@ var i: integer;
 begin
   result:=false;
   if l[19]='1' then begin                          {H920 Telemetry w/o header}
-    StringGrid1.Tag:=17;
-    SpinEdit3.Tag:=1;
+    gridDetails.Tag:=17;
+    speDataPoint.Tag:=1;
     result:=true;
   end else begin
     for i:=0 to l.count-1 do begin
       if l[i]=fmode then begin
-        StringGrid1.Tag:=i;                        {Position f_mode merken}
+        gridDetails.Tag:=i;                        {Position f_mode merken}
         result:=true;                              {validiert, f_mode gefunden}
         break;
       end;
       if l[i]=pfmode then begin
-        StringGrid1.Tag:=i;                        {Position fMode merken}
+        gridDetails.Tag:=i;                        {Position fMode merken}
         result:=true;                              {validiert, fMode gefunden}
-        SpinEdit3.Tag:=YTHPid;                     {YTH Plus gefunden}
+        speDataPoint.Tag:=YTHPid;                  {YTH Plus gefunden}
         break;
       end;
     end;
@@ -5244,9 +5245,9 @@ function TForm1.GetFW(var fwout: TarrFW): integer; {Firmware auslesen}
 var fn: string;
 begin
   result:=0;                                       {Zeiger Feld im Ausgabearray}
-  if ListBox1.Items.Count>0 then begin
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+npath+
-        PathDelim+nfile+ListBox1.Items[ListBox1.ItemIndex]+sext; {Sensor}
+  if lbFlights.Items.Count>0 then begin
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+npath+
+        PathDelim+nfile+lbFlights.Items[lbFlights.ItemIndex]+sext; {Sensor}
     if FileSize(fn)>FWsz then
       result:=ReadFW(fn, fwout);
   end;
@@ -5258,7 +5259,7 @@ begin
   AppLog.Lines.Add(StatusBar1.Panels[5].Text);
   SelectDirectoryDialog1.Title:=capSelDir;
   if SelectDirectoryDialog1.Execute then begin
-    ComboBox2.Text:=SelectDirectoryDialog1.FileName;
+    cbxLogDir.Text:=SelectDirectoryDialog1.FileName;
     SelDirAct('');
   end;
 end;
@@ -5269,23 +5270,23 @@ begin
   AppLog.Lines.Add(StatusBar1.Panels[5].Text);
   SelectDirectoryDialog1.Title:=capSelProt;
   if SelectDirectoryDialog1.Execute then
-    ComboBox8.Text:=SelectDirectoryDialog1.FileName;
+    cbxScanDir.Text:=SelectDirectoryDialog1.FileName;
 end;
 
 procedure TForm1.EnSave;                           {Speichern erlauben}
 begin
-  if ListBox1.Items.Count>0 then begin
-    BitBtn2.Enabled:=true;
+  if lbFlights.Items.Count>0 then begin
+    btnConv.Enabled:=true;
     mnConvert.Enabled:=true;
   end;
 end;
 
-procedure TForm1.BitBtn1Click(Sender: TObject);    {Button beenden}
+procedure TForm1.btnCloseClick(Sender: TObject);    {Button beenden}
 begin
   Close;
 end;
 
-procedure TForm1.BitBtn13Click(Sender: TObject);   {Take screenshot}
+procedure TForm1.btnScreenshotClick(Sender: TObject);   {Take screenshot}
 begin
   SaveDialog1.Title:=rsScreenshot;
   if PageControl1.ActivePageIndex>=0 then begin
@@ -5299,7 +5300,7 @@ begin
     ScreenToBild(SaveDialog1.FileName);
 end;
 
-procedure TForm1.BitBtn14Click(Sender: TObject);   {Cut files for analysis}
+procedure TForm1.btnCutClick(Sender: TObject);     {Cut files for analysis}
 var inlist, outlist: TStringList;
     fno: string;
 
@@ -5308,8 +5309,8 @@ var inlist, outlist: TStringList;
       fn: string;                                  {file name}
       bg: TDateTime;
   begin
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-        ListBox1.Items[ListBox1.ItemIndex]+bext;   {Breeze Logdateien}
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+        lbFlights.Items[lbFlights.ItemIndex]+bext; {Breeze Logdateien}
     if FileExists(fn) then begin
       inlist.LoadFromFile(fn);
       for x:=0 to 8 do
@@ -5321,7 +5322,7 @@ var inlist, outlist: TStringList;
       end;
       fno:=RandomFN(fn, brID, 0);
       outlist.SaveToFile(fno);
-      AppLog.Lines.Add(capBitBtn14+suff+rsGridCell2+tab1+      {von}
+      AppLog.Lines.Add(capBitBtn14+suff+rsGridCell2+tab1+        {von}
                          StatusBar1.Panels[3].Text+tab1+rsGridCell3+tab1+
                          StatusBar1.Panels[4].Text);             {bis}
       StatusBar1.Panels[5].Text:=ExtractFileName(fno)+tab1+rsSaved;
@@ -5335,8 +5336,8 @@ var inlist, outlist: TStringList;
       fn: string;
   begin
     z:=random(8)+1;
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+H5file+
-        ListBox1.Items[ListBox1.ItemIndex]+fext;   {H501 logs}
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+H5file+
+        lbFlights.Items[lbFlights.ItemIndex]+fext; {H501 logs}
     if FileExists(fn) then begin
       inlist.LoadFromFile(fn);
       outlist.Add(inlist[0]);                      {take over header}
@@ -5358,8 +5359,8 @@ var inlist, outlist: TStringList;
       bg: TDateTime;
   begin
     z:=random(8)+1;
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
-        kfile+ListBox1.Items[ListBox1.ItemIndex]+fext;         {Telemetry}
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
+        kfile+lbFlights.Items[lbFlights.ItemIndex]+fext;  {Telemetry}
     if FileExists(fn) then begin
       inlist.LoadFromFile(fn);
       outlist.Add(inlist[0]);                      {take over header}
@@ -5373,8 +5374,8 @@ var inlist, outlist: TStringList;
       outlist.SaveToFile(fno);
       outlist.Clear;
     end;
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+spath+
-        PathDelim+sfile+ListBox1.Items[ListBox1.ItemIndex]+fext; {RemGPS}
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+spath+
+        PathDelim+sfile+lbFlights.Items[lbFlights.ItemIndex]+fext; {RemGPS}
     if FileExists(fn) then begin
       inlist.LoadFromFile(fn);
       outlist.Add(inlist[0]);                      {take over header}
@@ -5388,8 +5389,8 @@ var inlist, outlist: TStringList;
       outlist.SaveToFile(fno);
       outlist.Clear;
     end;
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+fpath+
-        PathDelim+ffile+ListBox1.Items[ListBox1.ItemIndex]+fext; {Remote}
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+fpath+
+        PathDelim+ffile+lbFlights.Items[lbFlights.ItemIndex]+fext; {Remote}
     if FileExists(fn) then begin
       inlist.LoadFromFile(fn);
       outlist.Add(inlist[0]);                      {take over header}
@@ -5406,7 +5407,7 @@ var inlist, outlist: TStringList;
       AppLog.Lines.Add(capBitBtn14+suff+rsGridCell2+tab1+      {von}
                          StatusBar1.Panels[3].Text+tab1+rsGridCell3+tab1+
                          StatusBar1.Panels[4].Text);             {bis}
-      if Spinedit3.Tag=YTHPid then begin           {YTH Plus}
+      if speDataPoint.Tag=YTHPid then begin        {YTH Plus}
         StatusBar1.Panels[5].Text:=mndirp+wldcd+GetNr(ExtractFileName(fno))+tab1+rsSaved;
       end else begin
         StatusBar1.Panels[5].Text:=mndir+wldcd+GetNr(ExtractFileName(fno))+tab1+rsSaved;
@@ -5422,7 +5423,7 @@ begin
     outlist:=TStringList.Create;
     fno:='';
     try
-      case SpinEdit3.Tag of
+      case speDataPoint.Tag of
         brID: CutBreeze;                           {Breeze}
         H501ID: CutH501;                           {Tom's Hubsan log recorder}
       else
@@ -5451,40 +5452,40 @@ begin
   end;
 end;
 
-procedure TForm1.BitBtn2Click(Sender: TObject);    {Button Konvertieren}
+procedure TForm1.btnConvClick(Sender: TObject);    {Button Konvertieren}
 var x: integer;
     fn: string;
 begin
-  if ListBox1.Items.Count>0 then begin
-    for x:=0 to ListBox1.Items.Count-1 do begin
-      case SpinEdit3.Tag of
+  if lbFlights.Items.Count>0 then begin
+    for x:=0 to lbFlights.Items.Count-1 do begin
+      case speDataPoint.Tag of
         brID: begin                                {Breeze}
                 case rgOutFormat.ItemIndex of
-                  2: MacheGPX(IncludeTrailingPathDelimiter(ComboBox2.Text)+
-                            ListBox1.Items[x]+bext, x);    {GPX}
+                  2: MacheGPX(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                            lbFlights.Items[x]+bext, x);    {GPX}
                   4: MacheRR(x);
                 else                               {ansonsten KML/KMZ}
-                  MacheKML(IncludeTrailingPathDelimiter(ComboBox2.Text)+
-                           ListBox1.Items[x]+bext, x);
+                  MacheKML(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                           lbFlights.Items[x]+bext, x);
                 end;
               end;
         H501ID:
               begin                                {Hubsan log recorder}
                 if rgOutFormat.ItemIndex=2 then    {GPX}
-                  MacheGPX(IncludeTrailingPathDelimiter(ComboBox2.Text)+
-                           H5file+ListBox1.Items[x]+fext, x)
+                  MacheGPX(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                           H5file+lbFlights.Items[x]+fext, x)
                 else                               {ansonsten KML/KMZ}
-                  MacheKML(IncludeTrailingPathDelimiter(ComboBox2.Text)+
-                           H5file+ListBox1.Items[x]+fext, x);
+                  MacheKML(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                           H5file+lbFlights.Items[x]+fext, x);
               end;
         MQid: begin
-                fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-                    nfile+ListBox1.Items[x]+wext;  {Sensor_*.txt}
+                fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                    nfile+lbFlights.Items[x]+wext; {Sensor_*.txt}
                 if Fileexists(fn) then begin
                   ShowSensorPlus(fn, x, true, false, false, false);
                 end else begin                     {alternativ yuneec_*.log file}
-                  fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-                      mfile+ListBox1.Items[x]+bext;
+                  fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                      mfile+lbFlights.Items[x]+bext;
                   if Fileexists(fn) then begin
                     ShowSensorPlus(fn, x, true, false, false, false);
                   end;
@@ -5492,8 +5493,8 @@ begin
                 StatusBar1.Panels[5].Text:=fn;
               end;
         H5id: begin
-                fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-                    ListBox1.Items[x]+hext;        {*.tlog}
+                fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                    lbFlights.Items[x]+hext;        {*.tlog}
                 if Fileexists(fn) then begin
                   ShowSensorPlus(fn, x, true, false, false, false);
                   StatusBar1.Panels[5].Text:=fn;
@@ -5502,19 +5503,19 @@ begin
 
         else begin
                 case rgOutFormat.ItemIndex of
-                  0,1: MacheKML(IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
-                                kfile+ListBox1.Items[x]+fext, x);
-                  2: MacheGPX(IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
-                                kfile+ListBox1.Items[x]+fext, x);
+                  0,1: MacheKML(IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
+                                kfile+lbFlights.Items[x]+fext, x);
+                  2: MacheGPX(IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
+                                kfile+lbFlights.Items[x]+fext, x);
                   3: MacheDash(x);
                   4: MacheRR(x);
-                  5: MacheCCC(IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
-                                kfile+ListBox1.Items[x]+fext);
+                  5: MacheCCC(IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
+                                kfile+lbFlights.Items[x]+fext);
                 end;
         end;
       end;                                         {case Vehicle Type}
     end;
-    BitBtn2.Enabled:=false;
+    btnConv.Enabled:=false;
     mnConvert.Enabled:=false;
   end;
 end;
@@ -5531,35 +5532,35 @@ begin
   end;
 end;
 
-procedure TForm1.BitBtn3Click(Sender: TObject);    {Archivieren durch Umbenennen}
+procedure TForm1.btnArchiveClick(Sender: TObject);    {Archivieren durch Umbenennen}
 var newdir: string;
     p: integer;
     splitlist: TStringList;
     rpath: string;
 begin
-  if ComboBox2.Text<>'' then begin                 {nicht leer}
-    ComboBox2.Text:=ExcludeTrailingPathDelimiter(ComboBox2.Text);
+  if cbxLogDir.Text<>'' then begin                 {nicht leer}
+    cbxLogDir.Text:=ExcludeTrailingPathDelimiter(cbxLogDir.Text);
     splitlist:=TStringList.Create;
     try                                            {letzten Pfadnamen finden}
       splitlist.Delimiter:=PathDelim;
       splitlist.StrictDelimiter:=True;
-      splitlist.DelimitedText:=ComboBox2.Text;     {dazu Pfad splitten}
+      splitlist.DelimitedText:=cbxLogDir.Text;     {dazu Pfad splitten}
       newdir:=splitlist[splitlist.count-1];
     finally
       FreeAndNil(splitlist);
     end;
     rpath:=mndir;                                  {default: FlightLog}
-    if SpinEdit3.Tag=YTHPid then rpath:=mndirp;    {nur für YTH Plus}
+    if speDataPoint.Tag=YTHPid then rpath:=mndirp; {nur für YTH Plus}
     if (tend>0) and                                {Endezeit}
-       (pos(dkpath, ComboBox2.Text)<1) and         {nicht Telemetry}
+       (pos(dkpath, cbxLogDir.Text)<1) and         {nicht Telemetry}
        (newdir=rpath) then begin
-      newdir:=ComplFN(ExtractFileDir(ComboBox2.Text)+PathDelim+rpath, tend);
-      if RenameFile(IncludeTrailingPathDelimiter(ComboBox2.Text),
+      newdir:=ComplFN(ExtractFileDir(cbxLogDir.Text)+PathDelim+rpath, tend);
+      if RenameFile(IncludeTrailingPathDelimiter(cbxLogDir.Text),
                     IncludeTrailingPathDelimiter(newdir)) then begin
-        p:=ComboBox2.Items.IndexOf(ComboBox2.Text);
+        p:=cbxLogDir.Items.IndexOf(cbxLogDir.Text);
         if p>=0 then
-          ComboBox2.Items[p]:=newdir;
-        ComboBox2.Text:=newdir;
+          cbxLogDir.Items[p]:=newdir;
+        cbxLogDir.Text:=newdir;
       end else begin
         StatusBar1.Panels[5].Text:=rsNotRename;
         AppLog.Lines.Add(StatusBar1.Panels[5].Text);
@@ -5574,10 +5575,10 @@ end;
 procedure TForm1.cbThunderChange(Sender: TObject); {Thunderbird Toggeln}
 begin
   if cbThunder.Checked then begin
-    cbThunder.Tag:=rgAltitudeType.ItemIndex;          {save last setting}
-    rgAltitudeType.ItemIndex:=0;                      {Set to 'Absolute'}
+    cbThunder.Tag:=rgAltitudeType.ItemIndex;       {save last setting}
+    rgAltitudeType.ItemIndex:=0;                   {Set to 'Absolute'}
   end else
-    rgAltitudeType.ItemIndex:=cbThunder.Tag;          {restore setting}
+    rgAltitudeType.ItemIndex:=cbThunder.Tag;       {restore setting}
 end;
 
 function GetCGOStr(w, s: string): string;          {Werte auslesen aus Kamera}
@@ -5608,9 +5609,9 @@ procedure TForm1.Sharpness;                        {SHARNESS ermitteln}
 var ff: string;
 begin
   CGO3run(getshpn, 0);                             {SHARPNESS abfragen}
-  ff:=GetCGOStr('sharpness', Edit4.Text);          {Sharpness nur aus GET_SHARPNESS}
-  StringGrid3.Cells[1, 7]:=ff;                     {in Tabelle eintragen}
-  TrackBar3.Position:=StrToIntDef(ff, 6);          {Anzeige setzen}
+  ff:=GetCGOStr('sharpness', edReceiveCGO3.Text);  {Sharpness nur aus GET_SHARPNESS}
+  gridCGO3.Cells[1, 7]:=ff;                        {in Tabelle eintragen}
+  tbrSharpness.Position:=StrToIntDef(ff, 6);       {Anzeige setzen}
 end;
 
 {Ausführen eines CGI-Kommandos für die CGO3(+). Wenn CGO3cmd leer ist, wird
@@ -5635,85 +5636,85 @@ begin
   with TFPHttpClient.Create(Nil) do try
     IOTimeout:=6000;                               {Timeout if cam disconnected}
     try
-      AppLog.Lines.Add('');                      {Leerzeile im Protokoll}
+      AppLog.Lines.Add('');                        {Leerzeile im Protokoll}
       if CGO3cmd<>'' then begin                    {opt. Kommando ausführen}
-        s:=Get(Edit5.Text+CGO3cgi+CGO3cmd);
+        s:=Get(edCGOURL.Text+CGO3cgi+CGO3cmd);
         result:=StrToIntDef(GetCGOStr('rval', s), -1); {Returnwert überschreiben}
-        AppLog.Lines.Add(CGO3cmd);               {Ins LogFile schreiben}
-        AppLog.Lines.Add(s);                     {Ergebnis ins Logfile}
-        Edit4.Text:=s;                             {Ergebnis unten anzeigen}
+        AppLog.Lines.Add(CGO3cmd);                 {Ins LogFile schreiben}
+        AppLog.Lines.Add(s);                       {Ergebnis ins Logfile}
+        edReceiveCGO3.Text:=s;                     {Ergebnis unten anzeigen}
       end else begin                               {Initialisierung und Werte ausgeben}
-        s:=Get(Edit5.Text+CGO3cgi+idxpage);
+        s:=Get(edCGOURL.Text+CGO3cgi+idxpage);
         if cgo3act=3 then begin                    {nur beim Button Start}
-          AppLog.Lines.Add(rsCGOdone+tab1+Edit5.Text);
-          AppLog.Lines.Add(idxpage);             {Ins LogFile schreiben}
-          AppLog.Lines.Add(s);                   {Ergebnis ins Logfile}
+          AppLog.Lines.Add(rsCGOdone+tab1+edCGOURL.Text);
+          AppLog.Lines.Add(idxpage);               {Ins LogFile schreiben}
+          AppLog.Lines.Add(s);                     {Ergebnis ins Logfile}
         end;
         s:=StringReplace(s, '}', sep, [rfReplaceAll]);
         result:=StrToIntDef(GetCGOStr('rval', s), -1);        {Returnwert Init}
         if result=0 then begin                     {Werte abfragen und anzeigen}
           sdsize:=StrToIntDef(GetCGOStr('sdtotal', s), 0);    {sdtotal abfragen}
-          indGnouMeter1.ValueMax:=sdsize/1048576;
-          indGnouMeter1.Value:=(sdsize-StrToIntDef(GetCGOStr('sdfree', s), 0))/1048576;
-          ComboBox3.Text:=GetCGOStr('video_mode', s);
+          indGnouMeterSDused.ValueMax:=sdsize/1048576;
+          indGnouMeterSDused.Value:=(sdsize-StrToIntDef(GetCGOStr('sdfree', s), 0))/1048576;
+          cbxCGO3Video.Text:=GetCGOStr('video_mode', s);
           try
             w:=StrToInt(GetCGOStr('iq_type', s));
-            ComboBox4.Text:=ComboBox4.Items[w];
+            cbxCGO3Color.Text:=cbxCGO3Color.Items[w];
           except
-            ComboBox4.Text:='';
+            cbxCGO3Color.Text:='';
           end;
           try
             w:=StrToInt(GetCGOStr('white_balance', s));
             case w of
-              0: ComboBox5.Text:=ComboBox5.Items[0];
-              1: ComboBox5.Text:=ComboBox5.Items[5];
-              3: ComboBox5.Text:=ComboBox5.Items[6]; {Sunset}
-              4: ComboBox5.Text:=ComboBox5.Items[2]; {Sunny}
-              5: ComboBox5.Text:=ComboBox5.Items[3];
-              7: ComboBox5.Text:=ComboBox5.Items[4];
-             99: ComboBox5.Text:=ComboBox5.Items[1]; {Lock}
+              0: cbxCGO3WB.Text:=cbxCGO3WB.Items[0];
+              1: cbxCGO3WB.Text:=cbxCGO3WB.Items[5];
+              3: cbxCGO3WB.Text:=cbxCGO3WB.Items[6]; {Sunset}
+              4: cbxCGO3WB.Text:=cbxCGO3WB.Items[2]; {Sunny}
+              5: cbxCGO3WB.Text:=cbxCGO3WB.Items[3];
+              7: cbxCGO3WB.Text:=cbxCGO3WB.Items[4];
+             99: cbxCGO3WB.Text:=cbxCGO3WB.Items[1]; {Lock}
             end;
-            If ComboBox5.Text='Auto' then
+            If cbxCGO3WB.Text='Auto' then
               Label21.Caption:=rsWB+' (AWB)'
             else
               Label21.Caption:=rsWB;
           except
-            ComboBox5.Text:='';
+            cbxCGO3WB.Text:='';
           end;
-          StringGrid3.Cells[1, 0]:=GetCGOStr('fw_ver', s);
-          StringGrid3.Cells[1, 1]:=GetCGOStr('speed_rate', s);
-          StringGrid3.Cells[1, 2]:=GetCGOStr('status', s);
-          StringGrid3.Cells[1, 3]:=GetCGOStr('record_time', s);
-          StringGrid3.Cells[1, 4]:=GetCGOStr('awb_lock', s);;
-          StringGrid3.Cells[1, 5]:=GetCGOStr('ae_enable', s);;
-          ComboBox6.Text:=GetCGOStr('iso_value', s);
+          gridCGO3.Cells[1, 0]:=GetCGOStr('fw_ver', s);
+          gridCGO3.Cells[1, 1]:=GetCGOStr('speed_rate', s);
+          gridCGO3.Cells[1, 2]:=GetCGOStr('status', s);
+          gridCGO3.Cells[1, 3]:=GetCGOStr('record_time', s);
+          gridCGO3.Cells[1, 4]:=GetCGOStr('awb_lock', s);;
+          gridCGO3.Cells[1, 5]:=GetCGOStr('ae_enable', s);;
+          cbxCGO3ISO.Text:=GetCGOStr('iso_value', s);
           ff:=GetCGOStr('shutter_time', s);
-          StringGrid3.Cells[1, 6]:='1/'+ff;
-          ComboBox7.Text:=ff;
+          gridCGO3.Cells[1, 6]:='1/'+ff;
+          cbxCGO3Shutter.Text:=ff;
           ff:=GetCGOStr('photo_format', s);
           Label20.Caption:=ff;
           w:=-1;
           if (ff='dng') or (ff='raw') then begin
             w:=0;
-            TrackBar3.Enabled:=false;              {Sharpness for jpg}
+            tbrSharpness.Enabled:=false;           {Sharpness for jpg}
           end;
           if ff='jpg' then begin
             w:=1;
-            TrackBar3.Enabled:=true;               {Sharpness for jpg}
+            tbrSharpness.Enabled:=true;            {Sharpness for jpg}
           end;
           if ff='dng+jpg' then begin               {nur für CGO3+}
             w:=2;
-            TrackBar3.Enabled:=true;               {Sharpness for jpg}
+            tbrSharpness.Enabled:=true;            {Sharpness for jpg}
           end;
-          RadioGroup7.ItemIndex:=w;
-          CheckBox5.Checked:=(GetCGOStr('ae_enable', s)='1');
-          FloatSpinEdit1.Enabled:=CheckBox5.Checked;
-          ComboBox6.Enabled:=not CheckBox5.Checked;
-          ComboBox7.Enabled:=ComboBox6.Enabled;
+          rgPicFormat.ItemIndex:=w;
+          cbExpoAuto.Checked:=(GetCGOStr('ae_enable', s)='1');
+          speExpo.Enabled:=cbExpoAuto.Checked;
+          cbxCGO3ISO.Enabled:=not cbExpoAuto.Checked;
+          cbxCGO3Shutter.Enabled:=cbxCGO3ISO.Enabled;
           try
-            FloatSpinEdit1.Value:=StrToFloat(GetCGOStr('exposure_value', s));
+            speExpo.Value:=StrToFloat(GetCGOStr('exposure_value', s));
           except
-            FloatSpinEdit1.Value:=0;
+            speExpo.Value:=0;
           end;
           if GetCGOStr('cam_mode', s)='2' then begin
             Image2.Visible:=false;                 {Filmbildchen}
@@ -5722,9 +5723,9 @@ begin
             Image2.Visible:=true;
             Image3.Visible:=false;
           end;
-          BitBtn21.Tag:=0;
+          btnAudio.Tag:=0;
           if GetCGOStr('audio_sw', s)='0' then begin
-            BitBtn21.Tag:=1;
+            btnAudio.Tag:=1;
             Image1.Visible:=true;
           end else
             Image1.Visible:=false;
@@ -5737,32 +5738,32 @@ begin
             AdvLed1.Blink:=false;
             if Timer1.Tag=1 then Timer1.Enabled:=false;
           end;
-          BitBtn16.Enabled:=true; {Kommandos nur nach erfolgreicher Intialisierung}
-          BitBtn17.Enabled:=true;
-          BitBtn18.Enabled:=true;
-          BitBtn19.Enabled:=true;
-          BitBtn20.Enabled:=true;
-          BitBtn21.Enabled:=true;
-          BitBtn22.Enabled:=true;
-          BitBtn23.Enabled:=true;
-          BitBtn24.Enabled:=true;
+          btnVideoStart.Enabled:=true; {Kommandos nur nach erfolgreicher Intialisierung}
+          btnVideoStop.Enabled:=true;
+          btnCGO3Reset.Enabled:=true;
+          btnWiFiSpeedUp.Enabled:=true;
+          btnWiFiSpeedReset.Enabled:=true;
+          btnAudio.Enabled:=true;
+          btnFoto.Enabled:=true;
+          btnCGO3Time.Enabled:=true;
+          btnFormatSD.Enabled:=true;
           rgVideoFoto.Enabled:=true;
-          RadioGroup7.Enabled:=true;
-          SpeedButton6.Enabled:=true;
+          rgPicFormat.Enabled:=true;
+          sbtnSendCGO3.Enabled:=true;
           StopLightSensor1.State:=slGREEN;         {WLAN Ampel auf Grün}
-          StatusBar1.Panels[5].Text:=rsCGOdone+tab1+Edit5.Text;
+          StatusBar1.Panels[5].Text:=rsCGOdone+tab1+edCGOURL.Text;
         end else begin                             {Result <> 0}
-          indGnouMeter1.ValueMax:=64;
-          indGnouMeter1.Value:=0;
+          indGnouMeterSDused.ValueMax:=64;
+          indGnouMeterSDused.Value:=0;
           StopLightSensor1.State:=slRED;
-          AppLog.Lines.Add(s);                   {Fehlerausgabe ins Logfile}
+          AppLog.Lines.Add(s);                     {Fehlerausgabe ins Logfile}
         end;
       end; {Ende Initalisierung}
       case CGO3act of
-        1: if CheckBox4.Checked then
-             OpenURL(Edit5.Text+CGO3dir);          {Datenverzeichnis im Browser öffnen}
-        2: If CheckBox2.Checked then               {Livestream anzeigen}
-             OpenURL(StringReplace(Edit5.Text, 'http', 'rtsp',[rfIgnoreCase])+'live');
+        1: if cbFileList.Checked then
+             OpenURL(edCGOURL.Text+CGO3dir);       {Datenverzeichnis im Browser öffnen}
+        2: If cbRTSP.Checked then                  {Livestream anzeigen}
+             OpenURL(StringReplace(edCGOURL.Text, 'http', 'rtsp',[rfIgnoreCase])+'live');
       end;
     except
       StatusBar1.Panels[5].Text:=rsTimeOut;
@@ -5776,7 +5777,7 @@ begin
   end;
 end;
 
-procedure TForm1.BitBtn15Click(Sender: TObject);   {Status}
+procedure TForm1.btnCGO3StatusClick(Sender: TObject); {Status}
 begin
   StatusBar1.Panels[5].Text:=rsCGOwait;
   AppLog.Lines.Add(StatusBar1.Panels[5].Text);
@@ -5793,67 +5794,67 @@ begin
     AdvLed1.Visible:=false;
 end;
 
-procedure TForm1.BitBtn16Click(Sender: TObject);   {Record start}
+procedure TForm1.btnVideoStartClick(Sender: TObject);   {Record start}
 begin
   CGO3run('START_RECORD', 2);                      {CGO3act=2 RTSP abfragen}
   Timer1.Enabled:=true;   {laufende Statusabfrage, um Zeit zu aktualisieren}
   Timer1.Tag:=0;
 end;
 
-procedure TForm1.BitBtn17Click(Sender: TObject);   {Record stop}
+procedure TForm1.btnVideoStopClick(Sender: TObject);   {Record stop}
 begin
   CGO3run('STOP_RECORD', 0);
   Timer1.Tag:=1;                                   {Stop vorbereiten}
 end;
 
-procedure TForm1.BitBtn18Click(Sender: TObject);   {Reset default}
+procedure TForm1.btnCGO3ResetClick(Sender: TObject);   {Reset default}
 begin
   CGO3run('RESET_DEFAULT', 0);
   CGO3run('', 0);
 end;
 
-procedure TForm1.BitBtn19Click(Sender: TObject);   {Set speed}
+procedure TForm1.btnWiFiSpeedUpClick(Sender: TObject);   {Set speed}
 begin
   CGO3run('SET_WIFI_SPEED&speed_rate=9', 1);       {CGO3act=2 Dateianzeige abfragen}
   CGO3run('', 0);                                  {INDEX_PAGE aufrufen}
 end;
 
-procedure TForm1.BitBtn20Click(Sender: TObject);
+procedure TForm1.btnWiFiSpeedResetClick(Sender: TObject);
 begin
   CGO3run('SET_WIFI_SPEED&speed_rate=1', 0);       {reset Speed}
   CGO3run('', 0);
 end;
 
-procedure TForm1.ComboBox3Change(Sender: TObject); {Videoformat setzen}
+procedure TForm1.cbxCGO3VideoChange(Sender: TObject); {Videoformat setzen}
 begin
-  if BitBtn23.Enabled then begin
-    CGO3run('SET_VIDEO_MODE&mode='+ComboBox3.Text, 0);
+  if btnCGO3Time.Enabled then begin
+    CGO3run('SET_VIDEO_MODE&mode='+cbxCGO3Video.Text, 0);
     CGO3run('', 0);
   end;
 end;
 
-procedure TForm1.ComboBox4Change(Sender: TObject); {IQ Type}
+procedure TForm1.cbxCGO3ColorChange(Sender: TObject); {IQ Type}
 begin
-  if BitBtn23.Enabled then begin
-    CGO3run('SET_IQ_TYPE&mode='+IntToStr(ComboBox4.ItemIndex), 0);
+  if btnCGO3Time.Enabled then begin
+    CGO3run('SET_IQ_TYPE&mode='+IntToStr(cbxCGO3Color.ItemIndex), 0);
     CGO3run('', 0);                                {INDEX_PAGE abfragen}
   end;
 end;
 
-procedure TForm1.TrackBar3Click(Sender: TObject);
+procedure TForm1.tbrSharpnessClick(Sender: TObject);
 begin
-  if TrackBar3.Enabled then begin
-    CGO3run('SET_SHARPNESS&value='+IntToStr(TrackBar3.Position), 0);
+  if tbrSharpness.Enabled then begin
+    CGO3run('SET_SHARPNESS&value='+IntToStr(tbrSharpness.Position), 0);
     Sharpness;             {SHARPNESS abfragen, da nicht mehr in INDEX_PAGE}
   end;
 end;
 
-procedure TForm1.ComboBox5Change(Sender: TObject); {WB}
+procedure TForm1.cbxCGO3WBChange(Sender: TObject); {WB}
 var s: String;
 begin
-  if BitBtn23.Enabled then begin
+  if btnCGO3Time.Enabled then begin
     s:='0';
-    case ComboBox5.ItemIndex of
+    case cbxCGO3WB.ItemIndex of
       1: s:='99';
       2: s:='4';
       3: s:='5';
@@ -5866,70 +5867,72 @@ begin
   end;
 end;
 
-procedure TForm1.ComboBox6Change(Sender: TObject); {ISO}
+procedure TForm1.cbxCGO3ISOChange(Sender: TObject); {ISO}
 begin
-  if BitBtn23.Enabled then begin
-    CGO3run('SET_SH_TM_ISO&time='+ComboBox7.Text+'&value='+ComboBox6.Text, 0);
+  if btnCGO3Time.Enabled then begin
+    CGO3run('SET_SH_TM_ISO&time='+cbxCGO3Shutter.Text+'&value='+cbxCGO3ISO.Text, 0);
     Sleep(500);
     CGO3run('', 0);
   end;
 end;
 
-procedure TForm1.ComboBox7Change(Sender: TObject); {Shutter}
+procedure TForm1.cbxCGO3ShutterChange(Sender: TObject); {Shutter}
 begin
-  if BitBtn23.Enabled then begin
-    CGO3run('SET_SH_TM_ISO&time='+ComboBox7.Text+'&value='+ComboBox6.Text, 0);
+  if btnCGO3Time.Enabled then begin
+    CGO3run('SET_SH_TM_ISO&time='+cbxCGO3Shutter.Text+'&value='+cbxCGO3ISO.Text, 0);
     CGO3run('', 0);
   end;
 end;
 
-procedure TForm1.ComboBox8DblClick(Sender: TObject);
+procedure TForm1.cbxScanDirDblClick(Sender: TObject);
 begin
-  OpenDocument(IncludeTrailingPathDelimiter(ComboBox8.Text));
+  OpenDocument(IncludeTrailingPathDelimiter(cbxScanDir.Text));
 end;
 
-procedure TForm1.ComboBox8MouseUp(Sender: TObject; Button: TMouseButton;
+procedure TForm1.cbxScanDirMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);              {Verzeichnisliste löschen}
 begin
   if ssCtrl in Shift then
-    ComboBox8.Items.Clear;
+    cbxScanDir.Items.Clear;
 end;
 
-procedure TForm1.ComboBox9MouseUp(Sender: TObject; Button: TMouseButton;
+procedure TForm1.cbxSearchMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);              {Suchliste löschen}
 begin
   if ssCtrl in Shift then
-    ComboBox9.Items.Clear;
+    cbxSearch.Items.Clear;
 end;
 
-procedure TForm1.Edit3KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TForm1.edSendCGO3KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
                                                    {Kommando absenden bei Enter}
 begin
-  if SpeedButton6.Enabled and
-     (key=VK_RETURN) then SendCGOcmd;              {Command zu CGO3}
-  if key=VK_ESCAPE then Edit3.Text:='';            {Kommando löschen}
+  if sbtnSendCGO3.Enabled and
+     (key=VK_RETURN) then
+    SendCGOcmd;                                    {Command zu CGO3}
+  if key=VK_ESCAPE then
+    edSendCGO3.Text:='';                           {Kommando löschen}
 end;
 
-procedure TForm1.BitBtn21Click(Sender: TObject);   {Audio Switch}
+procedure TForm1.btnAudioClick(Sender: TObject);   {Audio Switch}
 begin
-  if BitBtn21.Tag=1 then
+  if btnAudio.Tag=1 then
     CGO3run('SET_AUDIO_SW&mode=1', 0)              {reset Audio}
   else
     CGO3run('SET_AUDIO_SW&mode=0', 0);             {set Audio}
   CGO3run('', 0);
 end;
 
-procedure TForm1.BitBtn22Click(Sender: TObject);
+procedure TForm1.btnFotoClick(Sender: TObject);
 begin
   CGO3run('TAKE_PHOTO', 0);                        {Photo shot}
 end;
 
-procedure TForm1.BitBtn23Click(Sender: TObject);   {Kamera Zeit setzen}
+procedure TForm1.btnCGO3TimeClick(Sender: TObject);   {Kamera Zeit setzen}
 begin
   CGO3run('SET_TIME&time='+FormatDateTime(dzf+'_'+zzf, now), 0);
 end;
 
-procedure TForm1.BitBtn24Click(Sender: TObject);   {SD-Karte formatieren}
+procedure TForm1.btnFormatSDClick(Sender: TObject);   {SD-Karte formatieren}
 begin
   CGO3run('FORMAT_CARD', 0);
   Sleep(2000);
@@ -5943,8 +5946,8 @@ function TForm1.CheckVT(vt, fm: string): boolean;  {Vehicle Type prüfen für YT
 var fmode: integer;
 begin
   result:=true;                                    {default: Alles geht durch}
-  if (SpinEdit3.Tag=YTHPid) and                    {only for Typhoon H Plus}
-     (CheckBox9.Checked) then begin                {only if cleaning is allowed}
+  if (speDataPoint.Tag=YTHPid) and                 {only for Typhoon H Plus}
+     (cbCleanHplus.Checked) then begin             {only if cleaning is allowed}
     fmode:=StrToIntDef(fm, 0);
     if (StrToIntDef(trim(vt), 0)<>defVT) or        {useless Vehicle Types}
        (fmode=0) or                                {useless FlightModes}
@@ -6003,24 +6006,24 @@ begin
       StatusBar1.Panels[5].Text:=fn+nixda;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    ProgressBar1.Position:=ProgressBar1.Position+1;
+    ProgressBarScan.Position:=ProgressBarScan.Position+1;
     Application.ProcessMessages;
     if inlist.count>minlines then begin            {Überschrift und mind. 10 Zeilen}
       try
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
         splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
-        vld:=fModeFinden(splitlist);        {setzt StringGrid1.Tag mit Spaltenindex}
-        if SpinEdit3.Tag<>YTHPid then begin
+        vld:=fModeFinden(splitlist);        {setzt gridDetails.Tag mit Spaltenindex}
+        if speDataPoint.Tag<>YTHPid then begin
           splitlist.DelimitedText:=inlist[2];      {2. Datenzeile, v_type ermitteln}
-          SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
+          speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
           OverwriteVT;                             {Overwrite for PX4 Thunderbird}
         end;
         for x:=1 to inlist.Count-1 do
         if CheckE7(inlist[x]) then begin           {Plausicheck für YTH Plus}
           splitlist.DelimitedText:=inlist[x];
           if (splitlist.Count>anzsp) and           {Plausicheck YTH und generell gegen Leerzeilen}
-              CheckVT(splitlist[StringGrid1.Tag+2],
-                      splitlist[StringGrid1.Tag]) then begin
+              CheckVT(splitlist[gridDetails.Tag+2],
+                      splitlist[gridDetails.Tag]) then begin
             h:=StrToFloatN(splitlist[4]);          {Altitude}
             if testh(h) then begin                 {nicht bei unsinnigen Höhenwerten}
               tas:=StrToFloatN(splitlist[7]);      {True Air Speed in m/s}
@@ -6030,8 +6033,8 @@ begin
               if NichtLeer(splitlist[3]) and       {Simulatorflug}
                  (splitlist[15]='231') then
                 simu:=true;
-              fxmode:=splitlist[StringGrid1.Tag];  {FlightMode}
-              if GetRFM(fxmode, SpinEdit3.Tag,
+              fxmode:=splitlist[gridDetails.Tag];  {FlightMode}
+              if GetRFM(fxmode, speDataPoint.Tag,
                         InFlight(h, tas1, tas)) then begin
                 if not nflg then begin
                   if bg1<bgid then
@@ -6047,7 +6050,7 @@ begin
                     modestr:=modestr+'->'+fmodeToStr(StrToIntDef(fxmode, 16));
                   lfmode:=fxmode;
                 end;
-                ed:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+                ed:=ZeitToDT(splitlist[0], speDataPoint.Tag);
                 if bg>ed then
                   bg:=ed;                          {Beginnzeit ohne GPS}
                 if bg1>ed then
@@ -6093,7 +6096,7 @@ begin
         end;                                       {Ende Einlesen}
         flt:=flt+ed-bg1;
         splitlist.DelimitedText:=inlist[inlist.count-1];
-        tend:=ZeitToDT(splitlist[0], SpinEdit3.Tag); {letzten Zeitstempel merken}
+        tend:=ZeitToDT(splitlist[0], speDataPoint.Tag); {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
         AppLog.Lines.Add('''5572'+suff+StatusBar1.Panels[5].Text);
@@ -6101,17 +6104,17 @@ begin
     end;
 
     if vld and
-       ((SpinEdit3.Tag<>YTHPid) or                 {Mindestflugzeit nur beim YTH Plus}
-        (CheckBox9.Checked=false) or               {wenn Bereinigung eingestellt ist}
+       ((speDataPoint.Tag<>YTHPid) or              {Mindestflugzeit nur beim YTH Plus}
+        (cbCleanHplus.Checked=false) or            {wenn Bereinigung eingestellt ist}
         (flt>minflt)) then begin                   {Anzeige gültiger Auswertung}
       splitlist.DelimitedText:=inlist[1];          {1. Datenzeile für fehlenden Beginn/Typ}
-      fmod:=StrToIntDef(splitlist[StringGrid1.Tag+2],2);
+      fmod:=StrToIntDef(splitlist[gridDetails.Tag+2],2);
       if g>3 then begin                            {nur wenn Daten vorhanden sind}
-        ProgressBar1.Update;
+        ProgressBarScan.Update;
         olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
-        StringGrid5.RowCount:=fln+1;
-        StringGrid5.Cells[0, fln]:=IntToStr(fln);
-        StringGrid5.Cells[1, fln]:=capNachweis+suff+
+        gridScanResult.RowCount:=fln+1;
+        gridScanResult.Cells[0, fln]:=IntToStr(fln);
+        gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                    FormatDateTime(vzf, bg)+bind+
                                    FormatDateTime(zzf, ed);
         olist.Add(rsVType+dstr+vtypeToStr(fmod)+dstr);
@@ -6125,7 +6128,7 @@ begin
                        URLGMap(KoToStr(lat1), KoToStr(lon1))+dstr);
         if modestr<>'' then olist.Add(rsMode+dstr+modestr+dstr);
         if simu then begin                         {Simulatorzeit}
-          if CheckBox6.Checked then
+          if cbSimu.Checked then
             gflt:=gflt+flt;
         end else
           gflt:=gflt+flt;                          {Gesamtzeit aufaddieren}
@@ -6150,13 +6153,13 @@ begin
             FloatToStrF(strecke/flt/1000, ffFixed, 5, 1)+'km/h'+dstr);
         end;
         olist.Add(rsRest+dstr+FloatToStrF(umin, ffFixed, 5, 1)+'V = ~'+
-        IntToStr(round(VtoProz(SpinEdit3.Tag, umin)))+'%'+dstr);
+        IntToStr(round(VtoProz(speDataPoint.Tag, umin)))+'%'+dstr);
       end else begin                               {reduzierte Ausgabe}
         if n>3 then begin                          {Ausgabe für Flüge ohne GPS}
           olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
-          StringGrid5.RowCount:=fln+1;
-          StringGrid5.Cells[0, fln]:=IntToStr(fln);
-          StringGrid5.Cells[1, fln]:=capNachweis+suff+
+          gridScanResult.RowCount:=fln+1;
+          gridScanResult.Cells[0, fln]:=IntToStr(fln);
+          gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                      FormatDateTime(vzf, bg)+bind+
                                      FormatDateTime(zzf, ed);
           olist.Add(rsVType+dstr+vtypeToStr(fmod)+dstr);
@@ -6179,7 +6182,7 @@ begin
             olist.Add(rsGridCell8+dstr+FloatToStrF(tasmax*fkmh, ffFixed, 5, 1)+'km/h'+dstr);
           end;
           olist.Add(rsRest+dstr+FloatToStrF(umin, ffFixed, 5, 1)+'V = ~'+
-          IntToStr(round(VtoProz(SpinEdit3.Tag, umin)))+'%'+dstr);
+          IntToStr(round(VtoProz(speDataPoint.Tag, umin)))+'%'+dstr);
         end;
       end;
     end;
@@ -6237,7 +6240,7 @@ begin
       StatusBar1.Panels[5].Text:=fn+nixda;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    ProgressBar1.Position:=ProgressBar1.Position+1;
+    ProgressBarScan.Position:=ProgressBarScan.Position+1;
     Application.ProcessMessages;
     if inlist.count>minlines then begin            {Überschrift und mind. 10 Zeilen}
       try
@@ -6304,11 +6307,11 @@ begin
     if vld then begin                              {Anzeige gültiger Auswertung}
       splitlist.DelimitedText:=inlist[1];          {1. Datenzeile für fehlenden Beginn/Typ}
       if g>3 then begin                            {nur wenn Daten vorhanden sind}
-        ProgressBar1.Update;
+        ProgressBarScan.Update;
         olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
-        StringGrid5.RowCount:=fln+1;
-        StringGrid5.Cells[0, fln]:=IntToStr(fln);
-        StringGrid5.Cells[1, fln]:=capNachweis+suff+
+        gridScanResult.RowCount:=fln+1;
+        gridScanResult.Cells[0, fln]:=IntToStr(fln);
+        gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                    FormatDateTime(vzf, bg)+bind+
                                    FormatDateTime(zzf, ed);
         olist.Add(rsVType+dstr+vehid+dstr);
@@ -6345,9 +6348,9 @@ begin
       end else begin                               {reduzierte Ausgabe}
         if n>3 then begin                          {Ausgabe für Flüge ohne GPS}
           olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
-          StringGrid5.RowCount:=fln+1;
-          StringGrid5.Cells[0, fln]:=IntToStr(fln);
-          StringGrid5.Cells[1, fln]:=capNachweis+suff+
+          gridScanResult.RowCount:=fln+1;
+          gridScanResult.Cells[0, fln]:=IntToStr(fln);
+          gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                      FormatDateTime(vzf, bg)+bind+
                                      FormatDateTime(zzf, ed);
           olist.Add(rsVType+dstr+vehid+dstr);
@@ -6422,7 +6425,7 @@ begin
       StatusBar1.Panels[5].Text:=fn+nixda;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    ProgressBar1.Position:=ProgressBar1.Position+1;
+    ProgressBarScan.Position:=ProgressBarScan.Position+1;
     Application.ProcessMessages;
     if inlist.count>minlines+5 then begin          {Überschrift und mind. 15 Zeilen}
       try
@@ -6489,7 +6492,7 @@ begin
         end;                                       {Ende Einlesen}
         flt:=flt+ed-bg1;
         splitlist.DelimitedText:=inlist[inlist.count-1];
-        tend:=ZeitToDT(splitlist[0], brID); {letzten Zeitstempel merken}
+        tend:=ZeitToDT(splitlist[0], brID);        {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
         AppLog.Lines.Add('''5968'+suff+StatusBar1.Panels[5].Text);
@@ -6499,11 +6502,11 @@ begin
     if vld then begin                              {Anzeige gültiger Auswertung}
       splitlist.DelimitedText:=inlist[1];          {1. Datenzeile für fehlenden Beginn/Typ}
       if g>3 then begin                            {nur wenn Daten vorhanden sind}
-        ProgressBar1.Update;
+        ProgressBarScan.Update;
         olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
-        StringGrid5.RowCount:=fln+1;
-        StringGrid5.Cells[0, fln]:=IntToStr(fln);
-        StringGrid5.Cells[1, fln]:=capNachweis+suff+
+        gridScanResult.RowCount:=fln+1;
+        gridScanResult.Cells[0, fln]:=IntToStr(fln);
+        gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                    FormatDateTime(vzf, bg)+bind+
                                    FormatDateTime(zzf, ed);
         olist.Add(rsVType+dstr+vehid+dstr);
@@ -6538,9 +6541,9 @@ begin
       end else begin                               {reduzierte Ausgabe}
         if n>3 then begin                          {Ausgabe für Flüge ohne GPS}
           olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
-          StringGrid5.RowCount:=fln+1;
-          StringGrid5.Cells[0, fln]:=IntToStr(fln);
-          StringGrid5.Cells[1, fln]:=capNachweis+suff+
+          gridScanResult.RowCount:=fln+1;
+          gridScanResult.Cells[0, fln]:=IntToStr(fln);
+          gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                      FormatDateTime(vzf, bg)+bind+
                                      FormatDateTime(zzf, ed);
           olist.Add(rsVType+dstr+vehid+dstr);
@@ -6567,23 +6570,23 @@ begin
   end;
 end;
 
-procedure TForm1.BitBtn26Click(Sender: TObject);   {Probleme suchen}
+procedure TForm1.btnScanErrClick(Sender: TObject); {Probleme suchen}
 var vlist, flist, inlist, splitlist: TStringList;
     i, zhl, vt: integer;
     vstr: string;
 
-  function GetFMPos: boolean;                      {Position f_mode to StringGrid1.Tag}
+  function GetFMPos: boolean;                      {Position f_mode to gridDetails.Tag}
   begin                                            {Gibt bei Fehler true zurück}
     try
       splitlist.DelimitedText:=inlist[0];
       fModeFinden(splitlist);                      {hier wird YTH Plus schon erkannt}
       splitlist.DelimitedText:=inlist[3];          {Vehicle type bestimmen}
-      vt:=StrToInt(splitlist[StringGrid1.Tag+2]);  {eventuell Abbruch bei Fehler}
-      if SpinEdit3.Tag<>YTHPid then                {erkannten H Plus nicht überschreiben}
-        SpinEdit3.Tag:=vt;
+      vt:=StrToInt(splitlist[gridDetails.Tag+2]);  {eventuell Abbruch bei Fehler}
+      if speDataPoint.Tag<>YTHPid then             {erkannten H Plus nicht überschreiben}
+        speDataPoint.Tag:=vt;
       OverwriteVT;
   {zusätzlicher Filter nach Vehicle Type. Vehicle type 5 ist H oder H Plus}
-      result:=CheckBox1.Checked and
+      result:=cbVehicleType.Checked and
               (vt<>rgVehicleType.ItemIndex+1);
     except
       result:=true;                                {Abbruch bei Fehler}
@@ -6598,7 +6601,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     inlist.LoadFromFile(fn);
     if inlist.Count>10 then begin                  {Datei durchsuchen}
       if GetFMPos then exit;
-      case SpinEdit3.Tag of
+      case speDataPoint.Tag of
         3: vstr:='8';                              {8 nur bei 350QX}
 //        YTHPid: vstr:='??';                      {unbekannt}
         MQid: vstr:=emcyID;
@@ -6606,11 +6609,11 @@ var vlist, flist, inlist, splitlist: TStringList;
       else
         vstr:='12';                                {Yuneec legacy}
       end;
-      ComboBox9.Text:=vstr;                        {Suche vordefinieren}
+      cbxSearch.Text:=vstr;                        {Suche vordefinieren}
       for k:=1 to inlist.Count-1 do begin          {Nach Fehlern suchen}
         splitlist.DelimitedText:=inlist[k];
-        if splitlist.Count<=StringGrid1.Tag then exit; {invalid data sets}
-        if trim(splitlist[StringGrid1.Tag])=vstr then inc(num);
+        if splitlist.Count<=gridDetails.Tag then exit; {invalid data sets}
+        if trim(splitlist[gridDetails.Tag])=vstr then inc(num);
         if num>2 then begin
           result:=true;
           break;
@@ -6628,11 +6631,11 @@ var vlist, flist, inlist, splitlist: TStringList;
     if inlist.Count>10 then begin                  {Datei durchsuchen}
       if GetFMPos then exit;
       vstr:='32';                                  {Compass Cali Warning}
-      ComboBox9.Text:=vstr;                        {Suche vordefinieren}
+      cbxSearch.Text:=vstr;                        {Suche vordefinieren}
       for k:=1 to inlist.Count-1 do begin          {Nach Fehlern suchen}
         splitlist.DelimitedText:=inlist[k];
-        if splitlist.Count<=(StringGrid1.Tag+3) then exit; {zerstörte Datensätze}
-        flag:=StrToIntDef(trim(splitlist[StringGrid1.Tag+3]), 0);
+        if splitlist.Count<=(gridDetails.Tag+3) then exit; {zerstörte Datensätze}
+        flag:=StrToIntDef(trim(splitlist[gridDetails.Tag+3]), 0);
         if (flag and 32)>0 then begin              {CCW flag}
           inc(num);
           if num>20 then begin                     {Threshold erreicht}
@@ -6657,11 +6660,11 @@ var vlist, flist, inlist, splitlist: TStringList;
       if GetFMPos then
         exit;
       vstr:='32';                                  {Compass Cali Warning}
-      ComboBox9.Text:=vstr;                        {Suche vordefinieren}
+      cbxSearch.Text:=vstr;                        {Suche vordefinieren}
       for k:=1 to inlist.Count-1 do begin          {Nach Fehlern suchen}
         splitlist.DelimitedText:=inlist[k];
-        if splitlist.Count<=(StringGrid1.Tag+3) then exit; {zerstörte Datensätze}
-        flag:=StrToIntDef(trim(splitlist[StringGrid1.Tag+3]), 0);
+        if splitlist.Count<=(gridDetails.Tag+3) then exit; {zerstörte Datensätze}
+        flag:=StrToIntDef(trim(splitlist[gridDetails.Tag+3]), 0);
         if (flag and 32)>0 then begin              {CCW flag}
           ed:=ZeitToDT(splitlist[0], 2);           {Zeitpunkt feststellen}
           if bg=0 then
@@ -6685,7 +6688,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     result:=false;
     inlist.LoadFromFile(fn);
     if inlist.Count>10 then begin                  {Datei durchsuchen}
-      ComboBox9.Text:=IntToStr(stkntrl);           {Suche vordefinieren 2048}
+      cbxSearch.Text:=IntToStr(stkntrl);           {Suche vordefinieren 2048}
       for k:=1 to inlist.Count-1 do begin          {Nach Fehlern suchen}
         splitlist.DelimitedText:=inlist[k];
         if splitlist.Count>high(num) then begin    {keine zerstörte Datensätze}
@@ -6703,7 +6706,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     end;
   end;
 
-  function VoltW2(const fn: string): boolean;     {Voltage warning 2}
+  function VoltW2(const fn: string): boolean;      {Voltage warning 2}
   var k, num, flag: integer;
   begin
     num:=0;
@@ -6713,12 +6716,12 @@ var vlist, flist, inlist, splitlist: TStringList;
       if GetFMPos then
         exit;
       vstr:='2';
-      ComboBox9.Text:=vstr;                        {Suche vordefinieren}
+      cbxSearch.Text:=vstr;                        {Suche vordefinieren}
       for k:=1 to inlist.Count-1 do begin          {Nach Fehlern suchen}
         splitlist.DelimitedText:=inlist[k];
-        if splitlist.Count<=(StringGrid1.Tag+3) then
+        if splitlist.Count<=(gridDetails.Tag+3) then
           exit;                                    {zerstörte Datensätze}
-        flag:=StrToIntDef(trim(splitlist[StringGrid1.Tag+3]), 0);
+        flag:=StrToIntDef(trim(splitlist[gridDetails.Tag+3]), 0);
         if (flag and 2)>0 then begin               {Voltage warn 2 flag}
           inc(num);
           if num>5 then begin                      {Threshold erreicht}
@@ -6742,16 +6745,16 @@ var vlist, flist, inlist, splitlist: TStringList;
       if GetFMPos then
         exit;
       try
-        w:=StrToFloatN(ComboBox9.Text);            {Suchfeld}
+        w:=StrToFloatN(cbxSearch.Text);            {Suchfeld}
       except
         w:=9.9;                                    {3S minimum V}
-        ComboBox9.Text:=FloatToStr(w);
+        cbxSearch.Text:=FloatToStr(w);
       end;
       for k:=1 to inlist.Count-1 do begin          {Nach Fehlern suchen}
         splitlist.DelimitedText:=inlist[k];
-        if (splitlist.Count>StringGrid1.Tag+2) and
-            CheckVT(splitlist[StringGrid1.Tag+2],  {zerstörte Datensätze ausblenden}
-                    splitlist[StringGrid1.Tag]) then begin
+        if (splitlist.Count>gridDetails.Tag+2) and
+            CheckVT(splitlist[gridDetails.Tag+2],  {zerstörte Datensätze ausblenden}
+                    splitlist[gridDetails.Tag]) then begin
           try
             v:=StrToFloatN(trim(splitlist[2]));
           except
@@ -6801,7 +6804,7 @@ var vlist, flist, inlist, splitlist: TStringList;
       if p>0 then for k:=1 to inlist.Count-1 do begin
         splitlist.DelimitedText:=inlist[k];        {Nach Wert suchen}
         if splitlist.Count<=p then exit;           {zerstörte Datensätze}
-        if splitlist[p]=ComboBox9.Text then begin  {Wert aus Suchfeld suchen}
+        if splitlist[p]=cbxSearch.Text then begin  {Wert aus Suchfeld suchen}
           result:=true;
           break;
         end;
@@ -6826,37 +6829,37 @@ var vlist, flist, inlist, splitlist: TStringList;
   procedure Ausgabe; inline;                       {Liste füllen}
   begin
     inc(zhl);
-    StringGrid5.RowCount:=zhl+1;
-    StringGrid5.Cells[0, zhl]:=IntToStr(zhl);
-    StringGrid5.Cells[1, zhl]:=flist[i];
+    gridScanResult.RowCount:=zhl+1;
+    gridScanResult.Cells[0, zhl]:=IntToStr(zhl);
+    gridScanResult.Cells[1, zhl]:=flist[i];
   end;
 
 begin
-  BitBtn26.Tag:=0;                                 {Info Mode used}
-  StringGrid5.RowCount:=1;                         {Tabelle löschen}
-  StringGrid5.Cells[1, 0]:=capProb+bind+rsFLDir;   {Überschrift}
-  ProgressBar1.Position:=0;
-  RadioGroup1.ItemIndex:=0;                        {File type: Telemetry}
+  btnScanErr.Tag:=0;                               {Info Mode used}
+  gridScanResult.RowCount:=1;                      {Tabelle löschen}
+  gridScanResult.Cells[1, 0]:=capProb+bind+rsFLDir;   {Überschrift}
+  ProgressBarScan.Position:=0;
+  rgQuelle.ItemIndex:=0;                           {File type: Telemetry}
   zhl:=0;                                          {Trefferzähler}
-  StringGrid1.Tag:=19;                     {default Position bei neuer FW ST10+}
-  ComboBox9.Text:=trim(StringReplace(ComboBox9.Text, sep, '.', []));
+  gridDetails.Tag:=19;                     {default Position bei neuer FW ST10+}
+  cbxSearch.Text:=trim(StringReplace(cbxSearch.Text, sep, '.', []));
   flist:=TStringList.Create;
   vlist:=TStringList.Create;
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;                   {CSV zerlegen}
   splitlist.Delimiter:=sep;
   splitlist.StrictDelimiter:=True;
-  vlist.Add(IncludeTrailingPathDelimiter(ComboBox8.Text));
+  vlist.Add(IncludeTrailingPathDelimiter(cbxScanDir.Text));
   Screen.Cursor:=crHourGlass;
   try
-    CreateDirList(ComboBox8.Text, vlist);
+    CreateDirList(cbxScanDir.Text, vlist);
     case rgErrType.ItemIndex of
       5, 6: begin
-              RadioGroup1.ItemIndex:=2;            {File type: Remote}
+              rgQuelle.ItemIndex:=2;               {File type: Remote}
               for i:=0 to vlist.Count-1 do SuchFile(vlist[i], ffile+wldcd+fext, flist);
             end;
       7: begin                                     {Edit/Find abh. von selektierter Spalte}
-           RadioGroup1.ItemIndex:=LabeledEdit1.Tag;    {File type übernehmen}
+           rgQuelle.ItemIndex:=LabeledEdit1.Tag;   {File type übernehmen}
            case LabeledEdit1.Tag of
              1:   for i:=0 to vlist.Count-1 do SuchFile(vlist[i], sfile+wldcd+fext, flist);
              2:   for i:=0 to vlist.Count-1 do SuchFile(vlist[i], ffile+wldcd+fext, flist);
@@ -6866,7 +6869,7 @@ begin
            end;
          end;
       8, 9: for i:=0 to vlist.Count-1 do begin     {Sensor Dateien}
-              if SpinEdit3.Tag=YTHPid then
+              if speDataPoint.Tag=YTHPid then
                 SuchFile(vlist[i], nfile+sextP, flist)
               else begin
                 SuchFile(vlist[i], nfile+wldcd+sext, flist);
@@ -6886,11 +6889,11 @@ begin
     StatusBar1.Panels[1].Text:=IntToStr(flist.Count);  {Anzahl Dateien}
     AppLog.Lines.Add('');
     AppLog.Lines.Add(rgErrType.Items[rgErrType.ItemIndex]);
-    AppLog.Lines.Add(ComboBox8.Text);
+    AppLog.Lines.Add(cbxScanDir.Text);
     AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDateien);
-    StringGrid5.BeginUpdate;
-    if flist.Count>0 then begin                        {Dateien vorhanden}
-      ProgressBar1.Max:=flist.Count;
+    gridScanResult.BeginUpdate;
+    if flist.Count>0 then begin                    {Dateien vorhanden}
+      ProgressBarScan.Max:=flist.Count;
       for i:=0 to flist.Count-1 do begin
         case rgErrType.ItemIndex of
           0: if Emergency12(flist[i]) then Ausgabe;
@@ -6898,8 +6901,8 @@ begin
           2: if CCWTime(flist[i]) then Ausgabe;
           3: if VoltW2(flist[i]) then Ausgabe;
           4: if VoltMin(flist[i]) then Ausgabe;
-          5: if StickCali(flist[i]) then Ausgabe;      {Sticks in Remote}
-          6: if TeamMode(flist[i]) then Ausgabe;       {Suche nach 1433.0 in Remote}
+          5: if StickCali(flist[i]) then Ausgabe;  {Sticks in Remote}
+          6: if TeamMode(flist[i]) then Ausgabe;   {Suche nach 1433.0 in Remote}
           7: if EditFind(flist[i]) then Ausgabe;
           8: if FileSize(flist[i])>FWsz then Ausgabe;  {Sensorfile > 6 Byte}
           9: if FindSensorFW(flist[i]) then Ausgabe;   {Sensorfile mit FW}
@@ -6908,22 +6911,22 @@ begin
           11: if ShowSensorPlus(flist[i], 0, false, false, false, true) then
                 Ausgabe;
         end;
-        ProgressBar1.Position:=i;
+        ProgressBarScan.Position:=i;
       end;
     end;
-    StringGrid5.Cells[0, 0]:=rsNum+' ('+IntToStr(zhl)+')';  {Überschrift}
-    StringGrid5.EndUpdate;
-    if zhl>0 then begin                                     {Anzahl Treffer}
+    gridScanResult.Cells[0, 0]:=rsNum+' ('+IntToStr(zhl)+')';  {Überschrift}
+    gridScanResult.EndUpdate;
+    if zhl>0 then begin                            {Anzahl Treffer}
       StatusBar1.Panels[5].Text:=IntToStr(zhl)+rsSuspect;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
-      ComboBox8.Text:=ExcludeTrailingPathDelimiter(ComboBox8.Text);
-      MerkListe(ComboBox8, AnzDirs);
+      cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
+      MerkListe(cbxScanDir, AnzDirs);
     end else begin
       StatusBar1.Panels[5].Text:=rsNoFound;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    ProgressBar1.Position:= ProgressBar1.Max;
-    if rgErrType.ItemIndex=11 then             {Go to AppLogHighlighter}
+    ProgressBarScan.Position:= ProgressBarScan.Max;
+    if rgErrType.ItemIndex=11 then                 {Go to AppLogHighlighter}
       PageControl1.ActivePageIndex:=7;
   finally
     FreeAndNil(flist);
@@ -6934,7 +6937,7 @@ begin
   end;
 end;
 
-procedure TForm1.BitBtn27Click(Sender: TObject);   {AppLogHighlighter speichern}
+procedure TForm1.btnSaveApplogClick(Sender: TObject);   {AppLogHighlighter speichern}
 begin
   SaveDialog1.Title:=rsFileSave;
   SaveDialog1.FileName:=ComplFN(TabSheet6.Caption, now)+wext;
@@ -6946,7 +6949,7 @@ begin
   end;
 end;
 
-procedure TForm1.BitBtn28Click(Sender: TObject);   {Lösche AppLogHighlighter}
+procedure TForm1.btnDelAppLogClick(Sender: TObject);   {Lösche AppLogHighlighter}
 begin
   AppLog.Lines.Clear;
 end;
@@ -6963,11 +6966,11 @@ var vlist, flist, outlist: TStringList;
   begin
     outlist.Add(trenner+tab1+capNachweis+tab1+trenner);
     outlist.Add('');
-    outlist.Add(tabs(rsFlightReport, suff, tabu)+ComboBox1.text);  {ggf. Seriennummer}
+    outlist.Add(tabs(rsFlightReport, suff, tabu)+cbxText.text);  {ggf. Seriennummer}
     outlist.Add(tabs(rsCreat+tab1, suff, tabu)+
                 FormatDateTime(mzf, now)+'h  '+tab1+rsBy+tab1+
                 ExtractFileName(Application.ExeName)+tab2+version);
-    if CheckBox9.Checked then
+    if cbCleanHplus.Checked then
       outlist.Add(capCheckBox9);
     outlist.Add('');
     for x:=0 to vlist.count-1 do begin             {Textausgabe}
@@ -7007,7 +7010,7 @@ var vlist, flist, outlist: TStringList;
     outlist.Add('');
     s:=rsCreat+tab1+dstr+FormatDateTime(mzf, now)+'h'+dstr+
        tab1+rsBy+tab1+ExtractFileName(Application.ExeName)+tab2+version;
-    if CheckBox9.Checked then s:=s+dstr+capCheckBox9;
+    if cbCleanHplus.Checked then s:=s+dstr+capCheckBox9;
     outlist.Add(s);
     outlist.Add('');
     csvlist[0]:=rsFlightNr;
@@ -7078,15 +7081,15 @@ var vlist, flist, outlist: TStringList;
   end;
 
 begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
-  if (SpinEdit3.Tag=brID) or
-     (SpinEdit3.Tag=H501ID) then exit;
-  if ComboBox8.Items.Count>0 then
-    for x:=ComboBox8.Items.Count-1 downto 0 do     {Liste putzen}
-      if not DirectoryExists(ComboBox8.Items[x]) then ComboBox8.Items.Delete(x);
-  if (ComboBox8.Text<>'') and
-     (DirectoryExists(ComboBox8.Text)) then begin
-    ComboBox8.Text:=ExcludeTrailingPathDelimiter(ComboBox8.Text);
-    MerkListe(ComboBox8, AnzDirs);
+  if (speDataPoint.Tag=brID) or
+     (speDataPoint.Tag=H501ID) then exit;
+  if cbxScanDir.Items.Count>0 then
+    for x:=cbxScanDir.Items.Count-1 downto 0 do    {Liste putzen}
+      if not DirectoryExists(cbxScanDir.Items[x]) then cbxScanDir.Items.Delete(x);
+  if (cbxScanDir.Text<>'') and
+     (DirectoryExists(cbxScanDir.Text)) then begin
+    cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
+    MerkListe(cbxScanDir, AnzDirs);
     Screen.Cursor:=crHourGlass;
     vlist:=TStringList.Create;
     flist:=TStringList.Create;
@@ -7096,8 +7099,8 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     gdist:=0;                                      {gesamt Strecke, nur bei GPS}
     datpos:=0;
     try
-      vlist.Add(IncludeTrailingPathDelimiter(ComboBox8.Text));
-      CreateDirList(ComboBox8.Text, vlist);
+      vlist.Add(IncludeTrailingPathDelimiter(cbxScanDir.Text));
+      CreateDirList(cbxScanDir.Text, vlist);
       for x:=0 to vlist.Count-1 do
         SuchFile(vlist[x], kfile+wldcd+fext, flist);
       if flist.Count>1 then begin                  {genug Dateien?}
@@ -7107,17 +7110,17 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         StatusBar1.Update;
         vlist.Clear;  {brauchen wir hier nicht mehr, wird csv für Ausgabe benutzt}
         flist.Sort;
-        ProgressBar1.Max:=flist.Count;
-        StringGrid5.BeginUpdate;
+        ProgressBarScan.Max:=flist.Count;
+        gridScanResult.BeginUpdate;
         for x:=0 to flist.Count-1 do               {Dateien abarbeiten}
           ProtoWerte(flist[x], vlist, flno, gftime, gdist);
-        StringGrid5.Cells[0,0]:=rsNum+'('+IntToStr(flno-1)+')';
-        StringGrid5.EndUpdate;
+        gridScanResult.Cells[0,0]:=rsNum+'('+IntToStr(flno-1)+')';
+        gridScanResult.EndUpdate;
         gfd:=Trunc(gftime);                        {Anzahl Tage der Flugzeit}
         flist.Clear;  {brauchen wir hier nicht mehr, wird splitlist}
         flist.Delimiter:=dstr;                     {Semicolon als Trenner}
         flist.StrictDelimiter:=True;               {keine Spaces als Trenner}
-        case rgCSVtext.ItemIndex of              {Ausgabeformat}
+        case rgCSVtext.ItemIndex of                {Ausgabeformat}
           0: TextAusgabe;
           1: CSVAusgabe;
         end;
@@ -7145,10 +7148,10 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         end;
         Screen.Cursor:=crDefault;
         SaveDialog1.Title:=rsProtSave;
-        SaveDialog1.InitialDir:=ComboBox8.Text;
+        SaveDialog1.InitialDir:=cbxScanDir.Text;
         SaveDialog1.FileName:=CleanDN(capNachweis+prtext);
         if SaveDialog1.Execute then begin
-          ProgressBar1.Position:=0;
+          ProgressBarScan.Position:=0;
           outlist.SaveToFile(SaveDialog1.FileName);
         end;
       end;                                         {Ende genug Dateien}
@@ -7176,7 +7179,7 @@ var vlist, flist, outlist: TStringList;
   begin
     outlist.Add(trenner+tab1+capNachweis+tab1+trenner);
     outlist.Add('');
-    outlist.Add(tabs(rsFlightReport, suff, tabu)+ComboBox1.text); {ggf. Seriennummer}
+    outlist.Add(tabs(rsFlightReport, suff, tabu)+cbxText.text); {ggf. Seriennummer}
     outlist.Add(tabs(rsCreat+tab1, suff, tabu)+
                 FormatDateTime(mzf, now)+'h  '+tab1+rsBy+tab1+
                 ExtractFileName(Application.ExeName)+tab2+version);
@@ -7286,18 +7289,18 @@ var vlist, flist, outlist: TStringList;
   end;
 
 begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
-  if SpinEdit3.Tag=H501ID then begin
+  if speDataPoint.Tag=H501ID then begin
     H501FlugBuch;
     exit;
   end;
-  if ComboBox8.Items.Count>0 then
-    for x:=ComboBox8.Items.Count-1 downto 0 do     {Liste putzen}
-      if not DirectoryExists(ComboBox8.Items[x]) then
-        ComboBox8.Items.Delete(x);
-  if (ComboBox8.Text<>'') and
-     (DirectoryExists(ComboBox8.Text)) then begin
-    ComboBox8.Text:=ExcludeTrailingPathDelimiter(ComboBox8.Text);
-    MerkListe(ComboBox8, AnzDirs);
+  if cbxScanDir.Items.Count>0 then
+    for x:=cbxScanDir.Items.Count-1 downto 0 do    {Liste putzen}
+      if not DirectoryExists(cbxScanDir.Items[x]) then
+        cbxScanDir.Items.Delete(x);
+  if (cbxScanDir.Text<>'') and
+     (DirectoryExists(cbxScanDir.Text)) then begin
+    cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
+    MerkListe(cbxScanDir, AnzDirs);
     Screen.Cursor:=crHourGlass;
     vlist:=TStringList.Create;
     flist:=TStringList.Create;
@@ -7307,8 +7310,8 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     gdist:=0;                                      {gesamt Strecke, nur bei GPS}
     datpos:=0;
     try
-      vlist.Add(IncludeTrailingPathDelimiter(ComboBox8.Text));
-      CreateDirList(ComboBox8.Text, vlist);
+      vlist.Add(IncludeTrailingPathDelimiter(cbxScanDir.Text));
+      CreateDirList(cbxScanDir.Text, vlist);
       for x:=0 to vlist.Count-1 do
         SuchFile(vlist[x], wldcd+bext, flist);
       if flist.Count>1 then begin                  {genug Dateien?}
@@ -7318,17 +7321,17 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         StatusBar1.Update;
         vlist.Clear;  {brauchen wir hier nicht mehr, wird csv für Ausgabe}
         flist.Sort;
-        ProgressBar1.Max:=flist.Count;
-        StringGrid5.BeginUpdate;
+        ProgressBarScan.Max:=flist.Count;
+        gridScanResult.BeginUpdate;
         for x:=0 to flist.Count-1 do               {Dateien abarbeiten}
           BrProtoWerte(flist[x], vlist, flno, gftime, gdist);
-        StringGrid5.Cells[0,0]:=rsNum+'('+IntToStr(flno-1)+')';
-        StringGrid5.EndUpdate;
+        gridScanResult.Cells[0,0]:=rsNum+'('+IntToStr(flno-1)+')';
+        gridScanResult.EndUpdate;
         gfd:=Trunc(gftime);                        {Anzahl Tage der Flugzeit}
         flist.Clear;  {brauchen wir hier nicht mehr, wird splitlist}
         flist.Delimiter:=dstr;                     {Semicolon als Trenner}
         flist.StrictDelimiter:=True;               {keine Spaces als Trenner}
-        case rgCSVtext.ItemIndex of              {Ausgabeformat}
+        case rgCSVtext.ItemIndex of                {Ausgabeformat}
           0: TextAusgabe;
           1: CSVAusgabe;
         end;
@@ -7356,10 +7359,10 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         end;
         Screen.Cursor:=crDefault;
         SaveDialog1.Title:=rsProtSave;
-        SaveDialog1.InitialDir:=ComboBox8.Text;
+        SaveDialog1.InitialDir:=cbxScanDir.Text;
         SaveDialog1.FileName:=CleanDN(capNachweis+'YBr'+prtext);
         if SaveDialog1.Execute then begin
-          ProgressBar1.Position:=0;
+          ProgressBarScan.Position:=0;
           outlist.SaveToFile(SaveDialog1.FileName);
         end;
       end;                                         {Nichts tun bei <2 Dateien}
@@ -7387,7 +7390,7 @@ var vlist, flist, outlist: TStringList;
   begin
     outlist.Add(trenner+tab1+capNachweis+tab1+trenner);
     outlist.Add('');
-    outlist.Add(tabs(rsFlightReport, suff, tabu)+ComboBox1.text); {ggf. Seriennummer}
+    outlist.Add(tabs(rsFlightReport, suff, tabu)+cbxText.text); {ggf. Seriennummer}
     outlist.Add(tabs(rsCreat+tab1, suff, tabu)+
                 FormatDateTime(mzf, now)+'h  '+tab1+rsBy+tab1+
                 ExtractFileName(Application.ExeName)+tab2+version);
@@ -7497,14 +7500,14 @@ var vlist, flist, outlist: TStringList;
   end;
 
 begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
-  if ComboBox8.Items.Count>0 then
-    for x:=ComboBox8.Items.Count-1 downto 0 do     {Liste putzen}
-      if not DirectoryExists(ComboBox8.Items[x]) then
-        ComboBox8.Items.Delete(x);
-  if (ComboBox8.Text<>'') and
-     (DirectoryExists(ComboBox8.Text)) then begin
-    ComboBox8.Text:=ExcludeTrailingPathDelimiter(ComboBox8.Text);
-    MerkListe(ComboBox8, AnzDirs);
+  if cbxScanDir.Items.Count>0 then
+    for x:=cbxScanDir.Items.Count-1 downto 0 do     {Liste putzen}
+      if not DirectoryExists(cbxScanDir.Items[x]) then
+        cbxScanDir.Items.Delete(x);
+  if (cbxScanDir.Text<>'') and
+     (DirectoryExists(cbxScanDir.Text)) then begin
+    cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
+    MerkListe(cbxScanDir, AnzDirs);
     Screen.Cursor:=crHourGlass;
     vlist:=TStringList.Create;
     flist:=TStringList.Create;
@@ -7514,8 +7517,8 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
     gdist:=0;                                      {gesamt Strecke, nur bei GPS}
     datpos:=0;
     try
-      vlist.Add(IncludeTrailingPathDelimiter(ComboBox8.Text));
-      CreateDirList(ComboBox8.Text, vlist);
+      vlist.Add(IncludeTrailingPathDelimiter(cbxScanDir.Text));
+      CreateDirList(cbxScanDir.Text, vlist);
       for x:=0 to vlist.Count-1 do
         SuchFile(vlist[x], h5file+wldcd+fext, flist);
       StatusBar1.Panels[1].Text:=IntToStr(flist.Count); {Anzahl H501 files}
@@ -7525,17 +7528,17 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
         StatusBar1.Update;
         vlist.Clear;  {brauchen wir hier nicht mehr, wird csv für Ausgabe}
         flist.Sort;
-        ProgressBar1.Max:=flist.Count;
-        StringGrid5.BeginUpdate;
+        ProgressBarScan.Max:=flist.Count;
+        gridScanResult.BeginUpdate;
         for x:=0 to flist.Count-1 do               {Dateien abarbeiten}
           H501ProtoWerte(flist[x], vlist, flno, gftime, gdist);
-        StringGrid5.Cells[0,0]:=rsNum+'('+IntToStr(flno-1)+')';
-        StringGrid5.EndUpdate;
+        gridScanResult.Cells[0,0]:=rsNum+'('+IntToStr(flno-1)+')';
+        gridScanResult.EndUpdate;
         gfd:=Trunc(gftime);                        {Anzahl Tage der Flugzeit}
         flist.Clear;  {brauchen wir hier nicht mehr, wird splitlist}
         flist.Delimiter:=dstr;                     {Semicolon als Trenner}
         flist.StrictDelimiter:=True;               {keine Spaces als Trenner}
-        case rgCSVtext.ItemIndex of              {Ausgabeformat}
+        case rgCSVtext.ItemIndex of                {Ausgabeformat}
           0: TextAusgabe;
           1: CSVAusgabe;
         end;
@@ -7563,10 +7566,10 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
         end;
         Screen.Cursor:=crDefault;
         SaveDialog1.Title:=rsProtSave;
-        SaveDialog1.InitialDir:=ComboBox8.Text;
+        SaveDialog1.InitialDir:=cbxScanDir.Text;
         SaveDialog1.FileName:=CleanDN(capNachweis+'H501'+prtext);
         if SaveDialog1.Execute then begin
-          ProgressBar1.Position:=0;
+          ProgressBarScan.Position:=0;
           outlist.SaveToFile(SaveDialog1.FileName);
         end;
       end;                                         {Nichts tun bei <2 Dateien}
@@ -7582,12 +7585,12 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
   end;
 end;
 
-procedure TForm1.BitBtn25Click(Sender: TObject);   {Flugbuch erstellen}
+procedure TForm1.btnFlugBuchClick(Sender: TObject); {Flugbuch erstellen}
 begin
-  StringGrid5.RowCount:=1;                         {Tabelle löschen}
-  StringGrid5.Cells[1, 0]:=capNachweis;            {Überschrift}
-  ProgressBar1.Position:=0;
-  BitBtn26.Tag:=1;
+  gridScanResult.RowCount:=1;                      {Tabelle löschen}
+  gridScanResult.Cells[1, 0]:=capNachweis;         {Überschrift}
+  ProgressBarScan.Position:=0;
+  btnScanErr.Tag:=1;
   YFlugBuch;
   BrFlugBuch;                                      {noch Breeze und H501 versuchen}
 end;
@@ -7604,12 +7607,12 @@ begin
   end;
 end;
 
-procedure TForm1.CheckBox5Change(Sender: TObject); {Autoexposure}
+procedure TForm1.cbExpoAutoChange(Sender: TObject); {Autoexposure}
 var s: string;
 begin
-  FloatSpinEdit1.Enabled:=CheckBox5.Checked;
-  if BitBtn23.Enabled then begin
-    if CheckBox5.Checked then
+  speExpo.Enabled:=cbExpoAuto.Checked;
+  if btnCGO3Time.Enabled then begin
+    if cbExpoAuto.Checked then
       s:='1'
     else
       s:='0';
@@ -7618,16 +7621,16 @@ begin
   end;
 end;
 
-procedure TForm1.CheckBox7Change(Sender: TObject); {Pilotenpfad geändert}
+procedure TForm1.cbPilotChange(Sender: TObject);   {Pilotenpfad geändert}
 begin
   EnSave;                                          {Speichern erlauben}
 end;
 
-procedure TForm1.RadioGroup7Click(Sender: TObject);
+procedure TForm1.rgPicFormatClick(Sender: TObject);
 begin
-  if (RadioGroup7.Enabled) and
-     (RadioGroup7.ItemIndex>=0) then begin
-    CGO3run('SET_PHOTO_FORMAT&format='+RadioGroup7.Items[RadioGroup7.ItemIndex], 0);
+  if (rgPicFormat.Enabled) and
+     (rgPicFormat.ItemIndex>=0) then begin
+    CGO3run('SET_PHOTO_FORMAT&format='+rgPicFormat.Items[rgPicFormat.ItemIndex], 0);
     CGO3run('', 0);
   end;
 end;
@@ -7638,17 +7641,17 @@ var fn: string;
     x, k: integer;
     s1, s2: string;
 begin
-  fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-      ListBox1.Items[ListBox1.ItemIndex]+bext;
+  fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+      lbFlights.Items[lbFlights.ItemIndex]+bext;
   inlist:=TStringList.Create;
   try
     if FileExists(fn)then begin
       inlist.LoadFromFile(fn);
       AppLog.Lines.Add('');
       if pos(plfAndr, inlist[2])>0 then
-        BitBtn3.Tag:=1
+        btnArchive.Tag:=1
       else
-        BitBtn3.Tag:=0;
+        btnArchive.Tag:=0;
       for x:=1 to 5 do begin
         s1:='';
         s2:=inlist[x];
@@ -7661,8 +7664,8 @@ begin
               break;
           end;
           s2:=copy(s2, k+1, length(s2)-k);
-          StringGrid4.Cells[0, x]:=s1;
-          StringGrid4.Cells[1, x]:=s2;
+          gridFirmware.Cells[0, x]:=s1;
+          gridFirmware.Cells[1, x]:=s2;
         end;
       end;
     end;
@@ -7676,28 +7679,28 @@ var FWarr: TarrFW;
     i, az: integer;
 begin
   if PageControl2.ActivePageIndex=2 then begin
-    StringGrid4.Cells[0, 1]:=rsKamera;
-    StringGrid4.Cells[0, 2]:=rsGimbal;
-    StringGrid4.Cells[0, 3]:=rsAutoP;
-    StringGrid4.Cells[0, 4]:='?';
-    StringGrid4.Cells[0, 5]:=rsRealSense;
+    gridFirmware.Cells[0, 1]:=rsKamera;
+    gridFirmware.Cells[0, 2]:=rsGimbal;
+    gridFirmware.Cells[0, 3]:=rsAutoP;
+    gridFirmware.Cells[0, 4]:='?';
+    gridFirmware.Cells[0, 5]:=rsRealSense;
     az:=GetFW(FWarr);
     if az>2 then begin
       AppLog.Lines.Add('');
       for i:=0 to az do begin
-        StringGrid4.Cells[1, i+1]:=FWarr[i];
+        gridFirmware.Cells[1, i+1]:=FWarr[i];
         if FWarr[i]<>'' then
-          AppLog.Lines.Add(StringGrid4.Cells[0, i+1]+suff+FWArr[i]);
+          AppLog.Lines.Add(gridFirmware.Cells[0, i+1]+suff+FWArr[i]);
       end;
     end;
   end;
 end;
 
-procedure TForm1.FloatSpinEdit1Change(Sender: TObject);  {Set EV}
+procedure TForm1.speExpoChange(Sender: TObject);  {Set EV}
 begin
-  if BitBtn23.Enabled then begin
+  if btnCGO3Time.Enabled then begin
     CGO3run('SET_EXPOSURE_VALUE&mode='+
-            FloatToStrf(FloatSpinEdit1.Value, ffFixed, 3, 1), 0);
+            FloatToStrf(speExpo.Value, ffFixed, 3, 1), 0);
     CGO3run('', 0);
   end;
 end;
@@ -7761,39 +7764,39 @@ var abst, idx: integer;                            {Index bestimmen und Werte an
   procedure AnzeigeBreeze;
   begin
     StatusBar1.Panels[3].Text:=FormatDateTime(zzf,
-               ZeitToDT(StringGrid1.Cells[0, SpinEdit3.Value], SpinEdit3.Tag));
+               ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], speDataPoint.Tag));
     StatusBar1.Panels[4].Text:=FormatDateTime(zzf,
-               ZeitToDT(StringGrid1.Cells[0, abst], SpinEdit3.Tag));
+               ZeitToDT(gridDetails.Cells[0, abst], speDataPoint.Tag));
     if pos(capTabSheet10, StatusBar1.Panels[5].Text)<1 then begin
-      StatusBar1.Panels[5].Text:=StringGrid1.Cells[10, SpinEdit3.Value]+'cm - '+
-                 fmode+'='+StringGrid1.Cells[2, SpinEdit3.Value]+tab1+
-                 brFModeToStr(StrToInt(StringGrid1.Cells[StringGrid1.Tag, SpinEdit3.Value]));
+      StatusBar1.Panels[5].Text:=gridDetails.Cells[10, speDataPoint.Value]+'cm - '+
+                 fmode+'='+gridDetails.Cells[2, speDataPoint.Value]+tab1+
+                 brFModeToStr(StrToInt(gridDetails.Cells[gridDetails.Tag, speDataPoint.Value]));
     end;
   end;
 
   procedure AnzeigeYLegacy;
   begin
     StatusBar1.Panels[3].Text:=FormatDateTime(zzf+zzz,
-               ZeitToDT(StringGrid1.Cells[0, SpinEdit3.Value], SpinEdit3.Tag));
+               ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], speDataPoint.Tag));
     StatusBar1.Panels[4].Text:=FormatDateTime(zzf+zzz,
-               ZeitToDT(StringGrid1.Cells[0, abst], SpinEdit3.Tag));
+               ZeitToDT(gridDetails.Cells[0, abst], speDataPoint.Tag));
     if pos(capTabSheet10, StatusBar1.Panels[5].Text)<1 then begin
-      StatusBar1.Panels[5].Text:=StringGrid1.Cells[2, SpinEdit3.Value]+'V - '+
-                 StringGrid1.Cells[4, SpinEdit3.Value]+'m - '+fmode+'='+
-                 StringGrid1.Cells[StringGrid1.Tag, SpinEdit3.Value]+tab1+
-                 FModeToStr(StrToInt(StringGrid1.Cells[StringGrid1.Tag, SpinEdit3.Value]));
+      StatusBar1.Panels[5].Text:=gridDetails.Cells[2, speDataPoint.Value]+'V - '+
+                 gridDetails.Cells[4, speDataPoint.Value]+'m - '+fmode+'='+
+                 gridDetails.Cells[gridDetails.Tag, speDataPoint.Value]+tab1+
+                 FModeToStr(StrToInt(gridDetails.Cells[gridDetails.Tag, speDataPoint.Value]));
     end;
   end;
 
-  procedure AnzeigeH501;           {ToDo}
+  procedure AnzeigeH501;                           {ToDo}
   begin
     StatusBar1.Panels[3].Text:=FormatDateTime(zzf+zzz,
-               ZeitToDT(StringGrid1.Cells[0, SpinEdit3.Value], SpinEdit3.Tag));
+               ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], speDataPoint.Tag));
     StatusBar1.Panels[4].Text:=FormatDateTime(zzf+zzz,
-               ZeitToDT(StringGrid1.Cells[0, abst], SpinEdit3.Tag));
+               ZeitToDT(gridDetails.Cells[0, abst], speDataPoint.Tag));
     if pos(capTabSheet10, StatusBar1.Panels[5].Text)<1 then begin
-      StatusBar1.Panels[5].Text:=StringGrid1.Cells[9, SpinEdit3.Value]+'V - '+
-                 StringGrid1.Cells[4, SpinEdit3.Value]+'m';
+      StatusBar1.Panels[5].Text:=gridDetails.Cells[9, speDataPoint.Value]+'V - '+
+                 gridDetails.Cells[4, speDataPoint.Value]+'m';
     end;
   end;
 
@@ -7801,9 +7804,9 @@ begin
   if ChartToolset2DataPointCrosshairTool1.Enabled then begin
     idx:=ASender.PointIndex+1;
     if (idx>1) and                                 {im gültigen Bereich}
-       (idx<StringGrid1.RowCount) then
-      SpinEdit3.Value:=idx;                        {Datenindex übernehmen}
-    abst:=SpinEdit3.Value+SpinEdit2.Value;         {Ende des Intervalls}
+       (idx<gridDetails.RowCount) then
+      speDataPoint.Value:=idx;                     {Datenindex übernehmen}
+    abst:=speDataPoint.Value+speAnalyze.Value;     {Ende des Intervalls}
 
     try                                            {Versuchen, zweiten Kursor zu setzen}
       Chart1ConstantLine1.Position:=Chart1LineSeries1.XValue[abst];
@@ -7811,10 +7814,10 @@ begin
     except
       Chart1ConstantLine1.Active:=false;
     end;
-    if abst>StringGrid1.RowCount-2 then            {Überlauf vermeiden}
-      abst:=SpinEdit3.Value;
+    if abst>gridDetails.RowCount-2 then            {Überlauf vermeiden}
+      abst:=speDataPoint.Value;
 
-    case SpinEdit3.Tag of
+    case speDataPoint.Tag of
       brID: AnzeigeBreeze;                         {Breeze}
       H501ID: AnzeigeH501;                         {flaretom log recorder}
     else
@@ -7823,16 +7826,16 @@ begin
   end;
 end;
 
-procedure TForm1.CheckBox11Change(Sender: TObject);  {Extrude für KML geändert}
+procedure TForm1.cbExtrudeChange(Sender: TObject); {Extrude für KML geändert}
 begin
-  if CheckBox11.Checked then
-    rgAltitudeType.ItemIndex:=1;                      {Set relative to ground}
+  if cbExtrude.Checked then
+    rgAltitudeType.ItemIndex:=1;                   {Set relative to ground}
   EnSave;
 end;
 
-procedure TForm1.CheckBox1Change(Sender: TObject); {Filteranzeige}
+procedure TForm1.cbVehicleTypeChange(Sender: TObject); {Filteranzeige}
 begin
-  rgVehicleType.Enabled:=CheckBox1.Checked;
+  rgVehicleType.Enabled:=cbVehicleType.Checked;
 end;
 
 function nahe(lat1, lon1, lat2, lon2: double): boolean; {Wert in der Nähe}
@@ -7840,7 +7843,7 @@ begin
   result:=(abs(lat1-lat2)<nhw) and (abs(lon1-lon2)<nhw);
 end;
 
-procedure TForm1.CheckBox3Change(Sender: TObject); {Dashware geändert}
+procedure TForm1.cbDashwChange(Sender: TObject);   {Dashware geändert}
 begin
   EnSave;                                          {Speichern erlauben}
 end;
@@ -7850,26 +7853,26 @@ begin                     {Erneut Speichern erlauben, wenn Farbe geändert wurde
   EnSave;
 end;
 
-procedure TForm1.BitBtn12Click(Sender: TObject);   {Defaulteinstellung}
+procedure TForm1.btnDefaultProfileClick(Sender: TObject);   {Defaulteinstellung}
 begin                  {Reset Schnellanalyse für alle drei Histogramme}
   TimerDiashow.Enabled:=false;
   SetProfile(0);
-  ComboBox10.ItemIndex:=0;                         {Profiles rücksetzen}
+  cbxProfiles.ItemIndex:=0;                         {Profiles rücksetzen}
 end;
 
 {Profiles sind von mir häufig benutzte Einstellungen für die Schnellanalyse.
  Sie sind hier hart codiert und vom Benutzer nicht editierbar.}
 
-procedure TForm1.ComboBox10Change(Sender: TObject);
+procedure TForm1.cbxProfilesChange(Sender: TObject);
 begin                                              {Profile ausgewählt}
-  if ComboBox10.ItemIndex>0 then SetProfile(ComboBox10.ItemIndex);
+  if cbxProfiles.ItemIndex>0 then SetProfile(cbxProfiles.ItemIndex);
 end;
 
 procedure TForm1.SetProfile(idx: integer);         {Profile ausgewählt}
 
   procedure DefaultCl;
   begin
-    ComboBox10.ItemIndex:=0;
+    cbxProfiles.ItemIndex:=0;
     ColorButton2.ButtonColor:=clMaroon;
     ColorButton3.ButtonColor:=clPurple;
     ColorButton4.ButtonColor:=clTeal;
@@ -8014,13 +8017,13 @@ procedure TForm1.SetProfile(idx: integer);         {Profile ausgewählt}
   end;
 
 begin
-  if (SpinEdit3.Tag=MQid) or
-     (SpinEdit3.Tag=H5id) then
+  if (speDataPoint.Tag=MQid) or
+     (speDataPoint.Tag=H5id) then
        exit;
   LabeledEdit1.Tag:=0;                             {Tag=0: Telemetry (Default)}
   LabeledEdit2.Tag:=0;
   LabeledEdit3.Tag:=0;
-  case SpinEdit3.Tag of
+  case speDataPoint.Tag of
     brID: ProfileBreeze;
     h501ID: ProfileH501;
     YTHPid: ProfileYTHPlus;
@@ -8031,38 +8034,43 @@ begin
   Anzeige;                                         {Schnellanalyse ausführen}
   if TimerDiashow.Enabled and
      (idx>0) then begin
-    StatusBar1.Panels[5].Text:=rsProfile+suff+ComboBox10.Items[idx];
+    StatusBar1.Panels[5].Text:=rsProfile+suff+cbxProfiles.Items[idx];
     AppLog.Lines.Add(StatusBar1.Panels[5].Text);
   end;
 end;
 
-procedure TForm1.ComboBox10DblClick(Sender: TObject);
+procedure TForm1.cbxProfilesDblClick(Sender: TObject);
 begin
   PageControl1.ActivePageIndex:=3;                 {Umschalten auf Schnellanalyse}
   Anzeige;
 end;
 
-procedure TForm1.ComboBox2Change(Sender: TObject); {Pfad aufrufen und auswerten}
+procedure TForm1.cbxLogDirChange(Sender: TObject); {Pfad aufrufen und auswerten}
 begin
   SelDirAct('');                                   {Alles neu laden}
 end;
 
-procedure TForm1.ComboBox2DblClick(Sender: TObject);
+procedure TForm1.cbxLogDirDblClick(Sender: TObject);
 begin                                              {Verzeichnis öffnen}
-  OpenDocument(IncludeTrailingPathDelimiter(ComboBox2.Text));
+  OpenDocument(IncludeTrailingPathDelimiter(cbxLogDir.Text));
 end;
 
-procedure TForm1.ComboBox2MouseUp(Sender: TObject; Button: TMouseButton;
+procedure TForm1.cbxLogDirMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);              {Liste löschen}
 begin
   if ssCtrl in Shift then
-    ComboBox2.Items.Clear;
+    cbxLogDir.Items.Clear;
 end;
 
-procedure TForm1.Edit4DblClick(Sender: TObject);   {CGO3 Test Copy to Clipboard}
+procedure TForm1.edReceiveCGO3DblClick(Sender: TObject);   {CGO3 Test Copy to Clipboard}
 begin
-  If Edit4.Text>'' then
-    ClipBoard.AsText:=Edit3.Text+LineEnding+Edit4.Text;
+  If edReceiveCGO3.Text>'' then
+    ClipBoard.AsText:=edSendCGO3.Text+LineEnding+edReceiveCGO3.Text;
+end;
+
+procedure TForm1.rgCSVtextClick(Sender: TObject);
+begin
+
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -8081,8 +8089,8 @@ end;
 procedure TForm1.FormDropFiles(Sender: TObject; const FileNames: array of String);
 begin                                              {Drop Directory to App Window}
   Application.BringToFront;
-  ComboBox2.Text:=GetFlightLogDir(FileNames[0]);
-  SelDirAct(ComboBox2.Text);
+  cbxLogDir.Text:=GetFlightLogDir(FileNames[0]);
+  SelDirAct(cbxLogDir.Text);
 end;
 
 procedure TForm1.FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -8091,11 +8099,11 @@ begin
     if ssCtrl in Shift then begin
       if ChartToolset2DataPointCrosshairTool1.Enabled then begin
         case key of               {Analyse erweitern/einschränken mit +  oder -}
-          107, 187: SpinEdit2.Value:=SpinEdit2.Value+1; {+}
-          109, 189: SpinEdit2.Value:=SpinEdit2.Value-1; {-}
+          107, 187: speAnalyze.Value:=speAnalyze.Value+1; {+}
+          109, 189: speAnalyze.Value:=speAnalyze.Value-1; {-}
         end;
         if key=vk_n then
-          BitBtn14Click(self);                     {Ausschneiden}
+          btnCutClick(self);                       {Ausschneiden}
       end;
       if key=vk_c then
         Chart1.CopyToClipboardBitmap;              {Höhenprofil ins Clipboard}
@@ -8106,8 +8114,8 @@ begin
   if PageControl1.ActivePageIndex=3 then begin     {Schellanalyse}
     if key=vk_ESCAPE then TimerDiashow.Enabled:=false;   {Diashow Profiles stoppen}
     if (key=vk_F5) and
-       (SpinEdit3.Tag<>BrID) then                  {H501 ???}
-      TimerDiashow.Enabled:=true;                        {Weiter}
+       (speDataPoint.Tag<>BrID) then               {H501 ???}
+      TimerDiashow.Enabled:=true;                  {Weiter}
   end;
 end;
 
@@ -8122,8 +8130,8 @@ begin
   if trim(ParamstrUTF8(1))<>'' then begin          {versuchen, Datei zu öffnen}
     try
       Application.BringToFront;
-      ComboBox2.Text:=GetFlightLogDir(ParamstrUTF8(1));
-      SelDirAct(ComboBox2.Text);
+      cbxLogDir.Text:=GetFlightLogDir(ParamstrUTF8(1));
+      SelDirAct(cbxLogDir.Text);
     except
       SelDirAct('');
     end;
@@ -8178,7 +8186,7 @@ end;
 procedure TForm1.GetDDdata(lab: TLabeledEdit); {Wert für Schnellanalyse übergeben}
 begin
   if TreeView1.Selected<>nil then begin
-    ComboBox10.ItemIndex:=0;
+    cbxProfiles.ItemIndex:=0;
     lab.Text:=TreeView1.Selected.Text;
     if TreeView1.Selected.Parent.Text=mndir  then
       lab.Tag:=brID;
@@ -8268,10 +8276,10 @@ begin
   splitlist.Delimiter:=sep;
   splitlist.StrictDelimiter:=True;
   try
-    {if StringGrid1.ColCount=csvanz  .... PX4 CSV auch aufnehmen?}
+    {if gridDetails.ColCount=csvanz  .... PX4 CSV auch aufnehmen?}
 
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-        ListBox1.Items[ListBox1.ItemIndex]+bext;   {Breeze}
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+        lbFlights.Items[lbFlights.ItemIndex]+bext; {Breeze}
     if FileExists(fn) then begin
       newn:=TreeView1.Items.Add(nil, mndir);
       inlist.LoadFromFile(fn);
@@ -8283,8 +8291,8 @@ begin
       exit;
     end;
 
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+h5file+
-        ListBox1.Items[ListBox1.ItemIndex]+fext;   {H501 log recorder}
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+h5file+
+        lbFlights.Items[lbFlights.ItemIndex]+fext; {H501 log recorder}
     if FileExists(fn) then begin
       newn:=TreeView1.Items.Add(nil, H5file);
       inlist.LoadFromFile(fn);
@@ -8297,8 +8305,8 @@ begin
       exit;
     end;
 
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
-        kfile+ListBox1.Items[ListBox1.ItemIndex]+fext;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
+        kfile+lbFlights.Items[lbFlights.ItemIndex]+fext;
     if FileExists(fn) then begin
       newn:=TreeView1.Items.Add(nil, dkpath);      {create Tree node for Telemetry}
       inlist.LoadFromFile(fn);
@@ -8310,8 +8318,8 @@ begin
         addnodes(hdstr, newn);
     end;
 
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+spath+
-                 PathDelim+sfile+ListBox1.Items[ListBox1.ItemIndex]+fext;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+spath+
+                 PathDelim+sfile+lbFlights.Items[lbFlights.ItemIndex]+fext;
     if FileExists(fn) then begin
       newn:=TreeView1.Items.Add(nil, spath);
       inlist.LoadFromFile(fn);
@@ -8319,8 +8327,8 @@ begin
         addnodes(inlist[0], newn);
     end;
 
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+fpath+
-                 PathDelim+ffile+ListBox1.Items[ListBox1.ItemIndex]+fext;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+fpath+
+                 PathDelim+ffile+lbFlights.Items[lbFlights.ItemIndex]+fext;
     if FileExists(fn) then begin
       newn:=TreeView1.Items.Add(nil, fpath);
       inlist.LoadFromFile(fn);
@@ -8375,30 +8383,30 @@ begin
   Chart1BarSeries4.Clear;
   Chart1BarSeries5.Clear;
   Chart1BarSeries7.Clear;
-  PopupMenuTab.Items[0].Enabled:=false;              {GoogleMaps}
-  PopupMenuTab.Items[1].Enabled:=false;              {OSM}
-  PopupMenuTab.Items[4].Enabled:=false;              {Datenanalyse}
-  PopupMenuTab.Items[5].Enabled:=false;              {GoTo #}
-  PopupMenuTab.Items[6].Enabled:=false;              {GoTo Errorflags}
-  PopupMenuTab.Items[9].Enabled:=false;              {Start}
-  PopupMenuTab.Items[10].Enabled:=false;             {Stop}
-  mnCursorEin.Enabled:= false;                       {HDiagamm Kursor}
+  PopupMenuTab.Items[0].Enabled:=false;            {GoogleMaps}
+  PopupMenuTab.Items[1].Enabled:=false;            {OSM}
+  PopupMenuTab.Items[4].Enabled:=false;            {Datenanalyse}
+  PopupMenuTab.Items[5].Enabled:=false;            {GoTo #}
+  PopupMenuTab.Items[6].Enabled:=false;            {GoTo Errorflags}
+  PopupMenuTab.Items[9].Enabled:=false;            {Start}
+  PopupMenuTab.Items[10].Enabled:=false;           {Stop}
+  mnCursorEin.Enabled:= false;                     {HDiagamm Kursor}
   mnProfiles.Enabled:=false;                       {Profiles}
-  mnSlideshow.Enabled:=false;                       {Diashow}
+  mnSlideshow.Enabled:=false;                      {Diashow}
 end;
 
 procedure TForm1.ResetSensorEnv;
 begin
-  PopupMenuTab.Items[0].Enabled:=true;               {GoogleMaps}
-  PopupMenuTab.Items[1].Enabled:=true;               {OSM}
-  PopupMenuTab.Items[4].Enabled:=true;               {Datenanalyse}
-  PopupMenuTab.Items[5].Enabled:=true;               {GoTo #}
-  PopupMenuTab.Items[6].Enabled:=true;               {GoTo Errorflags}
-  PopupMenuTab.Items[9].Enabled:=true;               {Start}
-  PopupMenuTab.Items[10].Enabled:=true;              {Stop}
-  mnCursorEin.Enabled:= true;                        {HDiagamm Kursor}
+  PopupMenuTab.Items[0].Enabled:=true;             {GoogleMaps}
+  PopupMenuTab.Items[1].Enabled:=true;             {OSM}
+  PopupMenuTab.Items[4].Enabled:=true;             {Datenanalyse}
+  PopupMenuTab.Items[5].Enabled:=true;             {GoTo #}
+  PopupMenuTab.Items[6].Enabled:=true;             {GoTo Errorflags}
+  PopupMenuTab.Items[9].Enabled:=true;             {Start}
+  PopupMenuTab.Items[10].Enabled:=true;            {Stop}
+  mnCursorEin.Enabled:= true;                      {HDiagamm Kursor}
   mnProfiles.Enabled:=true;                        {Profiles}
-  mnSlideshow.Enabled:=true;                        {Diashow}
+  mnSlideshow.Enabled:=true;                       {Diashow}
 end;
 
 procedure TForm1.Anzeige;                          {neu anzeigen}
@@ -8406,13 +8414,13 @@ var x: integer;
 
   procedure AnzBreeze;
   begin
-    RadioGroup1.ItemIndex:=0;
-    RadioGroup1.Enabled:=false;                    {nur Telemetrie}
+    rgQuelle.ItemIndex:=0;
+    rgQuelle.Enabled:=false;                       {nur Telemetrie}
     case PageControl1.ActivePageIndex of
-      0: grdOverview.TopRow:=topp[0, 4];           {0 wird sowieso gefüllt}
+      0: gridOverview.TopRow:=topp[0, 4];          {0 wird sowieso gefüllt}
       1: BrAnzeigeCSV(0);
-      2: BrHDiagramm(IncludeTrailingPathDelimiter(ComboBox2.Text)+
-                     ListBox1.Items[ListBox1.ItemIndex]+bext);
+      2: BrHDiagramm(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                     lbFlights.Items[lbFlights.ItemIndex]+bext);
       3: AnzeigeSchnell;
       6: PlatformLesen;
     end;
@@ -8420,12 +8428,12 @@ var x: integer;
 
   procedure AnzYLegacy;
   begin
-    RadioGroup1.Enabled:=true;                     {Auswahl Remote möglich}
+    rgQuelle.Enabled:=true;                        {Auswahl Remote möglich}
     case PageControl1.ActivePageIndex of
-      0: grdOverview.TopRow:=topp[0, 4];           {0 wird sowieso gefüllt}
+      0: gridOverview.TopRow:=topp[0, 4];          {0 wird sowieso gefüllt}
       1: AnzeigeCSV(0);
-      2: HDiagramm(IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
-                   kfile+ListBox1.Items[ListBox1.ItemIndex]+fext);
+      2: HDiagramm(IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
+                   kfile+lbFlights.Items[lbFlights.ItemIndex]+fext);
       3: AnzeigeSchnell;
       6: FirmwareLesen;
     end;
@@ -8433,19 +8441,19 @@ var x: integer;
 
   procedure AnzH501;
   begin
-    RadioGroup1.Enabled:=true;                     {Auswahl Remote möglich}
+    rgQuelle.Enabled:=true;                        {Auswahl Remote möglich}
     case PageControl1.ActivePageIndex of
-      0: grdOverview.TopRow:=topp[0, 4];           {0 wird sowieso gefüllt}
+      0: gridOverview.TopRow:=topp[0, 4];          {0 wird sowieso gefüllt}
       1: H501AnzeigeCSV(0);
-      2: H501HDiagramm(IncludeTrailingPathDelimiter(ComboBox2.Text)+H5file+
-                       ListBox1.Items[ListBox1.ItemIndex]+fext);
+      2: H501HDiagramm(IncludeTrailingPathDelimiter(cbxLogDir.Text)+H5file+
+                       lbFlights.Items[lbFlights.ItemIndex]+fext);
       3: AnzeigeSchnell;
     end;
   end;
 
 begin
-  if (SpinEdit3.Tag=MQid) or                       {nichts tun für MantisQ}
-     (SpinEdit3.Tag=H5id) then                     {nichts tun für H520}
+  if (speDataPoint.Tag=MQid) or                    {nichts tun für MantisQ}
+     (speDataPoint.Tag=H5id) then                  {nichts tun für H520}
        exit;
   AppLogTimeStamp('');
   DefaultFormatSettings.DecimalSeparator:='.';
@@ -8455,30 +8463,30 @@ begin
       Form2.Chart1ConstantLine1.Active:=false;     {nicht bei Schnellanalyse}
     except
     end;
-  for x:=1 to StringGrid4.RowCount-1 do            {FW Tabelle löschen}
-    StringGrid4.Cells[1, x]:='';
-  if ListBox1.Items.Count>0 then begin             {Dateien erkannt}
-    ListBox1.Tag:=ListBox1.ItemIndex;              {Dateinummer merken}
-    case RadioGroup1.ItemIndex of                  {Voreinstellungen abh. von Quelle}
+  for x:=1 to gridFirmware.RowCount-1 do           {FW Tabelle löschen}
+    gridFirmware.Cells[1, x]:='';
+  if lbFlights.Items.Count>0 then begin            {Dateien erkannt}
+    lbFlights.Tag:=lbFlights.ItemIndex;            {Dateinummer merken}
+    case rgQuelle.ItemIndex of                     {Voreinstellungen abh. von Quelle}
       0: ResetSensorEnv;                           {Kopter - Telemetrie}
       1: ResetSensorEnv;                           {ST10 - RemoteGPS}
       2: begin                                     {Funk - Remote}
            ResetSensorEnv;
-           PopupMenuTab.Items[0].Enabled:=false;     {GoogleMaps}
-           PopupMenuTab.Items[1].Enabled:=false;     {OSM}
+           PopupMenuTab.Items[0].Enabled:=false;   {GoogleMaps}
+           PopupMenuTab.Items[1].Enabled:=false;   {OSM}
          end;
       3: SetSensorEnv;                             {Sensor files}
     end;
-    case SpinEdit3.Tag of
+    case speDataPoint.Tag of
       brID: AnzBreeze;                             {Breeze}
       H501ID: AnzH501;                             {Hubsan}
     else
       AnzYLegacy;                                  {Rest der Yuneec Welt}
     end;
-    ComboBox10.Enabled:=RadioGroup1.Enabled;       {Profiles nicht bei Breeze}
-    mnMainStart.Enabled:=RadioGroup1.Enabled;       {Menüs abh. von Type}
-    mnMainStop.Enabled:=RadioGroup1.Enabled;
-    mnProfiles.Enabled:=RadioGroup1.Enabled;       {Menü Profiles nicht für Breeze}
+    cbxProfiles.Enabled:=rgQuelle.Enabled;         {Profiles nicht bei Breeze}
+    mnMainStart.Enabled:=rgQuelle.Enabled;         {Menüs abh. von Type}
+    mnMainStop.Enabled:=rgQuelle.Enabled;
+    mnProfiles.Enabled:=rgQuelle.Enabled;          {Menü Profiles nicht für Breeze}
     StatusBar1.Tag:=0;                             {Zeiten nicht mit kopieren}
     LoadTree;                                      {Spaltenliste aktualisieren}
   end;                                             {Ende keine Dateien}
@@ -8487,29 +8495,29 @@ end;
 procedure TForm1.ShowMQ;                           {Anzeige SensorFile Mantis Q}
 var fn: string;
 begin
-  if ListBox1.Tag<>ListBox1.ItemIndex then begin   {nur neue Datei}
-    PopupMenuTab.Items[0].Enabled:=false;            {GoogleMaps}
-    PopupMenuTab.Items[1].Enabled:=false;            {OSM}
-    PopupMenuTab.Items[4].Enabled:=false;            {Datenanalyse}
-    PopupMenuTab.Items[5].Enabled:=false;            {GoTo #}
-    PopupMenuTab.Items[6].Enabled:=false;            {GoTo Errorflags}
-    PopupMenuTab.Items[9].Enabled:=false;            {Start}
-    PopupMenuTab.Items[10].Enabled:=false;           {Stop}
+  if lbFlights.Tag<>lbFlights.ItemIndex then begin {nur neue Datei}
+    PopupMenuTab.Items[0].Enabled:=false;          {GoogleMaps}
+    PopupMenuTab.Items[1].Enabled:=false;          {OSM}
+    PopupMenuTab.Items[4].Enabled:=false;          {Datenanalyse}
+    PopupMenuTab.Items[5].Enabled:=false;          {GoTo #}
+    PopupMenuTab.Items[6].Enabled:=false;          {GoTo Errorflags}
+    PopupMenuTab.Items[9].Enabled:=false;          {Start}
+    PopupMenuTab.Items[10].Enabled:=false;         {Stop}
     PageControl1.ActivePageIndex:=1;               {Detail}
-    RadioGroup1.ItemIndex:=3;                      {Sensor Files}
-    RadioGroup1.Enabled:=false;
-    ListBox1.Tag:=ListBox1.ItemIndex;              {Dateinummer merken}
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-        nfile+ListBox1.Items[ListBox1.ItemIndex]+wext;
+    rgQuelle.ItemIndex:=3;                         {Sensor Files}
+    rgQuelle.Enabled:=false;
+    lbFlights.Tag:=lbFlights.ItemIndex;            {Dateinummer merken}
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+        nfile+lbFlights.Items[lbFlights.ItemIndex]+wext;
     if Fileexists(fn) then begin
       StatusBar1.Panels[5].Text:=fn;
-      ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false, false);
+      ShowSensorPlus(fn, lbFlights.ItemIndex, cbSensorKML.Checked, true, false, false);
     end else begin                                 {alternativ yuneec_*.log file}
-      fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-          mfile+ListBox1.Items[ListBox1.ItemIndex]+bext;
+      fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+          mfile+lbFlights.Items[lbFlights.ItemIndex]+bext;
       if Fileexists(fn) then begin
         StatusBar1.Panels[5].Text:=fn;
-        ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false, false);
+        ShowSensorPlus(fn, lbFlights.ItemIndex, cbSensorKML.Checked, true, false, false);
       end;
     end;
   end;
@@ -8518,39 +8526,39 @@ end;
 procedure TForm1.ShowH520;                         {Anzeige TLOG File H520}
 var fn: string;
 begin
-  if ListBox1.Tag<>ListBox1.ItemIndex then begin   {nur neue Datei}
-    PopupMenuTab.Items[0].Enabled:=false;            {GoogleMaps}
-    PopupMenuTab.Items[1].Enabled:=false;            {OSM}
-    PopupMenuTab.Items[4].Enabled:=false;            {Datenanalyse}
-    PopupMenuTab.Items[5].Enabled:=false;            {GoTo #}
-    PopupMenuTab.Items[6].Enabled:=false;            {GoTo Errorflags}
-    PopupMenuTab.Items[9].Enabled:=false;            {Start}
-    PopupMenuTab.Items[10].Enabled:=false;           {Stop}
+  if lbFlights.Tag<>lbFlights.ItemIndex then begin {nur neue Datei}
+    PopupMenuTab.Items[0].Enabled:=false;          {GoogleMaps}
+    PopupMenuTab.Items[1].Enabled:=false;          {OSM}
+    PopupMenuTab.Items[4].Enabled:=false;          {Datenanalyse}
+    PopupMenuTab.Items[5].Enabled:=false;          {GoTo #}
+    PopupMenuTab.Items[6].Enabled:=false;          {GoTo Errorflags}
+    PopupMenuTab.Items[9].Enabled:=false;          {Start}
+    PopupMenuTab.Items[10].Enabled:=false;         {Stop}
     PageControl1.ActivePageIndex:=1;               {Detail}
-    RadioGroup1.ItemIndex:=3;                      {Sensor Files}
-    RadioGroup1.Enabled:=false;
-    ListBox1.Tag:=ListBox1.ItemIndex;              {Dateinummer Index merken}
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-        ListBox1.Items[ListBox1.ItemIndex]+hext;   {Dateinamenstamm+.tlog}
+    rgQuelle.ItemIndex:=3;                         {Sensor Files}
+    rgQuelle.Enabled:=false;
+    lbFlights.Tag:=lbFlights.ItemIndex;            {Dateinummer Index merken}
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+        lbFlights.Items[lbFlights.ItemIndex]+hext; {Dateinamenstamm+.tlog}
     if Fileexists(fn) then begin
       StatusBar1.Panels[5].Text:=fn;
-      ShowSensorPlus(fn, ListBox1.ItemIndex, CheckBox10.Checked, true, false, false);
+      ShowSensorPlus(fn, lbFlights.ItemIndex, cbSensorKML.Checked, true, false, false);
     end;
   end;
 end;
 
-procedure TForm1.ListBox1Click(Sender: TObject);   {Anzeige wenn Dateiwechsel}
+procedure TForm1.lbFlightsClick(Sender: TObject);  {Anzeige wenn Dateiwechsel}
 begin
-  if (ListBox1.Items.Count>0) and
-     (ListBox1.ItemIndex<>ListBox1.Tag) then begin {nur bei neuer Datei}
+  if (lbFlights.Items.Count>0) and
+     (lbFlights.ItemIndex<>lbFlights.Tag) then begin {nur bei neuer Datei}
     TimerDblClick.Enabled:=false;
-    TimerDiashow.Enabled:=false;                         {Stop Diashow Profiles}
+    TimerDiashow.Enabled:=false;                   {Stop Diashow Profiles}
     if Form2<>nil then
       Form2.Close;                                 {Detailfenster schließen}
     cutb:=0;                                       {Zeitstempel zum Ausschneiden}
     cute:=0;                                       {löschen}
     tpos:=0;                                       {Position zurücksetzen}
-    case SpinEdit3.Tag of
+    case speDataPoint.Tag of
       MQid: ShowMQ;                                {Sensor_*.txt vom Mantis Q}
       H5id: ShowH520;                              {*.tlog vom H520}
       else Anzeige;                                {alle anderen herkömmlich}
@@ -8558,7 +8566,7 @@ begin
   end;
 end;
 
-procedure TForm1.ListBox1DblClick(Sender: TObject); {Re-read the Filelist}
+procedure TForm1.lbFlightsDblClick(Sender: TObject); {Re-read the Filelist}
 begin
   SelDirAct('');
 end;
@@ -8584,11 +8592,11 @@ begin
       MAVmsg.Tag:=MAVmsg.Tag or 1;
     MAVmsg.Tag:=MAVmsg.Tag shl 1;
   end else
-    MAVmsgDefault;                                {all checked}
+    MAVmsgDefault;                                 {all checked}
 end;
 
 procedure TForm1.MAVmsgItemClick(Sender: TObject; Index: integer);
-var i: integer;                                   {Save check settings to .Tag}
+var i: integer;                                    {Save check settings to .Tag}
 begin
   MAVmsg.Tag:=0;
   for i:=0 to MAVmsg.Items.Count-1 do begin
@@ -8598,9 +8606,9 @@ begin
   end;
 end;
 
-procedure TForm1.Memo1Change(Sender: TObject);     {Änderungen übernehmen}
+procedure TForm1.mmoTextChange(Sender: TObject);   {Änderungen übernehmen}
 begin
-  ComboBox1.Items.Assign(Memo1.Lines);
+  cbxText.Items.Assign(mmoText.Lines);
 end;
 
 procedure TForm1.mnSaveAsQuickClick(Sender: TObject); {Menü: GoTo Settings}
@@ -8612,24 +8620,24 @@ end;
 procedure TForm1.mnResetProfileClick(Sender: TObject); {Menü: Default}
 begin
   TimerDiashow.Enabled:=false;
-  if (SpinEdit3.Tag=MQid) or                       {nichts tun für MantisQ}
-     (SpinEdit3.Tag=H5id) then                     {nichts tun für H520}
+  if (speDataPoint.Tag=MQid) or                    {nichts tun für MantisQ}
+     (speDataPoint.Tag=H5id) then                  {nichts tun für H520}
        exit;
   SetProfile(0);
-  ComboBox10.ItemIndex:=0;                         {Profiles rücksetzen}
+  cbxProfiles.ItemIndex:=0;                        {Profiles rücksetzen}
 end;
 
 procedure TForm1.mnProfModeClick(Sender: TObject); {Menü Profile FlightModes}
 begin
   TimerDiashow.Enabled:=false;
   SetProfile(1);
-  ComboBox10.ItemIndex:=0;
+  cbxProfiles.ItemIndex:=0;
 end;
 
 procedure TForm1.FreigabeCut(a: boolean);          {Freigabe und Anzeige Cut}
 var ts: TDateTime;
 begin
-  BitBtn14.Enabled:=false;                         {Default: nicht gültig}
+  btnCut.Enabled:=false;                           {Default: nicht gültig}
   Label13.Caption:=capLabel13;
   Label14.Caption:=capLabel14;
   Label15.Caption:='';                             {Dauer leer}
@@ -8646,7 +8654,7 @@ begin
     Label14.Caption:=FormatDateTime(vzf, cute);
   if (cutb>0) and
      (cute>cutb) then begin                        {Dauer anzeigen}
-    BitBtn14.Enabled:=true;
+    btnCut.Enabled:=true;
     Label15.Caption:=rsDauer+tab1+FormatDateTime('= nn:ss'+zzz, cute-cutb);
     if a then begin
       StatusBar1.Panels[5].Text:=Label15.Caption;  {Textfeld überschreiben}
@@ -8658,12 +8666,12 @@ begin
     StatusBar1.Panels[3].Text:=Label13.Caption;
     StatusBar1.Panels[4].Text:=Label14.Caption;
   end;
-  mnCut.Enabled:=BitBtn14.Enabled;
-  mnCutTab.Enabled:=BitBtn14.Enabled;
+  mnCut.Enabled:=btnCut.Enabled;
+  mnCutTab.Enabled:=btnCut.Enabled;
   StatusBar1.Tag:=0;                               {nicht kopieren}
 end;
 
-procedure TForm1.mnDelTabClick(Sender: TObject); {Reset Beginn/Ende}
+procedure TForm1.mnDelTabClick(Sender: TObject);   {Reset Beginn/Ende}
 begin
   cutb:=0;
   cute:=0;
@@ -8678,14 +8686,14 @@ end;
 procedure TForm1.SetStartP;                        {Startpunkt setzen}
 begin
   try
-    cutb:=ZeitToDT(StringGrid1.Cells[0, SpinEdit3.Value], SpinEdit3.Tag);
+    cutb:=ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], speDataPoint.Tag);
   except
     cutb:=0;
   end;
   FreigabeCut(true);
 end;
 
-procedure TForm1.mnStopTabClick(Sender: TObject); {Endpunkt setzen}
+procedure TForm1.mnStopTabClick(Sender: TObject);  {Endpunkt setzen}
 begin
   SetEndP;
 end;
@@ -8693,7 +8701,7 @@ end;
 procedure TForm1.SetEndP;                          {Endpunkt setzen}
 begin
   try
-    cute:=ZeitToDT(StringGrid1.Cells[0, SpinEdit3.Value], SpinEdit3.Tag);
+    cute:=ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], speDataPoint.Tag);
   except
     cute:=0;
   end;
@@ -8702,31 +8710,31 @@ end;
 
 procedure TForm1.PageControl1Change(Sender: TObject);
 begin                                              {Tabs umschalten}
-  if StringGrid1.ColCount>=csvanz then             {nichts tun bei Anzeige Sensor}
+  if gridDetails.ColCount>=csvanz then             {nichts tun bei Anzeige Sensor}
     exit;
-  TimerDiashow.Enabled:=false;                           {Diashow Profiles stoppen}
+  TimerDiashow.Enabled:=false;                     {Diashow Profiles stoppen}
   GroupBox11.Tag:=0;                               {Suche zurücksetzen}
-  ProgressBar1.Position:=0;
-  ComboBox10.ItemIndex:=0;                         {Profiles zurücksetzen}
-  rgVehicleType.Enabled:=CheckBox1.Checked;
-  ComboBox9.Enabled:=false;
-  case PageControl1.ActivePageIndex of     {alle anderen Fälle ohne Änderung}
+  ProgressBarScan.Position:=0;
+  cbxProfiles.ItemIndex:=0;                        {Profiles zurücksetzen}
+  rgVehicleType.Enabled:=cbVehicleType.Checked;
+  cbxSearch.Enabled:=false;
+  case PageControl1.ActivePageIndex of             {alle anderen Fälle ohne Änderung}
     1: begin                                       {Datentabelle}
-         ComboBox9.Enabled:=true;                  {nur bei Datentabelle}
-         if StringGrid1.ColCount<YTHPcols then begin
-           grdOverview.Tag:=1;
+         cbxSearch.Enabled:=true;                  {nur bei Datentabelle}
+         if gridDetails.ColCount<YTHPcols then begin
+           gridOverview.Tag:=1;
            Anzeige;
          end;
        end;
     2: begin
-         grdOverview.Tag:=2;                       {Höhendiagramm}
+         gridOverview.Tag:=2;                      {Höhendiagramm}
          Anzeige;
        end;
     3: begin
-         grdOverview.Tag:=3;                       {Schnellanalyse}
+         gridOverview.Tag:=3;                      {Schnellanalyse}
          Anzeige;
        end;
-    4: ComboBox9.Enabled:=true;                    {Scan, Suche erlauben}
+    4: cbxSearch.Enabled:=true;                    {Scan, Suche erlauben}
     6: Anzeige;                                    {FW anzeigen wenn vorhanden}
   end;                                             {Tabs merken}
 end;
@@ -8747,8 +8755,8 @@ const bgid=999999;
   procedure WerteBreeze;
   var x: integer;
   begin
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-        ListBox1.Items[z]+bext;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+        lbFlights.Items[z]+bext;
     try
       inlist.LoadFromFile(fn);
     except
@@ -8757,35 +8765,35 @@ const bgid=999999;
     end;
     vld:=(pos(brsnid, inlist[5])>0) and (pos(brfmode, inlist[8])>0);
     StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
-    for x:=9 to inlist.count-1 do begin          {Daten einlesen}
+    for x:=9 to inlist.count-1 do begin            {Daten einlesen}
       splitlist.DelimitedText:=inlist[x];
-      if (splitlist.Count>anzsp) then begin      {Konsistenz checken (Breeze)}
-        h:=StrToFloatN(splitlist[10])/100;       {Altitude}
+      if (splitlist.Count>anzsp) then begin        {Konsistenz checken (Breeze)}
+        h:=StrToFloatN(splitlist[10])/100;         {Altitude}
         if testh(h) then begin
           u:=BrUmrech(StrToFloatN(splitlist[21])); {Voltage}
           if (u>umax) and
              (u<110) then
             umax:=u;
-          e:=StrToIntDef(trim(splitlist[19]), 0);{Errorflag}
-          topp[z, 6]:=topp[z, 6] or e;           {ID für Zeile einfärben e-flags}
+          e:=StrToIntDef(trim(splitlist[19]), 0);  {Errorflag}
+          topp[z, 6]:=topp[z, 6] or e;             {ID für Zeile einfärben e-flags}
           if (e and 1)>0 then
             uw1:=true;
           if (e and 2)>0 then
             uw2:=true;
-          if (e and 4)>0 then                    {Motor failsave}
-            topp[z, 6]:=topp[z, 6] or 256;       {ID für Emergency}
-          if (trim(splitlist[14])<>'0') then begin    {reale Flüge}
+          if (e and 4)>0 then                      {Motor failsave}
+            topp[z, 6]:=topp[z, 6] or 256;         {ID für Emergency}
+          if (trim(splitlist[14])<>'0') then begin {reale Flüge}
             if not nflg then begin
-              if bg1<bgid then flt:=flt+ed-bg1;  {Rest noch aufaddieren}
-              bg1:=bgid;                         {bg zurücksetzen bei Lücken}
+              if bg1<bgid then flt:=flt+ed-bg1;    {Rest noch aufaddieren}
+              bg1:=bgid;                           {bg zurücksetzen bei Lücken}
             end;
             inc(n);
             nflg:=true;
-            ed:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+            ed:=ZeitToDT(splitlist[0], speDataPoint.Tag);
             if bg>ed then
-              bg:=ed;                            {Beginnzeit ohne GPS}
+              bg:=ed;                              {Beginnzeit ohne GPS}
             if bg1>ed then
-              bg1:=ed;                           {Teil-Beginnzeit ohne GPS}
+              bg1:=ed;                             {Teil-Beginnzeit ohne GPS}
             if h>hmax then
               hmax:=h;
             if (u<umin) and
@@ -8795,7 +8803,7 @@ const bgid=999999;
                NichtLeer(splitlist[13]) then begin
               inc(g);
               if (slat='') then begin
-                slat:=splitlist[12];             {Homepoint speichern}
+                slat:=splitlist[12];               {Homepoint speichern}
                 lat1:=BrCoordToFloat(slat);
                 lon1:=BrCoordToFloat(splitlist[13]);
                 lat3:=lat1;
@@ -8809,7 +8817,7 @@ const bgid=999999;
               if (u<uming) and
                  (u>0) then
                 uming:=u;
-              if slat<>'' then begin             {Startpunkt mit GPS}
+              if slat<>'' then begin               {Startpunkt mit GPS}
                 lat2:=BrCoordToFloat(splitlist[12]);
                 lon2:=BrCoordToFloat(splitlist[13]);
                 dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
@@ -8830,14 +8838,14 @@ const bgid=999999;
     end;
     flt:=flt+ed-bg1;
     splitlist.DelimitedText:=inlist[inlist.count-1];
-    tend:=ZeitToDT(splitlist[0], SpinEdit3.Tag);   {letzten Zeitstempel merken}
+    tend:=ZeitToDT(splitlist[0], speDataPoint.Tag); {letzten Zeitstempel merken}
   end;
 
   procedure WerteH501;
   var x, frms: integer;
   begin
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+H5file+
-        ListBox1.Items[z]+fext;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+H5file+
+        lbFlights.Items[z]+fext;
     splitlist.Delimiter:=dstr;
     try
       inlist.LoadFromFile(fn);
@@ -8863,8 +8871,8 @@ const bgid=999999;
           if tas>tasmax then
             tasmax:=tas;
           inc(n);
-          ed:=GetDateFile(ListBox1.Items[z]);
-          ed:=ed+ZeitToDT(splitlist[0], SpinEdit3.Tag);
+          ed:=GetDateFile(lbFlights.Items[z]);
+          ed:=ed+ZeitToDT(splitlist[0], speDataPoint.Tag);
           if bg>ed then
             bg:=ed;                                {Beginnzeit ohne GPS}
           if bg1>ed then
@@ -8900,12 +8908,12 @@ const bgid=999999;
               dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
               if dist>emax then emax:=dist;
               ddist:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
-              strecke:=strecke+ddist;            {Strecke aufaddieren}
-              lat3:=lat2;                        {letzten Punkt speichern}
+              strecke:=strecke+ddist;              {Strecke aufaddieren}
+              lat3:=lat2;                          {letzten Punkt speichern}
               lon3:=lon2;
             end;
-          end;                                   {Ende mit GPS Daten}
-        end;                                     {Ende realer Flug}
+          end;                                     {Ende mit GPS Daten}
+        end;                                       {Ende realer Flug}
       end else begin
         StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
         AppLog.Lines.Add('''8370'+suff+StatusBar1.Panels[5].Text);
@@ -8913,84 +8921,84 @@ const bgid=999999;
     end;
     flt:=flt+ed-bg1;
     splitlist.DelimitedText:=inlist[inlist.count-1];
-    tend:=ZeitToDT(splitlist[0], SpinEdit3.Tag); {letzten Zeitstempel merken}
+    tend:=ZeitToDT(splitlist[0], speDataPoint.Tag); {letzten Zeitstempel merken}
   end;
 
    procedure WerteYLegacy;
    var x: integer;
    begin
-     fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
-         kfile+ListBox1.Items[z]+fext;
+     fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
+         kfile+lbFlights.Items[z]+fext;
      try
        inlist.LoadFromFile(fn);
      except
        StatusBar1.Panels[5].Text:=fn+nixda;
        AppLog.Lines.Add(StatusBar1.Panels[5].Text);
      end;
-     if inlist.count>2 then begin                 {Überschrift und mind. 2 Zeile}
+     if inlist.count>2 then begin                  {Überschrift und mind. 2 Zeile}
        StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
        splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
-       if (splitlist.Count>anzsp) then begin      {genug Spalten in Überschrift}
-         vld:=fModeFinden(splitlist);             {Position f-mode merken}
-         if SpinEdit3.Tag<>YTHPid then begin      {YTH Plus nicht überschreiben}
-           splitlist.DelimitedText:=inlist[2];    {2. Datenzeile, v_type ermitteln}
-           SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
-           OverwriteVT;                           {Overwrite for PX4 Thunderbird}
+       if (splitlist.Count>anzsp) then begin       {genug Spalten in Überschrift}
+         vld:=fModeFinden(splitlist);              {Position f-mode merken}
+         if speDataPoint.Tag<>YTHPid then begin    {YTH Plus nicht überschreiben}
+           splitlist.DelimitedText:=inlist[2];     {2. Datenzeile, v_type ermitteln}
+           speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
+           OverwriteVT;                            {Overwrite for PX4 Thunderbird}
          end;
          for x:=1 to inlist.Count-1 do begin
            if CheckE7(inlist[x]) then begin
              splitlist.DelimitedText:=inlist[x];
-             if (splitlist.Count>anzsp) and       {Konsistenz Daten checken}
-                 CheckVT(splitlist[StringGrid1.Tag+2],
-                         splitlist[StringGrid1.Tag]) then begin   {YTH Plus sinnvoll}
-               h:=StrToFloatN(splitlist[4]);      {Altitude}
+             if (splitlist.Count>anzsp) and        {Konsistenz Daten checken}
+                 CheckVT(splitlist[gridDetails.Tag+2],
+                         splitlist[gridDetails.Tag]) then begin   {YTH Plus sinnvoll}
+               h:=StrToFloatN(splitlist[4]);       {Altitude}
                if testh(h) then begin
-                 tas:=StrToFloatN(splitlist[7]);  {True Air Speed in m/s}
+                 tas:=StrToFloatN(splitlist[7]);   {True Air Speed in m/s}
                  if (StrToFloatN(splitlist[3])>0) and               {Simulatorflug}
                     (splitlist[15]='231') then
                    simu:=true;
-                 u:=StrToFloatN(splitlist[2]);    {Voltage}
+                 u:=StrToFloatN(splitlist[2]);     {Voltage}
                  if (u>umax) and
                     (u<200) then
                    umax:=u;
-                 if GetRFM(splitlist[StringGrid1.Tag],  {Flight Mode}
-                           SpinEdit3.Tag,         {Vehicle Type}
+                 if GetRFM(splitlist[gridDetails.Tag],  {Flight Mode}
+                           speDataPoint.Tag,       {Vehicle Type}
                            InFlight(h, tas1, tas)) then begin
-                   if not nflg then begin         {nur reale Flüge}
+                   if not nflg then begin          {nur reale Flüge}
                      if bg1<bgid then
                        flt:=flt+ed-bg1;
                      bg1:=bgid;
                    end;
-                   inc(n);                        {Anzahl Datensätze real}
+                   inc(n);                         {Anzahl Datensätze real}
                    nflg:=true;
 
-                   if SpinEdit3.Tag=YTHPid then   {YTH Plus vorerst Error Flag ausblenden}
+                   if speDataPoint.Tag=YTHPid then {YTH Plus vorerst Error Flag ausblenden}
                      e:=0
                    else
-                     e:=StrToIntDef(splitlist[StringGrid1.Tag+3], 0); {Errorflag}
+                     e:=StrToIntDef(splitlist[gridDetails.Tag+3], 0); {Errorflag}
 
-                   topp[z, 6]:=topp[z, 6] or e;   {ID für Zeile einfärben e-flags}
+                   topp[z, 6]:=topp[z, 6] or e;    {ID für Zeile einfärben e-flags}
                    if (e and 1)>0 then
                      uw1:=true;
                    if (e and 2)>0 then
                      uw2:=true;
-                   if SpinEdit3.Tag=3 then begin  {Blade 350QX}
-                     if splitlist[StringGrid1.Tag]='8' then
+                   if speDataPoint.Tag=3 then begin  {Blade 350QX}
+                     if splitlist[gridDetails.Tag]='8' then
                        topp[z, 6]:=topp[z, 6] or 256; {ID für Emergency}
 
                    end else
-                     if SpinEdit3.Tag=YTHPid then begin {YTH Plus}
+                     if speDataPoint.Tag=YTHPid then begin {YTH Plus}
                      //   Emergency unknown for YTH Plus --> nichts tun
 
-                   end else begin                 {Alle anderen sollten 12 haben}
-                     if splitlist[StringGrid1.Tag]='12' then
+                   end else begin                  {Alle anderen sollten 12 haben}
+                     if splitlist[gridDetails.Tag]='12' then
                        topp[z, 6]:=topp[z, 6] or 256; {ID für Emergency}
                    end;
-                   ed:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+                   ed:=ZeitToDT(splitlist[0], speDataPoint.Tag);
                    if bg>ed then
-                     bg:=ed;                      {Beginnzeit ohne GPS}
+                     bg:=ed;                       {Beginnzeit ohne GPS}
                    if bg1>ed then
-                     bg1:=ed;                     {Teil-Beginnzeit ohne GPS}
+                     bg1:=ed;                      {Teil-Beginnzeit ohne GPS}
                    if h>hmax then
                      hmax:=h;
                    if tas>tasmax then
@@ -9003,7 +9011,7 @@ const bgid=999999;
                      inc(g);
                      if (slat='') and
                         (lowercase(splitlist[8])=idtrue) then begin
-                       slat:=splitlist[5];        {Homepoint speichern}
+                       slat:=splitlist[5];         {Homepoint speichern}
                        lat1:=StrToFloatN(slat);
                        lon1:=StrToFloatN(splitlist[6]);
                        lat3:=lat1;
@@ -9019,28 +9027,28 @@ const bgid=999999;
                      if (u<uming) and
                         (u>1) then
                        uming:=u;
-                     if slat<>'' then begin       {Startpunkt mit GPS}
+                     if slat<>'' then begin        {Startpunkt mit GPS}
                        lat2:=StrToFloatN(splitlist[5]);
                        lon2:=StrToFloatN(splitlist[6]);
                        dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
                        ddist:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
-                       if dist>emax then          {größte Entfernung zum Start}
+                       if dist>emax then           {größte Entfernung zum Start}
                          emax:=dist;
-                       strecke:=strecke+ddist;    {Strecke aufaddieren}
-                       lat3:=lat2;                {letzten Punkt speichern}
+                       strecke:=strecke+ddist;     {Strecke aufaddieren}
+                       lat3:=lat2;                 {letzten Punkt speichern}
                        lon3:=lon2;
                      end;
-                   end;                           {Ende mit GPS Daten}
+                   end;                            {Ende mit GPS Daten}
                  end else
-                   nflg:=false;                   {Ende realer Flug}
-                 tas1:=tas;                       {letzte tas merken für Glättung}
+                   nflg:=false;                    {Ende realer Flug}
+                 tas1:=tas;                        {letzte tas merken für Glättung}
                end;
-             end;                                 {Ende Konsistenz und CheckVT}
-           end;                                   {Ende CheckE7}
-         end;                                     {Ende Einlesen}
+             end;                                  {Ende Konsistenz und CheckVT}
+           end;                                    {Ende CheckE7}
+         end;                                      {Ende Einlesen}
          flt:=flt+ed-bg1;
          splitlist.DelimitedText:=inlist[inlist.count-1];
-         tend:=ZeitToDT(splitlist[0], SpinEdit3.Tag); {letzten Zeitstempel merken}
+         tend:=ZeitToDT(splitlist[0], speDataPoint.Tag); {letzten Zeitstempel merken}
        end else begin
          StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;    {Ende Konsistenz checken}
          AppLog.Lines.Add('''8505'+suff+StatusBar1.Panels[5].Text);
@@ -9049,8 +9057,8 @@ const bgid=999999;
    end;
 
 begin
-  if (SpinEdit3.Tag=H5id) or
-     (SpinEdit3.Tag=MQid) then
+  if (speDataPoint.Tag=H5id) or
+     (speDataPoint.Tag=MQid) then
     exit;                                          {nichts tun bei Anzeige PX4}
   screen.Cursor:=crHourGlass;
   inlist:=TStringList.Create;
@@ -9080,99 +9088,99 @@ begin
   flt:=0;                                          {reale Flugzeit}
   ed:=0;                                           {Zeitstempel -> letzte ist Ende}
   try
-    case SpinEdit3.Tag of
+    case speDataPoint.Tag of
       brID: WerteBreeze;
       H501ID: WerteH501;
     else
       WerteYLegacy;
     end;
     if vld then begin                              {Anzeige gültiger Auswertung}
-      grdOverview.BeginUpdate;
+      gridOverview.BeginUpdate;
         flt:=round(flt*secpd)/secpd;        {Runden um Anzeigefehler zu vermeiden}
         if (g>3) and                {alles ausgeben wenn GPS-Daten vorhanden sind}
-           ((SpinEdit3.Tag<>YTHPid) or             {Mindestflugzeit nur beim YTH Plus}
-            (CheckBox9.Checked=false) or           {wenn Bereinigung eingestellt ist}
+           ((speDataPoint.Tag<>YTHPid) or          {Mindestflugzeit nur beim YTH Plus}
+            (cbCleanHplus.Checked=false) or        {wenn Bereinigung eingestellt ist}
             (flt>minflt)) then begin               {Anzeige gültiger Auswertung}
-          BitBtn25.Tag:=BitBtn25.Tag+1;
-          grdOverview.Cells[1,z+1]:=FormatDateTime(dzf, bg);
-          grdOverview.Cells[2,z+1]:=FormatDateTime(zzf, bg);
-          grdOverview.Cells[3,z+1]:=FormatDateTime(zzf, ed);
-          grdOverview.Cells[4,z+1]:=FormatDateTime('nn:ss', flt);     {Flugzeit}
+          btnFlugBuch.Tag:=btnFlugBuch.Tag+1;
+          gridOverview.Cells[1,z+1]:=FormatDateTime(dzf, bg);
+          gridOverview.Cells[2,z+1]:=FormatDateTime(zzf, bg);
+          gridOverview.Cells[3,z+1]:=FormatDateTime(zzf, ed);
+          gridOverview.Cells[4,z+1]:=FormatDateTime('nn:ss', flt);     {Flugzeit}
           if rgSpeedUnit.ItemIndex=2 then begin
-            grdOverview.Cells[5,z+1]:=FloatToStrF(hmaxg/fft, ffFixed, 4, 1)+'ft';
-            grdOverview.Cells[6,z+1]:=FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft';
-            grdOverview.Cells[7,z+1]:=FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft';
-            grdOverview.Cells[8,z+1]:=FloatToStrF(tasmaxg*fmph, ffFixed, 4, 1)+'mph'
+            gridOverview.Cells[5,z+1]:=FloatToStrF(hmaxg/fft, ffFixed, 4, 1)+'ft';
+            gridOverview.Cells[6,z+1]:=FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft';
+            gridOverview.Cells[7,z+1]:=FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft';
+            gridOverview.Cells[8,z+1]:=FloatToStrF(tasmaxg*fmph, ffFixed, 4, 1)+'mph'
           end else begin
-            grdOverview.Cells[5,z+1]:=FloatToStrF(hmaxg, ffFixed, 4, 1)+'m';
-            grdOverview.Cells[6,z+1]:=FloatToStrF(emax, ffFixed, 5, 1)+'m';
-            grdOverview.Cells[7,z+1]:=FloatToStrF(strecke, ffFixed, 5, 1)+'m';
-            grdOverview.Cells[8,z+1]:=FloatToStrF(tasmaxg*fkmh, ffFixed, 4, 1)+'km/h';
+            gridOverview.Cells[5,z+1]:=FloatToStrF(hmaxg, ffFixed, 4, 1)+'m';
+            gridOverview.Cells[6,z+1]:=FloatToStrF(emax, ffFixed, 5, 1)+'m';
+            gridOverview.Cells[7,z+1]:=FloatToStrF(strecke, ffFixed, 5, 1)+'m';
+            gridOverview.Cells[8,z+1]:=FloatToStrF(tasmaxg*fkmh, ffFixed, 4, 1)+'km/h';
           end;
-          if SpinEdit3.Tag=brID then begin
-            grdOverview.Cells[9,z+1]:=IntToStr(round(umaxg))+'%';
-            grdOverview.Cells[10,z+1]:=IntToStr(round(uming))+'%';
+          if speDataPoint.Tag=brID then begin
+            gridOverview.Cells[9,z+1]:=IntToStr(round(umaxg))+'%';
+            gridOverview.Cells[10,z+1]:=IntToStr(round(uming))+'%';
           end else begin
-            grdOverview.Cells[9,z+1]:=FloatToStrF(umaxg, ffFixed, 3, 1)+'V';
-            grdOverview.Cells[10,z+1]:=FloatToStrF(uming, ffFixed, 3, 1)+'V';
+            gridOverview.Cells[9,z+1]:=FloatToStrF(umaxg, ffFixed, 3, 1)+'V';
+            gridOverview.Cells[10,z+1]:=FloatToStrF(uming, ffFixed, 3, 1)+'V';
           end;
           if tasmaxg=0 then
-            grdOverview.Cells[8,z+1]:='';
+            gridOverview.Cells[8,z+1]:='';
         end else begin                             {reduzierte Ausgabe}
           if (n>3) and                             {Ausgabe für Flüge ohne GPS}
-             ((SpinEdit3.Tag<>YTHPid) or           {Mindestflugzeit nur beim YTH Plus}
-              (CheckBox9.Checked=false) or         {wenn Bereinigung eingestellt ist}
+             ((speDataPoint.Tag<>YTHPid) or        {Mindestflugzeit nur beim YTH Plus}
+              (cbCleanHplus.Checked=false) or      {wenn Bereinigung eingestellt ist}
               (flt>minflt)) then begin             {Anzeige gültiger Auswertung}
-            BitBtn25.Tag:=BitBtn25.Tag+1;
-            grdOverview.Cells[1,z+1]:=FormatDateTime(dzf, bg);
-            grdOverview.Cells[2,z+1]:=FormatDateTime(zzf, bg);
-            grdOverview.Cells[3,z+1]:=FormatDateTime(zzf, ed);
-            grdOverview.Cells[4,z+1]:=FormatDateTime('nn:ss', flt);
+            btnFlugBuch.Tag:=btnFlugBuch.Tag+1;
+            gridOverview.Cells[1,z+1]:=FormatDateTime(dzf, bg);
+            gridOverview.Cells[2,z+1]:=FormatDateTime(zzf, bg);
+            gridOverview.Cells[3,z+1]:=FormatDateTime(zzf, ed);
+            gridOverview.Cells[4,z+1]:=FormatDateTime('nn:ss', flt);
             if rgSpeedUnit.ItemIndex=2 then begin
-              grdOverview.Cells[5,z+1]:=FloatToStrF(hmax/fft, ffFixed, 4, 1)+'ft';
-              grdOverview.Cells[8,z+1]:=FloatToStrF(tasmax*fmph, ffFixed, 4, 1)+'mph'
+              gridOverview.Cells[5,z+1]:=FloatToStrF(hmax/fft, ffFixed, 4, 1)+'ft';
+              gridOverview.Cells[8,z+1]:=FloatToStrF(tasmax*fmph, ffFixed, 4, 1)+'mph'
             end else begin
-              grdOverview.Cells[5,z+1]:=FloatToStrF(hmax, ffFixed, 4, 1)+'m';
-              grdOverview.Cells[8,z+1]:=FloatToStrF(tasmax*fkmh, ffFixed, 4, 1)+'km/h';
+              gridOverview.Cells[5,z+1]:=FloatToStrF(hmax, ffFixed, 4, 1)+'m';
+              gridOverview.Cells[8,z+1]:=FloatToStrF(tasmax*fkmh, ffFixed, 4, 1)+'km/h';
             end;
-            if SpinEdit3.Tag=brID then begin
-//              grdOverview.Cells[8,z+1]:='';        {Breeze keine Speed}
-              grdOverview.Cells[9,z+1]:=IntToStr(round(umax))+'%';
-              grdOverview.Cells[10,z+1]:=IntToStr(round(umin))+'%';
+            if speDataPoint.Tag=brID then begin
+//              gridOverview.Cells[8,z+1]:='';     {Breeze keine Speed}
+              gridOverview.Cells[9,z+1]:=IntToStr(round(umax))+'%';
+              gridOverview.Cells[10,z+1]:=IntToStr(round(umin))+'%';
             end else begin
-              grdOverview.Cells[9,z+1]:=FloatToStrF(umax, ffFixed, 3, 1)+'V';
-              grdOverview.Cells[10,z+1]:=FloatToStrF(umin, ffFixed, 3, 1)+'V';
+              gridOverview.Cells[9,z+1]:=FloatToStrF(umax, ffFixed, 3, 1)+'V';
+              gridOverview.Cells[10,z+1]:=FloatToStrF(umin, ffFixed, 3, 1)+'V';
             end;
             if tasmax=0 then
-              grdOverview.Cells[8,z+1]:='';
+              gridOverview.Cells[8,z+1]:='';
           end else begin                           {Ausgabe sonstige (ohne Flug)}
-            if SpinEdit3.Tag=brID then
+            if speDataPoint.Tag=brID then
               splitlist.DelimitedText:=inlist[9]
             else
               splitlist.DelimitedText:=inlist[1];
-            bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);   {Fake Beginnzeit}
-            grdOverview.Cells[1,z+1]:=FormatDateTime(dzf, bg);
-            grdOverview.Cells[2,z+1]:=FormatDateTime(zzf, bg);
-            grdOverview.Cells[3,z+1]:=FormatDateTime(zzf, tend);
-            grdOverview.Cells[4,z+1]:=FormatDateTime('nn:ss',
+            bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);   {Fake Beginnzeit}
+            gridOverview.Cells[1,z+1]:=FormatDateTime(dzf, bg);
+            gridOverview.Cells[2,z+1]:=FormatDateTime(zzf, bg);
+            gridOverview.Cells[3,z+1]:=FormatDateTime(zzf, tend);
+            gridOverview.Cells[4,z+1]:=FormatDateTime('nn:ss',
                                       round((tend-bg)*secpd)/secpd);
-            if SpinEdit3.Tag=brID then
-              grdOverview.Cells[9,z+1]:=IntToStr(round(umax))+'%'
+            if speDataPoint.Tag=brID then
+              gridOverview.Cells[9,z+1]:=IntToStr(round(umax))+'%'
             else
-              grdOverview.Cells[9,z+1]:=FloatToStrF(umax, ffFixed, 3, 1)+'V';
+              gridOverview.Cells[9,z+1]:=FloatToStrF(umax, ffFixed, 3, 1)+'V';
           end;
         end;
-      grdOverview.Cells[1, grdOverview.RowCount-1]:=rsTurns+suff+
-                                                    IntToStr(BitBtn25.Tag);
+      gridOverview.Cells[1, gridOverview.RowCount-1]:=rsTurns+suff+
+                                                    IntToStr(btnFlugBuch.Tag);
       if simu then
-        grdOverview.Cells[6,z+1]:=rsSimulator;
+        gridOverview.Cells[6,z+1]:=rsSimulator;
       if uw1 then
-        grdOverview.Cells[10,z+1]:=grdOverview.Cells[10,z+1]+' !';
+        gridOverview.Cells[10,z+1]:=gridOverview.Cells[10,z+1]+' !';
       if uw2 then
-        grdOverview.Cells[10,z+1]:=grdOverview.Cells[10,z+1]+'!';
+        gridOverview.Cells[10,z+1]:=gridOverview.Cells[10,z+1]+'!';
 
-      grdOverview.AutoSizeColumns;
-      grdOverview.EndUpdate;
+      gridOverview.AutoSizeColumns;
+      gridOverview.EndUpdate;
     end;
   finally
     FreeAndNil(inlist);
@@ -9192,23 +9200,23 @@ var inlist, splitlist: TStringList;
   procedure AnalyseBreeze;
   var i: integer;
   begin
-    ha:=StrToFloatN(splitlist[10])/100;          {Höhe Anfang}
+    ha:=StrToFloatN(splitlist[10])/100;            {Höhe Anfang}
     lat1:=BrCoordToFloat(splitlist[12]);
     lon1:=BrCoordToFloat(splitlist[13]);
     splitlist.DelimitedText:=inlist[inlist.Count-1];
-    he:=StrToFloatN(splitlist[10])/100;          {Höhe Ende}
+    he:=StrToFloatN(splitlist[10])/100;            {Höhe Ende}
     emax:=0;
-    if ha>he+hsw then begin                      {Sinken}
+    if ha>he+hsw then begin                        {Sinken}
       an:=an+rsDescend+tab1+vms(dur, ha-he)+kma;
     end;
-    if he>ha+hsw then begin                      {Steigen}
+    if he>ha+hsw then begin                        {Steigen}
       an:=an+rsAscend+tab1+vms(dur, he-ha)+kma;
     end;
     for i:=0 to inlist.Count-1 do begin
       splitlist.DelimitedText:=inlist[i];
       lat2:=BrCoordToFloat(splitlist[12]);
       lon2:=BrCoordToFloat(splitlist[13]);
-      dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum 1. Punkt}
+      dist:=DeltaKoord(lat1, lon1, lat2, lon2);    {Entfernung zum 1. Punkt}
       if dist>emax then
         emax:=dist;
     end;
@@ -9217,23 +9225,23 @@ var inlist, splitlist: TStringList;
   procedure AnalyseYLegacy;
   var i: integer;
   begin
-    ha:=StrToFloatN(splitlist[4]);               {Höhe Anfang}
+    ha:=StrToFloatN(splitlist[4]);                 {Höhe Anfang}
     lat1:=StrToFloatN(splitlist[5]);
     lon1:=StrToFloatN(splitlist[6]);
     splitlist.DelimitedText:=inlist[inlist.Count-1];
-    he:=StrToFloatN(splitlist[4]);               {Höhe Ende}
+    he:=StrToFloatN(splitlist[4]);                 {Höhe Ende}
     emax:=0;
-    if ha>he+hsw then begin                      {Sinken}
+    if ha>he+hsw then begin                        {Sinken}
       an:=an+rsDescend+tab1+vms(dur, ha-he)+kma;
     end;
-    if he>ha+hsw then begin                      {Steigen}
+    if he>ha+hsw then begin                        {Steigen}
       an:=an+rsAscend+tab1+vms(dur, he-ha)+kma;
     end;
     for i:=0 to inlist.Count-1 do begin
       splitlist.DelimitedText:=inlist[i];
       lat2:=StrToFloatN(splitlist[5]);
       lon2:=StrToFloatN(splitlist[6]);
-      dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
+      dist:=DeltaKoord(lat1, lon1, lat2, lon2);    {Entfernung zum Startpunkt}
       if dist>emax then
         emax:=dist;
     end;
@@ -9242,23 +9250,23 @@ var inlist, splitlist: TStringList;
   procedure AnalyseH501;
   var i: integer;
   begin
-    ha:=StrToFloatN(splitlist[4]);               {Höhe Anfang}
+    ha:=StrToFloatN(splitlist[4]);                 {Höhe Anfang}
     lat1:=StrToFloatN(splitlist[2]);
     lon1:=StrToFloatN(splitlist[3]);
     splitlist.DelimitedText:=inlist[inlist.Count-1];
-    he:=StrToFloatN(splitlist[4]);               {Höhe Ende}
+    he:=StrToFloatN(splitlist[4]);                 {Höhe Ende}
     emax:=0;
-    if ha>he+hsw then begin                      {Sinken}
+    if ha>he+hsw then begin                        {Sinken}
       an:=an+rsDescend+tab1+vms(dur, ha-he)+kma;
     end;
-    if he>ha+hsw then begin                      {Steigen}
+    if he>ha+hsw then begin                        {Steigen}
       an:=an+rsAscend+tab1+vms(dur, he-ha)+kma;
     end;
     for i:=0 to inlist.Count-1 do begin
       splitlist.DelimitedText:=inlist[i];
       lat2:=StrToFloatN(splitlist[2]);
       lon2:=StrToFloatN(splitlist[3]);
-      dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
+      dist:=DeltaKoord(lat1, lon1, lat2, lon2);    {Entfernung zum Startpunkt}
       if dist>emax then
         emax:=dist;
     end;
@@ -9267,7 +9275,7 @@ var inlist, splitlist: TStringList;
   procedure anatelemetr;   {Telemetrie auswerten, Sinken, Steigen, Geschw.}
   begin
     splitlist.DelimitedText:=inlist[0];
-    case SpinEdit3.Tag of
+    case speDataPoint.Tag of
       brID: AnalyseBreeze;                         {Breeze}
       H501ID: AnalyseH501;
     else
@@ -9335,29 +9343,29 @@ begin                                              {Datenanalyse ausgewählter B
     Screen.Cursor:=crHourGlass;
     an:='';
     try
-      n:=SpinEdit3.Value+SpinEdit2.Value+1;
-      if n>StringGrid1.RowCount-1 then
-        n:=StringGrid1.RowCount-1;                 {Ende der Datei}
+      n:=speDataPoint.Value+speAnalyze.Value+1;
+      if n>gridDetails.RowCount-1 then
+        n:=gridDetails.RowCount-1;                 {Ende der Datei}
       AppLog.Lines.Add(capTabSheet10+tab1+rsFor+tab1+
-                         IntToStr(SpinEdit3.Value)+'-'+      {von}
+                         IntToStr(speDataPoint.Value)+'-'+      {von}
                          IntToStr(n));             {bis}
-      for x:=SpinEdit3.Value to n do begin         {Liste zur Auswertung füllen}
-        s:=StringGrid1.Cells[0, x];
-        for y:=1 to StringGrid1.ColCount-1 do
-          s:=s+sep+StringGrid1.Cells[y, x];
+      for x:=speDataPoint.Value to n do begin      {Liste zur Auswertung füllen}
+        s:=gridDetails.Cells[0, x];
+        for y:=1 to gridDetails.ColCount-1 do
+          s:=s+sep+gridDetails.Cells[y, x];
         inlist.add(s);
       end;
       if inlist.Count>2 then begin
         splitlist.DelimitedText:=inlist[0];
-        bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag); {Beginnzeitpunkt}
+        bg:=ZeitToDT(splitlist[0], speDataPoint.Tag); {Beginnzeitpunkt}
         if (cutb=0) or (bg<cutb) then
           cutb:=bg                                 {Beginn setzen}
         else
           if bg>cutb then cute:=bg;                {Ende setzen}
         FreigabeCut(false);                        {Status nicht überschreiben}
         splitlist.DelimitedText:=inlist[inlist.Count-1];
-        dur:=ZeitToDT(splitlist[0], SpinEdit3.Tag)-bg;
-        case RadioGroup1.ItemIndex of
+        dur:=ZeitToDT(splitlist[0], speDataPoint.Tag)-bg;
+        case rgQuelle.ItemIndex of
           0: anatelemetr;
           1: anast10;
           2: anafunk;
@@ -9415,12 +9423,12 @@ var i, x, p, n, zhl: integer;
 
 begin
   n:=Label3.Tag;                        {zwischenspeichern, wird sonst zerstört}
-  tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des StringGrid1 überschrieben}
+  tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des gridDetails überschrieben}
   screen.Cursor:=crHourGlass;
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
-  StringGrid1.ColCount:=0;                         {alles löschen}
-  StringGrid1.RowCount:=14;
-  StringGrid1.ColCount:=defaultcol;
+  gridDetails.ColCount:=0;                         {alles löschen}
+  gridDetails.RowCount:=14;
+  gridDetails.ColCount:=defaultcol;
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=sep;
@@ -9429,10 +9437,10 @@ begin
   slat:='';
   zhl:=0;
   try
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text);
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text);
     TreeView1.Items.Clear;
     Label3.Tag:=n;                                 {Spalte retten für ReadMAV}
-    case RadioGroup1.ItemIndex of                  {Dateityp}
+    case rgQuelle.ItemIndex of                     {Dateityp}
       0: fn:=fn+kpath+kfile;                       {Kopter = telemetry_}
       1: fn:=fn+spath+PathDelim+sfile;             {ST10 = RemoteGPS_}
       2: fn:=fn+fpath+PathDelim+ffile;             {Funk = Remote_}
@@ -9441,7 +9449,7 @@ begin
            exit;
          end;
     end;
-    fn:=fn+ListBox1.Items[ListBox1.ItemIndex]+fext;
+    fn:=fn+lbFlights.Items[lbFlights.ItemIndex]+fext;
     try
       inlist.LoadFromFile(fn);
     except
@@ -9458,41 +9466,41 @@ begin
     if inlist.count>2 then begin
       try
         splitlist.DelimitedText:=inlist[0];        {Überschrift einlesen}
-        if RadioGroup1.ItemIndex=0 then begin      {nur bei Telemetrie}
+        if rgQuelle.ItemIndex=0 then begin         {nur bei Telemetrie}
           if splitlist[19]='1' then begin          {H920 + ST24, old firmware}
             inlist[0]:=FakeHeader;
             splitlist.DelimitedText:=inlist[0];    {restore fake header}
           end;
-          topp[ListBox1.ItemIndex, 5]:=0;          {Pointer Null setzen}
+          topp[lbFlights.ItemIndex, 5]:=0;         {Pointer Null setzen}
           fModeFinden(splitlist);                  {Position f-mode merken}
-          if SpinEdit3.Tag<>YTHPid then begin
+          if speDataPoint.Tag<>YTHPid then begin
             splitlist.DelimitedText:=inlist[2];    {Vehicle Type merken}
-            SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
+            speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
             OverWriteVT;                           {Overwrite for PX4 Thunderbird}
           end else
-            if CheckBox9.Checked then
-              AppLog.Lines.Add(capCheckBox9);    {Bei YTH Plus anzeigen, ob bereinigt}
-          StaticText1.Caption:=vtypeToStr(SpinEdit3.Tag);  {anzeigen}
+            if cbCleanHplus.Checked then
+              AppLog.Lines.Add(capCheckBox9);      {Bei YTH Plus anzeigen, ob bereinigt}
+          StaticText1.Caption:=vtypeToStr(speDataPoint.Tag);  {anzeigen}
           splitlist.DelimitedText:=inlist[0];      {Überschrift wiederherstellen}
         end;
-        SpinEdit3.MaxValue:=inlist.Count;
-        SpinEdit2.MaxValue:=inlist.Count-10;
-        SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
+        speDataPoint.MaxValue:=inlist.Count;
+        speAnalyze.MaxValue:=inlist.Count-10;
+        speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
-        StringGrid1.RowCount:=inlist.Count;        {vorbelegen}
-        StringGrid1.ColCount:=splitlist.Count;
-        StringGrid1.Cells[0,0]:=rsHDcell0;
+        gridDetails.RowCount:=inlist.Count;        {vorbelegen}
+        gridDetails.ColCount:=splitlist.Count;
+        gridDetails.Cells[0,0]:=rsHDcell0;
         for i:=1 to splitlist.count-1 do begin
-          StringGrid1.Cells[i,0]:=splitlist[i];
+          gridDetails.Cells[i,0]:=splitlist[i];
           if pos(lcol, splitlist[i])>0 then begin  {letzte Spalte gefunden}
-            StringGrid1.Cells[i,0]:=lcol;
-            StringGrid1.ColCount:=i+1;
+            gridDetails.Cells[i,0]:=lcol;
+            gridDetails.ColCount:=i+1;
             break;                                 {wegen Fehler beim H, alte FW}
           end;
         end;
 
-        StringGrid1.BeginUpdate;
+        gridDetails.BeginUpdate;
         p:=1;
         for x:=1 to inlist.count-1 do begin        {Daten einlesen}
           inc(zhl);
@@ -9500,25 +9508,25 @@ begin
           if splitlist.Count>6 then begin
             if mode=0 then begin                   {Default: alle}
               for i:=0 to splitlist.count-1 do
-                StringGrid1.Cells[i, x]:=splitlist[i];
-              if (RadioGroup1.ItemIndex=0) then begin {nur bei Telemetrie}
-                if (SpinEdit3.Tag=5) and           {RealSense erkennen beim YTH}
-                   (splitlist[StringGrid1.Tag-1]='245') then rs:=true;
-                if (StrToIntDef(splitlist[StringGrid1.Tag+3], 0) shr 1)>0 then begin
+                gridDetails.Cells[i, x]:=splitlist[i];
+              if (rgQuelle.ItemIndex=0) then begin {nur bei Telemetrie}
+                if (speDataPoint.Tag=5) and        {RealSense erkennen beim YTH}
+                   (splitlist[gridDetails.Tag-1]='245') then rs:=true;
+                if (StrToIntDef(splitlist[gridDetails.Tag+3], 0) shr 1)>0 then begin
                   mnGoToErr.Enabled:=true;
-                  if topp[ListBox1.ItemIndex, 5]=0 then
-                    topp[ListBox1.ItemIndex, 5]:=x;
+                  if topp[lbFlights.ItemIndex, 5]=0 then
+                    topp[lbFlights.ItemIndex, 5]:=x;
                 end;
                 if (slat='') and                   {noch kein Homepoint}
                    NichtLeer(splitlist[5]) and
                    NichtLeer(splitlist[6]) and
-                   GetRFM(splitlist[StringGrid1.Tag], {f_mode, vehicle type}
-                          SpinEdit3.Tag, true) then begin
+                   GetRFM(splitlist[gridDetails.Tag], {f_mode, vehicle type}
+                          speDataPoint.Tag, true) then begin
                   slat:=splitlist[5];              {Homepoint speichern}
                   slon:=splitlist[6];              {Homepoint speichern}
                 end;
               end;
-              if (RadioGroup1.ItemIndex=1) and     {Remote GPS}
+              if (rgQuelle.ItemIndex=1) and        {Remote GPS}
                  (slat='') and                     {noch kein Homepoint}
                  (x>6) and                         {nicht grad die 1. Zeile}
                   NichtLeer(splitlist[1]) and
@@ -9526,10 +9534,10 @@ begin
                 slat:=splitlist[2];                {RC Position speichern}
                 slon:=splitlist[1];                {RC Position speichern}
               end;
-              if (RadioGroup1.Tag=0) and           {Sizing columns not yet done}
+              if (rgQuelle.Tag=0) and              {Sizing columns not yet done}
                  (x=50) then begin                 {Check till line 50}
-                StringGrid1.AutoSizeColumns;
-                RadioGroup1.Tag:=1;                {Sizing done}
+                gridDetails.AutoSizeColumns;
+                rgQuelle.Tag:=1;                   {Sizing done}
               end;
             end;
             if mode=1 then begin                   {Filtermode}
@@ -9538,11 +9546,11 @@ begin
               except
                 sstr:=splitlist[0];
               end;
-              if (sstr=ComboBox9.Text) or             {kurz -> vollqualifiziert}
+              if (sstr=cbxSearch.Text) or          {kurz -> vollqualifiziert}
                  (((length(sstr)>4) or (pos('.', sstr)>0)) and  {Punkt drin oder lang}
-                 (pos(ComboBox9.Text, sstr)>0)) then begin      {teilqualifiziert}
+                 (pos(cbxSearch.Text, sstr)>0)) then begin      {teilqualifiziert}
                 for i:=0 to splitlist.count-1 do   {selektierte Zeile}
-                  StringGrid1.Cells[i, p]:=splitlist[i];
+                  gridDetails.Cells[i, p]:=splitlist[i];
                 inc(p);
               end;
             end;                                   {Ende Filtermode}
@@ -9557,26 +9565,26 @@ begin
           StatusBar1.Panels[2].Text:=rsSelection;
           AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
           if p>1 then begin
-            StringGrid1.RowCount:=p;
-          end else StringGrid1.RowCount:=5;        {leere Tabelle}
-          StringGrid1.TopRow:=1;                   {nach oben springen}
-          StatusBar1.Panels[5].Text:=StringGrid1.Cells[n,0]+' = "'+
-                                     ComboBox9.Text+'"';
+            gridDetails.RowCount:=p;
+          end else gridDetails.RowCount:=5;        {leere Tabelle}
+          gridDetails.TopRow:=1;                   {nach oben springen}
+          StatusBar1.Panels[5].Text:=gridDetails.Cells[n,0]+' = "'+
+                                     cbxSearch.Text+'"';
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
           if rs then
             StaticText1.Caption:=StaticText1.Caption+'+'+rsRealSense;
           StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
-          StringGrid1.TopRow:=topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]; {gemerkten Top setzen}
+          gridDetails.TopRow:=topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]; {gemerkten Top setzen}
           if tpos1>0 then begin          {Scrollen zu letzter Zeit im voriger Tabelle}
-            for i:=1 to StringGrid1.RowCount-1 do
-              if ZeitToDT(StringGrid1.Cells[0, i], SpinEdit3.Tag)>tpos1 then
+            for i:=1 to gridDetails.RowCount-1 do
+              if ZeitToDT(gridDetails.Cells[0, i], speDataPoint.Tag)>tpos1 then
                 break;                             {Stelle gefunden}
-            StringGrid1.TopRow:=i-StringGrid1.VisibleRowCount-1;   {zeitl. Pos setzen}
+            gridDetails.TopRow:=i-gridDetails.VisibleRowCount-1;   {zeitl. Pos setzen}
           end;
         end;
-        StringGrid1.AutoSizeColumn(0);
-        StringGrid1.EndUpdate;
+        gridDetails.AutoSizeColumn(0);
+        gridDetails.EndUpdate;
 
         AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLGmap(slat, slon));   {Anzeige Start und Ende}
@@ -9587,7 +9595,7 @@ begin
                                    capLabel6+Format('%6d', [zhl]);
         AppLog.Lines.Add('''9050'+suff+StatusBar1.Panels[5].Text);
       end;
-      if PageControl1.ActivePageIndex=1 then StringGrid1.SetFocus;
+      if PageControl1.ActivePageIndex=1 then gridDetails.SetFocus;
     end else begin                                 {Datei leer}
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
@@ -9615,18 +9623,18 @@ begin
     inlist.LoadFromFile(fn);
 
     if inlist.count>1 then begin                   {Laden inklusive Überschrift}
-      StringGrid1.BeginUpdate;
+      gridDetails.BeginUpdate;
       PageControl1.ActivePageIndex:=1;
-      StringGrid1.ColCount:=csvanz;                {auch ID für PX4 CSV}
-      StringGrid1.RowCount:=inlist.Count;          {nur wenn Daten vorhanden sind}
+      gridDetails.ColCount:=csvanz;                {auch ID für PX4 CSV}
+      gridDetails.RowCount:=inlist.Count;          {nur wenn Daten vorhanden sind}
       for i:=0 to Inlist.Count-1 do begin
-        StringGrid1.Rows[i].Delimiter:=sep;
-        StringGrid1.Rows[i].StrictDelimiter:=true;
-        StringGrid1.Rows[i].DelimitedText:=inlist[i];
+        gridDetails.Rows[i].Delimiter:=sep;
+        gridDetails.Rows[i].StrictDelimiter:=true;
+        gridDetails.Rows[i].DelimitedText:=inlist[i];
         if i=10 then
-          StringGrid1.AutoSizeColumns;             {only once}
+          gridDetails.AutoSizeColumns;             {only once}
       end;
-      StringGrid1.EndUpdate;
+      gridDetails.EndUpdate;
     end;
 
     StatusBar1.Panels[1].Text:=IntToStr(inlist.Count-1);
@@ -9649,20 +9657,20 @@ var i, x, p, n: integer;
     tpos1: TDateTime;
 begin
   n:=Label3.Tag;                        {zwischenspeichern, wird sonst zerstört}
-  BitBtn1.Tag:=0;                       {Annahme Breeze Telemetrie in Meter}
-  tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des StringGrid1 überschrieben}
+  btnClose.Tag:=0;                       {Annahme Breeze Telemetrie in Meter}
+  tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des gridDetails überschrieben}
   screen.Cursor:=crHourGlass;
-  for i:=0 to StringGrid1.ColCount-1 do StringGrid1.Cols[i].Clear;
+  for i:=0 to gridDetails.ColCount-1 do gridDetails.Cols[i].Clear;
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
-  StringGrid1.RowCount:=1;
-  StringGrid1.ColCount:=0;                         {alles löschen}
+  gridDetails.RowCount:=1;
+  gridDetails.ColCount:=0;                         {alles löschen}
   slat:='';
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=sep;
   splitlist.StrictDelimiter:=True;
   try
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+ListBox1.Items[ListBox1.ItemIndex]+bext;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+lbFlights.Items[lbFlights.ItemIndex]+bext;
     try
       inlist.LoadFromFile(fn);
     except
@@ -9672,19 +9680,19 @@ begin
     if inlist.count>10 then begin
       try
         if pos(plfAndr, inlist[2])>0 then
-          BitBtn3.Tag:=1                           {Platform is Android}
+          btnArchive.Tag:=1                           {Platform is Android}
         else
-          BitBtn3.Tag:=0;                          {else iOS}
+          btnArchive.Tag:=0;                          {else iOS}
         if pos(brsnid, inlist[5])=1 then           {Serial number}
           StaticText1.Caption:=StringReplace(inlist[5], brsnid,
                                vtypeToStr(brID),[rfIgnoreCase]);
         splitlist.DelimitedText:=inlist[8];        {Überschrift einlesen}
-        RadioGroup1.ItemIndex:=0;
-        topp[ListBox1.ItemIndex, 5]:=0;            {Pointer Null setzen}
+        rgQuelle.ItemIndex:=0;
+        topp[lbFlights.ItemIndex, 5]:=0;            {Pointer Null setzen}
         StaticText1.Caption:=vtypeToStr(brid);     {Typ anzeigen}
-        SpinEdit3.MaxValue:=inlist.Count-9;
-        SpinEdit2.MaxValue:=inlist.Count-10;
-        SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
+        speDataPoint.MaxValue:=inlist.Count-9;
+        speAnalyze.MaxValue:=inlist.Count-10;
+        speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-10);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
         if inlist.count>10 then begin
@@ -9694,26 +9702,26 @@ begin
           StatusBar1.Panels[5].Text:=fn+tab1+rsEmpty;
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end;
-        StringGrid1.RowCount:=inlist.Count-8;      {vorbelegen}
-        StringGrid1.ColCount:=splitlist.Count;
+        gridDetails.RowCount:=inlist.Count-8;      {vorbelegen}
+        gridDetails.ColCount:=splitlist.Count;
         for i:=0 to splitlist.count-1 do
-          StringGrid1.Cells[i,0]:=splitlist[i];
+          gridDetails.Cells[i,0]:=splitlist[i];
 
-        StringGrid1.BeginUpdate;
+        gridDetails.BeginUpdate;
         splitlist.DelimitedText:=inlist[10];       {2. Zeile einlesen}
         for i:=3 to 9 do begin                     {Prüfen, ob ft verwendet wird}
           try
             lat1:=StrToFloatN(splitlist[i]);
             case i of                              {Tag=1, wenn Telemetrie in ft}
-              3: if lat1>200  then BitBtn1.Tag:=1; {distance:     40..200}
-              4: if lat1>20   then BitBtn1.Tag:=1; {hight:         7..20}
-              6: if lat1>300  then BitBtn1.Tag:=1; {goHomeHight:  30..300}
-              7: if lat1>800  then BitBtn1.Tag:=1; {maxHight:     30..800}
-              8: if lat1>1000 then BitBtn1.Tag:=1; {maxDistance: 100..1000}
-              9: if lat1>500  then BitBtn1.Tag:=1; {maxSpeed:    100..500}
+              3: if lat1>200  then btnClose.Tag:=1; {distance:     40..200}
+              4: if lat1>20   then btnClose.Tag:=1; {hight:         7..20}
+              6: if lat1>300  then btnClose.Tag:=1; {goHomeHight:  30..300}
+              7: if lat1>800  then btnClose.Tag:=1; {maxHight:     30..800}
+              8: if lat1>1000 then btnClose.Tag:=1; {maxDistance: 100..1000}
+              9: if lat1>500  then btnClose.Tag:=1; {maxSpeed:    100..500}
             end;
           except
-            BitBtn1.Tag:=0;                        {Annahme Werte in Meter}
+            btnClose.Tag:=0;                        {Annahme Werte in Meter}
           end;
         end;
         p:=1;
@@ -9722,12 +9730,12 @@ begin
           if splitlist.Count>anzsp then begin      {Konsistenz checken (Breeze)}
             if mode=0 then begin
               for i:=0 to splitlist.count-1 do
-                StringGrid1.Cells[i,x-8]:=splitlist[i];
-              if (RadioGroup1.ItemIndex=0) and
+                gridDetails.Cells[i,x-8]:=splitlist[i];
+              if (rgQuelle.ItemIndex=0) and
                  ((StrToIntDef(splitlist[19], 0) shr 1)>0) then begin
                 mnGoToErr.Enabled:=true;           {Go to error flag}
-                if topp[ListBox1.ItemIndex, 5]=0 then
-                  topp[ListBox1.ItemIndex, 5]:=x-8;
+                if topp[lbFlights.ItemIndex, 5]=0 then
+                  topp[lbFlights.ItemIndex, 5]:=x-8;
               end;
               if (slat='') and                     {Noch kein Homepoint}
                  BrGPSfix(splitlist[20]) and
@@ -9743,11 +9751,11 @@ begin
               except
                 slat:=splitlist[0];
               end;
-              if (slat=ComboBox9.Text) or             {kurz -> vollqualifiziert}
+              if (slat=cbxSearch.Text) or             {kurz -> vollqualifiziert}
                  (((length(slat)>4) or (pos('.', slat)>0)) and   {Punkt drin oder lang}
-                 (pos(ComboBox9.Text, slat)>0)) then begin       {teilqualifiziert}
+                 (pos(cbxSearch.Text, slat)>0)) then begin       {teilqualifiziert}
                 for i:=0 to splitlist.count-1 do   {selektierte Zeile}
-                  StringGrid1.Cells[i, p]:=splitlist[i];
+                  gridDetails.Cells[i, p]:=splitlist[i];
                 inc(p);
               end;
             end;
@@ -9761,24 +9769,24 @@ begin
           StatusBar1.Panels[2].Text:=rsSelection;
          AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
          if p>1 then begin
-            StringGrid1.RowCount:=p;
+            gridDetails.RowCount:=p;
           end else
-            StringGrid1.RowCount:=5;               {leere Tabelle}
-          StringGrid1.TopRow:=1;                   {nach oben springen}
-          StatusBar1.Panels[5].Text:=StringGrid1.Cells[n,0]+' = "'+
-                                     ComboBox9.Text+'"';
+            gridDetails.RowCount:=5;               {leere Tabelle}
+          gridDetails.TopRow:=1;                   {nach oben springen}
+          StatusBar1.Panels[5].Text:=gridDetails.Cells[n,0]+' = "'+
+                                     cbxSearch.Text+'"';
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
           StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
           x:=(inlist.count-9) div 2;               {Daten irgendwo in der Mitte}
           if tpos1>0 then begin     {Scrollen zu letzter Zeit im voriger Tabelle}
-            for i:=1 to StringGrid1.RowCount-1 do
-              if ZeitToDT(StringGrid1.Cells[0, i], brID)>tpos1 then
+            for i:=1 to gridDetails.RowCount-1 do
+              if ZeitToDT(gridDetails.Cells[0, i], brID)>tpos1 then
                 break; {Stelle gefunden}
-            StringGrid1.TopRow:=i-StringGrid1.VisibleRowCount-1;   {zeitl. Pos setzen}
+            gridDetails.TopRow:=i-gridDetails.VisibleRowCount-1;   {zeitl. Pos setzen}
           end;
         end;
-        StringGrid1.EndUpdate;
+        gridDetails.EndUpdate;
 
         AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLGmap(BrCoordFormat(slat),
@@ -9795,9 +9803,9 @@ begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    StringGrid1.TopRow:=topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]; {Top setzen}
+    gridDetails.TopRow:=topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]; {Top setzen}
     if PageControl1.ActivePageIndex=1 then
-      StringGrid1.SetFocus;
+      gridDetails.SetFocus;
   finally
     FreeAndNil(inlist);
     FreeAndNil(splitlist);
@@ -9839,22 +9847,22 @@ var i, x, n, p: integer;
     tpos1: TDateTime;
 begin
   n:=Label3.Tag;                        {zwischenspeichern, wird sonst zerstört}
-  BitBtn1.Tag:=0;                       {H501 Telemetrie in Meter}
-  tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des StringGrid1 überschrieben}
+  btnClose.Tag:=0;                       {H501 Telemetrie in Meter}
+  tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des gridDetails überschrieben}
   screen.Cursor:=crHourGlass;
-  for i:=0 to StringGrid1.ColCount-1 do
-    StringGrid1.Cols[i].Clear;
+  for i:=0 to gridDetails.ColCount-1 do
+    gridDetails.Cols[i].Clear;
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
-  StringGrid1.RowCount:=1;
-  StringGrid1.ColCount:=0;                         {alles löschen}
+  gridDetails.RowCount:=1;
+  gridDetails.ColCount:=0;                         {alles löschen}
   slat:='';
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=dstr;
   splitlist.StrictDelimiter:=True;
   try
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+h5file+
-        ListBox1.Items[ListBox1.ItemIndex]+fext;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+h5file+
+        lbFlights.Items[lbFlights.ItemIndex]+fext;
     try
       inlist.LoadFromFile(fn);
     except
@@ -9864,28 +9872,28 @@ begin
     if inlist.count>1 then begin
       try
         splitlist.DelimitedText:=inlist[0];        {Überschrift einlesen}
-        RadioGroup1.ItemIndex:=0;
-        topp[ListBox1.ItemIndex, 5]:=0;            {Pointer Null setzen}
+        rgQuelle.ItemIndex:=0;
+        topp[lbFlights.ItemIndex, 5]:=0;            {Pointer Null setzen}
         StaticText1.Caption:=vtypeToStr(H501id);   {Typ anzeigen}
-        SpinEdit3.MaxValue:=inlist.Count;
-        SpinEdit2.MaxValue:=inlist.Count-10;
-        SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
+        speDataPoint.MaxValue:=inlist.Count;
+        speAnalyze.MaxValue:=inlist.Count-10;
+        speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
-        StringGrid1.RowCount:=inlist.Count;        {vorbelegen}
-        StringGrid1.ColCount:=splitlist.Count;
+        gridDetails.RowCount:=inlist.Count;        {vorbelegen}
+        gridDetails.ColCount:=splitlist.Count;
         StatusBar1.Panels[5].Text:=fn;
         for i:=0 to splitlist.count-1 do
-          StringGrid1.Cells[i, 0]:=splitlist[i];
+          gridDetails.Cells[i, 0]:=splitlist[i];
 
-        StringGrid1.BeginUpdate;
+        gridDetails.BeginUpdate;
         p:=1;
         for x:=1 to inlist.count-1 do begin        {Daten einlesen}
           splitlist.DelimitedText:=inlist[x];
           if splitlist.Count>14 then begin         {Konsistenz checken (Breeze)}
             if mode=0 then begin
               for i:=0 to splitlist.count-1 do
-                StringGrid1.Cells[i, x]:=splitlist[i];
+                gridDetails.Cells[i, x]:=splitlist[i];
               if (slat='') and                     {Noch kein Homepoint}
                  NichtLeer(splitlist[2]) and
                  NichtLeer(splitlist[3]) then begin
@@ -9899,11 +9907,11 @@ begin
               except
                 slat:=splitlist[0];
               end;
-              if (slat=ComboBox9.Text) or             {kurz -> vollqualifiziert}
+              if (slat=cbxSearch.Text) or             {kurz -> vollqualifiziert}
                  (((length(slat)>4) or (pos('.', slat)>0)) and   {Punkt drin oder lang}
-                 (pos(ComboBox9.Text, slat)>0)) then begin       {teilqualifiziert}
+                 (pos(cbxSearch.Text, slat)>0)) then begin       {teilqualifiziert}
                 for i:=0 to splitlist.count-1 do   {selektierte Zeile}
-                  StringGrid1.Cells[i, x]:=splitlist[i];
+                  gridDetails.Cells[i, x]:=splitlist[i];
               end;
             end;
             inc(p);
@@ -9917,24 +9925,24 @@ begin
           StatusBar1.Panels[2].Text:=rsSelection;
          AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
          if p>1 then begin
-            StringGrid1.RowCount:=p;
+            gridDetails.RowCount:=p;
           end else
-            StringGrid1.RowCount:=5;               {leere Tabelle}
-          StringGrid1.TopRow:=1;                   {nach oben springen}
-          StatusBar1.Panels[5].Text:=StringGrid1.Cells[n,0]+' = "'+
-                                     ComboBox9.Text+'"';
+            gridDetails.RowCount:=5;               {leere Tabelle}
+          gridDetails.TopRow:=1;                   {nach oben springen}
+          StatusBar1.Panels[5].Text:=gridDetails.Cells[n,0]+' = "'+
+                                     cbxSearch.Text+'"';
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
           StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
           x:=(inlist.count-1) div 2;               {Daten irgendwo in der Mitte}
           if tpos1>0 then begin     {Scrollen zu letzter Zeit im voriger Tabelle}
-            for i:=1 to StringGrid1.RowCount-1 do
-              if ZeitToDT(StringGrid1.Cells[0, i], H501ID)>tpos1 then
+            for i:=1 to gridDetails.RowCount-1 do
+              if ZeitToDT(gridDetails.Cells[0, i], H501ID)>tpos1 then
                 break; {Stelle gefunden}
-            StringGrid1.TopRow:=i-StringGrid1.VisibleRowCount-1;   {zeitl. Pos setzen}
+            gridDetails.TopRow:=i-gridDetails.VisibleRowCount-1;   {zeitl. Pos setzen}
           end;
         end;
-        StringGrid1.EndUpdate;
+        gridDetails.EndUpdate;
 
         AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLGmap(slat, slon));   {Anzeige Start und Ende}
@@ -9949,9 +9957,9 @@ begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    StringGrid1.TopRow:=topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]; {Top setzen}
+    gridDetails.TopRow:=topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]; {Top setzen}
     if PageControl1.ActivePageIndex=1 then
-      StringGrid1.SetFocus;
+      gridDetails.SetFocus;
   finally
     FreeAndNil(inlist);
     FreeAndNil(splitlist);
@@ -9971,18 +9979,18 @@ var i, x, p, n: integer;
     tpos1: TDateTime;
 begin
   n:=Label3.Tag;                        {zwischenspeichern, wird sonst zerstört}
-  tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des StringGrid1 überschrieben}
+  tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des gridDetails überschrieben}
   screen.Cursor:=crHourGlass;
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
-  StringGrid1.RowCount:=1;
-  StringGrid1.ColCount:=0;                         {alles löschen}
+  gridDetails.RowCount:=1;
+  gridDetails.ColCount:=0;                         {alles löschen}
   slat:='';
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=sep;
   splitlist.StrictDelimiter:=True;
   try
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+ListBox1.Items[ListBox1.ItemIndex]+bext;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+lbFlights.Items[lbFlights.ItemIndex]+bext;
     try
       inlist.LoadFromFile(fn);
     except
@@ -9992,19 +10000,19 @@ begin
     if inlist.count>15 then begin
       try
         if pos(plfAndr, inlist[2])>0 then
-          BitBtn3.Tag:=1                           {Platform is Android}
+          btnArchive.Tag:=1                           {Platform is Android}
         else
-          BitBtn3.Tag:=0;                          {else iOS}
+          btnArchive.Tag:=0;                          {else iOS}
         if pos(brsnid, inlist[8])=1 then           {Serial number}
           StaticText1.Caption:=StringReplace(inlist[5], brsnid,
                                vtypeToStr(MQcsvID),[rfIgnoreCase]);
         splitlist.DelimitedText:=inlist[15];       {Überschrift einlesen}
-        RadioGroup1.ItemIndex:=0;
-        topp[ListBox1.ItemIndex, 5]:=0;            {Pointer Null setzen}
+        rgQuelle.ItemIndex:=0;
+        topp[lbFlights.ItemIndex, 5]:=0;            {Pointer Null setzen}
         StaticText1.Caption:=vtypeToStr(MQcsvID);  {Typ anzeigen}
-        SpinEdit3.MaxValue:=inlist.Count-16;
-        SpinEdit2.MaxValue:=inlist.Count-17;
-        SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
+        speDataPoint.MaxValue:=inlist.Count-16;
+        speAnalyze.MaxValue:=inlist.Count-17;
+        speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-17);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
         if inlist.count>18 then begin
@@ -10014,19 +10022,19 @@ begin
           StatusBar1.Panels[5].Text:=fn+tab1+rsEmpty;
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end;
-        StringGrid1.RowCount:=inlist.Count-15;     {vorbelegen}
-        StringGrid1.ColCount:=splitlist.Count;
+        gridDetails.RowCount:=inlist.Count-15;     {vorbelegen}
+        gridDetails.ColCount:=splitlist.Count;
         for i:=0 to splitlist.count-1 do           {Überschrift auslesen}
-          StringGrid1.Cells[i,0]:=splitlist[i];
+          gridDetails.Cells[i,0]:=splitlist[i];
 
-        StringGrid1.BeginUpdate;
+        gridDetails.BeginUpdate;
         p:=1;
         for x:=16 to inlist.count-1 do begin       {Daten einlesen}
           splitlist.DelimitedText:=inlist[x];
           if splitlist.Count>anzsp then begin      {Konsistenz checken (Breeze)}
             if mode=0 then begin
               for i:=0 to splitlist.count-1 do
-                StringGrid1.Cells[i, x-15]:=splitlist[i];
+                gridDetails.Cells[i, x-15]:=splitlist[i];
               if (slat='') and                     {Noch kein Homepoint}
                  BrGPSfix(splitlist[20]) and
                  NichtLeer(splitlist[12]) and
@@ -10046,24 +10054,24 @@ begin
           StatusBar1.Panels[2].Text:=rsSelection;
          AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsSelection);
          if p>1 then begin
-            StringGrid1.RowCount:=p;
+            gridDetails.RowCount:=p;
           end else
-            StringGrid1.RowCount:=5;               {leere Tabelle}
-          StringGrid1.TopRow:=1;                   {nach oben springen}
-          StatusBar1.Panels[5].Text:=StringGrid1.Cells[n,0]+' = "'+
-                                     ComboBox9.Text+'"';
+            gridDetails.RowCount:=5;               {leere Tabelle}
+          gridDetails.TopRow:=1;                   {nach oben springen}
+          StatusBar1.Panels[5].Text:=gridDetails.Cells[n,0]+' = "'+
+                                     cbxSearch.Text+'"';
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
           StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
           x:=(inlist.count-9) div 2;               {Daten irgendwo in der Mitte}
           if tpos1>0 then begin     {Scrollen zu letzter Zeit im voriger Tabelle}
-            for i:=1 to StringGrid1.RowCount-1 do
-              if ZeitToDT(StringGrid1.Cells[0, i], MQcsvID)>tpos1 then
+            for i:=1 to gridDetails.RowCount-1 do
+              if ZeitToDT(gridDetails.Cells[0, i], MQcsvID)>tpos1 then
                 break; {Stelle gefunden}
-            StringGrid1.TopRow:=i-StringGrid1.VisibleRowCount-1;   {zeitl. Pos setzen}
+            gridDetails.TopRow:=i-gridDetails.VisibleRowCount-1;   {zeitl. Pos setzen}
           end;
         end;
-        StringGrid1.EndUpdate;
+        gridDetails.EndUpdate;
 
         AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLGmap(BrCoordFormat(slat),
@@ -10080,9 +10088,9 @@ begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    StringGrid1.TopRow:=topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]; {Top setzen}
+    gridDetails.TopRow:=topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]; {Top setzen}
     if PageControl1.ActivePageIndex=1 then
-      StringGrid1.SetFocus;
+      gridDetails.SetFocus;
   finally
     FreeAndNil(inlist);
     FreeAndNil(splitlist);
@@ -10156,7 +10164,7 @@ begin
   if cbCap.Checked then
     Chart1ConstantLine2.Active:=false              {Voltage low level}
   else begin
-    case SpinEdit3.Tag of                          {Umin Linie anzeigen}
+    case speDataPoint.Tag of                          {Umin Linie anzeigen}
       1: Chart1ConstantLine2.Position:=lipomin*6;  {H920 6S}
       5: Chart1ConstantLine2.Position:=lipomin*4;  {YTH  4S}
       H5id: Chart1ConstantLine2.Position:=lipomin*4;   {H520 4S}
@@ -10181,7 +10189,7 @@ var x: integer;
   procedure HDiaBlade350;
   begin
     Chart1LineSeries2.AddXY(bg, h);                {Hüllkurve}
-    case StrToIntDef(splitlist[StringGrid1.Tag], 25) of
+    case StrToIntDef(splitlist[gridDetails.Tag], 25) of
       25: Chart1BarSeries1.AddXY(bg, h);           {Angle (AP mode)}
       11: Chart1BarSeries7.AddXY(bg, h);           {Stability mit/ohne GPS}
       12: Chart1BarSeries2.AddXY(bg, h);           {Smart}
@@ -10193,7 +10201,7 @@ var x: integer;
   procedure HDiaYTHPlus;
   begin
     Chart1LineSeries2.AddXY(bg, h);                {Hüllkurve}
-    case StrToIntDef(splitlist[StringGrid1.Tag], 5) of
+    case StrToIntDef(splitlist[gridDetails.Tag], 5) of
       4: Chart1BarSeries5.AddXY(bg, h);            {ohne GPS}
       5: Chart1BarSeries1.AddXY(bg, h);            {Angle}
       6: Chart1BarSeries2.AddXY(bg, h);            {Smart}
@@ -10206,7 +10214,7 @@ var x: integer;
   procedure HDiaYLegacy;
   begin
     Chart1LineSeries2.AddXY(bg, h);                {Hüllkurve}
-    case StrToIntDef(splitlist[StringGrid1.Tag], 3) of        {f_mode; default: Angle}
+    case StrToIntDef(splitlist[gridDetails.Tag], 3) of        {f_mode; default: Angle}
       3, 4: Chart1BarSeries1.AddXY(bg, h);                    {Angle}
       2, 5, 7, 22, 24, 31, 32: Chart1BarSeries5.AddXY(bg, h); {ohne GPS}
       6, 21, 23, 26..29, 33:   Chart1BarSeries2.AddXY(bg, h); {Smart}
@@ -10229,7 +10237,7 @@ var x: integer;
     else
       h:=alt1;                                     {If 0 the keep previous value}
     Chart1LineSeries2.AddXY(bg, h-baseh);          {Hüllkurve}
-    case StrToIntDef(splitlist[StringGrid1.Tag], 3) of
+    case StrToIntDef(splitlist[gridDetails.Tag], 3) of
       0:  Chart1BarSeries7.AddXY(bg, h-baseh);     {Stabilized mode, blue}
       1:  Chart1BarSeries5.AddXY(bg, h-baseh);     {Altitude mode, orange}
       3:  Chart1BarSeries1.AddXY(bg, h-baseh);     {Position mode, purple}
@@ -10241,7 +10249,7 @@ var x: integer;
 
 begin
   screen.Cursor:=crHourGlass;
-  RadioGroup1.ItemIndex:=0;                        {Umschalten auf Telemetrie}
+  rgQuelle.ItemIndex:=0;                        {Umschalten auf Telemetrie}
   AnzeigeCSV(0);                     {dazu passende Tabelle laden für Analyse}
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
@@ -10254,7 +10262,7 @@ begin
   baseh:=0;                                        {default: relative altitude}
   try
     HDiaInit;
-    StringGrid1.Tag:=19;                           {default Position bei neuer FW}
+    gridDetails.Tag:=19;                           {default Position bei neuer FW}
     try
       inlist.LoadFromFile(fn);                     {Telemtry Datei laden}
     except
@@ -10266,14 +10274,14 @@ begin
       mnCursorEin.Enabled:=true;                     {Analyse erlauben}
       splitlist.DelimitedText:=inlist[0];  {Überschrift einlesen zum f_mode ermitteln}
       fModeFinden(splitlist);                      {Position f-mode merken}
-      SpinEdit3.MaxValue:=inlist.Count;
-      SpinEdit2.MaxValue:=inlist.Count-10;
-      SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
+      speDataPoint.MaxValue:=inlist.Count;
+      speAnalyze.MaxValue:=inlist.Count-10;
+      speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
       if inlist.Count>1500 then
         Chart1BarSeries1.BarPen.Width:=2           {Bar smoothing}
       else
         Chart1BarSeries1.BarPen.Width:=4;          {dyn. anpassen}
-      if SpinEdit3.Tag=ThBid then                  {for Thunderbird}
+      if speDataPoint.Tag=ThBid then                  {for Thunderbird}
         Chart1BarSeries1.BarPen.Width:=Chart1BarSeries1.BarPen.Width+2;
       Chart1BarSeries2.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       Chart1BarSeries3.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
@@ -10285,8 +10293,8 @@ begin
       StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
       AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
 
-      if SpinEdit3.Tag=ThBid then begin            {check data for Thunderbird}
-        baseh:=GethFromST10(ListBox1.ItemIndex, 0);{From begin of the Remote CSV file}
+      if speDataPoint.Tag=ThBid then begin            {check data for Thunderbird}
+        baseh:=GethFromST10(lbFlights.ItemIndex, 0);{From begin of the Remote CSV file}
         AppLog.Lines.Add(rsGCSalt+suff+
                            FormatFloat(ctfl, baseh)+'m');
         for x:=1 to inlist.count-1 do begin        {erstmal Daten checken}
@@ -10314,8 +10322,8 @@ begin
           try
             splitlist.DelimitedText:=inlist[x];
             if (splitlist.Count>anzsp) and          {Konsistenz checken (YTH)}
-                CheckVT(splitlist[StringGrid1.Tag+2],
-                        splitlist[StringGrid1.Tag]) then begin  {YTH Plus sinnvoll}
+                CheckVT(splitlist[gridDetails.Tag+2],
+                        splitlist[gridDetails.Tag]) then begin  {YTH Plus sinnvoll}
               if (NichtLeer(splitlist[3])) and
                  (splitlist[15]='231') then         {ID für Simulator}
                 simu:=true;
@@ -10348,7 +10356,7 @@ begin
         Chart1LineSeries1.SeriesColor:=clRed;      {ohne GPS}
         Chart1.Title.Text.Add(rsNoGPS);
       end;
-      if (SpinEdit3.Tag=ThBid) and
+      if (speDataPoint.Tag=ThBid) and
          (baseh<>0) then begin
         if rgSpeedUnit.ItemIndex=2 then            {GCS altitude im Diagramm ausgeben}
           Chart1.Title.Text.Add(rsGCSalt+suff+Format('%f', [baseh/fft])+'ft')
@@ -10359,18 +10367,18 @@ begin
         try                                        {Dateneinlesen}
           splitlist.DelimitedText:=inlist[x];
           if (splitlist.Count>anzsp) and           {Anzahl Spalten}
-              CheckVT(splitlist[StringGrid1.Tag+2],
-                      splitlist[StringGrid1.Tag]) then begin  {V-type beim YTH Plus}
-            bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+              CheckVT(splitlist[gridDetails.Tag+2],
+                      splitlist[gridDetails.Tag]) then begin  {V-type beim YTH Plus}
+            bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
             h:=StrToFloatN(splitlist[4]);
             u:=StrToFloatN(splitlist[2]);
             if cbCap.Checked then
-              Chart1LineSeries1.AddXY(bg, VtoProz(SpinEdit3.Tag, u))
+              Chart1LineSeries1.AddXY(bg, VtoProz(speDataPoint.Tag, u))
             else
               Chart1LineSeries1.AddXY(bg, u);      {Spannungskurve}
             if testh(h) and
                (bg>0) then begin
-              case SpinEdit3.Tag of                {Vehicle Type}
+              case speDataPoint.Tag of                {Vehicle Type}
                 3: HDiaBlade350;                   {Blade 350QX}
                 YTHPid: HDiaYTHPlus;               {YTH Plus}
                 ThBid: HDiaThunderbird;            {assign f_mode to color for TB}
@@ -10403,7 +10411,7 @@ var x: integer;
 
 begin
   screen.Cursor:=crHourGlass;
-  RadioGroup1.ItemIndex:=0;                        {Umschalten auf Telemetrie}
+  rgQuelle.ItemIndex:=0;                        {Umschalten auf Telemetrie}
   BrAnzeigeCSV(0);                   {dazu passende Tabelle laden für Analyse}
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
@@ -10423,9 +10431,9 @@ begin
     end;
     if inlist.count>10 then begin
       KursorAus;                                   {Fadenkreuz aus bei neuem Flug}
-      SpinEdit3.MaxValue:=inlist.Count-9;
-      SpinEdit2.MaxValue:=inlist.Count-10;
-      SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
+      speDataPoint.MaxValue:=inlist.Count-9;
+      speAnalyze.MaxValue:=inlist.Count-10;
+      speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
       if inlist.Count>1500 then
         Chart1BarSeries1.BarPen.Width:=2           {Bar smoothing}
       else
@@ -10445,7 +10453,7 @@ begin
         if splitlist.Count>anzsp then begin
           if (NichtLeer(splitlist[12]) or NichtLeer(splitlist[13])) and
              BrGPSfix(splitlist[20]) then GPS:=true;  {fraglich, was loseGPSact ist}
-          bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+          bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
           h:=StrToFloatN(splitlist[10])/100;
           if testh(h) then begin
             if hmxg<h then
@@ -10492,7 +10500,7 @@ var x: integer;
 
 begin
   screen.Cursor:=crHourGlass;
-  RadioGroup1.ItemIndex:=0;                        {Umschalten auf Telemetrie}
+  rgQuelle.ItemIndex:=0;                        {Umschalten auf Telemetrie}
   H501AnzeigeCSV(0);                   {dazu passende Tabelle laden für Analyse}
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
@@ -10510,9 +10518,9 @@ begin
     end;
     if inlist.count>10 then begin
       KursorAus;                                   {Fadenkreuz aus bei neuem Flug}
-      SpinEdit3.MaxValue:=inlist.Count;
-      SpinEdit2.MaxValue:=inlist.Count-10;
-      SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
+      speDataPoint.MaxValue:=inlist.Count;
+      speAnalyze.MaxValue:=inlist.Count-10;
+      speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
       if inlist.Count>1500 then
         Chart1BarSeries1.BarPen.Width:=2           {Bar smoothing}
       else
@@ -10532,13 +10540,13 @@ begin
         if splitlist.Count>14 then begin
           if (NichtLeer(splitlist[2]) or
               NichtLeer(splitlist[3])) then GPS:=true;
-          bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+          bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
           h:=H501alt(StrToFloatN(splitlist[4]));
           if hmxg<h then
             hmxg:=h;                               {Maximum elevation}
           u:=StrToFloatN(splitlist[9]);
           if cbCap.Checked then                    {Remaining capacity}
-            Chart1LineSeries1.AddXY(bg, VtoProz(SpinEdit3.Tag, u))
+            Chart1LineSeries1.AddXY(bg, VtoProz(speDataPoint.Tag, u))
           else
             Chart1LineSeries1.AddXY(bg, u);        {Spannungskurve}
           Chart1LineSeries2.AddXY(bg, h);          {Hüllkurve}
@@ -10596,12 +10604,12 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
            if p>0 then begin
              for x:=1 to inlist0.count-1 do begin  {Werte einlesen}
                splitlist.DelimitedText:=inlist0[x];
-               if CheckVT(splitlist[StringGrid1.Tag+2],
-                          splitlist[StringGrid1.Tag]) then begin
+               if CheckVT(splitlist[gridDetails.Tag+2],
+                          splitlist[gridDetails.Tag]) then begin
                  w:=TransformW(0, p, StrToFloatN(splitlist[p]));
                  if (p<>4) or
                     ((p=4) and testh(w)) then begin
-                   bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+                   bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
                    hist.AddXY(bg, w);
                  end;
                end;
@@ -10614,7 +10622,7 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
            if p>0 then begin
              for x:=1 to inlist1.count-1 do begin  {Werte einlesen}
                splitlist.DelimitedText:=inlist1[x];
-               bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+               bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
                w:=TransformW(1, p, StrToFloatN(splitlist[p]));
                hist.AddXY(bg, w);
              end;
@@ -10630,7 +10638,7 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
                ChToStr(cht.AxisList[0].Title.Caption, p);
              for x:=1 to inlist2.count-1 do begin  {Werte einlesen}
                splitlist.DelimitedText:=inlist2[x];
-               bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+               bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
                w:=TransformW(2, p, StrToFloatN(splitlist[p]));
                hist.AddXY(bg, w);
              end;
@@ -10649,7 +10657,7 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
     if p>0 then begin
       for x:=9 to inlist0.count-1 do begin         {Werte einlesen}
         splitlist.DelimitedText:=inlist0[x];
-        bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+        bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
         if (pos('lat', lab.Text)=1) or
            (pos('lon', lab.Text)=1) then begin
           w:=BrCoordToFloat(splitlist[p]);
@@ -10668,7 +10676,7 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
     if p>0 then begin
       for x:=1 to inlist0.count-1 do begin         {Werte einlesen}
         splitlist.DelimitedText:=inlist0[x];
-        bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+        bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
         w:=H501TransformW(p, StrToFloatN(splitlist[p]));
         hist.AddXY(bg, w);
       end;
@@ -10679,8 +10687,8 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
   begin
     case lab1.Tag of                    {Datei laden, wenn noch nicht gefüllt}
       0: if inlist0.Count=0 then begin
-           fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+
-               kfile+ListBox1.Items[ListBox1.ItemIndex]+fext;  {Telemetry}
+           fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
+               kfile+lbFlights.Items[lbFlights.ItemIndex]+fext;  {Telemetry}
            if FileExists(fn) then begin
              inlist0.LoadFromFile(fn);
              if pos(sep+'1'+sep, inlist0[0])>20 then           {H920 + ST24, old firmware}
@@ -10688,25 +10696,25 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
            end;
          end;
       1: if inlist1.Count=0 then begin
-           fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+spath+
-               PathDelim+sfile+ListBox1.Items[ListBox1.ItemIndex]+fext; {RemGPS}
+           fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+spath+
+               PathDelim+sfile+lbFlights.Items[lbFlights.ItemIndex]+fext; {RemGPS}
            if FileExists(fn) then inlist1.LoadFromFile(fn);
          end;
       2: if inlist2.Count=0 then begin
-           fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+fpath+
-               PathDelim+ffile+ListBox1.Items[ListBox1.ItemIndex]+fext; {Rem}
+           fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+fpath+
+               PathDelim+ffile+lbFlights.Items[lbFlights.ItemIndex]+fext; {Rem}
            if FileExists(fn) then
              inlist2.LoadFromFile(fn);
          end;
       brid: if inlist0.Count=0 then begin
-              fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-                  ListBox1.Items[ListBox1.ItemIndex]+bext;     {Breeze}
+              fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                  lbFlights.Items[lbFlights.ItemIndex]+bext;     {Breeze}
              if FileExists(fn) then
                inlist0.LoadFromFile(fn);
            end;
       H501ID: if inlist0.Count=0 then begin
-                fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+H5file+
-                    ListBox1.Items[ListBox1.ItemIndex]+fext;   {h501}
+                fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+H5file+
+                    lbFlights.Items[lbFlights.ItemIndex]+fext;   {h501}
                 if FileExists(fn) then
                   inlist0.LoadFromFile(fn);
               end;
@@ -10722,7 +10730,7 @@ begin
   inlist2:=TStringList.Create;
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=sep;
-  if SpinEdit3.Tag=h501ID then
+  if speDataPoint.Tag=h501ID then
     splitlist.Delimiter:=dstr;
   splitlist.StrictDelimiter:=True;
   Chart3LineSeries1.Clear;
@@ -10793,7 +10801,7 @@ begin
   klist.Add('<Style id="Flightpath">');
   klist.Add(tab2+'<LineStyle>');
   klist.Add(tab4+'<color>'+ColorToKMLColor(ColorButton1.ButtonColor)+'</color>');  {Farbe der Linie}
-  klist.Add(tab4+'<width>'+IntToStr(SpinEdit1.Value)+'</width>');
+  klist.Add(tab4+'<width>'+IntToStr(speLinePath.Value)+'</width>');
   klist.Add(tab2+'</LineStyle>');
   klist.Add(tab2+'<PolyStyle><color>7f00ff00</color></PolyStyle>'); {for Waypoints}
   klist.Add(tab2+'<IconStyle><Icon><href>'+aircrafticon+'</href></Icon></IconStyle>');
@@ -10848,13 +10856,13 @@ const
   begin
     if (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and   {Werte validieren}
        testh(StrToFloatN(splitlist[4])) and
-       CheckVT(splitlist[StringGrid1.Tag+2],
-               splitlist[StringGrid1.Tag]) and
-       GetRFM(splitlist[StringGrid1.Tag],
-              SpinEdit3.Tag, true) then begin
-      bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+       CheckVT(splitlist[gridDetails.Tag+2],
+               splitlist[gridDetails.Tag]) and
+       GetRFM(splitlist[gridDetails.Tag],
+              speDataPoint.Tag, true) then begin
+      bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
       ts:=bg+nowUTC-now;                 {UTC Zeitstempel errechnen}
-      fmd:=StrToIntDef(splitlist[StringGrid1.Tag], fmdnil);
+      fmd:=StrToIntDef(splitlist[gridDetails.Tag], fmdnil);
       ltime:=FormatDateTime(dzf, ts)+'T'+
              FormatDateTime(zzf+zzz, ts)+'Z';
       lkoor:=ChrKoor(splitlist[6])+tab1+
@@ -10912,7 +10920,7 @@ const
 
   procedure kmlBreeze;
   begin
-    bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+    bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
     if (NichtLeer(splitlist[12]) or NichtLeer(splitlist[13])) and
        (trim(splitlist[14])<>'0') and              {real flight mode}
         BrGPSfix(splitlist[20]) and
@@ -10937,7 +10945,7 @@ const
   procedure kmlH501;
   var w: integer;
   begin
-    bg:=dt+ZeitToDT(splitlist[0], SpinEdit3.Tag);
+    bg:=dt+ZeitToDT(splitlist[0], speDataPoint.Tag);
     if (NichtLeer(splitlist[2]) or
         NichtLeer(splitlist[3])) and
        (bg>0) then begin
@@ -10990,7 +10998,7 @@ begin
   lgcy:=true;                                      {Additional checks}
   dt:=0;
   splitlist.Delimiter:=sep;
-  case SpinEdit3.Tag of
+  case speDataPoint.Tag of
     brID: begin
             bdt:=9;                                {Start line for conversion}
             lgcy:=false;
@@ -10998,7 +11006,7 @@ begin
     h501ID: begin
               splitlist.Delimiter:=dstr;
               lgcy:=false;
-              dt:=GetDateFile(ListBox1.Items[z]);
+              dt:=GetDateFile(lbFlights.Items[z]);
             end;
     MQcsvID: lgcy:=false;
   end;
@@ -11019,19 +11027,19 @@ begin
           splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
           fModeFinden(splitlist);                  {Position f-mode merken}
           splitlist.DelimitedText:=inlist[bdt+1];    {2. Datenzeile, Zeit}
-          if (SpinEdit3.Tag<>YTHPid) then begin    {v_type ermitteln}
-            SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
+          if (speDataPoint.Tag<>YTHPid) then begin    {v_type ermitteln}
+            speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
             OverWriteVT;                           {Overwrite for PX4 Thunderbird}
           end;
         end;
         splitlist.DelimitedText:=inlist[bdt];      {1. Datenzeile, Zeit}
-        ts:=dt+ZeitToDT(splitlist[0], SpinEdit3.Tag)+nowUTC-now;
+        ts:=dt+ZeitToDT(splitlist[0], speDataPoint.Tag)+nowUTC-now;
         KMLheader(fn, ts, kmllist);
         for x:=bdt to inlist.Count-1 do
           if CheckE7(inlist[x]) then begin
             splitlist.DelimitedText:=inlist[x];
             if splitlist.Count>14 then begin
-            case SpinEdit3.Tag of
+            case speDataPoint.Tag of
               brID: kmlBreeze;
               H501ID: kmlH501;
               MQcsvID: kmlMQcsv;
@@ -11045,7 +11053,7 @@ begin
         placemark(kmllist, '#starting', '', skoor, stime);
 
         kmllist.Add('<'+pmtag);
-        kmllist.Add(write_nme(ComboBox1.Text));
+        kmllist.Add(write_nme(cbxText.Text));
         kmllist.Add(tab2+'<description>'+ExtractFileName(fn)+'</description>');
         kmllist.Add(tab2+'<styleUrl>#Flightpath</styleUrl>');
         kmllist.Add(tab2+'<gx:Track>');            {Start playable track}
@@ -11062,7 +11070,7 @@ begin
           else
             kmllist.Add(tab4+'<'+amtag+rgAltitudeType.Items[1]+'</'+amtag);
         end;
-        if CheckBox11.Checked then kmllist.Add(tab4+extru);
+        if cbExtrude.Checked then kmllist.Add(tab4+extru);
         if n>10 then begin
           for x:=0 to outlist.count-1 do           {Timestamps}
             kmllist.add(tab6+'<'+KMLwhen+outlist1[x]+'</'+KMLwhen);
@@ -11077,9 +11085,9 @@ begin
         placemark(kmllist, '#landing', '', lkoor, ltime); {Landing placemark}
 
 {bei Bedarf den Pfad der ST10 auch einspeichern}
-        if lgcy and CheckBox7.Checked then begin
-          dn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+spath+
-                             PathDelim+sfile+ListBox1.Items[z]+fext;
+        if lgcy and cbPilot.Checked then begin
+          dn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+spath+
+                             PathDelim+sfile+lbFlights.Items[z]+fext;
           if  FileExists(dn) and (n>10) then begin {RemoteGPS als Pfad}
             try
               inlist.LoadFromFile(dn);
@@ -11199,7 +11207,7 @@ var
 
   procedure gpxH501;
   begin
-    bg:=dt+ZeitToDT(splitlist[0], SpinEdit3.Tag);
+    bg:=dt+ZeitToDT(splitlist[0], speDataPoint.Tag);
     if (NichtLeer(splitlist[2]) or
         NichtLeer(splitlist[3])) and
        (bg>0) then begin
@@ -11225,12 +11233,12 @@ var
   begin
     if (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and
         testh(StrToFloatN(splitlist[4])) and       {Werte validieren}
-        CheckVT(splitlist[StringGrid1.Tag+2],
-                splitlist[StringGrid1.Tag]) and
-        GetRFM(splitlist[StringGrid1.Tag],
-               SpinEdit3.Tag, true) and
+        CheckVT(splitlist[gridDetails.Tag+2],
+                splitlist[gridDetails.Tag]) and
+        GetRFM(splitlist[gridDetails.Tag],
+               speDataPoint.Tag, true) and
         CheckE7(inlist[x]) then begin
-      bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+      bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
       ts:=bg+nowUTC-now;                           {UTC Zeitstempel errechnen}
       ltime:=tab1+'<time>'+FormatDateTime(dzf, ts)+'T'+
                            FormatDateTime(zzf, ts)+'Z</time>';
@@ -11286,7 +11294,7 @@ begin
   lgcy:=true;                                      {Additional checks}
   dt:=0;                                           {additional days not used}
   splitlist.Delimiter:=sep;
-  case SpinEdit3.Tag of
+  case speDataPoint.Tag of
     brID: begin
             bdt:=9;                                {Start line for conversion}
             lgcy:=false;
@@ -11294,7 +11302,7 @@ begin
     h501ID: begin
               splitlist.Delimiter:=dstr;
               lgcy:=false;
-              dt:=GetDateFile(ListBox1.Items[z]);  {Correction for date}
+              dt:=GetDateFile(lbFlights.Items[z]);  {Correction for date}
             end;
   end;
   splitlist.StrictDelimiter:=True;
@@ -11313,18 +11321,18 @@ begin
           splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
           fModeFinden(splitlist);                  {Position f-mode merken}
           splitlist.DelimitedText:=inlist[bdt+1];  {2. Datenzeile, Zeit}
-          if SpinEdit3.Tag<>YTHPid then begin      {v_type ermitteln}
-            SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
+          if speDataPoint.Tag<>YTHPid then begin      {v_type ermitteln}
+            speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
             OverWriteVT;                           {Overwrite for PX4 Thunderbird}
           end;
         end;
         splitlist.DelimitedText:=inlist[bdt];     {1. Datenzeile, Zeit}
-        ts:=dt+ZeitToDT(splitlist[0], SpinEdit3.Tag)+nowUTC-now;
-        GPXheader(ComboBox1.Text, fn, ts, kmllist);
+        ts:=dt+ZeitToDT(splitlist[0], speDataPoint.Tag)+nowUTC-now;
+        GPXheader(cbxText.Text, fn, ts, kmllist);
         for x:=bdt to inlist.Count-1 do begin      {Startpunkt ermitteln}
           splitlist.DelimitedText:=inlist[x];
           if splitlist.Count>14 then begin
-            case SpinEdit3.Tag of
+            case speDataPoint.Tag of
               brID: gpxBreeze;                     {Breeze}
               H501ID: gpxH501;
               MQcsvID: gpxMQcsv;                   {Mantis q CSV format}
@@ -11349,9 +11357,9 @@ begin
           kmllist.add(tab4+'<trkpt'+outlist[x]+GPXet3);
         GPXfooter1(kmllist);
 
-        dn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+spath+
-                         PathDelim+sfile+ListBox1.Items[z]+fext;
-        if CheckBox7.Checked and
+        dn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+spath+
+                         PathDelim+sfile+lbFlights.Items[z]+fext;
+        if cbPilot.Checked and
            FileExists(dn) and
            (n>10) then begin  {RemoteGPS als Pfad}
           try
@@ -11368,7 +11376,7 @@ begin
               splitlist.DelimitedText:=inlist[x];
               if (splitlist.Count>5) and           {Werte validieren}
                  (NichtLeer(splitlist[1]) or NichtLeer(splitlist[2])) then begin
-                ts:=ZeitToDT(splitlist[0], SpinEdit3.Tag)+nowUTC-now;  {UTC Zeitstempel errechnen}
+                ts:=ZeitToDT(splitlist[0], speDataPoint.Tag)+nowUTC-now;  {UTC Zeitstempel errechnen}
                 ltime:=tab2+'<time>'+FormatDateTime(dzf, ts)+'T'+
                                  FormatDateTime(zzf, ts)+'Z</time>';
                 lkoor:=tab1+GPXlat+ChrKoor(splitlist[2])+
@@ -11427,12 +11435,12 @@ begin
   splitlist.StrictDelimiter:=True;
   try
     try
-      inlist.LoadFromFile(IncludeTrailingPathDelimiter(ComboBox2.Text)+
-                          spath+PathDelim+sfile+ListBox1.Items[z]+fext);
+      inlist.LoadFromFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                          spath+PathDelim+sfile+lbFlights.Items[z]+fext);
       for x:=1 to inlist.count-1 do begin
         splitlist.DelimitedText:=inlist[x];
         if splitlist.Count>5 then begin
-          if ZeitToDT(splitlist[0], SpinEdit3.Tag)>dt then begin {Startpunkt suchen}
+          if ZeitToDT(splitlist[0], speDataPoint.Tag)>dt then begin {Startpunkt suchen}
             hx:=StrToFloatN(splitlist[3]);
             if (abs(hx)>0.1) and testh(hx) then begin  {nur gültige Höhenwerte zählen}
               hw:=hw+hx;
@@ -11467,8 +11475,8 @@ var
   hgrd, dist, lat1, lat2, lon1, lon2: double;
   bg: TDateTime;
 begin
-  fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-      kpath+kfile+ListBox1.Items[z]+fext;
+  fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+      kpath+kfile+lbFlights.Items[z]+fext;
   rdn:=ResultDN(fn, rgOutFormat.Items[rgOutFormat.ItemIndex]); {+dashw.csv}
   if FileExists(rdn) then             {Do nothing if target file already exists}
     exit;
@@ -11493,8 +11501,8 @@ begin
       splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
       fModeFinden(splitlist);                      {Position f-mode merken}
       splitlist.DelimitedText:=inlist[2];          {2. Datenzeile, Zeit}
-      if SpinEdit3.Tag<>YTHPid then begin          {v_type ermitteln}
-        SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
+      if speDataPoint.Tag<>YTHPid then begin          {v_type ermitteln}
+        speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
         OverWriteVT;                             {Overwrite for PX4 Thunderbird}
       end;
       s:=Trim(inlist[0]);
@@ -11504,21 +11512,21 @@ begin
         if CheckE7(inlist[x]) then begin
         splitlist.DelimitedText:=inlist[x];
         if (splitlist.Count>anzsp) and             {Konsistenz checken (YTH)}
-            CheckVT(splitlist[StringGrid1.Tag+2],
-                    splitlist[StringGrid1.Tag]) and
+            CheckVT(splitlist[gridDetails.Tag+2],
+                    splitlist[gridDetails.Tag]) and
             testh(StrToFloatN(splitlist[4])) then begin
           try
             if ((NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and  {GPS}
-               (GetRFM(splitlist[StringGrid1.Tag],
-                       SpinEdit3.Tag, true)) or
-                CheckBox3.Checked) then begin
+               (GetRFM(splitlist[gridDetails.Tag],
+                       speDataPoint.Tag, true)) or
+                cbDashw.Checked) then begin
               lat2:=StrToFloatN(splitlist[5]);
               lon2:=StrToFloatN(splitlist[6]);
-              bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+              bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
 {Startpunkt extra validieren, oben ist noch ein OR !}
               if (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and  {GPS}
-                 GetRFM(splitlist[StringGrid1.Tag],
-                        SpinEdit3.Tag, true) then begin
+                 GetRFM(splitlist[gridDetails.Tag],
+                        speDataPoint.Tag, true) then begin
                 if (lat1=0) and (lon1=0) then begin    {Startpunkt festlegen}
                   hgrd:=GethFromST10(z, bg);
                   dist:=0;
@@ -11529,7 +11537,7 @@ begin
                 end;
               end else begin
                 dist:=0;
-                if IsMStart(splitlist[StringGrid1.Tag], splitlist[StringGrid1.Tag+2]) then begin
+                if IsMStart(splitlist[gridDetails.Tag], splitlist[gridDetails.Tag+2]) then begin
                   lat1:=0;                         {Startpunkt zurücksetzen}
                   lon1:=0;
                 end;
@@ -11594,9 +11602,9 @@ var
       splitlist.DelimitedText:=inlist[x];
       if (NichtLeer(splitlist[12]) or NichtLeer(splitlist[13])) and
           BrGPSfix(splitlist[20]) and
-         (ZeitToDT(splitlist[0], SpinEdit3.Tag)>0) and
-         ((trim(splitlist[14])<>'0') or CheckBox3.Checked) then begin
-        bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
+         (ZeitToDT(splitlist[0], speDataPoint.Tag)>0) and
+         ((trim(splitlist[14])<>'0') or cbDashw.Checked) then begin
+        bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
         lat2:=BrCoordToFloat(splitlist[12]);
         lon2:=BrCoordToFloat(splitlist[13]);
         if (lat1=0) and (lon1=0) then begin        {Startpunkt festlegen}
@@ -11633,21 +11641,21 @@ var
     for x:=1 to inlist.Count-1 do if CheckE7(inlist[x]) then begin
       splitlist.DelimitedText:=inlist[x];
       if (splitlist.Count>anzsp) and               {Konsistenz checken (YTH)}
-          CheckVT(splitlist[StringGrid1.Tag+2],
-                  splitlist[StringGrid1.Tag]) and
+          CheckVT(splitlist[gridDetails.Tag+2],
+                  splitlist[gridDetails.Tag]) and
           testh(StrToFloatN(splitlist[4])) then begin
         try
           if ((NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and  {GPS}
-             (GetRFM(splitlist[StringGrid1.Tag],
-                     SpinEdit3.Tag, true)) or
-              CheckBox3.Checked) then begin
+             (GetRFM(splitlist[gridDetails.Tag],
+                     speDataPoint.Tag, true)) or
+              cbDashw.Checked) then begin
             lat2:=StrToFloatN(splitlist[5]);
             lon2:=StrToFloatN(splitlist[6]);
-            bg:=ZeitToDT(splitlist[0], SpinEdit3.Tag);
-{Startpunkt extra validieren, oben mit CheckBox3 () relativiert}
+            bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+{Startpunkt extra validieren, oben mit cbDashw () relativiert}
             if (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and  {GPS}
-               GetRFM(splitlist[StringGrid1.Tag],
-                      Spinedit3.Tag, true) then begin
+               GetRFM(splitlist[gridDetails.Tag],
+                      speDataPoint.Tag, true) then begin
               if (lat1=0) and
                  (lon1=0) then begin               {Startpunkt festlegen}
                 dist:=0;
@@ -11658,7 +11666,7 @@ var
               end;
             end else begin
               dist:=0;
-              if IsMStart(splitlist[StringGrid1.Tag], splitlist[StringGrid1.Tag+2]) then begin
+              if IsMStart(splitlist[gridDetails.Tag], splitlist[gridDetails.Tag+2]) then begin
                 lat1:=0;                           {Startpunkt zurücksetzen}
                 lon1:=0;
               end;
@@ -11673,11 +11681,11 @@ var
                          splitlist[12]+sep+                      {Heading (yaw)}
                          splitlist[13]+sep+                      {pitch}
                          splitlist[11]+sep+                      {roll}
-                         splitlist[StringGrid1.Tag]+sep+         {f_mode}
+                         splitlist[gridDetails.Tag]+sep+         {f_mode}
                          splitlist[1]+sep+                       {RSSI}
                          splitlist[2]+sep+                       {Voltage}
                          splitlist[10]+sep+                      {NumSats}
-                         splitlist[StringGrid1.Tag+4]);          {Accuracy (gps_accH)}
+                         splitlist[gridDetails.Tag+4]);          {Accuracy (gps_accH)}
           end;
         except
         end;
@@ -11688,12 +11696,12 @@ var
   end;
 
 begin
-  case SpinEdit3.Tag of
-    brID: fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-              ListBox1.Items[z]+bext;
+  case speDataPoint.Tag of
+    brID: fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+              lbFlights.Items[z]+bext;
   else                                             {Yuneec legacy}
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+
-        kpath+kfile+ListBox1.Items[z]+fext;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+        kpath+kfile+lbFlights.Items[z]+fext;
   end;
   rdn:=ResultDN(fn, rgOutFormat.Items[rgOutFormat.ItemIndex]); {+_rr.csv}
   if FileExists(rdn) then
@@ -11715,23 +11723,23 @@ begin
     end;
     if inlist.count>2 then
     try
-      if SpinEdit3.Tag<>brID then begin
+      if speDataPoint.Tag<>brID then begin
         splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
         fModeFinden(splitlist);                      {Position f-mode merken}
         splitlist.DelimitedText:=inlist[2];          {2. Datenzeile, Zeit}
-        if (SpinEdit3.Tag<>YTHPid) then begin        {v_type ermitteln}
-          SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
+        if (speDataPoint.Tag<>YTHPid) then begin        {v_type ermitteln}
+          speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
           OverWriteVT;                               {Overwrite for PX4 Thunderbird}
         end;
       end;
       dashlist.Add(rrk+'RaceRender Data');
-      dashlist.Add(rrk+vtypeToStr(SpinEdit3.Tag));
-      if SpinEdit3.Tag=brID then dashlist.Add(rrk+trim(inlist[5]));
+      dashlist.Add(rrk+vtypeToStr(speDataPoint.Tag));
+      if speDataPoint.Tag=brID then dashlist.Add(rrk+trim(inlist[5]));
       dashlist.Add('Time'+sep+'Longitude'+sep+'Latitude'+sep+'Altitude (m)'+sep+
                    'Distance (m)'+sep+'GPS_Update'+sep+'Speed (m/s)'+sep+
                    'Heading'+sep+'Pitch'+sep+'Roll'+sep+'FlightMode'+sep+
                    'RSSI'+sep+'Voltage'+sep+'NumSats'+sep+'Accuracy');
-      if SpinEdit3.Tag=brID then begin             {Breeze}
+      if speDataPoint.Tag=brID then begin             {Breeze}
         RRBreeze;
       end else begin
         RRYLegacy;
@@ -11777,8 +11785,8 @@ begin
     inlist.LoadFromFile(fn);                       {Telemetriefile laden}
     if inlist.Count>50 then begin
       splitlist.DelimitedText:=inlist[2];          {2. Datenzeile, Zeit}
-      if SpinEdit3.Tag<>YTHPid then begin          {v_type ermitteln}
-        SpinEdit3.Tag:=StrToIntDef(splitlist[StringGrid1.Tag+2], defVT);
+      if speDataPoint.Tag<>YTHPid then begin          {v_type ermitteln}
+        speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
         OverWriteVT;                               {Overwrite for PX4 Thunderbird}
       end;
       lat1:=0;
@@ -11791,17 +11799,17 @@ begin
         splitlist.DelimitedText:=inlist[x];
         wpele:=StrToFloatN(splitlist[4]);          {Höhe schon mal nehmen}
         if (splitlist.Count>anzsp) and             {Konsistenz checken (YTH)}
-            CheckVT(splitlist[StringGrid1.Tag+2],
-                    splitlist[StringGrid1.Tag]) and
+            CheckVT(splitlist[gridDetails.Tag+2],
+                    splitlist[gridDetails.Tag]) and
            (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and
             testh(wpele) and
-            GetRFM(splitlist[StringGrid1.Tag],
-                   SpinEdit3.Tag, true) then begin
+            GetRFM(splitlist[gridDetails.Tag],
+                   speDataPoint.Tag, true) then begin
           lat2:=StrToFloatN(splitlist[5]);
           lon2:=StrToFloatN(splitlist[6]);
           dist:=DeltaKoord(lat1, lon1, lat2, lon2); {Entfernung zum letzten Punkt}
           dir:=StrToFloatN(splitlist[12]);         {direction (yaw)}
-          if (dist>TrackBar2.Position) or
+          if (dist>tbrDistWP.Position) or
              (abs(dir-diralt)>deltayaw) then begin
             lat1:=lat2;
             lon1:=lon2;
@@ -11872,25 +11880,25 @@ begin
   end;
 end;
 
-procedure TForm1.RadioGroup1Click(Sender: TObject);         {Quelle wählen}
+procedure TForm1.rgQuelleClick(Sender: TObject);         {Quelle wählen}
 begin
-  if (SpinEdit3.Tag=MQid) or                       {nichts tun für MantisQ}
-     (SpinEdit3.Tag=H5id) then                     {nichts tun für H520}
+  if (speDataPoint.Tag=MQid) or                       {nichts tun für MantisQ}
+     (speDataPoint.Tag=H5id) then                     {nichts tun für H520}
        exit;
-  if (SpinEdit3.Tag=YTHPid) and                    {H Plus Sensor files}
-     (RadioGroup1.ItemIndex=3) then begin
+  if (speDataPoint.Tag=YTHPid) and                    {H Plus Sensor files}
+     (rgQuelle.ItemIndex=3) then begin
        OpenSensorPlus;
   end else begin
     Anzeige;
   end;
-  RadioGroup1.Tag:=0;                              {Resize columns needed again}
+  rgQuelle.Tag:=0;                              {Resize columns needed again}
 end;
 
 procedure TForm1.rgOutFormatClick(Sender: TObject);    {Format geändert}
 begin
   EnSave;
   StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
-  BitBtn2.Hint:=hntBitBtn2+' ('+StatusBar1.Panels[2].Text+')';
+  btnConv.Hint:=hntBitBtn2+' ('+StatusBar1.Panels[2].Text+')';
 end;
 
 procedure TForm1.rgSpeedUnitClick(Sender: TObject);    {MPH updaten}
@@ -11919,20 +11927,20 @@ begin
   GetDDdata(LabeledEdit3);
 end;
 
-procedure TForm1.SpeedButton4Click(Sender: TObject);   {FlightLog Verzeichnis}
+procedure TForm1.sbtnLogDirClick(Sender: TObject);   {FlightLog Verzeichnis}
 begin
   SelDirSet;
 end;
 
-procedure TForm1.SpeedButton5Click(Sender: TObject);   {Dir Protokoll}
+procedure TForm1.sbtnScanDirClick(Sender: TObject);   {Dir Protokoll}
 begin
   SelDirProt;                  {Verzeichnis zum Durchsuchen auswählen}
 end;
 
 procedure TForm1.SendCGOcmd;                           {Command zu CGO3}
 begin
-  if Edit3.Text>'' then
-    if CGO3run(Edit3.Text, 0)=0 then begin
+  if edSendCGO3.Text>'' then
+    if CGO3run(edSendCGO3.Text, 0)=0 then begin
       CGO3run('', 0);
     end else begin
       StatusBar1.Panels[5].Text:='Command not possible';
@@ -11940,12 +11948,12 @@ begin
     end;
 end;
 
-procedure TForm1.SpeedButton6Click(Sender: TObject);   {Command zu CGO3}
+procedure TForm1.sbtnSendCGO3Click(Sender: TObject);   {Command zu CGO3}
 begin
   SendCGOcmd;
 end;
 
-procedure TForm1.SpinEdit1Change(Sender: TObject);     {Liniendicke}
+procedure TForm1.speLinePathChange(Sender: TObject);     {Liniendicke}
 begin
   EnSave;                                              {Speichern erlauben}
 end;
@@ -11953,7 +11961,7 @@ end;
 procedure TForm1.StaticText1DblClick(Sender: TObject); {In Kopter ID übernehmen}
 begin
   if StaticText1.Caption<>'' then
-    ComboBox1.Text:=StaticText1.Caption; {KopterID}
+    cbxText.Text:=StaticText1.Caption; {KopterID}
 end;
 
 procedure TForm1.StatusToClipboard;                    {Statuszeile kopieren}
@@ -11977,20 +11985,20 @@ begin
   Statusbar1.Panels[5].Text:=Application.Hint;
 end;
 
-procedure TForm1.StringGrid1Click(Sender: TObject);{Kursor im Diagramm anzeigen}
+procedure TForm1.gridDetailsClick(Sender: TObject);{Kursor im Diagramm anzeigen}
 var ts, tb, te: TDateTime;
 begin
-  Label3.Tag:=StringGrid1.Selection.Left;          {selektierte Spalte ermitteln}
-  SpinEdit3.Value:=StringGrid1.Selection.Top;      {Zeile übernehmen}
-  if (RadioGroup1.ItemIndex<>3) and
-     (StringGrid1.ColCount<YTHPcols) then begin    {nicht bei Sensordateien}
-    ts:=ZeitToDT(StringGrid1.Cells[0, StringGrid1.Row], SpinEdit3.Tag);
+  Label3.Tag:=gridDetails.Selection.Left;          {selektierte Spalte ermitteln}
+  speDataPoint.Value:=gridDetails.Selection.Top;      {Zeile übernehmen}
+  if (rgQuelle.ItemIndex<>3) and
+     (gridDetails.ColCount<YTHPcols) then begin    {nicht bei Sensordateien}
+    ts:=ZeitToDT(gridDetails.Cells[0, gridDetails.Row], speDataPoint.Tag);
     if ts>0 then begin
       if (PageControl1.Tag>0) and
          (Form2.Chart1.Visible) then begin
         try
-          tb:=ZeitToDT(StringGrid1.Cells[0, 1], SpinEdit3.Tag);
-          te:=ZeitToDT(StringGrid1.Cells[0, StringGrid1.RowCount-1], SpinEdit3.Tag);
+          tb:=ZeitToDT(gridDetails.Cells[0, 1], speDataPoint.Tag);
+          te:=ZeitToDT(gridDetails.Cells[0, gridDetails.RowCount-1], speDataPoint.Tag);
           Form2.MoveVCursor(ts, round((ts-tb)/(te-tb)*10000));
           Form2.edTime.Visible:=true;
           Form2.Chart1ConstantLine1.Active:=true;
@@ -12002,24 +12010,24 @@ begin
   end;
 end;
 
-procedure TForm1.StringGrid1DblClick(Sender: TObject); {Hilfe zum Zelleninhalt}
+procedure TForm1.gridDetailsDblClick(Sender: TObject); {Hilfe zum Zelleninhalt}
 begin
-  StatusBar1.Panels[5].Text:=GetCellInfo(StringGrid1.Col, StringGrid1.Row);
+  StatusBar1.Panels[5].Text:=GetCellInfo(gridDetails.Col, gridDetails.Row);
   AppLog.Lines.Add(StatusBar1.Panels[5].Text);   {in AppLogHighlighter aufnehmen}
 end;
 
-procedure TForm1.StringGrid1PrepareCanvas(sender: TObject; aCol, aRow: Integer;
+procedure TForm1.gridDetailsPrepareCanvas(sender: TObject; aCol, aRow: Integer;
   aState: TGridDrawState);
 var dta, npos: double;
 const mxw=1365;
 
   procedure Farblauf(f, w: integer);               {Farbabstufung zeichnen}
-  var p: integer;   {f.. Farbe (index im Array), w..Wert}
+  var p: integer;                     {f.. Farbe (index im Array), w..Wert}
   begin
     p:=abs(w);
     if p>mxw then
       p:=mxw;
-    StringGrid1.Canvas.Brush.Color:=farbskala[f, p*High(farbskala[0])div mxw];
+    gridDetails.Canvas.Brush.Color:=farbskala[f, p*High(farbskala[0])div mxw];
   end;
 
   procedure TelemBreeze;                           {Telemetrie Breeze}
@@ -12027,33 +12035,33 @@ const mxw=1365;
   begin
     case aCol of
        2: begin                                    {Flight Mode}
-            e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 0);
+            e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);
             case e of
-              2, 4, 5, 7: StringGrid1.Canvas.Brush.Color:=clTasks;
-              8:  StringGrid1.Canvas.Brush.Color:=clRTH;
-              6:  StringGrid1.Canvas.Brush.Color:=clAngle;  {Pilot}
-              10: StringGrid1.Canvas.Brush.Color:=clNoGPS;
+              2, 4, 5, 7: gridDetails.Canvas.Brush.Color:=clTasks;
+              8:  gridDetails.Canvas.Brush.Color:=clRTH;
+              6:  gridDetails.Canvas.Brush.Color:=clAngle;  {Pilot}
+              10: gridDetails.Canvas.Brush.Color:=clNoGPS;
             end;
           end;
       14: begin                                    {AutoTakeOff}
-            e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 0);
+            e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);
             Case e of
-              2:     StringGrid1.Canvas.Brush.Color:=clSkyBlue; {Flug}
-              1, 18: StringGrid1.Canvas.Brush.Color:=clMoneyGreen;
-              16:    StringGrid1.Canvas.Brush.Color:=clAttention;
+              2:     gridDetails.Canvas.Brush.Color:=clSkyBlue; {Flug}
+              1, 18: gridDetails.Canvas.Brush.Color:=clMoneyGreen;
+              16:    gridDetails.Canvas.Brush.Color:=clAttention;
             end;
           end;
-      18: if (StringGrid1.Cells[aCol, aRow]<>'15') then         {Motorschaden}
-            StringGrid1.Canvas.Brush.Color:=clRed;
+      18: if (gridDetails.Cells[aCol, aRow]<>'15') then         {Motorschaden}
+            gridDetails.Canvas.Brush.Color:=clRed;
       19: begin                                    {error Zellen einfärben}
-            e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 0);   {Errorflag}
+            e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);   {Errorflag}
             if ((e and 1)<>0) or ((e and 2)<>0) then
-              StringGrid1.Canvas.Brush.Color:=clSkyBlue;
+              gridDetails.Canvas.Brush.Color:=clSkyBlue;
             if (e shr 2)<>0 then
-              StringGrid1.Canvas.Brush.Color:=clOrange;
+              gridDetails.Canvas.Brush.Color:=clOrange;
           end;
-      20: if BrGPSfix(StringGrid1.Cells[aCol, aRow]) then
-            StringGrid1.Canvas.Brush.Color:=clMoneyGreen;       {Num Sats}
+      20: if BrGPSfix(gridDetails.Cells[aCol, aRow]) then
+            gridDetails.Canvas.Brush.Color:=clMoneyGreen;       {Num Sats}
     end;
   end;
 
@@ -12063,17 +12071,17 @@ const mxw=1365;
   begin
     case aCol of
       1: begin
-           e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 0);    {Frames}
-           StringGrid1.Canvas.Brush.Color:=FramesToColor(e);
+           e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);    {Frames}
+           gridDetails.Canvas.Brush.Color:=FramesToColor(e);
            exit;
          end;
       4: begin                                     {Elevaton}
            try
              if rgSpeedUnit.ItemIndex=2 then
-               h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])/fft  {in ft}
+               h:=StrToFloatN(gridDetails.Cells[aCol, aRow])/fft  {in ft}
              else
-               h:=StrToFloatN(StringGrid1.Cells[aCol, aRow]);     {in m}
-             v:=StrToFloatN(GetFNr(grdOverview.Cells[5, ListBox1.ItemIndex+1]));
+               h:=StrToFloatN(gridDetails.Cells[aCol, aRow]);     {in m}
+             v:=StrToFloatN(GetFNr(gridOverview.Cells[5, lbFlights.ItemIndex+1]));
            except
              h:=0;
            end;
@@ -12081,16 +12089,16 @@ const mxw=1365;
               testh(h) and
               (v>0) and
               (h+0.1>=v) then
-             StringGrid1.Canvas.Brush.Color:=clYellow;  {Gipfelhöhe}
+             gridDetails.Canvas.Brush.Color:=clYellow;  {Gipfelhöhe}
            exit;
          end;
       9: begin                                     {Voltage}
-           v:=StrToFloatN(StringGrid1.Cells[aCol, aRow]);
-           StringGrid1.Canvas.Brush.Color:=VoltToColor(SpinEdit3.Tag, v);
+           v:=StrToFloatN(gridDetails.Cells[aCol, aRow]);
+           gridDetails.Canvas.Brush.Color:=VoltToColor(speDataPoint.Tag, v);
          end;
       18: begin                                    {RSSI, 100% as default}
-            e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 100);
-            StringGrid1.Canvas.Brush.Color:=RSSIpToColor(e);
+            e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 100);
+            gridDetails.Canvas.Brush.Color:=RSSIpToColor(e);
           end;
     end;
   end;
@@ -12099,24 +12107,24 @@ const mxw=1365;
   var e: integer;
       h, v: double;
   begin
-    if CheckVT(StringGrid1.Cells[21, aRow],
-               StringGrid1.Cells[19, aRow]) then begin {nur mit gültiger vehicle ID}
+    if CheckVT(gridDetails.Cells[21, aRow],
+               gridDetails.Cells[19, aRow]) then begin {nur mit gültiger vehicle ID}
       case aCol of
-         1: if (StringGrid1.Cells[aCol, aRow]>'') then begin   {RSSI}
+         1: if (gridDetails.Cells[aCol, aRow]>'') then begin   {RSSI}
               try
-                h:=abs(StrToFloatN(StringGrid1.Cells[aCol, aRow]));
+                h:=abs(StrToFloatN(gridDetails.Cells[aCol, aRow]));
               except
                 h:=0;                              {Max}
               end;
-              StringGrid1.Canvas.Brush.Color:=RSSItoColor(h);
+              gridDetails.Canvas.Brush.Color:=RSSItoColor(h);
             end;
          4: begin                                  {Höhe}
               try
                 if rgSpeedUnit.ItemIndex=2 then
-                  h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])/fft  {in ft}
+                  h:=StrToFloatN(gridDetails.Cells[aCol, aRow])/fft  {in ft}
                 else
-                  h:=StrToFloatN(StringGrid1.Cells[aCol, aRow]);     {in m}
-                v:=StrToFloatN(GetFNr(grdOverview.Cells[5, ListBox1.ItemIndex+1]));
+                  h:=StrToFloatN(gridDetails.Cells[aCol, aRow]);     {in m}
+                v:=StrToFloatN(GetFNr(gridOverview.Cells[5, lbFlights.ItemIndex+1]));
               except
                 h:=0;
               end;
@@ -12124,16 +12132,16 @@ const mxw=1365;
                  testh(h) and
                  (v>0) and
                  (h+0.1>=v) then
-                StringGrid1.Canvas.Brush.Color:=clYellow;           {Gipfelhöhe}
+                gridDetails.Canvas.Brush.Color:=clYellow;           {Gipfelhöhe}
               exit;
             end;
          7: begin                     {True Air Speed, nicht für vSpeed, hSpeed}
               try
                 if rgSpeedUnit.ItemIndex=2 then
-                  h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])*fmph  {in mph}
+                  h:=StrToFloatN(gridDetails.Cells[aCol, aRow])*fmph  {in mph}
                 else
-                  h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])*fkmh; {in km/h}
-                v:=StrToFloatN(GetFNr(grdOverview.Cells[8, ListBox1.ItemIndex+1]));
+                  h:=StrToFloatN(gridDetails.Cells[aCol, aRow])*fkmh; {in km/h}
+                v:=StrToFloatN(GetFNr(gridOverview.Cells[8, lbFlights.ItemIndex+1]));
               except
                 h:=0;
               end;
@@ -12141,41 +12149,41 @@ const mxw=1365;
                  (h>1) and
                  (v>0) and
                  (h+0.1>=v) then                   {Korrekturwert wegen Runden}
-               StringGrid1.Canvas.Brush.Color:=clYellow;             {Topspeed}
+               gridDetails.Canvas.Brush.Color:=clYellow;             {Topspeed}
               exit;
             end;
         19: begin                                  {Flight mode}
-              e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 0);
+              e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);
               case e of                            {flight modes wie Chart1BarSeries}
-                4:   StringGrid1.Canvas.Brush.Color:=clNoGPS;  {Manual Mode, no GPS}
-                5:   StringGrid1.Canvas.Brush.Color:=clAngle;
-                6:   StringGrid1.Canvas.Brush.Color:=clSmart;
-                7:   StringGrid1.Canvas.Brush.Color:=clSport;
-                12, 13: StringGrid1.Canvas.Brush.Color:=clRTH;
+                4:   gridDetails.Canvas.Brush.Color:=clNoGPS;  {Manual Mode, no GPS}
+                5:   gridDetails.Canvas.Brush.Color:=clAngle;
+                6:   gridDetails.Canvas.Brush.Color:=clSmart;
+                7:   gridDetails.Canvas.Brush.Color:=clSport;
+                12, 13: gridDetails.Canvas.Brush.Color:=clRTH;
               end;
             end;
       end;
-      if aCol=StringGrid1.Tag+4 then begin         {GPS horizontale accuracy}
+      if aCol=gridDetails.Tag+4 then begin         {GPS horizontale accuracy}
         try
-          h:=StrToFloatN(StringGrid1.Cells[aCol, aRow]);
+          h:=StrToFloatN(gridDetails.Cells[aCol, aRow]);
         except
           h:=10;                                   {Max}
         end;
         if h>2.5 then begin
-          StringGrid1.Canvas.Brush.Color:=clRed;
+          gridDetails.Canvas.Brush.Color:=clRed;
           exit;
         end;
         if (h<=2.5) and (h>1.8) then begin
-          StringGrid1.Canvas.Brush.Color:=clAttention;
+          gridDetails.Canvas.Brush.Color:=clAttention;
           exit;
         end;
         if (h<=1.8) and (h>=1) then begin
-          StringGrid1.Canvas.Brush.Color:=clMoneyGreen;
+          gridDetails.Canvas.Brush.Color:=clMoneyGreen;
           exit;
         end;
         if (h<1) and
            (h>0) then
-          StringGrid1.Canvas.Brush.Color:=clGreen;
+          gridDetails.Canvas.Brush.Color:=clGreen;
         exit;
       end;
     end;
@@ -12189,28 +12197,28 @@ const mxw=1365;
   var e: integer;
       h, v: double;
   begin
-    if StringGrid1.Cells[StringGrid1.Tag+2, aRow]>'0' then begin {nur mit gültiger vehicle ID}
+    if gridDetails.Cells[gridDetails.Tag+2, aRow]>'0' then begin {nur mit gültiger vehicle ID}
       case aCol of
-         1: if (StringGrid1.Cells[aCol, aRow]>'') then begin   {RSSI}
+         1: if (gridDetails.Cells[aCol, aRow]>'') then begin   {RSSI}
               try
-                h:=abs(StrToFloatN(StringGrid1.Cells[aCol, aRow]));
+                h:=abs(StrToFloatN(gridDetails.Cells[aCol, aRow]));
               except
                 h:=0;                              {Max}
               end;
               if h>0 then
-                StringGrid1.Canvas.Brush.Color:=RSSItoColor(h);
+                gridDetails.Canvas.Brush.Color:=RSSItoColor(h);
             end;
          2: begin                                  {Voltage}
-              v:=StrToFloatN(StringGrid1.Cells[aCol, aRow]);
-              StringGrid1.Canvas.Brush.Color:=VoltToColor(SpinEdit3.Tag, v);
+              v:=StrToFloatN(gridDetails.Cells[aCol, aRow]);
+              gridDetails.Canvas.Brush.Color:=VoltToColor(speDataPoint.Tag, v);
             end;
          4: begin                                  {Altitude}
               try
                 if rgSpeedUnit.ItemIndex=2 then
-                  h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])/fft  {in ft}
+                  h:=StrToFloatN(gridDetails.Cells[aCol, aRow])/fft  {in ft}
                 else
-                  h:=StrToFloatN(StringGrid1.Cells[aCol, aRow]);     {in m}
-                v:=StrToFloatN(GetFNr(grdOverview.Cells[5, ListBox1.ItemIndex+1]));
+                  h:=StrToFloatN(gridDetails.Cells[aCol, aRow]);     {in m}
+                v:=StrToFloatN(GetFNr(gridOverview.Cells[5, lbFlights.ItemIndex+1]));
               except
                 h:=0;
               end;
@@ -12218,16 +12226,16 @@ const mxw=1365;
                  testh(h) and
                  (v>0) and
                  (h+0.1>=v) then
-                StringGrid1.Canvas.Brush.Color:=clYellow;  {Gipfelhöhe}
+                gridDetails.Canvas.Brush.Color:=clYellow;  {Gipfelhöhe}
               exit;
             end;
          7: begin                                  {True Air Speed}
               try
                 if rgSpeedUnit.ItemIndex=2 then
-                  h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])*fmph  {in mph}
+                  h:=StrToFloatN(gridDetails.Cells[aCol, aRow])*fmph  {in mph}
                 else
-                  h:=StrToFloatN(StringGrid1.Cells[aCol, aRow])*fkmh; {in km/h}
-                v:=StrToFloatN(GetFNr(grdOverview.Cells[8, ListBox1.ItemIndex+1]));
+                  h:=StrToFloatN(gridDetails.Cells[aCol, aRow])*fkmh; {in km/h}
+                v:=StrToFloatN(GetFNr(gridOverview.Cells[8, lbFlights.ItemIndex+1]));
               except
                 h:=0;
               end;
@@ -12235,57 +12243,57 @@ const mxw=1365;
                  (h>1) and
                  (v>0) and
                  (h+0.1>=v) then                   {Korrekturwert wegen Runden}
-                StringGrid1.Canvas.Brush.Color:=clYellow; {Topspeed}
+                gridDetails.Canvas.Brush.Color:=clYellow; {Topspeed}
               exit;
             end;
         14: begin                                  {Motorstatus}
-              if (StringGrid1.Cells[aCol, aRow]<>'15') and
-                 (StringGrid1.Cells[aCol, aRow]<>'63') and
-                 (StringGrid1.Cells[aCol, aRow]<>'-1') and
-                 (StringGrid1.Cells[aCol, aRow]<>'255') then
-                StringGrid1.Canvas.Brush.Color:=clRed; {Motorschaden}
+              if (gridDetails.Cells[aCol, aRow]<>'15') and
+                 (gridDetails.Cells[aCol, aRow]<>'63') and
+                 (gridDetails.Cells[aCol, aRow]<>'-1') and
+                 (gridDetails.Cells[aCol, aRow]<>'255') then
+                gridDetails.Canvas.Brush.Color:=clRed; {Motorschaden}
               exit;
             end;
       end;
-      if aCol=(StringGrid1.Tag+3) then begin {error Zellen einfärben}
-        e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 0); {Errorflag}
+      if aCol=(gridDetails.Tag+3) then begin {error Zellen einfärben}
+        e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0); {Errorflag}
         if e>0 then begin
           if ((e and 1)<>0) or ((e and 2)<>0) then
-            StringGrid1.Canvas.Brush.Color:=clSkyBlue;
+            gridDetails.Canvas.Brush.Color:=clSkyBlue;
           if (e shr 2)<>0 then
-            StringGrid1.Canvas.Brush.Color:=clOrange;
+            gridDetails.Canvas.Brush.Color:=clOrange;
         end;
         exit;
       end;
-      if aCol=StringGrid1.Tag then begin           {f_mode Zellen einfärben}
-        e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 0);       {Flight Mode}
-        case SpinEdit3.Tag of
-          1, 2:  StringGrid1.Canvas.Brush.Color:=LegacyCol(e);
-          3:     StringGrid1.Canvas.Brush.Color:=BladeCol(e);   {350QX}
-          4..6:  StringGrid1.Canvas.Brush.Color:=LegacyCol(e);
-          ThBid: StringGrid1.Canvas.Brush.Color:=ThunderCol(e); {Thunderbird}
+      if aCol=gridDetails.Tag then begin           {f_mode Zellen einfärben}
+        e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);       {Flight Mode}
+        case speDataPoint.Tag of
+          1, 2:  gridDetails.Canvas.Brush.Color:=LegacyCol(e);
+          3:     gridDetails.Canvas.Brush.Color:=BladeCol(e);   {350QX}
+          4..6:  gridDetails.Canvas.Brush.Color:=LegacyCol(e);
+          ThBid: gridDetails.Canvas.Brush.Color:=ThunderCol(e); {Thunderbird}
         end;
         exit;
       end;
-      if aCol=StringGrid1.Tag+4 then begin         {GPS horizontale accuracy}
+      if aCol=gridDetails.Tag+4 then begin         {GPS horizontale accuracy}
         try
-          h:=StrToFloatN(StringGrid1.Cells[aCol, aRow]);
+          h:=StrToFloatN(gridDetails.Cells[aCol, aRow]);
         except
           h:=10;                                   {Max}
         end;
         if h>2.5 then begin
-          StringGrid1.Canvas.Brush.Color:=clRed;
+          gridDetails.Canvas.Brush.Color:=clRed;
           exit;
         end;
         if (h<=2.5) and (h>1.8) then begin
-          StringGrid1.Canvas.Brush.Color:=clAttention;
+          gridDetails.Canvas.Brush.Color:=clAttention;
           exit;
         end;
         if (h<=1.8) and (h>=1) then begin
-          StringGrid1.Canvas.Brush.Color:=clMoneyGreen;
+          gridDetails.Canvas.Brush.Color:=clMoneyGreen;
           exit;
         end;
-        if (h<1) and (h>0) then StringGrid1.Canvas.Brush.Color:=clGreen;
+        if (h<1) and (h>0) then gridDetails.Canvas.Brush.Color:=clGreen;
         exit;
       end;
     end;
@@ -12293,8 +12301,8 @@ const mxw=1365;
 
   procedure Telemetrie;                            {Farben bei Telemetry je Typ}
   begin
-    if StringGrid1.Cells[aCol, aRow]>'' then begin
-      case SpinEdit3.Tag of
+    if gridDetails.Cells[aCol, aRow]>'' then begin
+      case speDataPoint.Tag of
         brID: TelemBreeze;                         {Breeze}
         H501ID: TelemH501;
         YTHPid: TelemYTHP;                         {YTH Plus}
@@ -12309,19 +12317,19 @@ const mxw=1365;
   procedure RC_GPS;                                {Farben bei RemoteGPS}
   var e: integer;
   begin
-    if (SpinEdit3.Tag=YTHPid) and                  {nur bei YTH Plus}
+    if (speDataPoint.Tag=YTHPid) and                  {nur bei YTH Plus}
        (aCol=4) then begin                         {SatelliteCount}
-      e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 0);
+      e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);
       if e>0 then begin
         if e>10 then begin                         {11 bis x Sats grün}
-          StringGrid1.Canvas.Brush.Color:=clGreen;
+          gridDetails.Canvas.Brush.Color:=clGreen;
           exit;
         end;
         if e<5 then begin                          {1 bis 4 Sats rot}
-          StringGrid1.Canvas.Brush.Color:=clRed;
+          gridDetails.Canvas.Brush.Color:=clRed;
           exit;
         end else begin                             {5 bis 10 Sats gelb}
-          StringGrid1.Canvas.Brush.Color:=clYellow;
+          gridDetails.Canvas.Brush.Color:=clYellow;
           exit;
         end;
       end else exit;
@@ -12331,24 +12339,24 @@ const mxw=1365;
   procedure RC_Ch;                                 {Farben bei Remote (Channels)}
   var e, p: integer;
   begin
-    if StringGrid1.Cells[aCol, aRow]>'' then begin
-      e:=round(trunc(StrToFloatN(StringGrid1.Cells[aCol, aRow])));
+    if gridDetails.Cells[aCol, aRow]>'' then begin
+      e:=round(trunc(StrToFloatN(gridDetails.Cells[aCol, aRow])));
       case aCol of
         1: begin
              if e=2048 then
-               StringGrid1.Canvas.Brush.Color:=StringGrid1.Color
+               gridDetails.Canvas.Brush.Color:=gridDetails.Color
              else begin
                p:=e-stkntrl;
                if p<0 then Farblauf(1, p)          {nach unten}
                       else Farblauf(0, p);         {nach oben}
                if e=0 then                         {rote Taste}
-                 StringGrid1.Canvas.Brush.Color:=clAttention;
+                 gridDetails.Canvas.Brush.Color:=clAttention;
              end;
            end;
         2, 3, 4:
            begin                                   {die restlichen Knüppel}
              if e=2048 then
-               StringGrid1.Canvas.Brush.Color:=StringGrid1.Color
+               gridDetails.Canvas.Brush.Color:=gridDetails.Color
              else begin
                p:=e-stkntrl;
                if p<0 then Farblauf(1, p)          {nach unten}
@@ -12357,18 +12365,18 @@ const mxw=1365;
            end;
         5: begin                                   {Flight mode switch}
              if e=stkntrl then begin               {Angle}
-               StringGrid1.Canvas.Brush.Color:=clAngle;
+               gridDetails.Canvas.Brush.Color:=clAngle;
                exit;
              end;
              if e=stkup then begin                 {SportMode: blau}
-               if SpinEdit3.Tag=YTHPid then
-                 StringGrid1.Canvas.Brush.Color:=clSport
+               if speDataPoint.Tag=YTHPid then
+                 gridDetails.Canvas.Brush.Color:=clSport
                else                                {Smart}
-                 StringGrid1.Canvas.Brush.Color:=clSmart;
+                 gridDetails.Canvas.Brush.Color:=clSmart;
                exit;
              end;
              if e=stkdown then                     {RTH}
-               StringGrid1.Canvas.Brush.Color:=clRTH;
+               gridDetails.Canvas.Brush.Color:=clRTH;
           end;
       end;
     end;
@@ -12377,20 +12385,20 @@ const mxw=1365;
   procedure FarbenSensor;
   begin
     if (aCol<lenfix-3) then
-      StringGrid1.Canvas.Brush.Color:=clMoneyGreen;   {die wirklich fixen Bytes}
+      gridDetails.Canvas.Brush.Color:=clMoneyGreen;  {die wirklich fixen Bytes}
     if (aCol=lenfix-3) then
-      StringGrid1.Canvas.Brush.Color:=clOlive;     {Message ID (0)}
-    if StringGrid1.ColCount>=YTHPcols then begin   {YTH Plus}
+      gridDetails.Canvas.Brush.Color:=clOlive;     {Message ID (0)}
+    if gridDetails.ColCount>=YTHPcols then begin   {YTH Plus}
       if (aCol=lenfix-2) or
           (aCol=lenfix-1) then
-        StringGrid1.Canvas.Brush.Color:=clOlive;   {Message ID 1 und 2}
+        gridDetails.Canvas.Brush.Color:=clOlive;   {Message ID 1 und 2}
       if (aCol=lenfix) then
-       StringGrid1.Canvas.Brush.Color:=clMoneyGreen; {Message Name YTH Plus}
+       gridDetails.Canvas.Brush.Color:=clMoneyGreen; {Message Name YTH Plus}
       if (aCol=lenfix+1) then
-        StringGrid1.Canvas.Brush.Color:=clSilver;  {Längenspalte YTH Plus}
+        gridDetails.Canvas.Brush.Color:=clSilver;  {Längenspalte YTH Plus}
     end else begin
       if (aCol=lenfix-2) then
-        StringGrid1.Canvas.Brush.Color:=clSilver;  {Längenspalte andere mit Sensor Datei}
+        gridDetails.Canvas.Brush.Color:=clSilver;  {Längenspalte andere mit Sensor Datei}
     end;
 {und was auch immer noch bei Sensor Datei}
   end;
@@ -12399,33 +12407,33 @@ const mxw=1365;
   begin
     if (aCol=0) and
        (aRow>1) then begin                         {Frequenz Timestamps}
-      tpos:=ZeitToDT(StringGrid1.Cells[0, aRow], SpinEdit3.Tag);
-      npos:=ZeitToDT(StringGrid1.Cells[0, aRow-1], SpinEdit3.Tag);
+      tpos:=ZeitToDT(gridDetails.Cells[0, aRow], speDataPoint.Tag);
+      npos:=ZeitToDT(gridDetails.Cells[0, aRow-1], speDataPoint.Tag);
       dta:=tpos-npos;                              {Delta zur vorigen Zeile}
-      if (SpinEdit3.Tag=brID) or
-         (SpinEdit3.Tag=H501ID) then begin         {Yuneec Breeze/H501 delta timestamps}
+      if (speDataPoint.Tag=brID) or
+         (speDataPoint.Tag=H501ID) then begin      {Yuneec Breeze/H501 delta timestamps}
         if dta>tsdelta2 then
-          StringGrid1.Canvas.Brush.Color:=clAttention;
+          gridDetails.Canvas.Brush.Color:=clAttention;
         if dta>tsdelta3 then
-          StringGrid1.Canvas.Brush.Color:=clRed;   {5sec für Breeze}
+          gridDetails.Canvas.Brush.Color:=clRed;   {5sec für Breeze}
       end else begin                               {andere Kopter}
-        if RadioGroup1.ItemIndex=1 then begin      {RemoteGPS}
+        if rgQuelle.ItemIndex=1 then begin         {RemoteGPS}
           if dta>tsdelta2 then                     {2sec, für YTH > 1 sec}
-            StringGrid1.Canvas.Brush.Color:=clAttention;
+            gridDetails.Canvas.Brush.Color:=clAttention;
           if dta>tsdelta3 then                     {5sec}
-            StringGrid1.Canvas.Brush.Color:=clRed;
+            gridDetails.Canvas.Brush.Color:=clRed;
         end else begin                             {Telemetry/Remote}
           if dta>tsdelta1 then                     {600ms}
-            StringGrid1.Canvas.Brush.Color:=clAttention;
+            gridDetails.Canvas.Brush.Color:=clAttention;
           if dta>tsdelta2 then
-            StringGrid1.Canvas.Brush.Color:=clRed; {2sec}
+            gridDetails.Canvas.Brush.Color:=clRed; {2sec}
         end;
       end;
       if npos-tpos>tsdelta1 then                   {Zeitrücksprung}
-        StringGrid1.Canvas.Brush.Color:=clLime;
+        gridDetails.Canvas.Brush.Color:=clLime;
       exit;
     end;
-    case RadioGroup1.ItemIndex of                  {abh. von Dateityp}
+    case rgQuelle.ItemIndex of                     {abh. von Dateityp}
       0: Telemetrie;
       1: RC_GPS;
       2: RC_Ch;
@@ -12437,21 +12445,21 @@ const mxw=1365;
   begin
     case aCol of
        1: begin
-            e:=StrToIntDef(StringGrid1.Cells[aCol, aRow], 100);
-            StringGrid1.Canvas.Brush.Color:=RSSIpToColor(e);
+            e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 100);
+            gridDetails.Canvas.Brush.Color:=RSSIpToColor(e);
           end;
-      59: StringGrid1.Canvas.Brush.Color:=clOlive; {Message ID}
+      59: gridDetails.Canvas.Brush.Color:=clOlive; {Message ID}
     end;
   end;
 
 begin                                              {Main part}
   if (aRow>0) and                                  {nicht in Überschrift malen}
      (aState=[]) then begin                        {nicht, wenn selected}
-    if StringGrid1.ColCount=csvanz then begin
+    if gridDetails.ColCount=csvanz then begin
       FarbenPX4csv;
     end else begin
-      if (StringGrid1.ColCount>=YTHPcols) or
-         (RadioGroup1.ItemIndex=3) then begin      {Sensor}
+      if (gridDetails.ColCount>=YTHPcols) or
+         (rgQuelle.ItemIndex=3) then begin      {Sensor}
         FarbenSensor;
       end else begin                               {Rest wie gehabt}
         FarbenLegacy;
@@ -12492,7 +12500,7 @@ var x: integer;
 
   procedure PrepYTHPlus;                           {YTH Plus vorbereiten}
   begin
-    case RadioGroup1.ItemIndex of
+    case rgQuelle.ItemIndex of
       0: begin                                     {Telemetry}
             case p of
               1: s:=s+' [dBm]';
@@ -12521,12 +12529,12 @@ var x: integer;
 
   procedure PrepYlegacy;                           {Alle anderen vorbereiten}
   begin
-    case RadioGroup1.ItemIndex of
+    case rgQuelle.ItemIndex of
       0: begin                                     {Telemetry}
             case p of
               1: s:=s+' [dBm]';
               2: s:=s+' [V]';
-              3: if SpinEdit3.Tag=1
+              3: if speDataPoint.Tag=1
                    then s:=s+' [A]';               {nur H920}
               4: s:=s+' [m]';
               5, 6: s:=rsDistHome+' [m]';
@@ -12576,40 +12584,40 @@ var x: integer;
 
   procedure ShowDiaBreeze;                         {Zeit + Diagramm zeichnen}
   begin
-    bg:=ZeitToDT(StringGrid1.Cells[0, x], SpinEdit3.Tag);  {Zeitstempel}
-    w:=StrToFloatN(StringGrid1.Cells[p, x]); {default: Wert einfach übernehmen}
+    bg:=ZeitToDT(gridDetails.Cells[0, x], speDataPoint.Tag);  {Zeitstempel}
+    w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
     case p of                                      {Telemetrie Breeze}
       12, 13: begin                                {Koordinaten}
                  if ((lat1<>0) or (lon1<>0)) and {Koordinaten vorhanden}
-                    BrGPSfix(StringGrid1.Cells[20, x]) then begin {GPS-Fix}
-                   w:=DeltaKoord(lat1, lon1, BrCoordToFloat(StringGrid1.Cells[12, x]),
-                                             BrCoordToFloat(StringGrid1.Cells[13, x]));
+                    BrGPSfix(gridDetails.Cells[20, x]) then begin {GPS-Fix}
+                   w:=DeltaKoord(lat1, lon1, BrCoordToFloat(gridDetails.Cells[12, x]),
+                                             BrCoordToFloat(gridDetails.Cells[13, x]));
                  end else begin                    {keine gültigen Koordinaten}
-                   lat1:=BrCoordToFloat(StringGrid1.Cells[12, x]);
-                   lon1:=BrCoordToFloat(StringGrid1.Cells[13, x]);
+                   lat1:=BrCoordToFloat(gridDetails.Cells[12, x]);
+                   lon1:=BrCoordToFloat(gridDetails.Cells[13, x]);
                    w:=0;
                  end;
               end;
       10, 15, 16, 17: w:=w/100;                    {Altitude, roll, pitch, yaw}
-      20: w:=StatusToByte(StringGrid1.Cells[p, x]) and 31;  {Number sats}
+      20: w:=StatusToByte(gridDetails.Cells[p, x]) and 31;  {Number sats}
       21: w:=BrUmrech(w);                          {Spannung in % beim Breeze}
     end;
   end;
 
   procedure ShowDiaH501;                           {Zeit + Diagramm zeichnen}
   begin
-    bg:=ZeitToDT(StringGrid1.Cells[0, x], SpinEdit3.Tag);  {Zeitstempel}
-    w:=StrToFloatN(StringGrid1.Cells[p, x]); {default: Wert einfach übernehmen}
+    bg:=ZeitToDT(gridDetails.Cells[0, x], speDataPoint.Tag);  {Zeitstempel}
+    w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
     case p of                                      {Telemetrie H501}
       2, 3: begin
               if x>1 then begin            {1. Zeile ignorieren}
                 if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
-                  w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[2, x]),
-                                            StrToFloatN(StringGrid1.Cells[3, x]));
+                  w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
+                                            StrToFloatN(gridDetails.Cells[3, x]));
                 end else begin             {Startpunkt erst setzen}
-                  if testh(StrToFloatN(StringGrid1.Cells[4, x])) then begin
-                    lat1:=StrToFloatN(StringGrid1.Cells[2, x]);
-                    lon1:=StrToFloatN(StringGrid1.Cells[3, x]);
+                  if testh(StrToFloatN(gridDetails.Cells[4, x])) then begin
+                    lat1:=StrToFloatN(gridDetails.Cells[2, x]);
+                    lon1:=StrToFloatN(gridDetails.Cells[3, x]);
                   end;
                   w:=0;
                 end;
@@ -12623,22 +12631,22 @@ var x: integer;
 
   procedure ShowDiaYTHPlus;                        {Zeit + Diagramm zeichnen}
   begin
-    bg:=ZeitToDT(StringGrid1.Cells[0, x], SpinEdit3.Tag);  {Zeitstempel}
-    case RadioGroup1.ItemIndex of                  {Ausgewählte Datei}
+    bg:=ZeitToDT(gridDetails.Cells[0, x], speDataPoint.Tag);  {Zeitstempel}
+    case rgQuelle.ItemIndex of                  {Ausgewählte Datei}
       0: begin                                     {Telemetry}
-           if CheckVT(StringGrid1.Cells[StringGrid1.Tag+2, x],
-                      StringGrid1.Cells[StringGrid1.Tag, x]) then begin
-              w:=StrToFloatN(StringGrid1.Cells[p, x]); {default: Wert einfach übernehmen}
+           if CheckVT(gridDetails.Cells[gridDetails.Tag+2, x],
+                      gridDetails.Cells[gridDetails.Tag, x]) then begin
+              w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
               case p of                            {Liste der Spalten für Dia}
                 5, 6: begin
                         if x>1 then begin          {1. Zeile ignorieren}
                           if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
-                            w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[5, x]),
-                                                      StrToFloatN(StringGrid1.Cells[6, x]));
+                            w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
+                                                      StrToFloatN(gridDetails.Cells[6, x]));
                           end else begin           {noch kein Startpunkt, Startpunkt setzen}
-                            if testh(StrToFloatN(StringGrid1.Cells[4, x])) then begin
-                              lat1:=StrToFloatN(StringGrid1.Cells[5, x]);
-                              lon1:=StrToFloatN(StringGrid1.Cells[6, x]);
+                            if testh(StrToFloatN(gridDetails.Cells[4, x])) then begin
+                              lat1:=StrToFloatN(gridDetails.Cells[5, x]);
+                              lon1:=StrToFloatN(gridDetails.Cells[6, x]);
                             end;
                             w:=0;
                           end;
@@ -12650,15 +12658,15 @@ var x: integer;
            end;                                    {Ende Blödsinn ausblenden}
          end;
       1: begin                                     {RemoteGPS}
-            w:=StrToFloatN(StringGrid1.Cells[p, x]); {default: Wert einfach übernehmen}
+            w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
             case p of                              {ST16}
               1,2: if (lat1<>0) or (lon1<>0) then begin
-                     w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[2, x]),
-                                   StrToFloatN(StringGrid1.Cells[1, x]));
+                     w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
+                                   StrToFloatN(gridDetails.Cells[1, x]));
                    end else begin
-                     if testh(StrToFloatN(StringGrid1.Cells[3, x])) then begin
-                       lat1:=StrToFloatN(StringGrid1.Cells[2, x]);
-                       lon1:=StrToFloatN(StringGrid1.Cells[1, x]);
+                     if testh(StrToFloatN(gridDetails.Cells[3, x])) then begin
+                       lat1:=StrToFloatN(gridDetails.Cells[2, x]);
+                       lon1:=StrToFloatN(gridDetails.Cells[1, x]);
                      end;
                      w:=0;
                    end;
@@ -12667,36 +12675,36 @@ var x: integer;
             if (p=3) and (not testh(w)) then w:=0; {Korrektur unplausibler Werte (Höhe)}
          end;
       2: begin                                     {Remote: nur Angle}
-           w:=StrToFloatN(StringGrid1.Cells[p, x]); {default: Wert einfach übernehmen}
-           if p=7 then w:=TiltToGrad(StrToFloatN(StringGrid1.Cells[p, x]));
+           w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
+           if p=7 then w:=TiltToGrad(StrToFloatN(gridDetails.Cells[p, x]));
          end;
     end;
   end;
 
   procedure ShowDiaYlegacy;                        {Zeit + Diagramm zeichnen}
   begin
-    bg:=ZeitToDT(StringGrid1.Cells[0, x], SpinEdit3.Tag);  {Zeitstempel}
-    w:=StrToFloatN(StringGrid1.Cells[p, x]);       {default: Wert einfach übernehmen}
-    case RadioGroup1.ItemIndex of                  {Gewählte Datei}
+    bg:=ZeitToDT(gridDetails.Cells[0, x], speDataPoint.Tag);  {Zeitstempel}
+    w:=StrToFloatN(gridDetails.Cells[p, x]);       {default: Wert einfach übernehmen}
+    case rgQuelle.ItemIndex of                  {Gewählte Datei}
       0: begin                                     {Telemetry}
             case p of                              {Liste der Spalten für Dia}
               1: if w=0 then                       {Suppress zero values from WiFi}
                    w:=rssi_alt                     {Hold the old value do not jump to 0}
                  else
                    rssi_alt:=w;                    {Save valid RSSI values}
-              3: if SpinEdit3.Tag=1 then
+              3: if speDataPoint.Tag=1 then
                    w:=H920Amp(w);                  {Stromsensor bei H920}
               4: if not testh(w) then
                    w:=0;                           {Korrektur unplausibler Höhe}
               5, 6: begin
                       if x>1 then begin            {1. Zeile ignorieren}
                         if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
-                          w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[5, x]),
-                                                    StrToFloatN(StringGrid1.Cells[6, x]));
+                          w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
+                                                    StrToFloatN(gridDetails.Cells[6, x]));
                         end else begin             {Startpunkt erst setzen}
-                          if testh(StrToFloatN(StringGrid1.Cells[4, x])) then begin
-                            lat1:=StrToFloatN(StringGrid1.Cells[5, x]);
-                            lon1:=StrToFloatN(StringGrid1.Cells[6, x]);
+                          if testh(StrToFloatN(gridDetails.Cells[4, x])) then begin
+                            lat1:=StrToFloatN(gridDetails.Cells[5, x]);
+                            lon1:=StrToFloatN(gridDetails.Cells[6, x]);
                           end;
                           w:=0;
                         end;
@@ -12708,12 +12716,12 @@ var x: integer;
       1: begin                                     {RemoteGPS}
             case p of                              {ST10/ST16}
               1,2: if (lat1<>0) or (lon1<>0) then begin
-                     w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[2, x]),
-                                   StrToFloatN(StringGrid1.Cells[1, x]));
+                     w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
+                                   StrToFloatN(gridDetails.Cells[1, x]));
                    end else begin
-                     if testh(StrToFloatN(StringGrid1.Cells[3, x])) then begin
-                       lat1:=StrToFloatN(StringGrid1.Cells[2, x]);
-                       lon1:=StrToFloatN(StringGrid1.Cells[1, x]);
+                     if testh(StrToFloatN(gridDetails.Cells[3, x])) then begin
+                       lat1:=StrToFloatN(gridDetails.Cells[2, x]);
+                       lon1:=StrToFloatN(gridDetails.Cells[1, x]);
                      end;
                      w:=0;
                    end;
@@ -12722,16 +12730,16 @@ var x: integer;
             if (p=3) and (not testh(w)) then w:=0; {Korrektur unplausibler Werte (Höhe)}
          end;
       2: begin                                     {Remote}
-           if p=7 then w:=TiltToGrad(StrToFloatN(StringGrid1.Cells[p, x]));
+           if p=7 then w:=TiltToGrad(StrToFloatN(gridDetails.Cells[p, x]));
          end;
     end;
   end;
 
   procedure ShowThunderbird;                       {Zeit + Diagramm zeichnen}
   begin
-    bg:=ZeitToDT(StringGrid1.Cells[0, x], defVT);  {Zeitstempel}
-    w:=StrToFloatN(StringGrid1.Cells[p, x]);       {default: Wert einfach übernehmen}
-    case RadioGroup1.ItemIndex of                  {Gewählte Datei}
+    bg:=ZeitToDT(gridDetails.Cells[0, x], defVT);  {Zeitstempel}
+    w:=StrToFloatN(gridDetails.Cells[p, x]);       {default: Wert einfach übernehmen}
+    case rgQuelle.ItemIndex of                  {Gewählte Datei}
       0: begin                                     {Telemetry}
             case p of                              {Liste der Spalten für Dia}
               4: if testh(w) and
@@ -12742,12 +12750,12 @@ var x: integer;
               5, 6: begin
                       if x>1 then begin            {1. Zeile ignorieren}
                         if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
-                          w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[5, x]),
-                                                    StrToFloatN(StringGrid1.Cells[6, x]));
+                          w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
+                                                    StrToFloatN(gridDetails.Cells[6, x]));
                         end else begin             {Startpunkt erst setzen}
-                          if testh(StrToFloatN(StringGrid1.Cells[4, x])) then begin
-                            lat1:=StrToFloatN(StringGrid1.Cells[5, x]);
-                            lon1:=StrToFloatN(StringGrid1.Cells[6, x]);
+                          if testh(StrToFloatN(gridDetails.Cells[4, x])) then begin
+                            lat1:=StrToFloatN(gridDetails.Cells[5, x]);
+                            lon1:=StrToFloatN(gridDetails.Cells[6, x]);
                           end;
                           w:=0;
                         end;
@@ -12759,12 +12767,12 @@ var x: integer;
       1: begin                                     {RemoteGPS}
             case p of                              {ST16}
               1,2: if (lat1<>0) or (lon1<>0) then begin
-                     w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[2, x]),
-                                   StrToFloatN(StringGrid1.Cells[1, x]));
+                     w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
+                                   StrToFloatN(gridDetails.Cells[1, x]));
                    end else begin
-                     if testh(StrToFloatN(StringGrid1.Cells[3, x])) then begin
-                       lat1:=StrToFloatN(StringGrid1.Cells[2, x]);
-                       lon1:=StrToFloatN(StringGrid1.Cells[1, x]);
+                     if testh(StrToFloatN(gridDetails.Cells[3, x])) then begin
+                       lat1:=StrToFloatN(gridDetails.Cells[2, x]);
+                       lon1:=StrToFloatN(gridDetails.Cells[1, x]);
                      end;
                      w:=0;
                    end;
@@ -12773,26 +12781,26 @@ var x: integer;
             if (p=3) and (not testh(w)) then w:=0; {Korrektur unplausibler Werte (Höhe)}
          end;
       2: begin                                     {Remote}
-           if p=7 then w:=TiltToGrad(StrToFloatN(StringGrid1.Cells[p, x]));
+           if p=7 then w:=TiltToGrad(StrToFloatN(gridDetails.Cells[p, x]));
          end;
     end;
   end;
 
   procedure ShowDiaPX4csv;                         {Zeit + wert ermitteln}
   begin
-    bg:=ScanDateTime(zzf+zzz, StringGrid1.Cells[0, x]);
-    w:=StrToFloatN(StringGrid1.Cells[p, x]);       {default: Wert einfach übernehmen}
+    bg:=ScanDateTime(zzf+zzz, gridDetails.Cells[0, x]);
+    w:=StrToFloatN(gridDetails.Cells[p, x]);       {default: Wert einfach übernehmen}
     case p of                                      {CSV Datei, Spalte p}
       4: if not testh(w) then
            w:=0;                                   {Korrektur unplausibler Höhe}
       5, 6: begin                                  {Entfernung zum Startpunkt}
               if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
-                w:=DeltaKoord(lat1, lon1, StrToFloatN(StringGrid1.Cells[5, x]),
-                                          StrToFloatN(StringGrid1.Cells[6, x]));
+                w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
+                                          StrToFloatN(gridDetails.Cells[6, x]));
               end else begin                       {Startpunkt erst setzen}
-                if testh(StrToFloatN(StringGrid1.Cells[4, x])) then begin
-                  lat1:=StrToFloatN(StringGrid1.Cells[5, x]);
-                  lon1:=StrToFloatN(StringGrid1.Cells[6, x]);
+                if testh(StrToFloatN(gridDetails.Cells[4, x])) then begin
+                  lat1:=StrToFloatN(gridDetails.Cells[5, x]);
+                  lon1:=StrToFloatN(gridDetails.Cells[6, x]);
                 end;
                 w:=0;
               end;
@@ -12802,7 +12810,7 @@ var x: integer;
 
 begin
   if (p>0) and                                     {Spalte Datum/Zeit ausschließen}
-     (StringGrid1.RowCount>25) then begin          {genügend Zeilen}
+     (gridDetails.RowCount>25) then begin          {genügend Zeilen}
     DoForm2Show(0);
     PageControl1.Tag:=1;
     w:=0;
@@ -12810,16 +12818,16 @@ begin
     lat1:=0;
     lon1:=0;
     alt1:=0;
-    if SpinEdit3.Tag=ThBid then
-      alt1:=GethFromST10(ListBox1.ItemIndex, 0);   {Set to ST16 altitude}
-    s:=StringGrid1.Cells[p, 0];
+    if speDataPoint.Tag=ThBid then
+      alt1:=GethFromST10(lbFlights.ItemIndex, 0);   {Set to ST16 altitude}
+    s:=gridDetails.Cells[p, 0];
     Form2.Caption:=rsChart+' "'+s+'"';
-    if Radiogroup1.ItemIndex=2 then Form2.Caption:=ChToStr(Form2.Caption, p);
+    if rgQuelle.ItemIndex=2 then Form2.Caption:=ChToStr(Form2.Caption, p);
     Form2.StringGrid1.Visible:=false;
-    if StringGrid1.ColCount=csvanz then begin      {eigenes PX4 CSV Format}
+    if gridDetails.ColCount=csvanz then begin      {eigenes PX4 CSV Format}
       PrepPX4csv;
     end else begin
-      case SpinEdit3.Tag of
+      case speDataPoint.Tag of
         brID: PrepBreeze;                          {Y-Achsen vorbereiten}
         H501ID: PrepH501;
         YTHPid: PrepYTHPlus;                       {YTH Plus}
@@ -12834,18 +12842,18 @@ begin
     Form2.Chart1LineSeries1.BeginUpdate;
     Form2.Chart1LineSeries1.Pointer.Visible:=false;
     Form2.Chart1.ZoomFull;
-    Form2.Chart1.Tag:=RadioGroup1.ItemIndex;       {Tell that it Telemetry or whatever}
-    for x:=2 to StringGrid1.RowCount-1 do begin    {skip first line}
-      if StringGrid1.Cells[p, x]<>'' then begin    {skip empty cells}
-        if (SpinEdit3.Tag=ThBid) and               {only for Thunderbird}
+    Form2.Chart1.Tag:=rgQuelle.ItemIndex;       {Tell that it Telemetry or whatever}
+    for x:=2 to gridDetails.RowCount-1 do begin    {skip first line}
+      if gridDetails.Cells[p, x]<>'' then begin    {skip empty cells}
+        if (speDataPoint.Tag=ThBid) and               {only for Thunderbird}
            (p=4) and
-           (StringGrid1.Cells[p, x]=dzfl) then     {absolute altitude = 0}
+           (gridDetails.Cells[p, x]=dzfl) then     {absolute altitude = 0}
           Continue;                                {skip zero altitude}
         try
-          if StringGrid1.ColCount=csvanz then begin  {PX4 CSV}
+          if gridDetails.ColCount=csvanz then begin  {PX4 CSV}
             ShowDiaPX4csv;
           end else begin
-            case SpinEdit3.Tag of
+            case speDataPoint.Tag of
               brID: ShowDiaBreeze;                 {Breeze}
               H501ID: ShowDiaH501;
               YTHPid: ShowDiaYTHPlus;              {YTH Plus}
@@ -12947,7 +12955,7 @@ var
 
     procedure ZhlYLegacy;
     begin
-      if RadioGroup1.ItemIndex=0 then
+      if rgQuelle.ItemIndex=0 then
       try
         if p=8 then begin                          {GPS used}
           vbd;
@@ -12959,18 +12967,18 @@ var
         if p=15 then                               {imu_status}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
             IMUstatusToStr(StatusToByte(ag.Value));
-        if p=StringGrid1.Tag-1 then                {press_compass_status}
+        if p=gridDetails.Tag-1 then                {press_compass_status}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
             PCGstatusToStr(StatusToByte(ag.Value));
-        if p=StringGrid1.Tag then begin            {f_mode}
+        if p=gridDetails.Tag then begin            {f_mode}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
             fmodeToStr(StrToInt(ag.Value));
           vbd;
         end;
-        if p=StringGrid1.Tag+2 then                {vehicle type}
+        if p=gridDetails.Tag+2 then                {vehicle type}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
             vtypeToStr(StrToInt(ag.Value));
-        if p=StringGrid1.Tag+3 then begin          {error flag}
+        if p=gridDetails.Tag+3 then begin          {error flag}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
             eflagToStr(ag.Value);
           vbd;
@@ -12978,7 +12986,7 @@ var
       except
         AppLog.Lines.Add(rsError+' during count of values at Telemetry');
       end;
-      if RadioGroup1.ItemIndex=2 then
+      if rgQuelle.ItemIndex=2 then
       try
         if (p=5) then begin                        {Flight Mode switch}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
@@ -13000,7 +13008,7 @@ var
     Form2.StringGrid1.RowCount:=Form2.StringGrid1.RowCount+1;
     Form2.StringGrid1.Cells[0, Form2.StringGrid1.RowCount-1]:=FormSR(ag.Value, 4);
     Form2.StringGrid1.Cells[1, Form2.StringGrid1.RowCount-1]:=IntToStrFL(ag.Count, 6);
-    if StringGrid1.ColCount=csvanz then begin      {eigenes PX4 CSV Format}
+    if gridDetails.ColCount=csvanz then begin      {eigenes PX4 CSV Format}
       try                                          {3. Spalte füllen}
         if ag.Value<>'' then begin                 {leere Zellen nicht auflösen}
           case p of
@@ -13018,7 +13026,7 @@ var
         AppLog.Lines.Add(rsError+' during count of PX4 CSV values');
       end;
     end else begin
-      case SpinEdit3.Tag of
+      case speDataPoint.Tag of
         brID: ZhlBreeze;                           {Breeze}
         H501ID: ZhlH501;
       else
@@ -13046,7 +13054,7 @@ var
 
   procedure CountValues;                           {Sechs Spalten}
   begin
-    a[high(a)].Ende:=ZeitToDT(StringGrid1.Cells[0, i], SpinEdit3.Tag);
+    a[high(a)].Ende:=ZeitToDT(gridDetails.Cells[0, i], speDataPoint.Tag);
     if s<>a[high(a)].Value then begin
       setlength(a, high(a)+2);                     {neuen Wert anlegen}
       a[high(a)].Value:=s;
@@ -13062,16 +13070,16 @@ begin
     Form2.Chart1ConstantLine1.Active:=false;
   PageControl1.Tag:=0;
   a:=nil;
-  for i:=1 to StringGrid1.RowCount - 1 do begin
-    if (SpinEdit3.Tag=H501ID) or
-       ((CheckVT(StringGrid1.Cells[StringGrid1.Tag+2, i], {testen auf YTH Plus Fehler}
-                StringGrid1.Cells[StringGrid1.Tag, i])) or
-       (StringGrid1.ColCount=csvanz) or            {eigenes PX4 CSV Format ohne six}
-       (Radiogroup1.ItemIndex>0)) then begin       {Test aber nur bei telemetry}
-      s:=trim(StringGrid1.Cells[p, i]);
+  for i:=1 to gridDetails.RowCount - 1 do begin
+    if (speDataPoint.Tag=H501ID) or
+       ((CheckVT(gridDetails.Cells[gridDetails.Tag+2, i], {testen auf YTH Plus Fehler}
+                gridDetails.Cells[gridDetails.Tag, i])) or
+       (gridDetails.ColCount=csvanz) or            {eigenes PX4 CSV Format ohne six}
+       (rgQuelle.ItemIndex>0)) then begin       {Test aber nur bei telemetry}
+      s:=trim(gridDetails.Cells[p, i]);
       if assigned(a) then begin  {ist array schon einmal initialisiert worden ?}
         six:=false;
-        case SpinEdit3.Tag of
+        case speDataPoint.Tag of
           brID: begin                              {Breeze}
                   case p of
                     2:  six:=true;                 {FlightMode}
@@ -13083,9 +13091,9 @@ begin
                   if p=1 then six:=true;           {Frames with times}
                 end;                              *)
         YTHPid: begin      {YTH Plus}
-                  case Radiogroup1.ItemIndex of
+                  case rgQuelle.ItemIndex of
                     0: begin                       {Telemetry}
-                        if p=StringGrid1.Tag then six:=true;     {f_mode}
+                        if p=gridDetails.Tag then six:=true;     {f_mode}
                         if p=8 then six:=true;     {GPS used}
                        end;
                     2: begin                       {Remote}
@@ -13094,10 +13102,10 @@ begin
                   end;
                 end;
         else begin                                 {Rest Yuneec}
-            case Radiogroup1.ItemIndex of
+            case rgQuelle.ItemIndex of
               0: begin                             {Telemetry}
-                   if p=StringGrid1.Tag+3 then six:=true;  {Error flag}
-                   if p=StringGrid1.Tag then six:=true;    {f_mode}
+                   if p=gridDetails.Tag+3 then six:=true;  {Error flag}
+                   if p=gridDetails.Tag then six:=true;    {f_mode}
                    if p=8 then six:=true;                  {GPS used}
                  end;
               2: begin                             {Remote}
@@ -13125,14 +13133,14 @@ begin
         setlength(a, 1);                           {neuen Wert im Array anlegen}
         a[0].Value:=s;                             {Array Werte initialisieren}
         a[0].Count:=1;
-        a[0].Beginn:=ZeitToDT(StringGrid1.Cells[0, i], SpinEdit3.Tag);
+        a[0].Beginn:=ZeitToDT(gridDetails.Cells[0, i], speDataPoint.Tag);
         a[0].Ende:=a[0].Beginn;                    {Zeitstempel intialisieren}
       end;
     end;
   end;                                             {Ende Spalte untersuchen}
   DoForm2Show(720);        {Detailfenster anzeigen und mit Statistik füllen}
-  Form2.Caption:=rsStatistik+' "'+StringGrid1.Cells[p, 0]+'"';
-  if Radiogroup1.ItemIndex=2 then case p of        {Remote}
+  Form2.Caption:=rsStatistik+' "'+gridDetails.Cells[p, 0]+'"';
+  if rgQuelle.ItemIndex=2 then case p of        {Remote}
      5: Form2.Caption:=Form2.Caption+' - S4 Flight Mode Switch';
      6: Form2.Caption:=Form2.Caption+' - Flight Mode Add';
      9: Form2.Caption:=Form2.Caption+' - S1 Gimbal tilt mode';
@@ -13145,14 +13153,14 @@ begin
   Form2.StringGrid1.BeginUpdate;
   Form2.StringGrid1.RowCount:=1;
   Form2.StringGrid1.ColCount:=2;
-  Form2.StringGrid1.Cells[0, 0]:=StringGrid1.Cells[p, 0];
+  Form2.StringGrid1.Cells[0, 0]:=gridDetails.Cells[p, 0];
   Form2.StringGrid1.Cells[1, 0]:=rsAnzahl;
-  if StringGrid1.ColCount=csvanz then begin        {eigenes PX4 CSV Format}
+  if gridDetails.ColCount=csvanz then begin        {eigenes PX4 CSV Format}
     case p of                                      {muss zu Formatwandlung passen}
       15, 18, 19, 59: DreiSpalten;
     end;
   end else
-  case SpinEdit3.Tag of
+  case speDataPoint.Tag of
     brID: begin                   {Liste der kommentierten Statistiken, Breeze}
             case p of                              {muss zu Formatwandlung passen}
               11, 18: DreiSpalten;
@@ -13162,11 +13170,11 @@ begin
 //  H501ID: if p=1 then SechsSpalten;              {with times}
   H501ID: if p=1 then DreiSpalten;
   YTHPid: begin                                    {YTH Plus}
-            case RadioGroup1.ItemIndex of
+            case rgQuelle.ItemIndex of
               0: begin                             {Telemetry}
-                   if p=StringGrid1.Tag+2 then DreiSpalten; {Vehicle Type mit Erklärungen}
+                   if p=gridDetails.Tag+2 then DreiSpalten; {Vehicle Type mit Erklärungen}
                    if p=8 then SechsSpalten;                {GPS used mit Zeittabelle}
-                   if p=StringGrid1.Tag then SechsSpalten;  {fMode}
+                   if p=gridDetails.Tag then SechsSpalten;  {fMode}
                  end;
               2: begin                             {Remote}
                    if p=5 then SechsSpalten;       {Flight mode switch}
@@ -13174,15 +13182,15 @@ begin
             end;
           end;
   else begin                                       {Legacy Yuneec}
-    case RadioGroup1.ItemIndex of
+    case rgQuelle.ItemIndex of
       0: begin                                     {Telemetry}
            if p=8 then SechsSpalten;               {GPS used}
-           if p=StringGrid1.Tag then SechsSpalten; {f_mode}
-           if p=StringGrid1.Tag+3 then SechsSpalten; {Errorflags}
+           if p=gridDetails.Tag then SechsSpalten; {f_mode}
+           if p=gridDetails.Tag+3 then SechsSpalten; {Errorflags}
            if p=14 then DreiSpalten;               {Motor Status}
            if p=15 then DreiSpalten;               {IMU Status}
-           if p=StringGrid1.Tag-1 then DreiSpalten;  {PressCompasStatus}
-           if p=StringGrid1.Tag+2 then DreiSpalten;  {Vehicle Type mit Erklärungen}
+           if p=gridDetails.Tag-1 then DreiSpalten;  {PressCompasStatus}
+           if p=gridDetails.Tag+2 then DreiSpalten;  {Vehicle Type mit Erklärungen}
          end;
       2: begin                                     {Remote}
            if (p=6) or (p=9) or (p=10) or (p=11) then DreiSpalten;
@@ -13205,15 +13213,15 @@ end;
 
 procedure TForm1.AnzeigeAddHist(Index: integer);   {Index ist Nummer Spalte}
 begin
-  if StringGrid1.ColCount=csvanz then begin        {PX4 CSV self-def format}
+  if gridDetails.ColCount=csvanz then begin        {PX4 CSV self-def format}
     case index of
       9, 15..20, 57, 59, 60: ZhlWerte(Index);      {Tabelle}
       1..7, 10..14, 21..52, 61..78: DiaWerte(Index);
     end;
   end else                                         {sonstige, wie gehabt}
-  case RadioGroup1.ItemIndex of
+  case rgQuelle.ItemIndex of
     0: begin
-         case SpinEdit3.Tag of
+         case speDataPoint.Tag of
            brID: begin                             {Yuneec Breeze}
                    case Index of                   {Telemetrie Spalten auswerten}
                      2..9, 11, 14, 18, 19: ZhlWerte(Index);
@@ -13230,11 +13238,11 @@ begin
              8, 9, 14..20: ZhlWerte(Index);
              1..7, 10..13: DiaWerte(Index);
              else begin                            {variable Spalten}
-               if index=StringGrid1.Tag+2 then ZhlWerte(Index);
-               if index=StringGrid1.Tag+3 then ZhlWerte(Index);
-               if index=StringGrid1.Tag+4 then DiaWerte(Index);
-               if index=StringGrid1.Tag+5 then DiaWerte(Index);  {YTH Plus vSpeed}
-               if index=StringGrid1.Tag+6 then DiaWerte(Index);  {YTH Plus hSpeed}
+               if index=gridDetails.Tag+2 then ZhlWerte(Index);
+               if index=gridDetails.Tag+3 then ZhlWerte(Index);
+               if index=gridDetails.Tag+4 then DiaWerte(Index);
+               if index=gridDetails.Tag+5 then DiaWerte(Index);  {YTH Plus vSpeed}
+               if index=gridDetails.Tag+6 then DiaWerte(Index);  {YTH Plus hSpeed}
              end;
            end;
          end;
@@ -13249,25 +13257,25 @@ begin
   end;
 end;
 
-procedure TForm1.StringGrid1HeaderClick(Sender: TObject; IsColumn: Boolean;
+procedure TForm1.gridDetailsHeaderClick(Sender: TObject; IsColumn: Boolean;
   Index: Integer);
 begin
   if IsColumn and
-      (StringGrid1.ColCount>defaultcol) and        {wenn Daten vorhanden sind}
-      (StringGrid1.ColCount<YTHPcols) then begin   {nicht bei YTH Plus Sensor}
+      (gridDetails.ColCount>defaultcol) and        {wenn Daten vorhanden sind}
+      (gridDetails.ColCount<YTHPcols) then begin   {nicht bei YTH Plus Sensor}
     AnzeigeAddHist(Index);
     Label3.Tag:=Index;
   end;
 end;
 
-procedure TForm1.StringGrid1KeyUp(Sender: TObject; var Key: Word; {Taste im StringGrid}
+procedure TForm1.gridDetailsKeyUp(Sender: TObject; var Key: Word; {Taste im StringGrid}
   Shift: TShiftState);
 begin
-  topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]:=StringGrid1.TopRow; {Top merken}
+  topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]:=gridDetails.TopRow; {Top merken}
   if key=vk_F3 then TabSuchen;                     {F3 weitersuchen}
   if key=vk_F4 then TabSelect;                     {F4 Filter setzen}
   if (key=vk_F5) or (key=vk_ESCAPE) then begin     {F5 Filter rücksetzen}
-    case SpinEdit3.Tag of
+    case speDataPoint.Tag of
       brID: BrAnzeigeCSV(0);                       {Breeze}
       H501ID: H501AnzeigeCSV(0);
     else
@@ -13277,175 +13285,175 @@ begin
   if ssCtrl in Shift then begin
     if key=vk_c then begin
       if ssAlt in Shift then
-        StringGrid1.CopyToClipboard(false)         {alles}
-      else StringGrid1.CopyToClipboard(true);      {only Selection}
+        gridDetails.CopyToClipboard(false)         {alles}
+      else gridDetails.CopyToClipboard(true);      {only Selection}
     end;
     if key=vk_f then TabSuchen;                    {Suchen}
     if key=vk_b then SetStartP;                    {Begin point}
     if key=vk_e then SetEndP;                      {End point}
     if key=vk_s then TabSelect;                    {Filterfunktion analog Suche}
-    if key=vk_n then BitBtn14Click(self);          {Ausschneiden}
+    if key=vk_n then btnCutClick(self);            {Ausschneiden}
   end;
 end;
 
-procedure TForm1.StringGrid1MouseMove(Sender: TObject; Shift: TShiftState;
+procedure TForm1.gridDetailsMouseMove(Sender: TObject; Shift: TShiftState;
   x, y: Integer);                                  {Info per Zelle}
 var sp, zl: integer;                               {Spalte und Zeile}
 begin
   zl:=0;
   sp:=0;
-  StringGrid1.MouseToCell(x, y, sp, zl);           {Zelle unter Maus finden}
+  gridDetails.MouseToCell(x, y, sp, zl);           {Zelle unter Maus finden}
   if zl>0 then
-    StringGrid1.Hint:=GetCellInfo(sp, zl)
+    gridDetails.Hint:=GetCellInfo(sp, zl)
   else
-    if RadioGroup1.ItemIndex=3 then                {Hint bei Sensor ausblenden}
-      StringGrid1.Hint:=StringGrid1.Cells[sp, 0]
+    if rgQuelle.ItemIndex=3 then                   {Hint bei Sensor ausblenden}
+      gridDetails.Hint:=gridDetails.Cells[sp, 0]
     else
-      StringGrid1.Hint:=hntGrid1;
-  if (zl=0) and (RadioGroup1.ItemIndex=2) then     {Kanalzuordnung Remote}
-    StringGrid1.Hint:=ChToStr('', sp);             {CH vs Ch --> Channel settings}
+      gridDetails.Hint:=hntGrid1;
+  if (zl=0) and (rgQuelle.ItemIndex=2) then        {Kanalzuordnung Remote}
+    gridDetails.Hint:=ChToStr('', sp);             {CH vs Ch --> Channel settings}
 end;
 
 {http://www.delphipraxis.net/13528-stringgrid-rechte-mousetaste-reihe-selektieren.html
  Pop-up Menü mit rechter Maustaste aufrufen}
-procedure TForm1.StringGrid1MouseUp(Sender: TObject; Button: TMouseButton;
+procedure TForm1.gridDetailsMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   iCol: integer=1;
   iRow: integer=1;
   grSel: TGridRect;
 begin
-  StringGrid1.MouseToCell(x, y, iCol, iRow);
-  if trim(StringGrid1.Cells[iCol, iRow])<>'' then begin
+  gridDetails.MouseToCell(x, y, iCol, iRow);
+  if trim(gridDetails.Cells[iCol, iRow])<>'' then begin
     if Button=mbRight then begin                   {rechte Maustaste}
       grSel.Top:=iRow;
       grSel.Left:=0;                               {ganze Zeile markieren}
-      grSel.Right:=StringGrid1.ColCount;
+      grSel.Right:=gridDetails.ColCount;
       grSel.Bottom:=iRow;
-      StringGrid1.Selection:=grSel;
+      gridDetails.Selection:=grSel;
       PopupMenuTab.Popup(Mouse.CursorPos.x, Mouse.CursorPos.y); {AutoPopup:=false!}
-      SpinEdit3.Value:=iRow;                       {Zeile für Start/Endpunkt}
+      speDataPoint.Value:=iRow;                    {Zeile für Start/Endpunkt}
     end;
     if Button=mbLeft then begin
-      SpinEdit3.Value:=iRow;                       {Für Start/Endpunkt}
-      if ssCtrl in Shift then ComboBox9.Text:=StringGrid1.Cells[iCol, iRow];
+      speDataPoint.Value:=iRow;                    {Für Start/Endpunkt}
+      if ssCtrl in Shift then cbxSearch.Text:=gridDetails.Cells[iCol, iRow];
     end;              {Linke Maustase und Shift, dann Zelle ins Suchfeld übernehmen}
-    topp[ListBox1.ItemIndex, 5]:=StringGrid1.TopRow+StringGrid1.VisibleRowCount+1;
-    topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]:=StringGrid1.TopRow; {Top merken}
+    topp[lbFlights.ItemIndex, 5]:=gridDetails.TopRow+gridDetails.VisibleRowCount+1;
+    topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]:=gridDetails.TopRow; {Top merken}
   end;
 end;
 
-procedure TForm1.StringGrid1Selection(Sender: TObject; aCol, aRow: Integer);
+procedure TForm1.gridDetailsSelection(Sender: TObject; aCol, aRow: Integer);
 begin
-  if aRow<>ComboBox9.Tag then GroupBox11.Tag:=0;   {andere Spalte-Suche zurücksetzen}
-  ComboBox9.Tag:=aRow;
-  ComboBox9.Enabled:=true;
+  if aRow<>cbxSearch.Tag then GroupBox11.Tag:=0;   {andere Spalte-Suche zurücksetzen}
+  cbxSearch.Tag:=aRow;
+  cbxSearch.Enabled:=true;
 end;
 
 {StringGrid Sortierung siehe
  http://wiki.lazarus.freepascal.org/Grids_Reference_Page#Sorting_Columns_or_Rows}
-procedure TForm1.grdOverviewCompareCells(Sender: TObject; ACol, ARow, BCol,
+procedure TForm1.gridOverviewCompareCells(Sender: TObject; ACol, ARow, BCol,
   BRow: Integer; var Result: integer);      {bestimmt, wie Spalte sortiert wird}
 var f1, f2: double;
 begin
   if ACol>4 then begin                      {bereinigt als Float sortieren}
-    if TryStrToFloat(GetFNr(grdOverview.Cells[ACol,ARow]), f1) and
-       TryStrToFloat(GetFNr(grdOverview.Cells[BCol,BRow]), f2)
+    if TryStrToFloat(GetFNr(gridOverview.Cells[ACol,ARow]), f1) and
+       TryStrToFloat(GetFNr(gridOverview.Cells[BCol,BRow]), f2)
     then result:=CompareValue(f1, f2);
-  end else result:=CompareText(grdOverview.Cells[ACol,ARow],  {als Text}
-                               grdOverview.Cells[BCol,BRow]);
-  if grdOverview.SortOrder=soDescending then result:=-result; {Sortierrichtung}
+  end else result:=CompareText(gridOverview.Cells[ACol,ARow],  {als Text}
+                               gridOverview.Cells[BCol,BRow]);
+  if gridOverview.SortOrder=soDescending then result:=-result; {Sortierrichtung}
 end;
 
-procedure TForm1.grdOverviewDblClick(Sender: TObject);  {Doppelclick zu Tabelle}
+procedure TForm1.gridOverviewDblClick(Sender: TObject);  {Doppelclick zu Tabelle}
 begin
-  if ListBox1.Items.Count>0 then begin
-    case SpinEdit3.Tag of
+  if lbFlights.Items.Count>0 then begin
+    case speDataPoint.Tag of
       MQid: ShowMQ;                                {MantisQ}
       H5id: ShowH520;                              {eine TLOG Datei H520 anzeigen}
       else begin
-        PageControl1.ActivePageIndex:=grdOverview.Tag;  {Merker für letztes TabSheet}
+        PageControl1.ActivePageIndex:=gridOverview.Tag;  {Merker für letztes TabSheet}
         Anzeige;                                   {alle andern Typen}
       end;
     end;
   end;
 end;
 
-procedure TForm1.grdOverviewPrepareCanvas(sender: TObject; aCol, aRow: Integer;
+procedure TForm1.gridOverviewPrepareCanvas(sender: TObject; aCol, aRow: Integer;
   aState: TGridDrawState);
 begin
-  topp[0, 4]:=grdOverview.TopRow;                  {Top merken für Übersicht}
+  topp[0, 4]:=gridOverview.TopRow;                 {Top merken für Übersicht}
   if (aState=[]) and
      (aCol>0) and (aRow>0) then begin              {1. Spalte ausschliessen}
-    if aRow<grdOverview.RowCount-1 then begin      {Fußzeile ausschliessen}
+    if aRow<gridOverview.RowCount-1 then begin     {Fußzeile ausschliessen}
       if (topp[aRow-1, 6] and 32)>0 then           {Compass error, ganze Zeile}
-        grdOverview.Canvas.Brush.Color:=clOrange;
+        gridOverview.Canvas.Brush.Color:=clOrange;
       if ((topp[aRow-1, 6] and 1)>0) and
          (aCol=10) then                            {Voltage 1}
-        grdOverview.Canvas.Brush.Color:=clSkyBlue;
+        gridOverview.Canvas.Brush.Color:=clSkyBlue;
       if ((topp[aRow-1, 6] and 2)>0) and
          (aCol=10) then                            {Voltage 2}
-        grdOverview.Canvas.Brush.Color:=clVolt2;
+        gridOverview.Canvas.Brush.Color:=clVolt2;
       if ((topp[aRow-1, 6] and 256)>0) and
          (aCol<4) then                             {Emergency}
-        grdOverview.Canvas.Brush.Color:=clMaroon;
+        gridOverview.Canvas.Brush.Color:=clMaroon;
     end else
-      if (SpinEdit3.Tag<>MQid) and
-         (SpinEdit3.Tag<>H5id) then
-        grdOverview.Canvas.Brush.Color:=clMoneyGreen; {Summenzeile}
+      if (speDataPoint.Tag<>MQid) and
+         (speDataPoint.Tag<>H5id) then
+        gridOverview.Canvas.Brush.Color:=clMoneyGreen; {Summenzeile}
   end;
 end;
 
 {StringGrid Sortierung siehe
  http://wiki.lazarus.freepascal.org/Grids_Reference_Page#Sorting_Columns_or_Rows}
-procedure TForm1.grdOverviewHeaderClick(Sender: TObject; IsColumn: Boolean;
+procedure TForm1.gridOverviewHeaderClick(Sender: TObject; IsColumn: Boolean;
   Index: Integer);                                  {Spalten sortieren}
 begin
   if IsColumn then begin
-    if grdOverview.SortOrder=soDescending then
-      grdOverview.SortOrder:=soAscending
+    if gridOverview.SortOrder=soDescending then
+      gridOverview.SortOrder:=soAscending
     else
-      grdOverview.SortOrder:=soDescending;
-    grdOverview.SortColRow(true, Index,
-                           grdOverview.FixedRows, grdOverview.RowCount-2);
+      gridOverview.SortOrder:=soDescending;
+    gridOverview.SortColRow(true, Index,
+                           gridOverview.FixedRows, gridOverview.RowCount-2);
   end;
 end;
 
-procedure TForm1.grdOverviewKeyUp(Sender: TObject; var Key: Word;
+procedure TForm1.gridOverviewKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if (key=vk_c) and (ssCtrl in Shift) then grdOverview.CopyToClipboard(false);
+  if (key=vk_c) and (ssCtrl in Shift) then gridOverview.CopyToClipboard(false);
 end;
 
-procedure TForm1.grdOverviewMouseMove(Sender: TObject; Shift: TShiftState;
+procedure TForm1.gridOverviewMouseMove(Sender: TObject; Shift: TShiftState;
           x, y: Integer);                          {Show hint per cell}
 var sp, zl: integer;                               {Spalte und Zeile}
 begin
   sp:=0;
   zl:=0;
-  grdOverview.MouseToCell(x, y, sp, zl);           {Zelle unter Maus finden}
+  gridOverview.MouseToCell(x, y, sp, zl);          {Zelle unter Maus finden}
   if (sp>0) and (zl>0) then begin
-    if zl=grdOverview.RowCount-1 then begin        {Last line: Sumn}
+    if zl=gridOverview.RowCount-1 then begin       {Last line: Sumn}
       case sp of
-        1: grdOverview.Hint:=hntNumFlt;
-        4: grdOverview.Hint:=hntDauer;
-        7: grdOverview.Hint:=hntStrecke;
-        8: grdOverview.Hint:=hntHGeschw;
-        else grdOverview.Hint:=rsPC1Tab1;          {default}
+        1: gridOverview.Hint:=hntNumFlt;
+        4: gridOverview.Hint:=hntDauer;
+        7: gridOverview.Hint:=hntStrecke;
+        8: gridOverview.Hint:=hntHGeschw;
+        else gridOverview.Hint:=rsPC1Tab1;         {default}
       end;
     end else begin
       case sp of
-        9, 10: grdOverview.Hint:=                  {min/max voltage}
-               ShowVoltageF(GetFVal(grdOverview.Cells[sp, zl]), SpinEdit3.Tag);
+        9, 10: gridOverview.Hint:=                 {min/max voltage}
+               ShowVoltageF(GetFVal(gridOverview.Cells[sp, zl]), speDataPoint.Tag);
       else
-        grdOverview.Hint:=grdOverview.Cells[sp, 0]+'='+
-                          grdOverview.Cells[sp, zl];     {Default hint}
+        gridOverview.Hint:=gridOverview.Cells[sp, 0]+'='+
+                          gridOverview.Cells[sp, zl];     {Default hint}
       end;
     end;
-  end else grdOverview.Hint:=grdOverview.Cells[sp, zl];  {Header}
+  end else gridOverview.Hint:=gridOverview.Cells[sp, zl];  {Header}
 end;
 
-procedure TForm1.grdOverviewMouseUp(Sender: TObject; Button: TMouseButton;
+procedure TForm1.gridOverviewMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);              {Datei auswählen}
 var
   iCol: integer=1;
@@ -13453,100 +13461,100 @@ var
   grSel: TGridRect;
   i: integer;
 begin
-  if (ListBox1.Items.Count>0) and (Button=mbLeft) then begin  {linke Maustaste}
-    grdOverview.MouseToCell(x, y, iCol, iRow);
+  if (lbFlights.Items.Count>0) and (Button=mbLeft) then begin  {linke Maustaste}
+    gridOverview.MouseToCell(x, y, iCol, iRow);
     grSel.Top:=iRow;
     grSel.Left:=0;                                 {ganze Zeile markieren}
-    grSel.Right:=grdOverview.ColCount;
+    grSel.Right:=gridOverview.ColCount;
     grSel.Bottom:=iRow;
-    grdOverview.Selection:=grSel;
-    if iRow<grdOverview.RowCount-1 then            {Summenspalte ausblenden}
-      for i:=0 to ListBox1.Items.Count-1 do        {Datei in ListBox auswählen}
-        if ListBox1.Items[i]=grdOverview.Cells[0, iRow] then begin
-          ListBox1.ItemIndex:=i;                   {Index finden und auswählen}
+    gridOverview.Selection:=grSel;
+    if iRow<gridOverview.RowCount-1 then           {Summenspalte ausblenden}
+      for i:=0 to lbFlights.Items.Count-1 do       {Datei in ListBox auswählen}
+        if lbFlights.Items[i]=gridOverview.Cells[0, iRow] then begin
+          lbFlights.ItemIndex:=i;                  {Index finden und auswählen}
           break;                                   {fertig, abbrechen}
     end;
   end;
 end;
 
-procedure TForm1.StringGrid3KeyUp(Sender: TObject; var Key: Word;
+procedure TForm1.gridCGO3KeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);                             {CGO3 Einstellungen kopieren}
 begin
-  if (key=vk_c) and (ssCtrl in Shift) then StringGrid3.CopyToClipBoard(false);
+  if (key=vk_c) and (ssCtrl in Shift) then gridCGO3.CopyToClipBoard(false);
 end;
 
-procedure TForm1.StringGrid4HeaderClick(Sender: TObject; IsColumn: Boolean;
+procedure TForm1.gridFirmwareHeaderClick(Sender: TObject; IsColumn: Boolean;
   Index: Integer);                                 {Firmware Anzeige}
 begin
-  if (SpinEdit3.Tag=brID) and
+  if (speDataPoint.Tag=brID) and
      (not IsColumn) and
-     (Index=5) then Memo1.Lines.Add(StringGrid4.Cells[1, Index]);
+     (Index=5) then mmoText.Lines.Add(gridFirmware.Cells[1, Index]);
 end;
 
-procedure TForm1.StringGrid4KeyUp(Sender: TObject; var Key: Word;
+procedure TForm1.gridFirmwareKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);                             {Firmwarestände kopieren}
 begin
-  if (key=vk_c) and (ssCtrl in Shift) then StringGrid4.CopyToClipBoard(false);
+  if (key=vk_c) and (ssCtrl in Shift) then gridFirmware.CopyToClipBoard(false);
 end;
 
-procedure TForm1.StringGrid4MouseUp(Sender: TObject; Button: TMouseButton;
+procedure TForm1.gridFirmwareMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var k: integer;                                    {Firmwaretabelle löschen}
 begin
   if ssCtrl in Shift then
-    for k:=1 to StringGrid4.RowCount-1
-      do StringGrid4.Cells[1, k]:='';
+    for k:=1 to gridFirmware.RowCount-1
+      do gridFirmware.Cells[1, k]:='';
 end;
 
-procedure TForm1.StringGrid5DblClick(Sender: TObject); {Ergebniszeile}
+procedure TForm1.gridScanResultDblClick(Sender: TObject); {Ergebniszeile}
 var fn: string;
 begin
-  if BitBtn26.Tag=1 then begin                     {Flugbuch}
+  if btnScanErr.Tag=1 then begin                   {Flugbuch}
     if FileExists(SaveDialog1.FileName) then OpenDocument(SaveDialog1.FileName)
-      else OpenDocument(IncludeTrailingPathDelimiter(ComboBox8.Text));
+      else OpenDocument(IncludeTrailingPathDelimiter(cbxScanDir.Text));
   end else begin                                   {Dateiliste}
-    if (StringGrid5.Tag>0) then begin              {Es wurde etwas gefunden}
+    if (gridScanResult.Tag>0) then begin           {Es wurde etwas gefunden}
       if (rgErrType.ItemIndex=10) or
          (rgErrType.ItemIndex=11) then begin
-        fn:=StringGrid5.Cells[1, StringGrid5.Tag];
+        fn:=gridScanResult.Cells[1, gridScanResult.Tag];
         ShowSensorPlus(fn, 0, false, true, false, false);
         PageControl1.ActivePageIndex:=7;           {Springe zum AppLogHighlighter}
       end else
-      if (rgErrType.ItemIndex<8) or              {Sensor Dateien}
-         (SpinEdit3.Tag<>YTHPid) then begin        {H Plus}
-        fn:=StringGrid5.Cells[1, StringGrid5.Tag];
-        ComboBox2.Text:=GetFlightLogDir(fn);
+      if (rgErrType.ItemIndex<8) or                {Sensor Dateien}
+         (speDataPoint.Tag<>YTHPid) then begin     {H Plus}
+        fn:=gridScanResult.Cells[1, gridScanResult.Tag];
+        cbxLogDir.Text:=GetFlightLogDir(fn);
         SelDirAct(fn);
-        ComboBox9.Enabled:=true;                   {Suche erlauben}
+        cbxSearch.Enabled:=true;                   {Suche erlauben}
         PageControl1.ActivePageIndex:=1;           {Springe zur Dateiansicht}
       end;
     end;
   end;
 end;
 
-procedure TForm1.StringGrid5KeyUp(Sender: TObject; var Key: Word; {Strg+C}
+procedure TForm1.gridScanResultKeyUp(Sender: TObject; var Key: Word; {Strg+C}
   Shift: TShiftState);
 begin
   if (key=vk_c) and (ssCtrl in Shift) then
-    StringGrid5.CopyToClipboard(false);
+    gridScanResult.CopyToClipboard(false);
 end;
 
-procedure TForm1.StringGrid5MouseUp(Sender: TObject; Button: TMouseButton;
+procedure TForm1.gridScanResultMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   iCol: integer=1;
   iRow: integer=1;
 begin
-  StringGrid5.Tag:=0;                              {default: Header}
+  gridScanResult.Tag:=0;                           {default: Header}
   if Button=mbLeft then begin                      {linke Maustaste}
-    StringGrid5.MouseToCell(x, y, iCol, iRow);
-    StringGrid5.Tag:=iRow;                         {Zeile markieren}
+    gridScanResult.MouseToCell(x, y, iCol, iRow);
+    gridScanResult.Tag:=iRow;                      {Zeile markieren}
   end;
 end;
 
-procedure TForm1.StringGrid5Resize(Sender: TObject); {Spalte anpassen}
+procedure TForm1.gridScanResultResize(Sender: TObject); {Spalte anpassen}
 begin
-  StringGrid5.ColWidths[1]:=StringGrid5.Width-StringGrid5.ColWidths[0]-30;
+  gridScanResult.ColWidths[1]:=gridScanResult.Width-gridScanResult.ColWidths[0]-30;
 end;
 
 procedure TForm1.TabSheet8Resize(Sender: TObject); {Höhe Diagramme anpassen}
@@ -13575,15 +13583,15 @@ begin
                      StrToInt(copy(Form2.st,7,2)), 0);
     except
       tp:=0;
-      ComboBox9.Text:=Form2.st;                    {andere Werte in Spalte suchen}
+      cbxSearch.Text:=Form2.st;                    {andere Werte in Spalte suchen}
       TabSuchen;
     end;
     Form2.st:='';                                  {Aktion zurücksetzen}
     Form2.MenuItem3.Enabled:=false;
-    if (tp>0) and (StringGrid1.RowCount>10) then begin {nur wenn es sich lohnt}
-      for i:=1 to StringGrid1.RowCount-1 do begin      {Zeitstempel suchen}
-        if frac(ZeitToDT(StringGrid1.Cells[0, i], SpinEdit3.Tag))>=tp then begin
-          SpinEdit3.Value:=i;                      {gefunden und springen}
+    if (tp>0) and (gridDetails.RowCount>10) then begin {nur wenn es sich lohnt}
+      for i:=1 to gridDetails.RowCount-1 do begin      {Zeitstempel suchen}
+        if frac(ZeitToDT(gridDetails.Cells[0, i], speDataPoint.Tag))>=tp then begin
+          speDataPoint.Value:=i;                   {gefunden und springen}
           GoToZ(1);
           break;
         end;
@@ -13595,51 +13603,51 @@ end;
 
 procedure TForm1.TimerDiashowTimer(Sender: TObject); {Diashow Profiles}
 begin
-  if ListBox1.Items.Count>0 then begin
+  if lbFlights.Items.Count>0 then begin
     SetProfile(TimerDiashow.Tag);
     TimerDiashow.Tag:=TimerDiashow.Tag+1;
-    if TimerDiashow.Tag>=ComboBox10.Items.Count then TimerDiashow.Tag:=0; {wieder von vorn}
+    if TimerDiashow.Tag>=cbxProfiles.Items.Count then TimerDiashow.Tag:=0; {wieder von vorn}
   end else TimerDiashow.Enabled:=false;            {Ohne Daten nix anzeigen}
 end;
 
-procedure TForm1.TrackBar1Change(Sender: TObject); {Saturation verstellt}
+procedure TForm1.tbrSaturationChange(Sender: TObject); {Saturation verstellt}
 begin
   EnSave;
-  TrackBar1.SelEnd:=TrackBar1.Position;
+  tbrSaturation.SelEnd:=tbrSaturation.Position;
 end;
 
-procedure TForm1.TrackBar2Change(Sender: TObject); {Entfernung für Waypoits}
+procedure TForm1.tbrDistWPChange(Sender: TObject); {Entfernung für Waypoits}
 var s: string;
 begin
-  TrackBar2.SelEnd:=TrackBar2.Position;
-  s:=IntToStr(TrackBar2.Position)+'m';
-  if rgSpeedUnit.ItemIndex=2 then s:=IntToStr(Round(TrackBar2.Position/fft))+'ft';
-  TrackBar2.Hint:=s;
+  tbrDistWP.SelEnd:=tbrDistWP.Position;
+  s:=IntToStr(tbrDistWP.Position)+'m';
+  if rgSpeedUnit.ItemIndex=2 then s:=IntToStr(Round(tbrDistWP.Position/fft))+'ft';
+  tbrDistWP.Hint:=s;
   Label12.Caption:=capLabel12+tab2+s;
 end;
 
 procedure TForm1.mnGoogleMapClick(Sender: TObject); {Zeige in GoogleMaps}
 begin
-  if StringGrid1.ColCount=csvanz then begin        {Self-dev PX4 CSV format}
-    OpenURL(URLGMap(StringGrid1.Cells[5,StringGrid1.Selection.Top],
-                    StringGrid1.Cells[6,StringGrid1.Selection.Top]));
+  if gridDetails.ColCount=csvanz then begin        {Self-dev PX4 CSV format}
+    OpenURL(URLGMap(gridDetails.Cells[5,gridDetails.Selection.Top],
+                    gridDetails.Cells[6,gridDetails.Selection.Top]));
     exit;
   end;
-  if ListBox1.Items.Count>0 then begin
-    case SpinEdit3.Tag of                          {Breeze lat/lon Format}
-      brID: OpenURL(URLGMap(BrCoordFormat(StringGrid1.Cells[12,StringGrid1.Selection.Top]),
-                      BrCoordFormat(StringGrid1.Cells[13,StringGrid1.Selection.Top])));
+  if lbFlights.Items.Count>0 then begin
+    case speDataPoint.Tag of                       {Breeze lat/lon Format}
+      brID: OpenURL(URLGMap(BrCoordFormat(gridDetails.Cells[12,gridDetails.Selection.Top]),
+                      BrCoordFormat(gridDetails.Cells[13,gridDetails.Selection.Top])));
 
-      H501ID: OpenURL(URLGMap(StringGrid1.Cells[2,StringGrid1.Selection.Top],
-                           StringGrid1.Cells[3,StringGrid1.Selection.Top]));
+      H501ID: OpenURL(URLGMap(gridDetails.Cells[2,gridDetails.Selection.Top],
+                           gridDetails.Cells[3,gridDetails.Selection.Top]));
     else begin                                     {Andere}
-      case Radiogroup1.ItemIndex of
-        0: OpenURL(URLGMap(StringGrid1.Cells[5,StringGrid1.Selection.Top],
-                           StringGrid1.Cells[6,StringGrid1.Selection.Top]));
-        1: OpenURL(URLGMap(KoToStr(StrToFloatN(StringGrid1.Cells[2,
-                                       StringGrid1.Selection.Top])),
-                           KoToStr(StrToFloatN(StringGrid1.Cells[1,
-                                       StringGrid1.Selection.Top]))));
+      case rgQuelle.ItemIndex of
+        0: OpenURL(URLGMap(gridDetails.Cells[5,gridDetails.Selection.Top],
+                           gridDetails.Cells[6,gridDetails.Selection.Top]));
+        1: OpenURL(URLGMap(KoToStr(StrToFloatN(gridDetails.Cells[2,
+                                       gridDetails.Selection.Top])),
+                           KoToStr(StrToFloatN(gridDetails.Cells[1,
+                                       gridDetails.Selection.Top]))));
         end;
       end;
     end;
@@ -13691,7 +13699,7 @@ end;
 
 procedure TForm1.mnExploreLogClick(Sender: TObject); {Arbeitsverzeichnis öffnen}
 begin
-  OpenDocument(IncludeTrailingPathDelimiter(ComboBox2.Text));
+  OpenDocument(IncludeTrailingPathDelimiter(cbxLogDir.Text));
 end;
 
 procedure TForm1.mnSelDirLogClick(Sender: TObject); {Menü SelDir}
@@ -13703,14 +13711,14 @@ procedure TForm1.mnProfErrClick(Sender: TObject);  {Menü Profile Errors}
 begin
   TimerDiashow.Enabled:=false;
   SetProfile(2);
-  ComboBox10.ItemIndex:=0;
+  cbxProfiles.ItemIndex:=0;
 end;
 
 procedure TForm1.mnProfGPSClick(Sender: TObject);  {Menü Profile GPS}
 begin
   TimerDiashow.Enabled:=false;
   SetProfile(3);
-  ComboBox10.ItemIndex:=0;
+  cbxProfiles.ItemIndex:=0;
 end;
 
 procedure TForm1.mnSelDirRecClick(Sender: TObject); {Menü Protokollverzeichnis}
@@ -13722,33 +13730,33 @@ procedure TForm1.mnProfThrClick(Sender: TObject);  {Menü Profile Throttle}
 begin
   TimerDiashow.Enabled:=false;
   SetProfile(4);
-  ComboBox10.ItemIndex:=0;
+  cbxProfiles.ItemIndex:=0;
 end;
 
 procedure TForm1.mnProfPitchClick(Sender: TObject); {Menü Profile Pitch}
 begin
   TimerDiashow.Enabled:=false;
   SetProfile(5);
-  ComboBox10.ItemIndex:=0;
+  cbxProfiles.ItemIndex:=0;
 end;
 
 procedure TForm1.TabSelect;                        {Daten selektieren}
 begin
-  if (ListBox1.Items.Count>0) and                  {nur wenn Dateien da sind}
-     (StringGrid1.ColCount<YTHPcols) then begin    {nicht bei YTH Plus Sensor}
+  if (lbFlights.Items.Count>0) and                 {nur wenn Dateien da sind}
+     (gridDetails.ColCount<YTHPcols) then begin    {nicht bei YTH Plus Sensor}
     tpos:=0;                                       {Position zurücksetzen}
-    ComboBox9.Text:=UpCase(trim(ComboBox9.Text));
-    if ComboBox9.Text<>'' then begin               {mit Filter}
-      Merkliste(ComboBox9, AnzDirs);               {Suchwerte DropDownListe füllen}
-      ComboBox9.Hint:=rsSelection+' in '+StringGrid1.Cells[Label3.Tag, 0];
-      case SpinEdit3.Tag of
+    cbxSearch.Text:=UpCase(trim(cbxSearch.Text));
+    if cbxSearch.Text<>'' then begin               {mit Filter}
+      Merkliste(cbxSearch, AnzDirs);               {Suchwerte DropDownListe füllen}
+      cbxSearch.Hint:=rsSelection+' in '+gridDetails.Cells[Label3.Tag, 0];
+      case speDataPoint.Tag of
         brID: BrAnzeigeCSV(1);                     {Breeze Filtermode}
         H501ID: H501AnzeigeCSV(1);
       else
         AnzeigeCSV(1);                             {legacy Yuneec Filtermode}
       end;
     end else                                       {wenn leer, alles anzeigen}
-      Case SpinEdit3.Tag of
+      Case speDataPoint.Tag of
         brID: BrAnzeigeCSV(0);                     {Breeze}
         H501ID: H501AnzeigeCSV(0);
       else
@@ -13762,41 +13770,41 @@ var x: integer;
     grSel: TGridRect;
     s: string;
 begin
-  ComboBox9.Text:=StringReplace(ComboBox9.Text, sep, '.', []);
-  ComboBox9.Text:=UpCase(trim(ComboBox9.Text));
-  if ComboBox9.Enabled and (ComboBox9.Text<>'') then begin  {Suchen}
-    if ComboBox9.Tag<2 then GroupBox11.Tag:=0;     {oben nix gefunden}
-    Merkliste(ComboBox9, AnzDirs);                 {DropDownListe füllen}
-    ComboBox9.Hint:=hntComboBox9+' in '+StringGrid1.Cells[Label3.Tag, 0];
-    for x:=ComboBox9.Tag to StringGrid1.RowCount-1 do begin
-      ComboBox9.Tag:=x+1;
-      s:=UpCase(trim(StringGrid1.Cells[Label3.Tag, x]));
-      if (s=ComboBox9.Text) or                     {kurz -> vollqualifiziert}
+  cbxSearch.Text:=StringReplace(cbxSearch.Text, sep, '.', []);
+  cbxSearch.Text:=UpCase(trim(cbxSearch.Text));
+  if cbxSearch.Enabled and (cbxSearch.Text<>'') then begin  {Suchen}
+    if cbxSearch.Tag<2 then GroupBox11.Tag:=0;     {oben nix gefunden}
+    Merkliste(cbxSearch, AnzDirs);                 {DropDownListe füllen}
+    cbxSearch.Hint:=hntComboBox9+' in '+gridDetails.Cells[Label3.Tag, 0];
+    for x:=cbxSearch.Tag to gridDetails.RowCount-1 do begin
+      cbxSearch.Tag:=x+1;
+      s:=UpCase(trim(gridDetails.Cells[Label3.Tag, x]));
+      if (s=cbxSearch.Text) or                     {kurz -> vollqualifiziert}
          (((length(s)>4) or (pos('.', s)>0)) and   {Punkt drin oder lang}
-         (pos(ComboBox9.Text, s)>0)) then begin    {teilqualifiziert}
+         (pos(cbxSearch.Text, s)>0)) then begin    {teilqualifiziert}
         GroupBox11.Tag:=GroupBox11.Tag+1;          {gefunden pro Spalte merken}
-        SpinEdit3.Value:=x;                        {Datenpunkt anzeigen}
+        speDataPoint.Value:=x;                     {Datenpunkt anzeigen}
         grSel.Top:=x;
         grSel.Left:=0;                             {ganze Zeile markieren}
-        grSel.Right:=StringGrid1.ColCount;
+        grSel.Right:=gridDetails.ColCount;
         grSel.Bottom:=x;
-        StringGrid1.Selection:=grSel;
-        if x>8 then StringGrid1.TopRow:=x-4        {Abstand zu oben}
-               else StringGrid1.TopRow:=x;
+        gridDetails.Selection:=grSel;
+        if x>8 then gridDetails.TopRow:=x-4        {Abstand zu oben}
+               else gridDetails.TopRow:=x;
         break;                                     {gefunden}
       end;
     end;
-    s:=' in '+StringGrid1.Cells[Label3.Tag, 0];
+    s:=' in '+gridDetails.Cells[Label3.Tag, 0];
     if GroupBox11.Tag>0 then begin
-      StatusBar1.Panels[5].Text:='"'+ComboBox9.Text+'"'+s;
+      StatusBar1.Panels[5].Text:='"'+cbxSearch.Text+'"'+s;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end else begin
-      StatusBar1.Panels[5].Text:='"'+ComboBox9.Text+'"'+nixda+s;
+      StatusBar1.Panels[5].Text:='"'+cbxSearch.Text+'"'+nixda+s;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     StatusBar1.Panels[1].Text:=IntToStr(GroupBox11.Tag);  {Anzahl Treffer}
     AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsFound);
-    if ComboBox9.Tag>StringGrid1.RowCount-2 then ComboBox9.Tag:=1;
+    if cbxSearch.Tag>gridDetails.RowCount-2 then cbxSearch.Tag:=1;
   end else GroupBox11.Tag:=0;                      {leer - Suche zurücksetzen}
 end;
 
@@ -13811,7 +13819,7 @@ begin
   if cute>0 then StatusBar1.Panels[4].Text:=FormatDateTime(vzf, cute);
   if (cutb>0) and
      (cute>cutb) then begin                        {Dauer wieder anzeigen}
-    BitBtn14.Enabled:=true;
+    btnCut.Enabled:=true;
     StatusBar1.Panels[5].Text:=rsDauer+tab1+FormatDateTime('= nn:ss'+zzz, cute-cutb);
   end;
 end;
@@ -13830,35 +13838,35 @@ end;
 
 procedure TForm1.mnCopyTabClick(Sender: TObject); {Tabelle kopieren}
 begin
-  if RadioGroup1.ItemIndex=3 then StringGrid1.CopyToClipboard(false) {Sensor: Alles}
-                             else StringGrid1.CopyToClipboard(true); {nur Zeile}
+  if rgQuelle.ItemIndex=3 then gridDetails.CopyToClipboard(false) {Sensor: Alles}
+                             else gridDetails.CopyToClipboard(true); {nur Zeile}
 end;
 
 procedure TForm1.mnProfRollClick(Sender: TObject); {Menü Profile Roll}
 begin
   TimerDiashow.Enabled:=false;
   SetProfile(6);
-  ComboBox10.ItemIndex:=0;
+  cbxProfiles.ItemIndex:=0;
 end;
 
 procedure TForm1.mnProfYawClick(Sender: TObject);  {Menü Profile Yaw}
 begin
   TimerDiashow.Enabled:=false;
   SetProfile(7);
-  ComboBox10.ItemIndex:=0;
+  cbxProfiles.ItemIndex:=0;
 end;
 
 procedure TForm1.mnProf3AxisClick(Sender: TObject); {Menü Profile 3Axis}
 begin
   TimerDiashow.Enabled:=false;
   SetProfile(8);
-  ComboBox10.ItemIndex:=0;
+  cbxProfiles.ItemIndex:=0;
 end;
 
 procedure TForm1.OpenSensorPlus;                   {Sensordatei vom YTH Plus öffnen}
 var spdir: string;
 begin
-  spdir:=IncludeTrailingPathDelimiter(ComboBox2.Text)+npath;
+  spdir:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+npath;
   OpenDialog1.Title:=capSensorPlus;
   Opendialog1.DefaultExt:=sextP;
   if DirectoryExists(spdir) then
@@ -13870,7 +13878,7 @@ begin
     if ExtractFileExt(OpenDialog1.FileName)=fext then        {if a CSV file}
       AnzeigePX4CSV(OpenDialog1.FileName)          {PX4 Sensor csv anzeigen}
     else begin                                     {Sensor Datei auswerten}
-      ShowSensorPlus(OpenDialog1.FileName, 0, CheckBox10.Checked, true, false, false);
+      ShowSensorPlus(OpenDialog1.FileName, 0, cbSensorKML.Checked, true, false, false);
     end;
   end;
 end;
@@ -13882,9 +13890,9 @@ end;
 
 procedure TForm1.mnSlideshowClick(Sender: TObject); {Menu Diashow Profiles}
 begin
-  if (SpinEdit3.Tag=MQid) or                       {nichts tun für MantisQ}
-     (SpinEdit3.Tag=H5id) or                       {nichts tun für H520}
-     (SpinEdit3.Tag=BrID) then                     {nichts tun für Breeze}
+  if (speDataPoint.Tag=MQid) or                    {nichts tun für MantisQ}
+     (speDataPoint.Tag=H5id) or                    {nichts tun für H520}
+     (speDataPoint.Tag=BrID) then                  {nichts tun für Breeze}
        exit;
   TimerDiashow.Tag:=0;
   TimerDiashow.Enabled:=true;
@@ -13894,31 +13902,31 @@ procedure TForm1.GoToZ(a: integer); {Gehe zu Zeilennummer, a..freie Zeilen oben}
 var grSel: TGridRect;
     z: integer=1;
 begin
-  if StringGrid1.RowCount>1 then begin
-    if SpinEdit3.Value<StringGrid1.RowCount then z:=SpinEdit3.Value
-                                            else z:=StringGrid1.RowCount-1;
-    StringGrid1.Col:=1;
-    StringGrid1.Row:=z;
-    if z>(a*2) then StringGrid1.TopRow:=z-a        {Abstand zu oben}
-               else StringGrid1.TopRow:=z;
+  if gridDetails.RowCount>1 then begin
+    if speDataPoint.Value<gridDetails.RowCount then z:=speDataPoint.Value
+                                            else z:=gridDetails.RowCount-1;
+    gridDetails.Col:=1;
+    gridDetails.Row:=z;
+    if z>(a*2) then gridDetails.TopRow:=z-a        {Abstand zu oben}
+               else gridDetails.TopRow:=z;
     grSel.Top:=z;
     grSel.Left:=0;                                 {ganze Zeile markieren}
-    grSel.Right:=StringGrid1.ColCount;
+    grSel.Right:=gridDetails.ColCount;
     grSel.Bottom:=grSel.Top;
-    StringGrid1.Selection:=grSel;
-    SpinEdit3.Value:=z;
+    gridDetails.Selection:=grSel;
+    speDataPoint.Value:=z;
   end;
-  topp[ListBox1.ItemIndex, RadioGroup1.ItemIndex]:=StringGrid1.TopRow; {Top merken}
+  topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]:=gridDetails.TopRow; {Top merken}
 end;
 
 procedure TForm1.mnGoToTabClick(Sender: TObject);  {zur Zeilennummer scrollen}
 begin
-  if ListBox1.Items.Count>0 then GoToZ(4);
+  if lbFlights.Items.Count>0 then GoToZ(4);
 end;
 
-procedure TForm1.mnAnalyseTabClick(Sender: TObject);  {Datenanalyse im StringGrid1}
+procedure TForm1.mnAnalyseTabClick(Sender: TObject);  {Datenanalyse im gridDetails}
 begin
-  if ListBox1.Items.Count>0 then begin
+  if lbFlights.Items.Count>0 then begin
     GoToZ(0);
     Analyse;
   end;
@@ -13927,14 +13935,14 @@ end;
 procedure TForm1.mnGoToErrClick(Sender: TObject);  {Gehe zum nächsten Fehler}
 var x: integer;
 begin
-  if RadioGroup1.ItemIndex=0 then begin            {nur bei Telemetrie}
-    for x:=topp[ListBox1.ItemIndex, 5]+1 to StringGrid1.RowCount-1 do begin
-      if (StrToIntDef(StringGrid1.Cells[StringGrid1.Tag+3,x], 0) shr 1)>0 then begin
-        if x<StringGrid1.RowCount-1 then begin
-          SpinEdit3.Value:=x-1;
-          topp[ListBox1.ItemIndex, 5]:=x+StringGrid1.VisibleRowCount+1;
+  if rgQuelle.ItemIndex=0 then begin               {nur bei Telemetrie}
+    for x:=topp[lbFlights.ItemIndex, 5]+1 to gridDetails.RowCount-1 do begin
+      if (StrToIntDef(gridDetails.Cells[gridDetails.Tag+3,x], 0) shr 1)>0 then begin
+        if x<gridDetails.RowCount-1 then begin
+          speDataPoint.Value:=x-1;
+          topp[lbFlights.ItemIndex, 5]:=x+gridDetails.VisibleRowCount+1;
           GoToZ(4);
-          StringGrid1.Col:=StringGrid1.Tag+3;
+          gridDetails.Col:=gridDetails.Tag+3;
         end;
         break;
       end;
@@ -13944,7 +13952,7 @@ end;
 
 procedure TForm1.mnGoTableClick(Sender: TObject);  {gehe zur Tabelle}
 begin
-  if ListBox1.Items.Count>0 then begin
+  if lbFlights.Items.Count>0 then begin
     PageControl1.ActivePageIndex:=1;
     GoToZ(4);
   end;
@@ -13961,10 +13969,10 @@ var x, p, n: integer;
 begin
   kpath:=IncludeTrailingPathDelimiter(dkpath);     {default setzen}
   GetDefVT;                                        {Overwrite for PX4 Thunderbird}
-  ListBox1.ItemIndex:=-1;                          {deselektieren}
-  ListBox1.Items.Clear;                            {und löschen}
-  BitBtn3.Enabled:=true;                           {Default: achive function enabled}
-  BitBtn26.Enabled:=true;                          {Default: Scan enabled}
+  lbFlights.ItemIndex:=-1;                         {deselektieren}
+  lbFlights.Items.Clear;                           {und löschen}
+  btnArchive.Enabled:=true;                        {Default: achive function enabled}
+  btnScanErr.Enabled:=true;                        {Default: Scan enabled}
   tend:=0;
   SetLength(topp, 2);                              {Topzeilen array}
   n:=0;                                            {Anzahl erstmal Null}
@@ -13973,12 +13981,12 @@ begin
                  kfile+wldcd+fext, faAnyFile, sr) = 0 then
     try                                            {1. Versuch, normale FlightLog Struktur}
       repeat
-        ListBox1.Items.Add(GetNr(sr.Name));        {Dateiliste neu aufbauen}
+        lbFlights.Items.Add(GetNr(sr.Name));       {Dateiliste neu aufbauen}
         inc(n);                                    {Dateien zählen}
       until FindNext(sr)<>0;
       if n>0 then begin
-        grdOverview.ColWidths[0]:=fw0;             {default}
-        grdOverview.Update;
+        gridOverview.ColWidths[0]:=fw0;            {default}
+        gridOverview.Update;
       end;
     finally
       FindClose(sr);
@@ -13988,13 +13996,13 @@ begin
       if FindFirst(IncludeTrailingPathDelimiter(dn)+kfile+wldcd+
                    fext, faAnyFile, sr) = 0 then try
         repeat
-          ListBox1.Items.Add(GetNr(sr.Name));      {Dateiliste neu aufbauen}
+          lbFlights.Items.Add(GetNr(sr.Name));     {Dateiliste neu aufbauen}
           inc(n);                                  {Dateien zählen}
         until FindNext(sr)<>0;
         if n>0 then begin
           kpath:='';                {nur, wenn dort wirklich was gefunden wurde}
-          grdOverview.ColWidths[0]:=fw1;
-          grdOverview.Update;
+          gridOverview.ColWidths[0]:=fw1;
+          gridOverview.Update;
         end;
       finally
         FindClose(sr);
@@ -14002,7 +14010,7 @@ begin
     end;
 
     if n=0 then begin                              {Test auf log files vom Breeze}
-      SpinEdit3.Tag:=brID;                         {erstmal ID für Breeze setzen
+      speDataPoint.Tag:=brID;                      {erstmal ID für Breeze setzen
                                             wegen Dateinamen zerlegen und bauen}
       if FindFirst(IncludeTrailingPathDelimiter(dn)+wldcd+
                    bext, faAnyFile, sr)=0 then try
@@ -14014,13 +14022,13 @@ begin
           BlockRead(mf, buf, length(buf), p);
           CloseFile(mf);
           if (p=length(buf)) and (buf[0]=$59) and (buf[1]=$43) then begin
-            ListBox1.Items.Add(GetNr(sr.Name));    {Dateiliste neu aufbauen}
+            lbFlights.Items.Add(GetNr(sr.Name));   {Dateiliste neu aufbauen}
             inc(n);                                {Dateien zählen}
           end;
         until FindNext(sr)<>0;
         if n>0 then begin    {Breeze: nur, wenn dort wirklich was gefunden wurde}
-          grdOverview.ColWidths[0]:=fw1;
-          grdOverview.Update;
+          gridOverview.ColWidths[0]:=fw1;
+          gridOverview.Update;
           StaticText1.Caption:=VTypeToStr(MQid);
         end else begin                             {doch kein Breeze}
           GetDefVT;                                {Overwrite for PX4 Thunderbird}
@@ -14031,12 +14039,12 @@ begin
     end;
 
     if n=0 then begin                              {noch ein Versuch für Mantis}
-      SpinEdit3.Tag:=MQid;                         {erstmal ID für MantisQ setzen}
+      speDataPoint.Tag:=MQid;                      {erstmal ID für MantisQ setzen}
       if FindFirst(IncludeTrailingPathDelimiter(dn)+nfile+wldcd, faAnyFile, sr)=0 then
       try
         repeat
           if IsMantisQ(IncludeTrailingPathDelimiter(dn)+sr.Name) then begin
-            ListBox1.Items.Add(GetNr(sr.Name));    {Dateiliste neu aufbauen}
+            lbFlights.Items.Add(GetNr(sr.Name));   {Dateiliste neu aufbauen}
             inc(n);                                {Dateien zählen}
           end;
         until FindNext(sr)<>0;
@@ -14049,7 +14057,7 @@ begin
       try
         repeat
           if IsMantisQ(IncludeTrailingPathDelimiter(dn)+sr.Name) then begin
-            ListBox1.Items.Add(GetNr(sr.Name));    {Dateiliste aufbauen}
+            lbFlights.Items.Add(GetNr(sr.Name));   {Dateiliste aufbauen}
             inc(n);                                {Dateien zählen}
           end;
         until FindNext(sr)<>0;
@@ -14058,20 +14066,20 @@ begin
       end;
 
       if n>0 then begin    {Mantis: nur, wenn dort wirklich was gefunden wurde}
-        grdOverview.ColWidths[0]:=fw1;
+        gridOverview.ColWidths[0]:=fw1;
         StaticText1.Caption:=VTypeToStr(MQid);
-        ListBox1.Tag:=-1;                          {noch keine Datei angezeigt}
+        lbFlights.Tag:=-1;                         {noch keine Datei angezeigt}
       end else begin                               {doch kein MantisQ}
         GetDefVT;                                  {Overwrite for PX4 Thunderbird}
       end;
     end;
 
     if n=0 then begin                              {noch ein Versuch für H520}
-      SpinEdit3.Tag:=H5id;                         {erstmal ID für MantisQ setzen}
+      speDataPoint.Tag:=H5id;                      {erstmal ID für MantisQ setzen}
       if FindFirst(IncludeTrailingPathDelimiter(dn)+wldcd+hext, faAnyFile, sr)=0 then
       try
         repeat                                     {*.tlog files}
-          ListBox1.Items.Add(GetNr(sr.Name));      {Dateiliste neu aufbauen}
+          lbFlights.Items.Add(GetNr(sr.Name));     {Dateiliste neu aufbauen}
           inc(n);                                  {Dateien zählen}
         until FindNext(sr)<>0;
       finally
@@ -14079,20 +14087,20 @@ begin
       end;
 
       if n>0 then begin     {H520: nur, wenn dort wirklich was gefunden wurde}
-        grdOverview.ColWidths[0]:=fw1;
+        gridOverview.ColWidths[0]:=fw1;
         StaticText1.Caption:=VTypeToStr(H5id);
-        ListBox1.Tag:=-1;                          {noch keine Datei angezeigt}
+        lbFlights.Tag:=-1;                         {noch keine Datei angezeigt}
       end else begin                               {doch kein H520}
         GetDefVT;                                  {Overwrite for PX4 Thunderbird}
       end;
     end;
 
     if n=0 then begin                              {V4.3: Just another try for Hubsan}
-      SpinEdit3.Tag:=H501ID;                       {erstmal ID für H501 setzen}
+      speDataPoint.Tag:=H501ID;                    {erstmal ID für H501 setzen}
       if FindFirst(IncludeTrailingPathDelimiter(dn)+h5file+wldcd+fext, faAnyFile, sr)=0 then
       try
         repeat                                     {H501_*.csv files}
-          ListBox1.Items.Add(GetNr(sr.Name));      {Dateiliste neu aufbauen}
+          lbFlights.Items.Add(GetNr(sr.Name));     {Dateiliste neu aufbauen}
           inc(n);                                  {Dateien zählen}
         until FindNext(sr)<>0;
       finally
@@ -14100,11 +14108,11 @@ begin
       end;
 
       if n>0 then begin     {Hubsan: nur, wenn dort wirklich was gefunden wurde}
-        grdOverview.ColWidths[0]:=fw1;
+        gridOverview.ColWidths[0]:=fw1;
         StaticText1.Caption:=VTypeToStr(H501ID);
-        ListBox1.Tag:=-1;                          {noch keine Datei angezeigt}
-        BitBtn3.Enabled:=false;                    {no achive function}
-        BitBtn26.Enabled:=false;                   {No Scan function}
+        lbFlights.Tag:=-1;                         {noch keine Datei angezeigt}
+        btnArchive.Enabled:=false;                 {no achive function}
+        btnScanErr.Enabled:=false;                 {No Scan function}
       end else begin                               {doch kein H520}
         GetDefVT;                                  {Overwrite for PX4 Thunderbird}
       end;
@@ -14122,73 +14130,73 @@ begin
         topp[x, 5]:=0;                             {Suchpointer löschen}
         topp[x, 6]:=0;                             {ErrorID für Datei löschen}
       end;
-      grdOverview.RowCount:=ListBox1.Items.Count+1; {Übersichtstabelle ohne Summe}
-      grdOverview.Row:=1;
-      grdOverview.Col:=1;
+      gridOverview.RowCount:=lbFlights.Items.Count+1; {Übersichtstabelle ohne Summe}
+      gridOverview.Row:=1;
+      gridOverview.Col:=1;
       for x:=1 to 10 do                            {Spalten}
-        for n:=1 to grdOverview.RowCount-1 do      {Zeilen}
-          grdOverview.Cells[x, n]:='';             {Inhalte erstmal löschen}
-      grdOverview.Cells[0,0]:='';                  {oben links auch löschen}
-      BitBtn25.Tag:=0;
-      for x:=0 to ListBox1.Items.Count-1 do
-        grdOverview.Cells[0, x+1]:=ListBox1.Items[x];
-      if (SpinEdit3.Tag<>MQid) and                 {nicht nur Sensor PX4}
-         (SpinEdit3.Tag<>H5id) then begin          {Übersichtstabelle füllen}
-        grdOverview.RowCount:=grdOverview.RowCount+1; {Summenzeile}
-        for x:=0 to ListBox1.Items.Count-1 do
+        for n:=1 to gridOverview.RowCount-1 do     {Zeilen}
+          gridOverview.Cells[x, n]:='';            {Inhalte erstmal löschen}
+      gridOverview.Cells[0,0]:='';                 {oben links auch löschen}
+      btnFlugBuch.Tag:=0;
+      for x:=0 to lbFlights.Items.Count-1 do
+        gridOverview.Cells[0, x+1]:=lbFlights.Items[x];
+      if (speDataPoint.Tag<>MQid) and              {nicht nur Sensor PX4}
+         (speDataPoint.Tag<>H5id) then begin       {Übersichtstabelle füllen}
+        gridOverview.RowCount:=gridOverview.RowCount+1; {Summenzeile}
+        for x:=0 to lbFlights.Items.Count-1 do
           Werte(x);                                {Telemetrie durchsuchen für Übersicht}
         gtm:=0;
         wrt:=0;
-        grdOverview.Cells[0, grdOverview.RowCount-1]:=rsSumme;
-        for x:=1 to grdOverview.RowCount-2 do begin {Summen anzeigen}
+        gridOverview.Cells[0, gridOverview.RowCount-1]:=rsSumme;
+        for x:=1 to gridOverview.RowCount-2 do begin {Summen anzeigen}
           try
-            wrt:=wrt+StrToFloatN(GetFNr(grdOverview.Cells[7, x]));  {Entfernung}
+            wrt:=wrt+StrToFloatN(GetFNr(gridOverview.Cells[7, x]));  {Entfernung}
           except
           end;
           try
-            if trim(grdOverview.Cells[5, x])<>'' then
-              gtm:=gtm+StrToTime('00:'+trim(grdOverview.Cells[4, x]));
+            if trim(gridOverview.Cells[5, x])<>'' then
+              gtm:=gtm+StrToTime('00:'+trim(gridOverview.Cells[4, x]));
           except
           end;
         end;
         p:=trunc(gtm);
         if p>0 then
-          grdOverview.Cells[4, grdOverview.RowCount-1]:=IntToStr(p)+'d '+
+          gridOverview.Cells[4, gridOverview.RowCount-1]:=IntToStr(p)+'d '+
                               FormatDateTime(zzf, gtm)
                else
-          grdOverview.Cells[4, grdOverview.RowCount-1]:=
+          gridOverview.Cells[4, gridOverview.RowCount-1]:=
                               FormatDateTime(zzf, gtm);
         gtm:=gtm*24;                               {in Stunden}
         if rgSpeedUnit.ItemIndex=2 then begin
           wrt:=wrt/5280;
-          grdOverview.Cells[7, grdOverview.RowCount-1]:=
+          gridOverview.Cells[7, gridOverview.RowCount-1]:=
                               FloatToStrF(wrt, ffFixed, 6, 2)+'mi';
           if gtm>0 then                            {avarage speed in mph}
-            grdOverview.Cells[8, grdOverview.RowCount-1]:='Ø '+
+            gridOverview.Cells[8, gridOverview.RowCount-1]:='Ø '+
                               FloatToStrF(wrt/gtm, ffFixed, 6, 2)+'mph';
         end else begin
           wrt:=wrt/1000;
-          grdOverview.Cells[7, grdOverview.RowCount-1]:=
+          gridOverview.Cells[7, gridOverview.RowCount-1]:=
                               FloatToStrF(wrt, ffFixed, 6, 2)+'km';
           if gtm>0 then                            {avarage speed in km/h}
-            grdOverview.Cells[8, grdOverview.RowCount-1]:='Ø '+
+            gridOverview.Cells[8, gridOverview.RowCount-1]:='Ø '+
                               FloatToStrF(wrt/gtm, ffFixed, 6, 2)+'km/h';
         end;
-        grdOverview.Cells[0,0]:=rsDateien+suff+IntToStr(n);
+        gridOverview.Cells[0,0]:=rsDateien+suff+IntToStr(n);
         StatusBar1.Panels[0].Text:=rsDateien+suff+IntToStr(n);
-        tpos:=0;                                   {zeitl. Pos im StringGrid1}
+        tpos:=0;                                   {zeitl. Pos im gridDetails}
         AppLog.Lines.Add('{');                     {Tabelle als Comment für
                                                     SynAnySyn-Highlighter}
-        for p:=0 to grdOverview.RowCount-1 do begin  {Übersicht ausgeben}
+        for p:=0 to gridOverview.RowCount-1 do begin  {Übersicht ausgeben}
           s:='';                                   {Datenzeile neu}
-          for x:=0 to grdOverview.ColCount-1 do begin
-            s:=s+Format('%14.13s', [grdOverview.Cells[x, p]]);  {Datenzeile füllen}
+          for x:=0 to gridOverview.ColCount-1 do begin
+            s:=s+Format('%14.13s', [gridOverview.Cells[x, p]]);  {Datenzeile füllen}
           end;
-          AppLog.Lines.Add(s);                   {Ausgeben in AppLogHighlighter}
+          AppLog.Lines.Add(s);                     {Ausgeben in AppLogHighlighter}
         end;
         AppLog.Lines.Add('}');
       end;
-      ListBox1.ItemIndex:=0;                       {Default: 1. Zeile auswählen}
+      lbFlights.ItemIndex:=0;                      {Default: 1. Zeile auswählen}
     end;                                           {Ende Übersichtstabelle}
   except
     n:=0;                                          {nix gefunden}
@@ -14196,14 +14204,14 @@ begin
   end;
   result:=n;                                       {Anzahl übergeben}
   if n>0 then
-    RadioGroup1.Tag:=0;                            {Resize columns needed again}
+    rgQuelle.Tag:=0;                                {Resize columns needed again}
 end;
 
 {###############################################################################
  Für spezielle Sonderauswertungen einer CSV Datei. Diese Sonderfälle müssen extra
  programmiert werden. Hier ist der Rahmen dazu.}
 
-procedure TForm1.btSpecialClick(Sender: TObject);  {Spezielle Auswertung für CSV-Datei}
+procedure TForm1.btnSpecialClick(Sender: TObject);  {Spezielle Auswertung für CSV-Datei}
 var i, j, zhl: integer;
     inlist, splitlist: TStringList;
     fn, slat, slon, vlat, vlon: string;
@@ -14212,8 +14220,8 @@ var i, j, zhl: integer;
 begin
   screen.Cursor:=crHourGlass;
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
-  StringGrid1.ColCount:=0;                         {alles löschen}
-  StringGrid1.RowCount:=14;
+  gridDetails.ColCount:=0;                         {alles löschen}
+  gridDetails.RowCount:=14;
   zhl:=0;
   slat:='';
   vlat:='';
@@ -14222,14 +14230,14 @@ begin
   ddist:=0;
   rslt1:=0;
   rslt2:=0;
-  StringGrid1.ColCount:=defaultcol;
+  gridDetails.ColCount:=defaultcol;
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=sep;
   splitlist.StrictDelimiter:=True;
   try
-    fn:=IncludeTrailingPathDelimiter(ComboBox2.Text)+kpath+kfile;   {Fake telemetry_xxx.csv}
-    fn:=fn+ListBox1.Items[ListBox1.ItemIndex]+fext;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+kfile;   {Fake telemetry_xxx.csv}
+    fn:=fn+lbFlights.Items[lbFlights.ItemIndex]+fext;
     try
       inlist.LoadFromFile(fn);
     except
@@ -14246,24 +14254,24 @@ begin
     if inlist.count>10 then begin
       try
         splitlist.DelimitedText:=inlist[0];        {Überschrift einlesen}
-        SpinEdit3.MaxValue:=inlist.Count;
-        SpinEdit2.MaxValue:=inlist.Count-10;
-        SpinEdit3.Hint:=hntSpinEdit3+', max. '+IntToStr(SpinEdit3.MaxValue);
+        speDataPoint.MaxValue:=inlist.Count;
+        speAnalyze.MaxValue:=inlist.Count-10;
+        speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
-        StringGrid1.RowCount:=inlist.Count;        {vorbelegen}
-        StringGrid1.ColCount:=splitlist.Count;
+        gridDetails.RowCount:=inlist.Count;        {vorbelegen}
+        gridDetails.ColCount:=splitlist.Count;
         for i:=1 to splitlist.Count-1 do
-          StringGrid1.Cells[i, 0]:=splitlist[i];
-        StringGrid1.Cells[0,0]:=rsHDcell0;
+          gridDetails.Cells[i, 0]:=splitlist[i];
+        gridDetails.Cells[0,0]:=rsHDcell0;
 
-        StringGrid1.BeginUpdate;
+        gridDetails.BeginUpdate;
         for i:=1 to inlist.count-1 do begin        {Daten einlesen}
           inc(zhl);
           splitlist.DelimitedText:=inlist[i];
           if splitlist.Count>6 then begin
             for j:=0 to splitlist.count-1 do
-              StringGrid1.Cells[j, i]:=splitlist[j];
+              gridDetails.Cells[j, i]:=splitlist[j];
 
             if (slat='') and                       {noch kein Homepoint}
                 NichtLeer(splitlist[5]) and
@@ -14300,11 +14308,11 @@ begin
               tmev:=tme;
               wrtv:=wrt;
             end;
-            StringGrid1.Cells[7, i]:=FormatFloat('0.00', rslt1);
-            StringGrid1.Cells[11, i]:=FormatFloat('0.00', rslt2);
+            gridDetails.Cells[7, i]:=FormatFloat('0.00', rslt1);
+            gridDetails.Cells[11, i]:=FormatFloat('0.00', rslt2);
 {Ende spezielle Auswertung}
             if i=(inlist.Count div 2) then
-              StringGrid1.AutoSizeColumns;
+              gridDetails.AutoSizeColumns;
           end else begin
             StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsEmpty+tab1+
                                        capLabel6+Format('%6d', [i]);
@@ -14312,11 +14320,11 @@ begin
           end;
         end;                                       {Ende Daten einlesen}
 
-        StringGrid1.Cells[7, 0]:='grnd_spd';
-        StringGrid1.Cells[11, 0]:='vert_spd';
+        gridDetails.Cells[7, 0]:='grnd_spd';
+        gridDetails.Cells[11, 0]:='vert_spd';
 
-        StringGrid1.AutoSizeColumn(0);
-        StringGrid1.EndUpdate;
+        gridDetails.AutoSizeColumn(0);
+        gridDetails.EndUpdate;
 
         AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLGmap(slat, slon));   {Anzeige Start und Ende}
@@ -14333,8 +14341,8 @@ begin
         AppLog.Lines.Add('''13909'+suff+StatusBar1.Panels[5].Text);
       end;
       PageControl1.ActivePageIndex:=1;
-      StringGrid1.SetFocus;
-      StringGrid1.CopyToClipboard(false);          {Tabelle im Clipboard ablegen}
+      gridDetails.SetFocus;
+      gridDetails.CopyToClipboard(false);          {Tabelle im Clipboard ablegen}
     end else begin                                 {Datei leer}
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);

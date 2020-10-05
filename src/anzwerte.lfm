@@ -41,6 +41,7 @@ object Form2: TForm2
   object btnOKform2: TBitBtn
     Left = 558
     Height = 34
+    Hint = 'OK and close'
     Top = 248
     Width = 107
     Anchors = [akRight, akBottom]

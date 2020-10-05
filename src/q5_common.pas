@@ -9,7 +9,7 @@ uses
 
 const
 {public constants}
-  Version ='V4.5 09/2020';
+  Version ='V4.5 10/2020';
 
   InvalidChars: set of char=['\', '/', ':', '*', '?', '"', '<', '>', '|', '&'];
   ziff=['0'..'9'];                                 {gültige Ziffern}
@@ -35,11 +35,11 @@ const
   function CleanDN(const s: string): string;       {Ungültige Zeichen entfernen}
   function CleanNum(const s: string): string;      {Ziffern filtern}
   function FormSR(const s: string; const p: integer): string;  {füllt string mit führenden
-                                                         Leerzeichen auf Länge p}
+                                                    Leerzeichen auf Länge p}
   function IntToStrFL(const w, p: integer): string; {Wandelt Zahlen in String mit
                                            Länge p mit führenden Leerzeichen um}
   function GetFNr(const s: string): string;        {filter a float from a string}
-  function GetFVal(const s: string): double;         {get a float from a string}
+  function GetFVal(const s: string): double;       {get a float from a string}
   function tabs(const prefix, suffix: string; const t: integer): string;  {Tabulator + suff}
   function DeltaKoord(lat1, lon1, lat2, lon2: double): double;   {Entfernung in m}
 
@@ -67,14 +67,14 @@ begin
 end;
 
 function FormSR(const s: string; const p: integer): string;  {füllt string mit führenden
-                                                       Leerzeichen auf Länge p}
+                                                    Leerzeichen auf Länge p}
 begin
   result:=s;
   while UTF8length(result)<p do
     result:=tab1+result;
 end;
 
-function IntToStrFL(const w, p: integer): string; {Wandelt Zahlen in String mit
+function IntToStrFL(const w, p: integer): string;   {Wandelt Zahlen in String mit
                                          Länge p mit führenden Leerzeichen um}
 begin
   try
