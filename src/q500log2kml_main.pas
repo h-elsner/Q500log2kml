@@ -2615,9 +2615,25 @@ begin
 end;
 
 function ChrKoor(ko: string): string; inline;      {Korrigiert Format der Koordinaten}
+var co: double;
+    ps, i: integer;
+    s: string;
 begin
   try
-    result:=KoToStr(StrToFloatN(ko));              {umwandeln um führende 0 zu bekommen}
+    co:=StrToFloatN(ko);
+    if (abs(co)>181) then begin                    {Strange format in ST16S}
+      s:='';
+      for i:=1 to length(ko) do begin
+        if ko[i] in ziff then
+          s:=s+ko[i];
+      end;
+      if ko[1]='-' then
+        s:='-0.'+s
+      else
+        s:='0.'+s;
+      co:=StrToFloat(s);                           {-6558209.0 --> -0.6558209}
+    end;
+    result:=KoToStr(co);                           {umwandeln um führende 0 zu bekommen}
   except
     result:=ko;
   end;
@@ -11084,7 +11100,7 @@ begin
             kmllist.Add(placelist[x]);
         placemark(kmllist, '#landing', '', lkoor, ltime); {Landing placemark}
 
-{bei Bedarf den Pfad der ST10 auch einspeichern}
+{bei Bedarf den Pfad der ST10/16 auch einspeichern}
         if lgcy and cbPilot.Checked then begin
           dn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+spath+
                              PathDelim+sfile+lbFlights.Items[z]+fext;
@@ -11107,7 +11123,7 @@ begin
                 splitlist.DelimitedText:=inlist[x];
                 if (splitlist.Count>5) and           {Werte validieren}
                    (NichtLeer(splitlist[1]) or NichtLeer(splitlist[2])) then
-                   kmllist.add(tab6+ChrKoor(splitlist[1])+sep+    {lon + lat}
+                   kmllist.add(tab6+ChrKoor(splitlist[1])+sep+   {lon + lat}
                                ChrKoor(splitlist[2])+sep+dzfl);  {ohne Höhe}
               end;
               KMLfooter1(cotag, kmllist);
