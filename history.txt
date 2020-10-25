@@ -17,7 +17,7 @@ History:
 2016-03-24  V2.1  Histogram distance at Lon/Lat,
                   IMU_status explanations updated (Pressure init supposed)
 2016-04-10  V2.2  GPX format
-2016-05-04  V2.3  Cursor on histograms added, Support ST10 firmware
+2016-05-04  V2.3  Cursor at histograms added, Support ST10 firmware
                   (only telemetry, no remote files)
 2016-05-23  V2.4  Check how frequent telemetry data were sent. Support 
                   Typhoon H, H920.
@@ -125,3 +125,4 @@ History:
 2020-09-20       Message POSITION_TARGET_GLOBAL_INT added (only for AppLog)
 2020-09-21       Message ALTITUDE (141) added. Tools: List of used MAVlink messages.
 2020-09-30       Tools - Hexdump added. Bugfix Motorstatus hexacopter (223).
+2020-10-25       Correct strage Coordinates format from ST16S in RemoteGPS*.csv.
