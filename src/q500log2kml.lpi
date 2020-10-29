@@ -8,9 +8,11 @@
       <MainUnit Value="0"/>
       <Title Value="Yuneec FlightLog Auswertung"/>
       <Scaled Value="True"/>
-      <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
+      <XPManifest>
+        <DpiAware Value="True"/>
+      </XPManifest>
       <Icon Value="0"/>
     </General>
     <i18n>

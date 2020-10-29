@@ -306,7 +306,9 @@ resourcestring                                     {deutsch}
   capHexdump='Hexdump';
   hntHexdump='Hexadezimale Ausgabe eines Blockes aus der Datei.';
   hntBlockNum='Nummer des Blocks zur Ausgabe hexadezimal.';
-  hntBlockSize='Länge eines Blockes in kByte';
+  hntBlockSize='Länge eines Blockes in kByte für Hexadezimale Ausgabe in AppLog';
   rsFilesize='Dateigröße';
+  capHighLight='AppLog Highlighter';
+  hntHighLight='Farbige Textteile in AppLog erlauben';
 
 

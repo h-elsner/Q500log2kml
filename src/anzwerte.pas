@@ -55,7 +55,7 @@ type
 
   public
     {public declarations}
-    var st: string;
+//    var st: string;
 
     procedure MoveVCursor(x: double; p: integer);  {Time and label position}
   end;
@@ -64,30 +64,6 @@ type
 
 var
   Form2: TForm2;
-
-const
-
-{ Chart1BarSeries1: Series Color:=clFuchsia  (Angle Mode – Purple LED)
-  Chart1BarSeries2: Series Color:=clGreen    (für Smart Mode)
-  Chart1BarSeries3: Series Color:=clRed      (für RTH)
-  Chart1BarSeries4: Series Color:=clMaroon   (Emergency)
-  Chart1BarSeries5: Series Color:= $000080FF (Orange)
-  Chart1BarSeries7: Series Color:=clBlue     (Sports Mode, Stability)    }
-
-(*  clOrange=$000080FF;
-  clNoGPS=$000080FF;                               {Dark Orange}
-  clAngle=clFuchsia;
-  clEmergency=clMaroon;
-  clSmart=clGreen;
-  clRTH=clRed;
-  clSport=clBlue;
-  clTasks=clMoneyGreen;
-  clAttention =$008080F0;                          {Farbe Achtung}
-  clVolt2     =$00FF901E;                          {Voltage 2 Farbe}   *)
-
-  csvsep=';';
-  spk=4;                                           {Korrekturwert Spaltenbreite}
-  zzf='hh:nn:ss';
 
 implementation
 
@@ -112,7 +88,7 @@ end;
 procedure TForm2.btnOKform2Click(Sender: TObject);
 begin
   Close;
-  st:='';
+  timestr:='';
 end;
 
 procedure TForm2.Chart1DblClick(Sender: TObject);  {Datapoint ID toggle}
@@ -137,8 +113,8 @@ begin
   MenuItem3.Enabled:=false;
   Chart1ConstantLine1.Active:=false;
   StringGrid1.Tag:=0;
-  edTime.Color:=clOrange;
-  st:='';
+  edTime.Color:=clOrange;                          {Moving label}
+  timestr:='';
 end;
 
 procedure TForm2.FormResize(Sender: TObject);      {StringGrid Spalten anpassen}
@@ -167,7 +143,7 @@ end;
 procedure TForm2.FormShow(Sender: TObject);        {Doppelklick ID rücksetzen}
 begin
   StringGrid1.Tag:=0;
-  st:='';
+  timestr:='';
   MenuItem3.Enabled:=false;
   edTime.Visible:=false;
 end;
@@ -217,14 +193,14 @@ begin
     Result:=-Result;                           {Sortierrichtung}
 end;
 
-procedure TForm2.DataToMain;          {Daten in st an Hauptformular übergeben}
+procedure TForm2.DataToMain;       {Daten in timestr an Hauptformular übergeben}
 begin
   if StringGrid1.Visible and
      (StringGrid1.Tag>0) then begin
     if (StringGrid1.ColCount>4) then
-      st:=StringGrid1.Cells[3, StringGrid1.Tag]
+      timestr:=StringGrid1.Cells[3, StringGrid1.Tag]
     else
-      st:=StringGrid1.Cells[0, StringGrid1.Tag]
+      timestr:=StringGrid1.Cells[0, StringGrid1.Tag]
   end;
 end;
 
@@ -263,20 +239,27 @@ begin
     if pos('error', StringGrid1.Cells[0, 0])>0 then begin  {Error Flags}
       e:=StrToIntDef(StringGrid1.Cells[0, aRow], 0); {Errorflag suchen}
       if (e>0) and (e<>85) then begin                {Flags vorhanden}
-        if (((e and 1)<>0) or ((e and 2)<>0)) and
+        if ((e and 1)<>0) and
            (aCol=0) then                       {Voltage warning in erster Spalte}
-          StringGrid1.Canvas.Brush.Color:=clSkyBlue;
+          CellColorSetting(StringGrid1, clVolt1);
+        if ((e and 2)<>0) and
+           (aCol=0) then                       {Voltage warning in erster Spalte}
+          CellColorSetting(StringGrid1, clVolt2);
         if (e shr 2)<>0 then begin             {Compass error überschreibt}
           if aCol=0 then
-            StringGrid1.Canvas.Brush.Color:=clOrange;
+            CellColorSetting(StringGrid1, clOrange);
           if aCol>2 then begin                 {Zeitspalten}
             e:=StrToIntDef(CleanNum(StringGrid1.Cells[5, aRow]), 0); {Dauer}
             if e>5 then                        {Compass error > 5sec}
-              StringGrid1.Canvas.Brush.Color:=clRed;
+              CellColorSetting(StringGrid1, clError);
           end;
         end;
       end;
     end;
+    if pos(fmode, StringGrid1.Cells[0, 0])>0 then begin  {Flight Mode}
+      e:=StrToIntDef(StringGrid1.Cells[0, aRow], 0); {f_mode as integer}
+      FMcolor(StringGrid1, e, v_type);
+    end
   end;
 end;
 

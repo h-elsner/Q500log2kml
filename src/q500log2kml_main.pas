@@ -51,12 +51,12 @@ YTH waypoints: http://www.eegalmc2.com/us/typhoonh/
 
 Hilfsvariablen:
 Form1.Tag:        Original Dezimal Separator zwischenspeichern (ob das nötig ist?)
-btnClose.Tag:      1=Breeze telemetry als ft, sonst Meter
-btnArchive.Tag:      Plattform for Breeze: 1: Android, 0: iOS
+btnClose.Tag:     1=Breeze telemetry als ft, sonst Meter
+btnArchive.Tag:   Plattform for Breeze: 1: Android, 0: iOS
 gridDetails.Tag:  Spaltennummer, wo f_mode steht.
 StringGrid2.Tag:  Merker für zuletzt benutztes Tabsheet, gesetzt beim Umschalten
 PageControl1.Tag: Indikator, ob Form2 angezeigt wurde (0 .. nein, >0 .. ja)
-speDataPoint.Tag:    Vehicle Type as Integer (default = 5, YTH Plus = 10,
+v_type:           Vehicle Type as Integer (default = 5, YTH Plus = 10,
                                            Breeze = 90 = brID)
 Label3.Tag:       Spalte für Suche/Filter in Tabelle merken.
 StatusBar1.Tag:   Legt fest, ob StatusPanel 3 und 4 (Zeiten) mit ins
@@ -201,7 +201,11 @@ History:
 2020-09-20       Message POSITION_TARGET_GLOBAL_INT added (only for AppLogHighlighter)
 2020-09-21       Message ALTITUDE (141) added. Tools: List of used MAVlink messages.
 2020-09-30       Tools - Hexdump added. Bugfix Motorstatus hexacopter (223).
-2020-10-25       Correct strage Coordinates format from ST16S in RemoteGPS*.csv.
+2020-10-25       Correct strange Coordinates format from ST16S in RemoteGPS*.csv.
+2020-10-29 V4.6  Update for Windows High Contrast (own colors removed).
+                 AppLog highlighter switchable. Some Colors updated.
+                 Open the last (newest) item in the list instead of the first (oldest).
+                 Model list handling improved.
 *)
 
 unit q500log2kml_main;
@@ -261,6 +265,7 @@ type
     btnShowHex: TBitBtn;
     btnSpecial: TButton;
     cbCap: TCheckBox;
+    cbHighLight: TCheckBox;
     Chart1: TChart;
     Chart1BarSeries1: TBarSeries;
     Chart1BarSeries2: TBarSeries;
@@ -327,6 +332,7 @@ type
     edSendCGO3: TEdit;
     edReceiveCGO3: TEdit;
     edCGOURL: TEdit;
+    rgBlockSize: TRadioGroup;
     speExpo: TFloatSpinEdit;
     GroupBox1: TGroupBox;
     GroupBox10: TGroupBox;
@@ -353,7 +359,6 @@ type
     mnCleanCSV: TMenuItem;
     ProgressBarScan: TProgressBar;
     rgVehicleType: TRadioGroup;
-    rgBlockSize: TRadioGroup;
     rgCSVtext: TRadioGroup;
     rgErrType: TRadioGroup;
     rgVoltRule: TRadioGroup;
@@ -410,7 +415,7 @@ type
     mnManual: TMenuItem;
     mnHomepage: TMenuItem;
     MenuItem29: TMenuItem;
-    mnSaveAsHist: TMenuItem;            {"Als Bild speichern" im PopUp Menü HDiagr}
+    mnSaveAsHist: TMenuItem;                       {"Als Bild speichern" im PopUp Menü HDiagr}
     mnInfo: TMenuItem;
     mnTR1: TMenuItem;
     mnMainDel: TMenuItem;
@@ -519,7 +524,10 @@ type
     procedure btnArchiveClick(Sender: TObject);
     procedure btnShowHexClick(Sender: TObject);
     procedure btnSpecialClick(Sender: TObject);
+    procedure cbHighLightChange(Sender: TObject);
     procedure cbThunderChange(Sender: TObject);
+    procedure cbxTextMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Chart3MouseUp(Sender: TObject; Button: TMouseButton;
@@ -554,7 +562,6 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure edSendCGO3KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edReceiveCGO3DblClick(Sender: TObject);
-    procedure rgCSVtextClick(Sender: TObject);
     procedure speExpoChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -585,7 +592,6 @@ type
     procedure lbFlightsDblClick(Sender: TObject);
     procedure MAVmsgDblClick(Sender: TObject);
     procedure MAVmsgItemClick(Sender: TObject; Index: integer);
-    procedure mmoTextChange(Sender: TObject);
     procedure mnSaveAsQuickClick(Sender: TObject);
     procedure mnResetProfileClick(Sender: TObject);
     procedure mnProfModeClick(Sender: TObject);
@@ -841,9 +847,6 @@ const
   maxxh=7999;                                      {Höhe validieren --> testh(a)}
   minnh=-1000;                                     {gefähliche Annahme, tritt aber bei YTH Plus als Fehler auf}
   distmax=1000;                                    {Plasicheck: Koord dist in m}
-  fmode='f_mode';                                  {Spalte Flightmode, Position der Spalte in gridDetails.Tag}
-  pfmode='fMode';                                  {Spaltenbezeichnung beim YTH Plus}
-  brfmode='flightMode';                            {FlightMode beim Breeze}
   brsnid='DroneSN';
   lcol='gps_accH';                                 {letzte Spalte in Überschrift, wegen ST16-FW Fehler}
   hsw=2;                                           {Höhen-Schwellwert für Analyse in m}
@@ -857,10 +860,6 @@ const
   rfm3=[8..14, 25];                                {Real flight modes Blade}
   rfmT=[0, 1, 3, 13, 14, 20, 33];                  {Real flight modes Thunderbird}
   rfmP=[4..7, 10, 12, 13, 17];                     {Real flight modes YTH Plus  ???}
-  fkmh=3.6;                                        {m/s --> km/h}
-  fmph=2.2369362920544;                            {m/s --> mph}
-  fmile=1.609344;
-  fft=0.3048;                                      {Faktor Umrechnung ft --> m}
   lipomin=3.3;          {minimale Zellenspannung von LiPos,
                          die nicht unterschritten werden sollte}
   lipomax=4.2;
@@ -939,16 +938,6 @@ const
   m50val=1365;                                     {-50%}
   spt=10;                                          {zusätzliche Spaltenbreite  für Telemetrie in pix}
   rrk='# ';                                        {RaceRender Kommentar}
-  defaultcol=5;                                    {muss kleiner als die Mindestmenge der Spalten sein}
-  defVT=5;                                         {Default vehicle YTH, need 5 for Thunderbird}
-  YTHPid=10;                                       {YTH Plus ID}
-  MQid=11;                                         {MantisQ ID, PX4 Quadcopter}
-  H5id=12;                                         {Yuneec H520, *.tlog files (PX4)}
-  MQcsvID=13;                                      {neues CSV Format beim MQ}
-  ThBid=14;                                        {Thunderbird, H480 customized firmware on base of PX4}
-  brID=90;                                         {Breeze ID}
-  H501ID=91;                                       {Hubsan flaretom Rekorder}
-  YTHPcols=276;                                    {Anzahl Spalten bei YTH Plus Sensorfiles = ID für Anzeige}
   AnzDirs=12;                                      {Anzahl der letzen Verzeichnisse}
   FWsz=18;                                         {Mindestgröße Datei für FW}
   CGO3dir='100MEDIA/';
@@ -956,17 +945,7 @@ const
   trenner='--------------------';
   trnrApplog='                  ';
 
-  mzf='yyyy-mm-dd hh:nn';                          {Datum/Zeit Formate}
-  dzf='yyyy-mm-dd';
-  vzf=dzf+' '+zzf;
-  zzz='.zzz';
-
-  dzfl='0.0';                                      {Formatierung für FormatFloat}
-  ctfl='0.00';
-  mlfl='0.000';
-
   tabu=19;
-  dstr=';';                                        {Datentrenner für Flugprotokoll}
   lblsize=35;                                      {LabelSize zum Ausrichten der Y-Achsen bei Schnellanalyse}
                                                    {Sensordateien: }
   dsID=$BC;                                        {ID für einen Datensatz}
@@ -1023,7 +1002,7 @@ begin
       for i:=splitlist.Count-2 downto 0 do         {YTH Plus probieren}
         if pos(mndirp, splitlist[i])=1 then begin
           result:='';                              {Pfad zusammenbauen}
-          speDataPoint.Tag:=YTHPid;
+          v_type:=YTHPid;
           for k:=0 to i do
             result:=result+splitlist[k]+Pathdelim;
           exit;
@@ -1036,17 +1015,16 @@ begin
             result:=result+splitlist[k]+Pathdelim;
           exit;
         end;
-//      exit;                                      {wofür?}
     end;
     if ExtractFileExt(fn)=bext then begin
       result:=ExtractFilePath(fn);                 {Breeze}
-      speDataPoint.Tag:=BRid;
+      v_type:=BRid;
       exit;
     end;
     if (pos(h5file, fn)=1) and
        (ExtractFileExt(fn)=fext) then begin        {Hubsam 501 flaretom Recorder}
       result:=ExtractFilePath(fn);
-      speDataPoint.Tag:=H501ID;                    {Vehicle ID für <> legacy setzen}
+      v_type:=H501ID;                              {Vehicle ID für <> legacy setzen}
     end;
   finally
     FreeAndNil(splitlist);
@@ -1057,6 +1035,7 @@ procedure TForm1.FormCreate(Sender: TObject);      {Anwendung initialisieren und
 var i: integer;
 begin
   Randomize;                                       {Zufallsgenerator initialisieren}
+  v_type:=DefVT;
   nhw:=0.00002;                                    {default Koordinaten in der Nähe}
   cutb:=0;                                         {Zeitstempel zum Ausschneiden}
   cute:=0;                                         {Beginn und Ende löschen}
@@ -1065,6 +1044,9 @@ begin
   kpath:=IncludeTrailingPathDelimiter(dkpath);     {default setzen}
   AppLog.Lines.Clear;
   AppLogTimeStamp(Application.ExeName+tab4+version);
+  AppLog.Color:=AppLog.GetColorResolvingParent;
+  AppLog.Font.Color:=(not ColorToRGB(AppLog.Color)) and $00FFFFFF;
+  AppLog.RightEdgeColor:=AppLog.Color;             {Make it invisible}
   Caption:=capForm1+tab2+Version;                  {Name und Version}
   Hint:=capForm1;
   btnClose.Caption:=capBitBtn1;
@@ -1076,9 +1058,15 @@ begin
   btnScreenshot.Caption:=rsScreenshot;
   btnScreenshot.Hint:=hntBitBtn13;
 {$IFDEF DARWIN}                                    {MAC OS X}
-  btnScreenshot.Visible:=false;                         {Button Screenshot}
-  mnMainScreenshot.Visible:=false;                       {Main Menu Screenshot}
-  mnSaveAsHist.Visible:=false;                        {PopUp Menu Höhenprofil; geht das nun?}
+  btnScreenshot.Visible:=false;                    {Button Screenshot}
+  mnMainScreenshot.Visible:=false;                 {Main Menu Screenshot}
+  mnSaveAsHist.Visible:=false;                     {PopUp Menu Höhenprofil; geht das nun?}
+{$ENDIF}
+{$IFDEF LINUX}                                     {Linux}
+  sbtnLogDir.Height:=29;                           {Needs larger Speed buttons}
+  sbtnLogDir.Width:=29;
+  sbtnScanDir.Height:=29;
+  sbtnScanDir.Width:=29;
 {$ENDIF}
   btnCut.Caption:=capBitBtn14;                     {Ausschneiden / Cut}
   btnCut.Hint:=hntBitBtn14;
@@ -1249,6 +1237,8 @@ begin
   cbReduced.Hint:=hntReduced;
   cbThunder.Caption:=capThunder;
   cbThunder.Hint:=hntThunder;
+  cbHighLight.Caption:=capHighLight;
+  cbHighLight.Hint:=hntHighLight;
   GroupBox2.Caption:=capGroupBox2;
   GroupBox3.Caption:=rsPC1Tab2;
   GroupBox4.Caption:=capAnalyse;
@@ -1283,8 +1273,6 @@ begin
   rgQuelle.ItemIndex:=0;
   gridDetails.Tag:=19;                             {default Position bei neuer FW ST10+}
   gridDetails.ColWidths[0]:=130;
-//  gridDetails.Columns[0].Width:=130;             {Besser, aber dann überall!
-//  Und das Indexkonzept ist anders, weil FixedColumns nicht beim Index mitzählt}
   gridDetails.Hint:=hntGrid1;                      {Default Hint data}
   gridDetails.ColCount:=defaultcol;
   gridOverview.ColWidths[0]:=fw0;
@@ -1681,7 +1669,7 @@ function TForm1.fmodeToStr(const f: integer): string; {Flight Mode abh. vom Typ 
 
 begin
   result:='';
-  case speDataPoint.Tag of
+  case v_type of
     3: Mode350;
     YTHPid: ModeYTHP;
     ThBid: ModeThB;
@@ -1707,8 +1695,8 @@ end;
 
 procedure Merkliste(ml: TComboBox; maxAnzahl: integer); {DropDownListe füllen}
 begin
-  // ml.Text:=ExcludeTrailingPathDelimiter(ml.Text);
-  if ml.Items.IndexOf(ml.Text)<0 then              {noch nicht in Liste}
+  if (ml.Text<>'') and
+     (ml.Items.IndexOf(ml.Text)<0) then            {noch nicht in Liste}
     ml.Items.Insert(0, ml.Text);
   if ml.Items.Count>MaxAnzahl then                 {Anzahl in Liste begrenzen}
     ml.Items.Delete(MaxAnzahl);
@@ -1795,6 +1783,7 @@ begin
     18: result:='Pilot landing';
   end;
 end;
+
 {from  DroneStatusParserUtil.java
 int baroMagInt = data[35];
 int barometerModuleStatus = baroMagByte & 1;
@@ -1821,8 +1810,8 @@ begin
         result:=result+'Mag fail ';
       if (u and 16)=0 then
         result:=result+'GPS fail ';
-      if (speDataPoint.Tag=5) or
-         (speDataPoint.Tag=YTHPid) then begin         {nur Typhoon H oder H Plus}
+      if (v_type=5) or
+         (v_type=YTHPid) then begin                {nur Typhoon H oder H Plus}
         if (u and 32)=0 then
           result:=result+'RealSense error';
         if (u and 64)=0 then
@@ -2131,7 +2120,7 @@ begin
   end;
 end;   *)
 
-{ENUMs siehe: https://github.com/mavlink/c_library_v2/blob/master/common/common.h}
+{ENUMs see: https://github.com/mavlink/c_library_v2/blob/master/common/common.h}
 function MAVseverity(sv: byte): string;
 begin
   result:='';
@@ -2320,54 +2309,12 @@ end;
 
 function FramesToColor(c: integer): TColor;        {Colors for the frame settings}
 begin
-  result:=Form1.gridDetails.Color;
   case c of
     0: result:=clRed;                              {No frame}
     1, 2, 4: result:=clOrange;                     {One frame}
     3, 5, 6: result:=clBlue;                       {Two frames}
-    7: result:=clGreen;                            {All three frames}
-  end;
-end;
-
-function BladeCol(const fm: integer): TColor; inline;
-begin
-  result:=Form1.gridDetails.Color;
-  case fm of                                       {flight modes; wie Chart1BarSeries}
-    25:             result:=clAngle;
-    11:             result:=clSport;
-    9, 14, 10, 13:  result:=clRTH;
-    12:             result:=clSmart;
-    8:              result:=clEmergency;
-    5:              result:=clSilver;              {Motor Starting}
-  end;
-end;
-
-function LegacyCol(const fm: integer): TColor; inline;
-begin
-  result:=Form1.gridDetails.Color;
-  case fm of                                       {flight modes wie Chart1BarSeries}
-    3, 4:                  result:=clAngle;
-    2, 5, 7, 22, 24, 32:   result:=clNoGPS;
-    13, 14, 20:            result:=clRTH;
-    6, 21, 23:             result:=clSmart;
-    9, 10, 11, 12, 17, 18: result:=clEmergency;
-    0, 1:                  result:=clSport;
-    26..29, 33:            result:=clTasks;        {Tasks}
-    8:                     result:=clSilver;       {Motor Starting}
-  end;
-end;
-
-function ThunderCol(const fm: integer): TColor; inline;
-begin
-  result:=Form1.gridDetails.Color;
-  case fm of                                       {flight modes; wie Chart1BarSeries}
-    0:      result:=clSport;                       {Stabilized blue}
-    1:      result:=clNoGPS;                       {Altitude orange}
-    3:      result:=clAngle;                       {Position purple}
-    13, 14: result:=clEmergency;                   {RTH maroon}
-    20:     result:=clRTH;                         {Rattitude/Rate red}
-    33:     result:=clSmart;                       {Mission green}
-    16:     result:=clSilver;                      {Ready silver}
+  else
+    result:=clGreen;                               {All frames}
   end;
 end;
 
@@ -2406,7 +2353,7 @@ begin
            stkntrl: result:=fmAngle;
            stkdown: result:=fmRTH;
          end;
-         case speDataPoint.Tag of                     {Overwrite}
+         case v_type of                            {Overwrite}
            ThBid: case stk of
                     0..stkdown: result:=fmRTH;     {-150 .. -100%}
                     m50val:  result:=fmStabilized; {-50%}
@@ -2425,7 +2372,7 @@ begin
            stkntrl: result:=rsNeutral;
            stkmax:  result:=fmRTH;
          end;
-         case speDataPoint.Tag of                     {abhängig vom vehicle type}
+         case v_type of                            {abhängig vom vehicle type}
            1: case stk of                          {H920}
                 p50val: result:=rsNoGPS;
                 stkup:  result:=rsNeutral;
@@ -2616,7 +2563,7 @@ end;
 
 function ChrKoor(ko: string): string; inline;      {Korrigiert Format der Koordinaten}
 var co: double;
-    ps, i: integer;
+    i: integer;
     s: string;
 begin
   try
@@ -2844,25 +2791,22 @@ begin                                              {Choose rule to convert V to 
   end;
 end;
 
-function RSSIpToColor(Const r: integer): TColor;   {RSSI in Prozent einfärben}
+procedure RSSIpToColor(aGrid: TStringGrid; r: integer);   {RSSI in Prozent einfärben}
 begin
-  result:=Form1.gridDetails.Color;
   if r<30 then                                     {below 30%}
-    result:=clAttention;
+    CellColorSetting(aGrid, clAttention);
   if r<15 then                                     {below 15%}
-    result:=clRed;
+    CellColorSetting(aGrid, clError);
 end;
 
-function VoltToColor(Const vt: integer; v: double): TColor;
-                                                   {LiPo thresholds for colors}
+procedure VoltToColor(aGrid: TStringGrid; v: double); {LiPo thresholds for colors}
 var w: double;
 const
   thr_yellow=3.69;
   thr_attention=3.61;
   thr_red=3.26;
 begin
-  result:=Form1.gridDetails.Color;
-  case vt of                                       {Volts per cell}
+  case v_type of                                   {Volts per cell}
     1, 6:   w:=v/6;                                {H920 6S}
     5, YTHPid, ThBid, H5id:
             w:=v/4;                                {H480/520 4S}
@@ -2871,12 +2815,12 @@ begin
     w:=v/3;                                        {all other 3S}
   end;
   if w<thr_red then
-    result:=clRed
+    CellColorSetting(aGrid, clError)
   else begin
     if w<thr_yellow then
-      result:=clOrange;
+      CellColorSetting(aGrid, clFairGood);
     if w<thr_attention then
-      result:=clAttention;
+      CellColorSetting(aGrid, clAttention);
   end;
 end;
 
@@ -2894,13 +2838,13 @@ end;
 
 function RSSItoColor(r: double): TColor;           {Color code for RSSI value}
 begin
-  result:=clRed;
+  result:=clError;
   if r<85 then
     result:=clAttention;
   if r<70 then
-    result:=clMoneyGreen;
+    result:=clFairGood;
   if r<55 then
-    result:=clGreen;
+    result:=clVeryGood;
 end;
 
 function RadToStr(const p: integer; const s: string): string;  {Drehrad-Einstellung}
@@ -2935,7 +2879,7 @@ function GetNr(const s: string): string; {filtert Ziffern aus einem String für 
 begin
   result:='';
   if s<>'' then begin
-    case Form1.speDataPoint.Tag of
+    case v_type of
        MQid: begin                                 {MantisQ}
                result:=ChangeFileExt(s, '');
                result:=StringReplace(result, nfile, '', [rfIgnoreCase]);
@@ -2952,7 +2896,7 @@ end;
 
 function ResultDN(const s, ex: string): string;    {erzeuge Ergebnis-Dateinamen}
 begin
-  case Form1.speDataPoint.Tag of
+  case v_type of
      brID: result:=ExtractFileDir(s)+PathDelim+    {im gleichen Verzeichnis}
                   '#'+GetNr(ExtractFileName(s))+ex;
 
@@ -3099,12 +3043,11 @@ var e: integer;
   procedure Zeitstempel;                           {Zeitstempel legacy anzeigen}
   begin
     if sp=0 then begin
-      case speDataPoint.Tag of
-        h501ID: s:=FormatDateTime(vzf,
-                   ZeitToDT(gridDetails.Cells[0, zl], H501ID)+
-                            GetDateFile(lbFlights.Items[lbFlights.ItemIndex]));
+      case v_type of
+        h501ID: s:=FormatDateTime(vzf, ZeitToDT(gridDetails.Cells[0, zl], H501ID)+
+                                  GetDateFile(lbFlights.Items[lbFlights.ItemIndex]));
       else
-        s:=FormatDateTime(vzf+zzz, ZeitToDT(gridDetails.Cells[0, zl], speDataPoint.Tag));
+        s:=FormatDateTime(vzf+zzz, ZeitToDT(gridDetails.Cells[0, zl], v_type));
       end;
     end;
   end;
@@ -3227,7 +3170,7 @@ var e: integer;
             s:=s+Lunit;
           end;
        6, 7, 8: s:=DefaultHnt+'°';
-       9: s:=ShowVoltage(gridDetails.Cells[sp, zl], speDataPoint.Tag);
+       9: s:=ShowVoltage(gridDetails.Cells[sp, zl], v_type);
        19:
           begin
             t:=H501velo(StrToFloatN(gridDetails.Cells[sp, zl]));   {Velocity}
@@ -3267,7 +3210,7 @@ var e: integer;
             FormatDateTime(zzf+zzz, ZeitToDT(gridDetails.Cells[0, zl], YTHPid)-
                                     ZeitToDT(gridDetails.Cells[0, 1], YTHPid));
       2: s:=gridDetails.Cells[sp, zl]+'V, '+
-            VperCell(speDataPoint.Tag,             {V per cell}
+            VperCell(v_type,                       {V per cell}
                      StrToFloatN(gridDetails.Cells[sp, zl]));
       3: s:=rsrest+tab1+gridDetails.Cells[sp, zl]+'%';
       4: begin                                     {Altitude}
@@ -3305,8 +3248,8 @@ var e: integer;
     case sp of                                     {beginnt mit fixen Spalten}
        1: if (gridDetails.Cells[sp, zl]='0')
             then s:='Dual Band Control Redundancy (5.8G WiFi)';
-       2: s:=ShowVoltage(gridDetails.Cells[sp, zl], speDataPoint.Tag);
-       3: if speDataPoint.Tag=1 then begin            {H920: Current}
+       2: s:=ShowVoltage(gridDetails.Cells[sp, zl], v_type);
+       3: if v_type=1 then begin            {H920: Current}
             try
               t:=StrToFloatN(gridDetails.Cells[sp, zl]);
             except
@@ -3343,18 +3286,18 @@ var e: integer;
             e:=StatusToByte(gridDetails.Cells[sp, zl]);
             s:=MotStatusToStr(e);
           end;
-      15: if (speDataPoint.Tag>1) then begin          {imu_status}
+      15: if (v_type>1) then begin                 {imu_status}
             e:=StatusToByte(gridDetails.Cells[sp, zl]);
             s:=IMUstatusToStr(e);
           end;
       else begin    {case else: für variable Spalten abh. vom Typ}
         if (sp=gridDetails.Tag-1) and
-           (speDataPoint.Tag>1) then begin         {press_compass_status}
+           (v_type>1) then begin                   {press_compass_status}
           e:=StatusToByte(gridDetails.Cells[sp, zl]);
           s:=PCGstatusToStr(e);
         end;
         if (sp=gridDetails.Tag-2) and              {CGPS}
-           (speDataPoint.Tag=2) then begin         {nur bei Q500 gefüllt}
+           (v_type=2) then begin                   {nur bei Q500 gefüllt}
           e:=StatusToByte(gridDetails.Cells[sp, zl]);
           s:=CGPSToStr(e);
         end;
@@ -3363,7 +3306,7 @@ var e: integer;
           s:=fmodeToStr(e);
         end;
         if sp=gridDetails.Tag+2 then begin         {vehicle type}
-          s:=vtypeToStr(speDataPoint.Tag);
+          s:=vtypeToStr(v_type);
         end;
         if sp=gridDetails.Tag+3 then               {error flags}
           s:=eflagToStr(gridDetails.Cells[sp, zl]);
@@ -3374,7 +3317,7 @@ var e: integer;
   procedure TabHLTelemetry;                        {Hints für Telemetrie}
   begin
     Zeitstempel;                                   {Default, can be overwritten}
-    case speDataPoint.Tag of                       {Vehicle type}
+    case v_type of                                 {Vehicle type}
       brID: TabHintBreeze;                         {Breeze}
       H501ID: TabHintH501;                         {flaretom Hubsan}
       YTHPid: TabHltYTHP;                          {YTH Plus}
@@ -3565,15 +3508,15 @@ end;
 procedure TForm1.OverwriteVT;                      {Overwrite vehicle type for PX4 Thunderbird}
 begin
   if cbThunder.Checked and
-     (speDataPoint.Tag=defVT) then begin           {Overwrite for PX4 Thunderbird}
-    speDataPoint.Tag:=ThBid;                       {Set to speDataPoint.Tag}
+     (v_type=defVT) then begin                     {Overwrite for PX4 Thunderbird}
+    v_type:=ThBid;                                 {Set to v_type}
     StaticText1.Caption:=capThunder;               {Type hard wired}
   end;
 end;
 
 procedure TForm1.GetDefVT;                         {Fill defVT depending on settings}
 begin
-  speDataPoint.Tag:=defVT;                            {default legacy Yuneec}
+  v_type:=defVT;                                   {default legacy Yuneec}
   OverwriteVT;                                     {Overwrite vehicle type for PX4 Thunderbird}
 end;
 
@@ -3618,7 +3561,7 @@ begin
     exit;
   end;
   if lbFlights.Items.Count>0 then begin
-    case speDataPoint.Tag of
+    case v_type of
       brID: OpenURL(URLosm(BrCoordFormat(gridDetails.Cells[12,gridDetails.Selection.Top]),
                            BrCoordFormat(gridDetails.Cells[13,gridDetails.Selection.Top])));
       H501ID:  OpenURL(URLosm(gridDetails.Cells[2, gridDetails.Selection.Top],
@@ -3855,12 +3798,13 @@ end;
 
 procedure TForm1.SelDirAct(const fn: string);      {Alles neu laden}
 var x:integer;
-    fnum: string;
+    fnum: string;                                  {file name flight num}
 begin
   if (cbxLogDir.Text>'') and DirectoryExists(cbxLogDir.Text) then begin
     TimerDblClick.Enabled:=false;
     if Form2<>nil then
       Form2.Close;              {zusätzliches Diagramm schließen beim Neuladen}
+    Merkliste(cbxText, 20);                        {Model list check and fill}
     rgQuelle.Enabled:=false;
     btnConv.Enabled:=false;
     btnArchive.Enabled:=true;
@@ -3874,6 +3818,7 @@ begin
           if not DirectoryExists(cbxLogDir.Items[x]) then
             cbxLogDir.Items.Delete(x);
       SelectDirectoryDialog1.InitialDir:=cbxLogDir.Text;
+
       if CheckNumTurns(cbxLogDir.Text)>0 then begin
         OpenDialog1.InitialDir:=cbxLogDir.Text;
         fnum:=IncludeTrailingPathDelimiter(cbxLogDir.Text);
@@ -3886,14 +3831,15 @@ begin
         Merkliste(cbxLogDir, AnzDirs);             {DropDownListe füllen}
         if PageControl1.ActivePageIndex>4 then
           PageControl1.ActivePageIndex:=0;
+        lbFlights.ItemIndex:=-1;                   {Default none selected}
         if fn<>'' then begin                       {Index der Datei, wenn übergeben}
           fnum:=GetNr(ExtractFileName(fn));
           if fnum<>'' then
             lbFlights.ItemIndex:=lbFlights.Items.IndexOf(fnum);
         end;
-        if lbFlights.ItemIndex<0 then
-          lbFlights.ItemIndex:=0;                  {Garantiert eine Datei auswählen}
-        case speDataPoint.Tag of
+        if lbFlights.ItemIndex<0 then              {if none selected or none found}
+          lbFlights.ItemIndex:=lbFlights.Items.Count-1;           {select last one}
+        case v_type of
           MQid: ShowMQ;                            {Sensor_*.txt vom Mantis Q}
           H5id: ShowH520;                          {*.tlog vom H520}
           else Anzeige;                            {alle anderen herkömmlich}
@@ -5217,7 +5163,7 @@ begin                                              {Firmwarestände auslesen}
           fwout[result]:=s;                        {letzten Wert noch ausgeben}
           break;                                   {Schleife abbrechen bei CR/LF}
         end;
-        if chr(buf[i])=dstr then begin             {Semicolon als Trenner}
+        if chr(buf[i])=csvsep then begin           {Semicolon als Trenner}
           fwout[result]:=s;                        {FW-Version ausgeben}
           s:='';
           result:=result+1;
@@ -5238,7 +5184,7 @@ begin
   result:=false;
   if l[19]='1' then begin                          {H920 Telemetry w/o header}
     gridDetails.Tag:=17;
-    speDataPoint.Tag:=1;
+    v_type:=1;
     result:=true;
   end else begin
     for i:=0 to l.count-1 do begin
@@ -5250,7 +5196,7 @@ begin
       if l[i]=pfmode then begin
         gridDetails.Tag:=i;                        {Position fMode merken}
         result:=true;                              {validiert, fMode gefunden}
-        speDataPoint.Tag:=YTHPid;                  {YTH Plus gefunden}
+        v_type:=YTHPid;                            {YTH Plus gefunden}
         break;
       end;
     end;
@@ -5422,8 +5368,8 @@ var inlist, outlist: TStringList;
     if fno<>'' then begin
       AppLog.Lines.Add(capBitBtn14+suff+rsGridCell2+tab1+      {von}
                          StatusBar1.Panels[3].Text+tab1+rsGridCell3+tab1+
-                         StatusBar1.Panels[4].Text);             {bis}
-      if speDataPoint.Tag=YTHPid then begin        {YTH Plus}
+                         StatusBar1.Panels[4].Text);           {bis}
+      if v_type=YTHPid then begin                  {YTH Plus}
         StatusBar1.Panels[5].Text:=mndirp+wldcd+GetNr(ExtractFileName(fno))+tab1+rsSaved;
       end else begin
         StatusBar1.Panels[5].Text:=mndir+wldcd+GetNr(ExtractFileName(fno))+tab1+rsSaved;
@@ -5439,7 +5385,7 @@ begin
     outlist:=TStringList.Create;
     fno:='';
     try
-      case speDataPoint.Tag of
+      case v_type of
         brID: CutBreeze;                           {Breeze}
         H501ID: CutH501;                           {Tom's Hubsan log recorder}
       else
@@ -5474,7 +5420,7 @@ var x: integer;
 begin
   if lbFlights.Items.Count>0 then begin
     for x:=0 to lbFlights.Items.Count-1 do begin
-      case speDataPoint.Tag of
+      case v_type of
         brID: begin                                {Breeze}
                 case rgOutFormat.ItemIndex of
                   2: MacheGPX(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
@@ -5566,7 +5512,8 @@ begin
       FreeAndNil(splitlist);
     end;
     rpath:=mndir;                                  {default: FlightLog}
-    if speDataPoint.Tag=YTHPid then rpath:=mndirp; {nur für YTH Plus}
+    if v_type=YTHPid then
+      rpath:=mndirp;                               {nur für YTH Plus}
     if (tend>0) and                                {Endezeit}
        (pos(dkpath, cbxLogDir.Text)<1) and         {nicht Telemetry}
        (newdir=rpath) then begin
@@ -5595,6 +5542,13 @@ begin
     rgAltitudeType.ItemIndex:=0;                   {Set to 'Absolute'}
   end else
     rgAltitudeType.ItemIndex:=cbThunder.Tag;       {restore setting}
+end;
+
+procedure TForm1.cbxTextMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);              {Delete model list}
+begin
+  if ssCtrl in Shift then
+    cbxText.Items.Clear;
 end;
 
 function GetCGOStr(w, s: string): string;          {Werte auslesen aus Kamera}
@@ -5962,7 +5916,7 @@ function TForm1.CheckVT(vt, fm: string): boolean;  {Vehicle Type prüfen für YT
 var fmode: integer;
 begin
   result:=true;                                    {default: Alles geht durch}
-  if (speDataPoint.Tag=YTHPid) and                 {only for Typhoon H Plus}
+  if (v_type=YTHPid) and                           {only for Typhoon H Plus}
      (cbCleanHplus.Checked) then begin             {only if cleaning is allowed}
     fmode:=StrToIntDef(fm, 0);
     if (StrToIntDef(trim(vt), 0)<>defVT) or        {useless Vehicle Types}
@@ -6027,11 +5981,11 @@ begin
     if inlist.count>minlines then begin            {Überschrift und mind. 10 Zeilen}
       try
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
-        splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
-        vld:=fModeFinden(splitlist);        {setzt gridDetails.Tag mit Spaltenindex}
-        if speDataPoint.Tag<>YTHPid then begin
+        splitlist.DelimitedText:=inlist[0];        {Überschrift einlesen, f_mode ermitteln}
+        vld:=fModeFinden(splitlist);               {setzt gridDetails.Tag mit Spaltenindex}
+        if v_type<>YTHPid then begin
           splitlist.DelimitedText:=inlist[2];      {2. Datenzeile, v_type ermitteln}
-          speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
+          v_type:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
           OverwriteVT;                             {Overwrite for PX4 Thunderbird}
         end;
         for x:=1 to inlist.Count-1 do
@@ -6050,7 +6004,7 @@ begin
                  (splitlist[15]='231') then
                 simu:=true;
               fxmode:=splitlist[gridDetails.Tag];  {FlightMode}
-              if GetRFM(fxmode, speDataPoint.Tag,
+              if GetRFM(fxmode, v_type,
                         InFlight(h, tas1, tas)) then begin
                 if not nflg then begin
                   if bg1<bgid then
@@ -6066,7 +6020,7 @@ begin
                     modestr:=modestr+'->'+fmodeToStr(StrToIntDef(fxmode, 16));
                   lfmode:=fxmode;
                 end;
-                ed:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+                ed:=ZeitToDT(splitlist[0], v_type);
                 if bg>ed then
                   bg:=ed;                          {Beginnzeit ohne GPS}
                 if bg1>ed then
@@ -6112,7 +6066,7 @@ begin
         end;                                       {Ende Einlesen}
         flt:=flt+ed-bg1;
         splitlist.DelimitedText:=inlist[inlist.count-1];
-        tend:=ZeitToDT(splitlist[0], speDataPoint.Tag); {letzten Zeitstempel merken}
+        tend:=ZeitToDT(splitlist[0], v_type);      {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
         AppLog.Lines.Add('''5572'+suff+StatusBar1.Panels[5].Text);
@@ -6120,29 +6074,29 @@ begin
     end;
 
     if vld and
-       ((speDataPoint.Tag<>YTHPid) or              {Mindestflugzeit nur beim YTH Plus}
+       ((v_type<>YTHPid) or                        {Mindestflugzeit nur beim YTH Plus}
         (cbCleanHplus.Checked=false) or            {wenn Bereinigung eingestellt ist}
         (flt>minflt)) then begin                   {Anzeige gültiger Auswertung}
       splitlist.DelimitedText:=inlist[1];          {1. Datenzeile für fehlenden Beginn/Typ}
       fmod:=StrToIntDef(splitlist[gridDetails.Tag+2],2);
       if g>3 then begin                            {nur wenn Daten vorhanden sind}
         ProgressBarScan.Update;
-        olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
+        olist.Add(rsFlightNr+csvsep+IntToStr(fln)+csvsep);
         gridScanResult.RowCount:=fln+1;
         gridScanResult.Cells[0, fln]:=IntToStr(fln);
         gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                    FormatDateTime(vzf, bg)+bind+
                                    FormatDateTime(zzf, ed);
-        olist.Add(rsVType+dstr+vtypeToStr(fmod)+dstr);
+        olist.Add(rsVType+csvsep+vtypeToStr(fmod)+csvsep);
         if not gpsu then
-          olist.Add(dstr+rsNoGPS+dstr);            {GPS off by Pilot}
-        olist.Add(rsGridCell1+dstr+FormatDateTime(dzf, bg)+dstr);
-        olist.Add(rsGridCell2+dstr+FormatDateTime(zzf, bg)+dstr);
-        olist.Add(rsGridCell3+dstr+FormatDateTime(zzf, ed)+dstr);
-        olist.Add(rsDauer+dstr+FormatDateTime(zzf, flt)+dstr);   {Flugzeit}
-        olist.Add(rsStartpkt+dstr+                 {Startposition in GoogleMaps}
-                       URLGMap(KoToStr(lat1), KoToStr(lon1))+dstr);
-        if modestr<>'' then olist.Add(rsMode+dstr+modestr+dstr);
+          olist.Add(csvsep+rsNoGPS+csvsep);            {GPS off by Pilot}
+        olist.Add(rsGridCell1+csvsep+FormatDateTime(dzf, bg)+csvsep);
+        olist.Add(rsGridCell2+csvsep+FormatDateTime(zzf, bg)+csvsep);
+        olist.Add(rsGridCell3+csvsep+FormatDateTime(zzf, ed)+csvsep);
+        olist.Add(rsDauer+csvsep+FormatDateTime(zzf, flt)+csvsep);   {Flugzeit}
+        olist.Add(rsStartpkt+csvsep+               {Startposition in GoogleMaps}
+                       URLGMap(KoToStr(lat1), KoToStr(lon1))+csvsep);
+        if modestr<>'' then olist.Add(rsMode+csvsep+modestr+csvsep);
         if simu then begin                         {Simulatorzeit}
           if cbSimu.Checked then
             gflt:=gflt+flt;
@@ -6152,53 +6106,53 @@ begin
         fln:=fln+1;                                {nächste Flugnummer}
         flt:=flt*24;                               {Dauer in Stunden}
         if rgSpeedUnit.ItemIndex=2 then begin      {Imperial}
-          olist.Add(rsGridCell5+dstr+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+dstr);
-          olist.Add(rsGridCell6+dstr+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+dstr);
-          olist.Add(rsGridCell7+dstr+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+dstr);
-          olist.Add(rsGridCell8+dstr+FloatToStrF(tasmaxg*fmph, ffFixed, 5, 1)+'mph'+dstr);
+          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+csvsep);
+          olist.Add(rsGridCell8+csvsep+FloatToStrF(tasmaxg*fmph, ffFixed, 5, 1)+'mph'+csvsep);
           if flt>0 then
-            olist.Add(rsAvgSpeed+dstr+
-            FloatToStrF(strecke/flt/fmile/1000, ffFixed, 5, 1)+'mph'+dstr);
+            olist.Add(rsAvgSpeed+csvsep+
+            FloatToStrF(strecke/flt/fmile/1000, ffFixed, 5, 1)+'mph'+csvsep);
         end else begin                             {Metric}
-          olist.Add(rsGridCell5+dstr+FloatToStrF(hmaxg, ffFixed, 5, 1)+'m'+dstr);
-          olist.Add(rsGridCell6+dstr+FloatToStrF(emax, ffFixed, 5, 1)+'m'+dstr);
-          olist.Add(rsGridCell7+dstr+FloatToStrF(strecke, ffFixed, 5, 1)+'m'+dstr);
-          olist.Add(rsGridCell8+dstr+FloatToStrF(tasmaxg*fkmh, ffFixed, 5, 1)+'km/h'+dstr);
+          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg, ffFixed, 5, 1)+'m'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax, ffFixed, 5, 1)+'m'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke, ffFixed, 5, 1)+'m'+csvsep);
+          olist.Add(rsGridCell8+csvsep+FloatToStrF(tasmaxg*fkmh, ffFixed, 5, 1)+'km/h'+csvsep);
           if flt>0 then
-            olist.Add(rsAvgSpeed+dstr+
-            FloatToStrF(strecke/flt/1000, ffFixed, 5, 1)+'km/h'+dstr);
+            olist.Add(rsAvgSpeed+csvsep+
+            FloatToStrF(strecke/flt/1000, ffFixed, 5, 1)+'km/h'+csvsep);
         end;
-        olist.Add(rsRest+dstr+FloatToStrF(umin, ffFixed, 5, 1)+'V = ~'+
-        IntToStr(round(VtoProz(speDataPoint.Tag, umin)))+'%'+dstr);
+        olist.Add(rsRest+csvsep+FloatToStrF(umin, ffFixed, 5, 1)+'V = ~'+
+        IntToStr(round(VtoProz(v_type, umin)))+'%'+csvsep);
       end else begin                               {reduzierte Ausgabe}
         if n>3 then begin                          {Ausgabe für Flüge ohne GPS}
-          olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
+          olist.Add(rsFlightNr+csvsep+IntToStr(fln)+csvsep);
           gridScanResult.RowCount:=fln+1;
           gridScanResult.Cells[0, fln]:=IntToStr(fln);
           gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                      FormatDateTime(vzf, bg)+bind+
                                      FormatDateTime(zzf, ed);
-          olist.Add(rsVType+dstr+vtypeToStr(fmod)+dstr);
+          olist.Add(rsVType+csvsep+vtypeToStr(fmod)+csvsep);
           if simu then
-            olist.Add(dstr+rsSimulator+dstr)
+            olist.Add(csvsep+rsSimulator+csvsep)
           else
-            oList.Add(dstr+rsNoGPS+dstr);
-          olist.Add(rsGridCell1+dstr+FormatDateTime(dzf, bg)+dstr);
-          olist.Add(rsGridCell2+dstr+FormatDateTime(zzf, bg)+dstr);
-          olist.Add(rsGridCell3+dstr+FormatDateTime(zzf, ed)+dstr);
-          olist.Add(rsDauer+dstr+FormatDateTime(zzf, flt)+dstr);
-          if modestr<>'' then olist.Add(rsMode+dstr+modestr+dstr);
+            oList.Add(csvsep+rsNoGPS+csvsep);
+          olist.Add(rsGridCell1+csvsep+FormatDateTime(dzf, bg)+csvsep);
+          olist.Add(rsGridCell2+csvsep+FormatDateTime(zzf, bg)+csvsep);
+          olist.Add(rsGridCell3+csvsep+FormatDateTime(zzf, ed)+csvsep);
+          olist.Add(rsDauer+csvsep+FormatDateTime(zzf, flt)+csvsep);
+          if modestr<>'' then olist.Add(rsMode+csvsep+modestr+csvsep);
           fln:=fln+1;
           gflt:=gflt+flt;
           if rgSpeedUnit.ItemIndex=2 then begin
-            olist.Add(rsGridCell5+dstr+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+dstr);
-            olist.Add(rsGridCell8+dstr+FloatToStrF(tasmax*fmph, ffFixed, 5, 1)+'mph'+dstr)
+            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+csvsep);
+            olist.Add(rsGridCell8+csvsep+FloatToStrF(tasmax*fmph, ffFixed, 5, 1)+'mph'+csvsep)
           end else begin
-            olist.Add(rsGridCell5+dstr+FloatToStrF(hmax, ffFixed, 5, 1)+'m'+dstr);
-            olist.Add(rsGridCell8+dstr+FloatToStrF(tasmax*fkmh, ffFixed, 5, 1)+'km/h'+dstr);
+            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax, ffFixed, 5, 1)+'m'+csvsep);
+            olist.Add(rsGridCell8+csvsep+FloatToStrF(tasmax*fkmh, ffFixed, 5, 1)+'km/h'+csvsep);
           end;
-          olist.Add(rsRest+dstr+FloatToStrF(umin, ffFixed, 5, 1)+'V = ~'+
-          IntToStr(round(VtoProz(speDataPoint.Tag, umin)))+'%'+dstr);
+          olist.Add(rsRest+csvsep+FloatToStrF(umin, ffFixed, 5, 1)+'V = ~'+
+          IntToStr(round(VtoProz(v_type, umin)))+'%'+csvsep);
         end;
       end;
     end;
@@ -6228,7 +6182,7 @@ const bgid=999999;
 begin
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
-  splitlist.Delimiter:=dstr;
+  splitlist.Delimiter:=csvsep;
   splitlist.StrictDelimiter:=True;
   n:=0;
   g:=0;
@@ -6324,66 +6278,66 @@ begin
       splitlist.DelimitedText:=inlist[1];          {1. Datenzeile für fehlenden Beginn/Typ}
       if g>3 then begin                            {nur wenn Daten vorhanden sind}
         ProgressBarScan.Update;
-        olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
+        olist.Add(rsFlightNr+csvsep+IntToStr(fln)+csvsep);
         gridScanResult.RowCount:=fln+1;
         gridScanResult.Cells[0, fln]:=IntToStr(fln);
         gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                    FormatDateTime(vzf, bg)+bind+
                                    FormatDateTime(zzf, ed);
-        olist.Add(rsVType+dstr+vehid+dstr);
+        olist.Add(rsVType+csvsep+vehid+csvsep);
         if not gpsu
-           then olist.Add(dstr+rsNoGPS+dstr);      {No GPS frames}
-        olist.Add(rsGridCell1+dstr+FormatDateTime(dzf, bg)+dstr);
-        olist.Add(rsGridCell2+dstr+FormatDateTime(zzf, bg)+dstr);
-        olist.Add(rsGridCell3+dstr+FormatDateTime(zzf, ed)+dstr);
-        olist.Add(rsDauer+dstr+FormatDateTime(zzf, flt)+dstr);   {Flugzeit}
-        olist.Add(rsStartpkt+dstr+                 {Startposition in GoogleMaps}
-                                   URLGMap(KoToStr(lat1), KoToStr(lon1))+dstr);
-        if modestr<>'' then olist.Add(rsMode+dstr+modestr+dstr);
+           then olist.Add(csvsep+rsNoGPS+csvsep);      {No GPS frames}
+        olist.Add(rsGridCell1+csvsep+FormatDateTime(dzf, bg)+csvsep);
+        olist.Add(rsGridCell2+csvsep+FormatDateTime(zzf, bg)+csvsep);
+        olist.Add(rsGridCell3+csvsep+FormatDateTime(zzf, ed)+csvsep);
+        olist.Add(rsDauer+csvsep+FormatDateTime(zzf, flt)+csvsep);   {Flugzeit}
+        olist.Add(rsStartpkt+csvsep+                 {Startposition in GoogleMaps}
+                                   URLGMap(KoToStr(lat1), KoToStr(lon1))+csvsep);
+        if modestr<>'' then olist.Add(rsMode+csvsep+modestr+csvsep);
         gflt:=gflt+flt;                            {Gesamtzeit aufaddieren}
         gstr:=gstr+(strecke/1000);                 {Flugstrecke in km}
         flt:=flt*24;                               {Dauer in Stunden}
         fln:=fln+1;
         if rgSpeedUnit.ItemIndex=2 then begin      {Imperial}
-          olist.Add(rsGridCell5+dstr+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+dstr);
-          olist.Add(rsGridCell6+dstr+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+dstr);
-          olist.Add(rsGridCell7+dstr+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+dstr);
-          olist.Add(rsGridCell8+dstr+FloatToStrF(velomaxg*fmph, ffFixed, 5, 1)+'mph'+dstr);
+          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+csvsep);
+          olist.Add(rsGridCell8+csvsep+FloatToStrF(velomaxg*fmph, ffFixed, 5, 1)+'mph'+csvsep);
           if flt>0 then
-            olist.Add(rsAvgSpeed+dstr+
-            FloatToStrF(strecke/flt/fmile/1000, ffFixed, 5, 1)+'mph'+dstr);
+            olist.Add(rsAvgSpeed+csvsep+
+            FloatToStrF(strecke/flt/fmile/1000, ffFixed, 5, 1)+'mph'+csvsep);
         end else begin                             {Metric}
-          olist.Add(rsGridCell5+dstr+FloatToStrF(hmaxg, ffFixed, 5, 1)+'m'+dstr);
-          olist.Add(rsGridCell6+dstr+FloatToStrF(emax, ffFixed, 5, 1)+'m'+dstr);
-          olist.Add(rsGridCell7+dstr+FloatToStrF(strecke, ffFixed, 5, 1)+'m'+dstr);
-          olist.Add(rsGridCell8+dstr+FloatToStrF(velomaxg*fkmh, ffFixed, 5, 1)+'km/h'+dstr);
+          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg, ffFixed, 5, 1)+'m'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax, ffFixed, 5, 1)+'m'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke, ffFixed, 5, 1)+'m'+csvsep);
+          olist.Add(rsGridCell8+csvsep+FloatToStrF(velomaxg*fkmh, ffFixed, 5, 1)+'km/h'+csvsep);
           if flt>0 then
-            olist.Add(rsAvgSpeed+dstr+
-            FloatToStrF(strecke/flt/1000, ffFixed, 5, 1)+'km/h'+dstr);
+            olist.Add(rsAvgSpeed+csvsep+
+            FloatToStrF(strecke/flt/1000, ffFixed, 5, 1)+'km/h'+csvsep);
         end;
       end else begin                               {reduzierte Ausgabe}
         if n>3 then begin                          {Ausgabe für Flüge ohne GPS}
-          olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
+          olist.Add(rsFlightNr+csvsep+IntToStr(fln)+csvsep);
           gridScanResult.RowCount:=fln+1;
           gridScanResult.Cells[0, fln]:=IntToStr(fln);
           gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                      FormatDateTime(vzf, bg)+bind+
                                      FormatDateTime(zzf, ed);
-          olist.Add(rsVType+dstr+vehid+dstr);
-          oList.Add(dstr+rsNoGPS+dstr);
-          olist.Add(rsGridCell1+dstr+FormatDateTime(dzf, bg)+dstr);
-          olist.Add(rsGridCell2+dstr+FormatDateTime(zzf, bg)+dstr);
-          olist.Add(rsGridCell3+dstr+FormatDateTime(zzf, ed)+dstr);
-          olist.Add(rsDauer+dstr+FormatDateTime(zzf, flt)+dstr);
-          if modestr<>'' then olist.Add(rsMode+dstr+modestr+dstr);
+          olist.Add(rsVType+csvsep+vehid+csvsep);
+          oList.Add(csvsep+rsNoGPS+csvsep);
+          olist.Add(rsGridCell1+csvsep+FormatDateTime(dzf, bg)+csvsep);
+          olist.Add(rsGridCell2+csvsep+FormatDateTime(zzf, bg)+csvsep);
+          olist.Add(rsGridCell3+csvsep+FormatDateTime(zzf, ed)+csvsep);
+          olist.Add(rsDauer+csvsep+FormatDateTime(zzf, flt)+csvsep);
+          if modestr<>'' then olist.Add(rsMode+csvsep+modestr+csvsep);
           fln:=fln+1;
           gflt:=gflt+flt;
           if rgSpeedUnit.ItemIndex=2 then begin
-            olist.Add(rsGridCell5+dstr+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+dstr);
-            olist.Add(rsGridCell8+dstr+FloatToStrF(velomax*fmph, ffFixed, 5, 1)+'mph'+dstr);
+            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+csvsep);
+            olist.Add(rsGridCell8+csvsep+FloatToStrF(velomax*fmph, ffFixed, 5, 1)+'mph'+csvsep);
           end else begin
-            olist.Add(rsGridCell5+dstr+FloatToStrF(hmax, ffFixed, 5, 1)+'m'+dstr);
-            olist.Add(rsGridCell8+dstr+FloatToStrF(velomax*fkmh, ffFixed, 5, 1)+'km/h'+dstr);
+            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax, ffFixed, 5, 1)+'m'+csvsep);
+            olist.Add(rsGridCell8+csvsep+FloatToStrF(velomax*fkmh, ffFixed, 5, 1)+'km/h'+csvsep);
           end;
         end;
       end;
@@ -6519,64 +6473,64 @@ begin
       splitlist.DelimitedText:=inlist[1];          {1. Datenzeile für fehlenden Beginn/Typ}
       if g>3 then begin                            {nur wenn Daten vorhanden sind}
         ProgressBarScan.Update;
-        olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
+        olist.Add(rsFlightNr+csvsep+IntToStr(fln)+csvsep);
         gridScanResult.RowCount:=fln+1;
         gridScanResult.Cells[0, fln]:=IntToStr(fln);
         gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                    FormatDateTime(vzf, bg)+bind+
                                    FormatDateTime(zzf, ed);
-        olist.Add(rsVType+dstr+vehid+dstr);
-        if not gpsu then olist.Add(dstr+rsNoGPS+dstr); {GPS off by Pilot}
-        olist.Add(rsGridCell1+dstr+FormatDateTime(dzf, bg)+dstr);
-        olist.Add(rsGridCell2+dstr+FormatDateTime(zzf, bg)+dstr);
-        olist.Add(rsGridCell3+dstr+FormatDateTime(zzf, ed)+dstr);
-        olist.Add(rsDauer+dstr+FormatDateTime(zzf, flt)+dstr);   {Flugzeit}
-        olist.Add(rsStartpkt+dstr+                 {Startposition in GoogleMaps}
-                                   URLGMap(KoToStr(lat1), KoToStr(lon1))+dstr);
-        if modestr<>'' then olist.Add(rsMode+dstr+modestr+dstr);
+        olist.Add(rsVType+csvsep+vehid+csvsep);
+        if not gpsu then olist.Add(csvsep+rsNoGPS+csvsep); {GPS off by Pilot}
+        olist.Add(rsGridCell1+csvsep+FormatDateTime(dzf, bg)+csvsep);
+        olist.Add(rsGridCell2+csvsep+FormatDateTime(zzf, bg)+csvsep);
+        olist.Add(rsGridCell3+csvsep+FormatDateTime(zzf, ed)+csvsep);
+        olist.Add(rsDauer+csvsep+FormatDateTime(zzf, flt)+csvsep);   {Flugzeit}
+        olist.Add(rsStartpkt+csvsep+                 {Startposition in GoogleMaps}
+                                   URLGMap(KoToStr(lat1), KoToStr(lon1))+csvsep);
+        if modestr<>'' then olist.Add(rsMode+csvsep+modestr+csvsep);
         gflt:=gflt+flt;                            {Gesamtzeit aufaddieren}
         gstr:=gstr+(strecke/1000);                 {Flugstrecke in km}
         flt:=flt*24;                               {Dauer in Stunden}
         fln:=fln+1;
         if rgSpeedUnit.ItemIndex=2 then begin
-          olist.Add(rsGridCell5+dstr+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+dstr);
-          olist.Add(rsGridCell6+dstr+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+dstr);
-          olist.Add(rsGridCell7+dstr+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+dstr);
+          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+csvsep);
           if flt>0 then
-            olist.Add(rsAvgSpeed+dstr+
-            FloatToStrF(strecke/flt/fmile/1000, ffFixed, 5, 1)+'mph'+dstr);
+            olist.Add(rsAvgSpeed+csvsep+
+            FloatToStrF(strecke/flt/fmile/1000, ffFixed, 5, 1)+'mph'+csvsep);
         end else begin
-          olist.Add(rsGridCell5+dstr+FloatToStrF(hmaxg, ffFixed, 5, 1)+'m'+dstr);
-          olist.Add(rsGridCell6+dstr+FloatToStrF(emax, ffFixed, 5, 1)+'m'+dstr);
-          olist.Add(rsGridCell7+dstr+FloatToStrF(strecke, ffFixed, 5, 1)+'m'+dstr);
+          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg, ffFixed, 5, 1)+'m'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax, ffFixed, 5, 1)+'m'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke, ffFixed, 5, 1)+'m'+csvsep);
           if flt>0 then
-            olist.Add(rsAvgSpeed+dstr+
-            FloatToStrF(strecke/flt/1000, ffFixed, 5, 1)+'km/h'+dstr);
+            olist.Add(rsAvgSpeed+csvsep+
+            FloatToStrF(strecke/flt/1000, ffFixed, 5, 1)+'km/h'+csvsep);
         end;
-//        olist.Add(rsRest+dstr+'~'+IntToStr(round(BrUmrech(umin)))+'%'+dstr);
+//        olist.Add(rsRest+csvsep+'~'+IntToStr(round(BrUmrech(umin)))+'%'+csvsep);
       end else begin                               {reduzierte Ausgabe}
         if n>3 then begin                          {Ausgabe für Flüge ohne GPS}
-          olist.Add(rsFlightNr+dstr+IntToStr(fln)+dstr);
+          olist.Add(rsFlightNr+csvsep+IntToStr(fln)+csvsep);
           gridScanResult.RowCount:=fln+1;
           gridScanResult.Cells[0, fln]:=IntToStr(fln);
           gridScanResult.Cells[1, fln]:=capNachweis+suff+
                                      FormatDateTime(vzf, bg)+bind+
                                      FormatDateTime(zzf, ed);
-          olist.Add(rsVType+dstr+vehid+dstr);
-          oList.Add(dstr+rsNoGPS+dstr);
-          olist.Add(rsGridCell1+dstr+FormatDateTime(dzf, bg)+dstr);
-          olist.Add(rsGridCell2+dstr+FormatDateTime(zzf, bg)+dstr);
-          olist.Add(rsGridCell3+dstr+FormatDateTime(zzf, ed)+dstr);
-          olist.Add(rsDauer+dstr+FormatDateTime(zzf, flt)+dstr);
-          if modestr<>'' then olist.Add(rsMode+dstr+modestr+dstr);
+          olist.Add(rsVType+csvsep+vehid+csvsep);
+          oList.Add(csvsep+rsNoGPS+csvsep);
+          olist.Add(rsGridCell1+csvsep+FormatDateTime(dzf, bg)+csvsep);
+          olist.Add(rsGridCell2+csvsep+FormatDateTime(zzf, bg)+csvsep);
+          olist.Add(rsGridCell3+csvsep+FormatDateTime(zzf, ed)+csvsep);
+          olist.Add(rsDauer+csvsep+FormatDateTime(zzf, flt)+csvsep);
+          if modestr<>'' then olist.Add(rsMode+csvsep+modestr+csvsep);
           fln:=fln+1;
           gflt:=gflt+flt;
           if rgSpeedUnit.ItemIndex=2 then begin
-            olist.Add(rsGridCell5+dstr+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+dstr);
+            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+csvsep);
           end else begin
-            olist.Add(rsGridCell5+dstr+FloatToStrF(hmax, ffFixed, 5, 1)+'m'+dstr);
+            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax, ffFixed, 5, 1)+'m'+csvsep);
           end;
-//          olist.Add(rsRest+dstr+'~'+IntToStr(round(BrUmrech(umin)))+'%'+dstr);
+//          olist.Add(rsRest+csvsep+'~'+IntToStr(round(BrUmrech(umin)))+'%'+csvsep);
         end;
       end;
     end;
@@ -6598,8 +6552,8 @@ var vlist, flist, inlist, splitlist: TStringList;
       fModeFinden(splitlist);                      {hier wird YTH Plus schon erkannt}
       splitlist.DelimitedText:=inlist[3];          {Vehicle type bestimmen}
       vt:=StrToInt(splitlist[gridDetails.Tag+2]);  {eventuell Abbruch bei Fehler}
-      if speDataPoint.Tag<>YTHPid then             {erkannten H Plus nicht überschreiben}
-        speDataPoint.Tag:=vt;
+      if v_type<>YTHPid then                       {erkannten H Plus nicht überschreiben}
+        v_type:=vt;
       OverwriteVT;
   {zusätzlicher Filter nach Vehicle Type. Vehicle type 5 ist H oder H Plus}
       result:=cbVehicleType.Checked and
@@ -6617,7 +6571,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     inlist.LoadFromFile(fn);
     if inlist.Count>10 then begin                  {Datei durchsuchen}
       if GetFMPos then exit;
-      case speDataPoint.Tag of
+      case v_type of
         3: vstr:='8';                              {8 nur bei 350QX}
 //        YTHPid: vstr:='??';                      {unbekannt}
         MQid: vstr:=emcyID;
@@ -6885,7 +6839,7 @@ begin
            end;
          end;
       8, 9: for i:=0 to vlist.Count-1 do begin     {Sensor Dateien}
-              if speDataPoint.Tag=YTHPid then
+              if v_type=YTHPid then
                 SuchFile(vlist[i], nfile+sextP, flist)
               else begin
                 SuchFile(vlist[i], nfile+wldcd+sext, flist);
@@ -7024,9 +6978,9 @@ var vlist, flist, outlist: TStringList;
   begin
     outlist.Add(capNachweis);
     outlist.Add('');
-    s:=rsCreat+tab1+dstr+FormatDateTime(mzf, now)+'h'+dstr+
+    s:=rsCreat+tab1+csvsep+FormatDateTime(mzf, now)+'h'+csvsep+
        tab1+rsBy+tab1+ExtractFileName(Application.ExeName)+tab2+version;
-    if cbCleanHplus.Checked then s:=s+dstr+capCheckBox9;
+    if cbCleanHplus.Checked then s:=s+csvsep+capCheckBox9;
     outlist.Add(s);
     outlist.Add('');
     csvlist[0]:=rsFlightNr;
@@ -7046,7 +7000,7 @@ var vlist, flist, outlist: TStringList;
     csvlist[14]:=rsAvgSpeed;
     csvlist[15]:=rsRest;
     prtext:=csvlist[0];
-    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+dstr+csvlist[y];
+    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+csvsep+csvlist[y];
     outlist.Add(prtext);
     for y:=low(csvlist) to high(csvlist) do csvlist[y]:=''; {Array löschen}
     for x:=0 to vlist.count-1 do begin             {Textausgabe}
@@ -7055,7 +7009,7 @@ var vlist, flist, outlist: TStringList;
         if csvlist[1]<>'' then begin               {alle außer 1.}
           prtext:=csvlist[0];
           for y:=low(csvlist)+1 to high(csvlist) do begin
-            prtext:=prtext+dstr+csvlist[y];
+            prtext:=prtext+csvsep+csvlist[y];
             csvlist[y]:='';                        {Array löschen}
           end;
           outlist.Add(prtext);
@@ -7079,26 +7033,26 @@ var vlist, flist, outlist: TStringList;
       if flist[0]=rsRest then csvlist[15]:=flist[1];
     end;
     prtext:=csvlist[0];                            {letzten DS ausgeben}
-    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+dstr+csvlist[y];
+    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+csvsep+csvlist[y];
     outlist.Add(prtext);
     outlist.Add('');
     if gfd=0 then                                  {ohne Tage}
-      outlist.Add(rsGFtime+dstr+FormatDateTime(zzf, gftime)+'h')
+      outlist.Add(rsGFtime+csvsep+FormatDateTime(zzf, gftime)+'h')
     else                                           {mit Tagen}
-      outlist.Add(rsGFtime+dstr+IntToStr(gfd)+'d '+
+      outlist.Add(rsGFtime+csvsep+IntToStr(gfd)+'d '+
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
       if rgSpeedUnit.ItemIndex=2 then begin
-        outlist.Add(rsGFstr+dstr+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
+        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
       end else begin
-        outlist.Add(rsGFstr+dstr+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
+        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
       end;
     prtext:=csvdef;                                {speichern als CSV}
   end;
 
 begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
-  if (speDataPoint.Tag=brID) or
-     (speDataPoint.Tag=H501ID) then exit;
+  if (v_type=brID) or
+     (v_type=H501ID) then exit;
   if cbxScanDir.Items.Count>0 then
     for x:=cbxScanDir.Items.Count-1 downto 0 do    {Liste putzen}
       if not DirectoryExists(cbxScanDir.Items[x]) then cbxScanDir.Items.Delete(x);
@@ -7134,7 +7088,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         gridScanResult.EndUpdate;
         gfd:=Trunc(gftime);                        {Anzahl Tage der Flugzeit}
         flist.Clear;  {brauchen wir hier nicht mehr, wird splitlist}
-        flist.Delimiter:=dstr;                     {Semicolon als Trenner}
+        flist.Delimiter:=csvsep;                   {Semicolon als Trenner}
         flist.StrictDelimiter:=True;               {keine Spaces als Trenner}
         case rgCSVtext.ItemIndex of                {Ausgabeformat}
           0: TextAusgabe;
@@ -7234,7 +7188,7 @@ var vlist, flist, outlist: TStringList;
   begin
     outlist.Add(capNachweis);
     outlist.Add('');
-    outlist.Add(rsCreat+tab1+dstr+FormatDateTime(mzf, now)+'h'+dstr+tab1+rsBy+tab1+
+    outlist.Add(rsCreat+tab1+csvsep+FormatDateTime(mzf, now)+'h'+csvsep+tab1+rsBy+tab1+
                 ExtractFileName(Application.ExeName)+tab2+version);
     outlist.Add('');
     csvlist[0]:=rsFlightNr;
@@ -7254,7 +7208,7 @@ var vlist, flist, outlist: TStringList;
     csvlist[14]:=rsAvgSpeed;
     csvlist[15]:=rsRest;
     prtext:=csvlist[0];
-    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+dstr+csvlist[y];
+    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+csvsep+csvlist[y];
     outlist.Add(prtext);
     for y:=low(csvlist) to high(csvlist) do csvlist[y]:=''; {Array löschen}
     for x:=0 to vlist.count-1 do begin             {Textausgabe}
@@ -7263,7 +7217,7 @@ var vlist, flist, outlist: TStringList;
         if csvlist[1]<>'' then begin               {alle außer 1.}
           prtext:=csvlist[0];
           for y:=low(csvlist)+1 to high(csvlist) do begin
-            prtext:=prtext+dstr+csvlist[y];
+            prtext:=prtext+csvsep+csvlist[y];
             csvlist[y]:='';                        {Array löschen}
           end;
           outlist.Add(prtext);
@@ -7286,26 +7240,26 @@ var vlist, flist, outlist: TStringList;
       if flist[0]=rsRest then csvlist[14]:=flist[1];
     end;
     prtext:=csvlist[0];                            {letzten DS ausgeben}
-    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+dstr+csvlist[y];
+    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+csvsep+csvlist[y];
     outlist.Add(prtext);
     outlist.Add('');
     outlist.Add('');
     if gfd=0 then                                  {ohne Tage}
-      outlist.Add(rsGFtime+dstr+FormatDateTime(zzf, gftime)+'h')
+      outlist.Add(rsGFtime+csvsep+FormatDateTime(zzf, gftime)+'h')
     else                                           {mit Tagen}
-      outlist.Add(rsGFtime+dstr+IntToStr(gfd)+'d '+
+      outlist.Add(rsGFtime+csvsep+IntToStr(gfd)+'d '+
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
       if rgSpeedUnit.ItemIndex=2 then begin
-        outlist.Add(rsGFstr+dstr+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
+        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
       end else begin
-        outlist.Add(rsGFstr+dstr+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
+        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
       end;
     prtext:=csvdef;                                {speichern als CSV}
   end;
 
 begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
-  if speDataPoint.Tag=H501ID then begin
+  if v_type=H501ID then begin
     H501FlugBuch;
     exit;
   end;
@@ -7345,7 +7299,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
         gridScanResult.EndUpdate;
         gfd:=Trunc(gftime);                        {Anzahl Tage der Flugzeit}
         flist.Clear;  {brauchen wir hier nicht mehr, wird splitlist}
-        flist.Delimiter:=dstr;                     {Semicolon als Trenner}
+        flist.Delimiter:=csvsep;                   {Semicolon als Trenner}
         flist.StrictDelimiter:=True;               {keine Spaces als Trenner}
         case rgCSVtext.ItemIndex of                {Ausgabeformat}
           0: TextAusgabe;
@@ -7445,7 +7399,7 @@ var vlist, flist, outlist: TStringList;
   begin
     outlist.Add(capNachweis);
     outlist.Add('');
-    outlist.Add(rsCreat+tab1+dstr+FormatDateTime(mzf, now)+'h'+dstr+tab1+rsBy+tab1+
+    outlist.Add(rsCreat+tab1+csvsep+FormatDateTime(mzf, now)+'h'+csvsep+tab1+rsBy+tab1+
                 ExtractFileName(Application.ExeName)+tab2+version);
     outlist.Add('');
     csvlist[0]:=rsFlightNr;
@@ -7465,7 +7419,7 @@ var vlist, flist, outlist: TStringList;
     csvlist[14]:=rsAvgSpeed;
     csvlist[15]:=rsRest;
     prtext:=csvlist[0];
-    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+dstr+csvlist[y];
+    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+csvsep+csvlist[y];
     outlist.Add(prtext);
     for y:=low(csvlist) to high(csvlist) do csvlist[y]:=''; {Array löschen}
     for x:=0 to vlist.count-1 do begin             {Textausgabe}
@@ -7474,7 +7428,7 @@ var vlist, flist, outlist: TStringList;
         if csvlist[1]<>'' then begin               {alle außer 1.}
           prtext:=csvlist[0];
           for y:=low(csvlist)+1 to high(csvlist) do begin
-            prtext:=prtext+dstr+csvlist[y];
+            prtext:=prtext+csvsep+csvlist[y];
             csvlist[y]:='';                        {Array löschen}
           end;
           outlist.Add(prtext);
@@ -7497,20 +7451,20 @@ var vlist, flist, outlist: TStringList;
       if flist[0]=rsRest then csvlist[14]:=flist[1];
     end;
     prtext:=csvlist[0];                            {letzten DS ausgeben}
-    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+dstr+csvlist[y];
+    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+csvsep+csvlist[y];
     outlist.Add(prtext);
     outlist.Add('');
     outlist.Add('');
     if gfd=0 then                                  {ohne Tage}
-      outlist.Add(rsGFtime+dstr+FormatDateTime(zzf, gftime)+'h')
+      outlist.Add(rsGFtime+csvsep+FormatDateTime(zzf, gftime)+'h')
     else                                           {mit Tagen}
-      outlist.Add(rsGFtime+dstr+IntToStr(gfd)+'d '+
+      outlist.Add(rsGFtime+csvsep+IntToStr(gfd)+'d '+
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
       if rgSpeedUnit.ItemIndex=2 then begin
-        outlist.Add(rsGFstr+dstr+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
+        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
       end else begin
-        outlist.Add(rsGFstr+dstr+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
+        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
       end;
     prtext:=csvdef;                                {speichern als CSV}
   end;
@@ -7552,7 +7506,7 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
         gridScanResult.EndUpdate;
         gfd:=Trunc(gftime);                        {Anzahl Tage der Flugzeit}
         flist.Clear;  {brauchen wir hier nicht mehr, wird splitlist}
-        flist.Delimiter:=dstr;                     {Semicolon als Trenner}
+        flist.Delimiter:=csvsep;                   {Semicolon als Trenner}
         flist.StrictDelimiter:=True;               {keine Spaces als Trenner}
         case rgCSVtext.ItemIndex of                {Ausgabeformat}
           0: TextAusgabe;
@@ -7780,9 +7734,9 @@ var abst, idx: integer;                            {Index bestimmen und Werte an
   procedure AnzeigeBreeze;
   begin
     StatusBar1.Panels[3].Text:=FormatDateTime(zzf,
-               ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], speDataPoint.Tag));
+               ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], v_type));
     StatusBar1.Panels[4].Text:=FormatDateTime(zzf,
-               ZeitToDT(gridDetails.Cells[0, abst], speDataPoint.Tag));
+               ZeitToDT(gridDetails.Cells[0, abst], v_type));
     if pos(capTabSheet10, StatusBar1.Panels[5].Text)<1 then begin
       StatusBar1.Panels[5].Text:=gridDetails.Cells[10, speDataPoint.Value]+'cm - '+
                  fmode+'='+gridDetails.Cells[2, speDataPoint.Value]+tab1+
@@ -7793,9 +7747,9 @@ var abst, idx: integer;                            {Index bestimmen und Werte an
   procedure AnzeigeYLegacy;
   begin
     StatusBar1.Panels[3].Text:=FormatDateTime(zzf+zzz,
-               ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], speDataPoint.Tag));
+               ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], v_type));
     StatusBar1.Panels[4].Text:=FormatDateTime(zzf+zzz,
-               ZeitToDT(gridDetails.Cells[0, abst], speDataPoint.Tag));
+               ZeitToDT(gridDetails.Cells[0, abst], v_type));
     if pos(capTabSheet10, StatusBar1.Panels[5].Text)<1 then begin
       StatusBar1.Panels[5].Text:=gridDetails.Cells[2, speDataPoint.Value]+'V - '+
                  gridDetails.Cells[4, speDataPoint.Value]+'m - '+fmode+'='+
@@ -7807,9 +7761,9 @@ var abst, idx: integer;                            {Index bestimmen und Werte an
   procedure AnzeigeH501;                           {ToDo}
   begin
     StatusBar1.Panels[3].Text:=FormatDateTime(zzf+zzz,
-               ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], speDataPoint.Tag));
+               ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], v_type));
     StatusBar1.Panels[4].Text:=FormatDateTime(zzf+zzz,
-               ZeitToDT(gridDetails.Cells[0, abst], speDataPoint.Tag));
+               ZeitToDT(gridDetails.Cells[0, abst], v_type));
     if pos(capTabSheet10, StatusBar1.Panels[5].Text)<1 then begin
       StatusBar1.Panels[5].Text:=gridDetails.Cells[9, speDataPoint.Value]+'V - '+
                  gridDetails.Cells[4, speDataPoint.Value]+'m';
@@ -7833,7 +7787,7 @@ begin
     if abst>gridDetails.RowCount-2 then            {Überlauf vermeiden}
       abst:=speDataPoint.Value;
 
-    case speDataPoint.Tag of
+    case v_type of
       brID: AnzeigeBreeze;                         {Breeze}
       H501ID: AnzeigeH501;                         {flaretom log recorder}
     else
@@ -8033,13 +7987,13 @@ procedure TForm1.SetProfile(idx: integer);         {Profile ausgewählt}
   end;
 
 begin
-  if (speDataPoint.Tag=MQid) or
-     (speDataPoint.Tag=H5id) then
+  if (v_type=MQid) or
+     (v_type=H5id) then
        exit;
   LabeledEdit1.Tag:=0;                             {Tag=0: Telemetry (Default)}
   LabeledEdit2.Tag:=0;
   LabeledEdit3.Tag:=0;
-  case speDataPoint.Tag of
+  case v_type of
     brID: ProfileBreeze;
     h501ID: ProfileH501;
     YTHPid: ProfileYTHPlus;
@@ -8084,11 +8038,6 @@ begin
     ClipBoard.AsText:=edSendCGO3.Text+LineEnding+edReceiveCGO3.Text;
 end;
 
-procedure TForm1.rgCSVtextClick(Sender: TObject);
-begin
-
-end;
-
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   DefaultFormatSettings.DecimalSeparator:=chr(Tag); {Original wiederherstellen}
@@ -8130,15 +8079,25 @@ begin
   if PageControl1.ActivePageIndex=3 then begin     {Schellanalyse}
     if key=vk_ESCAPE then TimerDiashow.Enabled:=false;   {Diashow Profiles stoppen}
     if (key=vk_F5) and
-       (speDataPoint.Tag<>BrID) then               {H501 ???}
+       (v_type<>BrID) then                         {H501 ???}
       TimerDiashow.Enabled:=true;                  {Weiter}
   end;
 end;
 
-procedure TForm1.FormShow(Sender: TObject);
+procedure TForm1.FormShow(Sender: TObject);        {All to do after load session properties}
 var i, bl: integer;
 begin
   bl:=MAVmsg.Tag;
+  if mmoText.Lines.Count>0 then
+    for i:=0 to mmoText.Lines.Count-1 do begin     {Take over the models from model list}
+      if (mmoText.Lines[i]<>'') and
+         (cbxText.Items.IndexOf(mmoText.Lines[i])<0) then
+        cbxText.Items.Insert(0, mmoText.Lines[i]);
+    end;
+  if cbxText.Text='' then                          {if empty take first entry}
+    cbxText.Text:=cbxText.Items[0];
+  if cbHighLight.Checked then                      {Switch on HighLighter}
+    AppLog.Highlighter:=AppLogHighlighter;
   for i:=MAVmsg.Items.count-1 downto 0 do begin    {Get back Item check settings from .Tag}
     bl:=bl shr 1;
     MAVmsg.Checked[i]:=(bl and 1)=1;
@@ -8149,7 +8108,7 @@ begin
       cbxLogDir.Text:=GetFlightLogDir(ParamstrUTF8(1));
       SelDirAct(cbxLogDir.Text);
     except
-      SelDirAct('');
+      SelDirAct('');                               {Übergebenes Verzeichnis}
     end;
   end else
     SelDirAct('');                                 {Alles neu laden}
@@ -8312,7 +8271,7 @@ begin
     if FileExists(fn) then begin
       newn:=TreeView1.Items.Add(nil, H5file);
       inlist.LoadFromFile(fn);
-      splitlist.Delimiter:=dstr;
+      splitlist.Delimiter:=csvsep;
       if inlist.count>8 then
         addnodes(inlist[0], newn);
       LabeledEdit1.Tag:=H501ID;                    {hart einstellen}
@@ -8468,8 +8427,8 @@ var x: integer;
   end;
 
 begin
-  if (speDataPoint.Tag=MQid) or                    {nichts tun für MantisQ}
-     (speDataPoint.Tag=H5id) then                  {nichts tun für H520}
+  if (v_type=MQid) or                              {nichts tun für MantisQ}
+     (v_type=H5id) then                            {nichts tun für H520}
        exit;
   AppLogTimeStamp('');
   DefaultFormatSettings.DecimalSeparator:='.';
@@ -8493,7 +8452,7 @@ begin
          end;
       3: SetSensorEnv;                             {Sensor files}
     end;
-    case speDataPoint.Tag of
+    case v_type of
       brID: AnzBreeze;                             {Breeze}
       H501ID: AnzH501;                             {Hubsan}
     else
@@ -8574,7 +8533,7 @@ begin
     cutb:=0;                                       {Zeitstempel zum Ausschneiden}
     cute:=0;                                       {löschen}
     tpos:=0;                                       {Position zurücksetzen}
-    case speDataPoint.Tag of
+    case v_type of
       MQid: ShowMQ;                                {Sensor_*.txt vom Mantis Q}
       H5id: ShowH520;                              {*.tlog vom H520}
       else Anzeige;                                {alle anderen herkömmlich}
@@ -8622,11 +8581,6 @@ begin
   end;
 end;
 
-procedure TForm1.mmoTextChange(Sender: TObject);   {Änderungen übernehmen}
-begin
-  cbxText.Items.Assign(mmoText.Lines);
-end;
-
 procedure TForm1.mnSaveAsQuickClick(Sender: TObject); {Menü: GoTo Settings}
 begin
   PageControl1.ActivePageIndex:=6;
@@ -8636,8 +8590,8 @@ end;
 procedure TForm1.mnResetProfileClick(Sender: TObject); {Menü: Default}
 begin
   TimerDiashow.Enabled:=false;
-  if (speDataPoint.Tag=MQid) or                    {nichts tun für MantisQ}
-     (speDataPoint.Tag=H5id) then                  {nichts tun für H520}
+  if (v_type=MQid) or                              {nichts tun für MantisQ}
+     (v_type=H5id) then                            {nichts tun für H520}
        exit;
   SetProfile(0);
   cbxProfiles.ItemIndex:=0;                        {Profiles rücksetzen}
@@ -8702,7 +8656,7 @@ end;
 procedure TForm1.SetStartP;                        {Startpunkt setzen}
 begin
   try
-    cutb:=ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], speDataPoint.Tag);
+    cutb:=ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], v_type);
   except
     cutb:=0;
   end;
@@ -8717,7 +8671,7 @@ end;
 procedure TForm1.SetEndP;                          {Endpunkt setzen}
 begin
   try
-    cute:=ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], speDataPoint.Tag);
+    cute:=ZeitToDT(gridDetails.Cells[0, speDataPoint.Value], v_type);
   except
     cute:=0;
   end;
@@ -8805,7 +8759,7 @@ const bgid=999999;
             end;
             inc(n);
             nflg:=true;
-            ed:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+            ed:=ZeitToDT(splitlist[0], v_type);
             if bg>ed then
               bg:=ed;                              {Beginnzeit ohne GPS}
             if bg1>ed then
@@ -8854,7 +8808,7 @@ const bgid=999999;
     end;
     flt:=flt+ed-bg1;
     splitlist.DelimitedText:=inlist[inlist.count-1];
-    tend:=ZeitToDT(splitlist[0], speDataPoint.Tag); {letzten Zeitstempel merken}
+    tend:=ZeitToDT(splitlist[0], v_type);          {letzten Zeitstempel merken}
   end;
 
   procedure WerteH501;
@@ -8862,7 +8816,7 @@ const bgid=999999;
   begin
     fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+H5file+
         lbFlights.Items[z]+fext;
-    splitlist.Delimiter:=dstr;
+    splitlist.Delimiter:=csvsep;
     try
       inlist.LoadFromFile(fn);
     except
@@ -8888,7 +8842,7 @@ const bgid=999999;
             tasmax:=tas;
           inc(n);
           ed:=GetDateFile(lbFlights.Items[z]);
-          ed:=ed+ZeitToDT(splitlist[0], speDataPoint.Tag);
+          ed:=ed+ZeitToDT(splitlist[0], v_type);
           if bg>ed then
             bg:=ed;                                {Beginnzeit ohne GPS}
           if bg1>ed then
@@ -8937,7 +8891,7 @@ const bgid=999999;
     end;
     flt:=flt+ed-bg1;
     splitlist.DelimitedText:=inlist[inlist.count-1];
-    tend:=ZeitToDT(splitlist[0], speDataPoint.Tag); {letzten Zeitstempel merken}
+    tend:=ZeitToDT(splitlist[0], v_type);          {letzten Zeitstempel merken}
   end;
 
    procedure WerteYLegacy;
@@ -8953,12 +8907,12 @@ const bgid=999999;
      end;
      if inlist.count>2 then begin                  {Überschrift und mind. 2 Zeile}
        StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
-       splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
+       splitlist.DelimitedText:=inlist[0];         {Überschrift einlesen, f_mode ermitteln}
        if (splitlist.Count>anzsp) then begin       {genug Spalten in Überschrift}
          vld:=fModeFinden(splitlist);              {Position f-mode merken}
-         if speDataPoint.Tag<>YTHPid then begin    {YTH Plus nicht überschreiben}
+         if v_type<>YTHPid then begin              {YTH Plus nicht überschreiben}
            splitlist.DelimitedText:=inlist[2];     {2. Datenzeile, v_type ermitteln}
-           speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
+           v_type:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
            OverwriteVT;                            {Overwrite for PX4 Thunderbird}
          end;
          for x:=1 to inlist.Count-1 do begin
@@ -8978,7 +8932,7 @@ const bgid=999999;
                     (u<200) then
                    umax:=u;
                  if GetRFM(splitlist[gridDetails.Tag],  {Flight Mode}
-                           speDataPoint.Tag,       {Vehicle Type}
+                           v_type,                 {Vehicle Type}
                            InFlight(h, tas1, tas)) then begin
                    if not nflg then begin          {nur reale Flüge}
                      if bg1<bgid then
@@ -8988,7 +8942,7 @@ const bgid=999999;
                    inc(n);                         {Anzahl Datensätze real}
                    nflg:=true;
 
-                   if speDataPoint.Tag=YTHPid then {YTH Plus vorerst Error Flag ausblenden}
+                   if v_type=YTHPid then           {YTH Plus vorerst Error Flag ausblenden}
                      e:=0
                    else
                      e:=StrToIntDef(splitlist[gridDetails.Tag+3], 0); {Errorflag}
@@ -8998,19 +8952,19 @@ const bgid=999999;
                      uw1:=true;
                    if (e and 2)>0 then
                      uw2:=true;
-                   if speDataPoint.Tag=3 then begin  {Blade 350QX}
+                   if v_type=3 then begin          {Blade 350QX}
                      if splitlist[gridDetails.Tag]='8' then
                        topp[z, 6]:=topp[z, 6] or 256; {ID für Emergency}
 
                    end else
-                     if speDataPoint.Tag=YTHPid then begin {YTH Plus}
+                     if v_type=YTHPid then begin   {YTH Plus}
                      //   Emergency unknown for YTH Plus --> nichts tun
 
                    end else begin                  {Alle anderen sollten 12 haben}
                      if splitlist[gridDetails.Tag]='12' then
                        topp[z, 6]:=topp[z, 6] or 256; {ID für Emergency}
                    end;
-                   ed:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+                   ed:=ZeitToDT(splitlist[0], v_type);
                    if bg>ed then
                      bg:=ed;                       {Beginnzeit ohne GPS}
                    if bg1>ed then
@@ -9064,7 +9018,7 @@ const bgid=999999;
          end;                                      {Ende Einlesen}
          flt:=flt+ed-bg1;
          splitlist.DelimitedText:=inlist[inlist.count-1];
-         tend:=ZeitToDT(splitlist[0], speDataPoint.Tag); {letzten Zeitstempel merken}
+         tend:=ZeitToDT(splitlist[0], v_type);     {letzten Zeitstempel merken}
        end else begin
          StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;    {Ende Konsistenz checken}
          AppLog.Lines.Add('''8505'+suff+StatusBar1.Panels[5].Text);
@@ -9073,8 +9027,8 @@ const bgid=999999;
    end;
 
 begin
-  if (speDataPoint.Tag=H5id) or
-     (speDataPoint.Tag=MQid) then
+  if (v_type=H5id) or
+     (v_type=MQid) then
     exit;                                          {nichts tun bei Anzeige PX4}
   screen.Cursor:=crHourGlass;
   inlist:=TStringList.Create;
@@ -9104,7 +9058,7 @@ begin
   flt:=0;                                          {reale Flugzeit}
   ed:=0;                                           {Zeitstempel -> letzte ist Ende}
   try
-    case speDataPoint.Tag of
+    case v_type of
       brID: WerteBreeze;
       H501ID: WerteH501;
     else
@@ -9112,9 +9066,9 @@ begin
     end;
     if vld then begin                              {Anzeige gültiger Auswertung}
       gridOverview.BeginUpdate;
-        flt:=round(flt*secpd)/secpd;        {Runden um Anzeigefehler zu vermeiden}
-        if (g>3) and                {alles ausgeben wenn GPS-Daten vorhanden sind}
-           ((speDataPoint.Tag<>YTHPid) or          {Mindestflugzeit nur beim YTH Plus}
+        flt:=round(flt*secpd)/secpd;               {Runden um Anzeigefehler zu vermeiden}
+        if (g>3) and                               {alles ausgeben wenn GPS-Daten vorhanden sind}
+           ((v_type<>YTHPid) or                    {Mindestflugzeit nur beim YTH Plus}
             (cbCleanHplus.Checked=false) or        {wenn Bereinigung eingestellt ist}
             (flt>minflt)) then begin               {Anzeige gültiger Auswertung}
           btnFlugBuch.Tag:=btnFlugBuch.Tag+1;
@@ -9133,7 +9087,7 @@ begin
             gridOverview.Cells[7,z+1]:=FloatToStrF(strecke, ffFixed, 5, 1)+'m';
             gridOverview.Cells[8,z+1]:=FloatToStrF(tasmaxg*fkmh, ffFixed, 4, 1)+'km/h';
           end;
-          if speDataPoint.Tag=brID then begin
+          if v_type=brID then begin
             gridOverview.Cells[9,z+1]:=IntToStr(round(umaxg))+'%';
             gridOverview.Cells[10,z+1]:=IntToStr(round(uming))+'%';
           end else begin
@@ -9144,7 +9098,7 @@ begin
             gridOverview.Cells[8,z+1]:='';
         end else begin                             {reduzierte Ausgabe}
           if (n>3) and                             {Ausgabe für Flüge ohne GPS}
-             ((speDataPoint.Tag<>YTHPid) or        {Mindestflugzeit nur beim YTH Plus}
+             ((v_type<>YTHPid) or                  {Mindestflugzeit nur beim YTH Plus}
               (cbCleanHplus.Checked=false) or      {wenn Bereinigung eingestellt ist}
               (flt>minflt)) then begin             {Anzeige gültiger Auswertung}
             btnFlugBuch.Tag:=btnFlugBuch.Tag+1;
@@ -9159,7 +9113,7 @@ begin
               gridOverview.Cells[5,z+1]:=FloatToStrF(hmax, ffFixed, 4, 1)+'m';
               gridOverview.Cells[8,z+1]:=FloatToStrF(tasmax*fkmh, ffFixed, 4, 1)+'km/h';
             end;
-            if speDataPoint.Tag=brID then begin
+            if v_type=brID then begin
 //              gridOverview.Cells[8,z+1]:='';     {Breeze keine Speed}
               gridOverview.Cells[9,z+1]:=IntToStr(round(umax))+'%';
               gridOverview.Cells[10,z+1]:=IntToStr(round(umin))+'%';
@@ -9170,17 +9124,17 @@ begin
             if tasmax=0 then
               gridOverview.Cells[8,z+1]:='';
           end else begin                           {Ausgabe sonstige (ohne Flug)}
-            if speDataPoint.Tag=brID then
+            if v_type=brID then
               splitlist.DelimitedText:=inlist[9]
             else
               splitlist.DelimitedText:=inlist[1];
-            bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);   {Fake Beginnzeit}
+            bg:=ZeitToDT(splitlist[0], v_type);    {Fake Beginnzeit}
             gridOverview.Cells[1,z+1]:=FormatDateTime(dzf, bg);
             gridOverview.Cells[2,z+1]:=FormatDateTime(zzf, bg);
             gridOverview.Cells[3,z+1]:=FormatDateTime(zzf, tend);
             gridOverview.Cells[4,z+1]:=FormatDateTime('nn:ss',
                                       round((tend-bg)*secpd)/secpd);
-            if speDataPoint.Tag=brID then
+            if v_type=brID then
               gridOverview.Cells[9,z+1]:=IntToStr(round(umax))+'%'
             else
               gridOverview.Cells[9,z+1]:=FloatToStrF(umax, ffFixed, 3, 1)+'V';
@@ -9291,7 +9245,7 @@ var inlist, splitlist: TStringList;
   procedure anatelemetr;   {Telemetrie auswerten, Sinken, Steigen, Geschw.}
   begin
     splitlist.DelimitedText:=inlist[0];
-    case speDataPoint.Tag of
+    case v_type of
       brID: AnalyseBreeze;                         {Breeze}
       H501ID: AnalyseH501;
     else
@@ -9373,14 +9327,14 @@ begin                                              {Datenanalyse ausgewählter B
       end;
       if inlist.Count>2 then begin
         splitlist.DelimitedText:=inlist[0];
-        bg:=ZeitToDT(splitlist[0], speDataPoint.Tag); {Beginnzeitpunkt}
+        bg:=ZeitToDT(splitlist[0], v_type);        {Beginnzeitpunkt}
         if (cutb=0) or (bg<cutb) then
           cutb:=bg                                 {Beginn setzen}
         else
           if bg>cutb then cute:=bg;                {Ende setzen}
         FreigabeCut(false);                        {Status nicht überschreiben}
         splitlist.DelimitedText:=inlist[inlist.Count-1];
-        dur:=ZeitToDT(splitlist[0], speDataPoint.Tag)-bg;
+        dur:=ZeitToDT(splitlist[0], v_type)-bg;
         case rgQuelle.ItemIndex of
           0: anatelemetr;
           1: anast10;
@@ -9489,14 +9443,14 @@ begin
           end;
           topp[lbFlights.ItemIndex, 5]:=0;         {Pointer Null setzen}
           fModeFinden(splitlist);                  {Position f-mode merken}
-          if speDataPoint.Tag<>YTHPid then begin
+          if v_type<>YTHPid then begin
             splitlist.DelimitedText:=inlist[2];    {Vehicle Type merken}
-            speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
+            v_type:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
             OverWriteVT;                           {Overwrite for PX4 Thunderbird}
           end else
             if cbCleanHplus.Checked then
               AppLog.Lines.Add(capCheckBox9);      {Bei YTH Plus anzeigen, ob bereinigt}
-          StaticText1.Caption:=vtypeToStr(speDataPoint.Tag);  {anzeigen}
+          StaticText1.Caption:=vtypeToStr(v_type); {anzeigen}
           splitlist.DelimitedText:=inlist[0];      {Überschrift wiederherstellen}
         end;
         speDataPoint.MaxValue:=inlist.Count;
@@ -9526,7 +9480,7 @@ begin
               for i:=0 to splitlist.count-1 do
                 gridDetails.Cells[i, x]:=splitlist[i];
               if (rgQuelle.ItemIndex=0) then begin {nur bei Telemetrie}
-                if (speDataPoint.Tag=5) and        {RealSense erkennen beim YTH}
+                if (v_type=5) and                  {RealSense erkennen beim YTH}
                    (splitlist[gridDetails.Tag-1]='245') then rs:=true;
                 if (StrToIntDef(splitlist[gridDetails.Tag+3], 0) shr 1)>0 then begin
                   mnGoToErr.Enabled:=true;
@@ -9537,7 +9491,7 @@ begin
                    NichtLeer(splitlist[5]) and
                    NichtLeer(splitlist[6]) and
                    GetRFM(splitlist[gridDetails.Tag], {f_mode, vehicle type}
-                          speDataPoint.Tag, true) then begin
+                          v_type, true) then begin
                   slat:=splitlist[5];              {Homepoint speichern}
                   slon:=splitlist[6];              {Homepoint speichern}
                 end;
@@ -9594,7 +9548,7 @@ begin
           gridDetails.TopRow:=topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]; {gemerkten Top setzen}
           if tpos1>0 then begin          {Scrollen zu letzter Zeit im voriger Tabelle}
             for i:=1 to gridDetails.RowCount-1 do
-              if ZeitToDT(gridDetails.Cells[0, i], speDataPoint.Tag)>tpos1 then
+              if ZeitToDT(gridDetails.Cells[0, i], v_type)>tpos1 then
                 break;                             {Stelle gefunden}
             gridDetails.TopRow:=i-gridDetails.VisibleRowCount-1;   {zeitl. Pos setzen}
           end;
@@ -9874,7 +9828,7 @@ begin
   slat:='';
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
-  splitlist.Delimiter:=dstr;
+  splitlist.Delimiter:=csvsep;
   splitlist.StrictDelimiter:=True;
   try
     fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+h5file+
@@ -10167,7 +10121,7 @@ begin
 {$IFDEF LINUX}
   Chart1BarSeries1.Transparency:=0;                {sonst schwarzer Hintergrund}
 {$ELSE}
-  Chart1BarSeries1.Transparency:=50;               {für alle gleich}
+  Chart1BarSeries1.Transparency:=50;               {The same for all modes}
 {$ENDIF}
   Chart1BarSeries2.Transparency:=Chart1BarSeries1.Transparency;
   Chart1BarSeries3.Transparency:=Chart1BarSeries1.Transparency;
@@ -10180,7 +10134,7 @@ begin
   if cbCap.Checked then
     Chart1ConstantLine2.Active:=false              {Voltage low level}
   else begin
-    case speDataPoint.Tag of                          {Umin Linie anzeigen}
+    case v_type of                                 {Umin Linie anzeigen}
       1: Chart1ConstantLine2.Position:=lipomin*6;  {H920 6S}
       5: Chart1ConstantLine2.Position:=lipomin*4;  {YTH  4S}
       H5id: Chart1ConstantLine2.Position:=lipomin*4;   {H520 4S}
@@ -10287,8 +10241,8 @@ begin
     end;
     if inlist.count>2 then begin
       KursorAus;                                   {Fadenkreuz aus bei neuem Flug}
-      mnCursorEin.Enabled:=true;                     {Analyse erlauben}
-      splitlist.DelimitedText:=inlist[0];  {Überschrift einlesen zum f_mode ermitteln}
+      mnCursorEin.Enabled:=true;                   {Analyse erlauben}
+      splitlist.DelimitedText:=inlist[0];          {Überschrift einlesen zum f_mode ermitteln}
       fModeFinden(splitlist);                      {Position f-mode merken}
       speDataPoint.MaxValue:=inlist.Count;
       speAnalyze.MaxValue:=inlist.Count-10;
@@ -10297,7 +10251,7 @@ begin
         Chart1BarSeries1.BarPen.Width:=2           {Bar smoothing}
       else
         Chart1BarSeries1.BarPen.Width:=4;          {dyn. anpassen}
-      if speDataPoint.Tag=ThBid then                  {for Thunderbird}
+      if v_type=ThBid then                         {for Thunderbird}
         Chart1BarSeries1.BarPen.Width:=Chart1BarSeries1.BarPen.Width+2;
       Chart1BarSeries2.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       Chart1BarSeries3.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
@@ -10309,7 +10263,7 @@ begin
       StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
       AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
 
-      if speDataPoint.Tag=ThBid then begin            {check data for Thunderbird}
+      if v_type=ThBid then begin                   {check data for Thunderbird}
         baseh:=GethFromST10(lbFlights.ItemIndex, 0);{From begin of the Remote CSV file}
         AppLog.Lines.Add(rsGCSalt+suff+
                            FormatFloat(ctfl, baseh)+'m');
@@ -10369,10 +10323,10 @@ begin
         Chart1.Title.Text.Add(rsSimulator);
       end;
       if not gps then begin
-        Chart1LineSeries1.SeriesColor:=clRed;      {ohne GPS}
+        Chart1LineSeries1.SeriesColor:=clNoGPS;    {ohne GPS}
         Chart1.Title.Text.Add(rsNoGPS);
       end;
-      if (speDataPoint.Tag=ThBid) and
+      if (v_type=ThBid) and
          (baseh<>0) then begin
         if rgSpeedUnit.ItemIndex=2 then            {GCS altitude im Diagramm ausgeben}
           Chart1.Title.Text.Add(rsGCSalt+suff+Format('%f', [baseh/fft])+'ft')
@@ -10385,16 +10339,16 @@ begin
           if (splitlist.Count>anzsp) and           {Anzahl Spalten}
               CheckVT(splitlist[gridDetails.Tag+2],
                       splitlist[gridDetails.Tag]) then begin  {V-type beim YTH Plus}
-            bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+            bg:=ZeitToDT(splitlist[0], v_type);
             h:=StrToFloatN(splitlist[4]);
             u:=StrToFloatN(splitlist[2]);
             if cbCap.Checked then
-              Chart1LineSeries1.AddXY(bg, VtoProz(speDataPoint.Tag, u))
+              Chart1LineSeries1.AddXY(bg, VtoProz(v_type, u))
             else
               Chart1LineSeries1.AddXY(bg, u);      {Spannungskurve}
             if testh(h) and
                (bg>0) then begin
-              case speDataPoint.Tag of                {Vehicle Type}
+              case v_type of                       {Vehicle Type}
                 3: HDiaBlade350;                   {Blade 350QX}
                 YTHPid: HDiaYTHPlus;               {YTH Plus}
                 ThBid: HDiaThunderbird;            {assign f_mode to color for TB}
@@ -10469,7 +10423,7 @@ begin
         if splitlist.Count>anzsp then begin
           if (NichtLeer(splitlist[12]) or NichtLeer(splitlist[13])) and
              BrGPSfix(splitlist[20]) then GPS:=true;  {fraglich, was loseGPSact ist}
-          bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+          bg:=ZeitToDT(splitlist[0], v_type);
           h:=StrToFloatN(splitlist[10])/100;
           if testh(h) then begin
             if hmxg<h then
@@ -10493,7 +10447,7 @@ begin
                            suff+StatusBar1.Panels[5].Text);
       end;
       if not gps then
-        Chart1LineSeries1.SeriesColor:=clRed;    {ohne GPS: Voltage rot}
+        Chart1LineSeries1.SeriesColor:=clNoGPS;    {ohne GPS: Voltage rot}
     end;
     if rgSpeedUnit.ItemIndex=2 then                {Überschrift im Diagramm ausgeben}
       Chart1.Title.Text.Add(rsGridCell5+suff+Format('%f', [hmxg/fft])+'ft')
@@ -10520,7 +10474,7 @@ begin
   H501AnzeigeCSV(0);                   {dazu passende Tabelle laden für Analyse}
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
-  splitlist.Delimiter:=dstr;                       {Semicolon}
+  splitlist.Delimiter:=csvsep;                       {Semicolon}
   splitlist.StrictDelimiter:=True;
   gps:=false;
   hmxg:=0;
@@ -10556,13 +10510,13 @@ begin
         if splitlist.Count>14 then begin
           if (NichtLeer(splitlist[2]) or
               NichtLeer(splitlist[3])) then GPS:=true;
-          bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+          bg:=ZeitToDT(splitlist[0], v_type);
           h:=H501alt(StrToFloatN(splitlist[4]));
           if hmxg<h then
             hmxg:=h;                               {Maximum elevation}
           u:=StrToFloatN(splitlist[9]);
           if cbCap.Checked then                    {Remaining capacity}
-            Chart1LineSeries1.AddXY(bg, VtoProz(speDataPoint.Tag, u))
+            Chart1LineSeries1.AddXY(bg, VtoProz(v_type, u))
           else
             Chart1LineSeries1.AddXY(bg, u);        {Spannungskurve}
           Chart1LineSeries2.AddXY(bg, h);          {Hüllkurve}
@@ -10584,7 +10538,7 @@ begin
                            suff+StatusBar1.Panels[5].Text);
       end;
       if not gps then
-        Chart1LineSeries1.SeriesColor:=clRed;      {ohne GPS: Voltage rot}
+        Chart1LineSeries1.SeriesColor:=clNoGPS;    {ohne GPS: Voltage rot}
     end;
     if rgSpeedUnit.ItemIndex=2 then                {Überschrift im Diagramm ausgeben}
       Chart1.Title.Text.Add(rsGridCell5+suff+Format('%f', [hmxg/fft])+'ft')
@@ -10625,7 +10579,7 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
                  w:=TransformW(0, p, StrToFloatN(splitlist[p]));
                  if (p<>4) or
                     ((p=4) and testh(w)) then begin
-                   bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+                   bg:=ZeitToDT(splitlist[0], v_type);
                    hist.AddXY(bg, w);
                  end;
                end;
@@ -10638,7 +10592,7 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
            if p>0 then begin
              for x:=1 to inlist1.count-1 do begin  {Werte einlesen}
                splitlist.DelimitedText:=inlist1[x];
-               bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+               bg:=ZeitToDT(splitlist[0], v_type);
                w:=TransformW(1, p, StrToFloatN(splitlist[p]));
                hist.AddXY(bg, w);
              end;
@@ -10654,7 +10608,7 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
                ChToStr(cht.AxisList[0].Title.Caption, p);
              for x:=1 to inlist2.count-1 do begin  {Werte einlesen}
                splitlist.DelimitedText:=inlist2[x];
-               bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+               bg:=ZeitToDT(splitlist[0], v_type);
                w:=TransformW(2, p, StrToFloatN(splitlist[p]));
                hist.AddXY(bg, w);
              end;
@@ -10673,7 +10627,7 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
     if p>0 then begin
       for x:=9 to inlist0.count-1 do begin         {Werte einlesen}
         splitlist.DelimitedText:=inlist0[x];
-        bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+        bg:=ZeitToDT(splitlist[0], v_type);
         if (pos('lat', lab.Text)=1) or
            (pos('lon', lab.Text)=1) then begin
           w:=BrCoordToFloat(splitlist[p]);
@@ -10692,7 +10646,7 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
     if p>0 then begin
       for x:=1 to inlist0.count-1 do begin         {Werte einlesen}
         splitlist.DelimitedText:=inlist0[x];
-        bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+        bg:=ZeitToDT(splitlist[0], v_type);
         w:=H501TransformW(p, StrToFloatN(splitlist[p]));
         hist.AddXY(bg, w);
       end;
@@ -10746,8 +10700,8 @@ begin
   inlist2:=TStringList.Create;
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=sep;
-  if speDataPoint.Tag=h501ID then
-    splitlist.Delimiter:=dstr;
+  if v_type=h501ID then
+    splitlist.Delimiter:=csvsep;
   splitlist.StrictDelimiter:=True;
   Chart3LineSeries1.Clear;
   Chart4LineSeries1.Clear;
@@ -10875,9 +10829,9 @@ const
        CheckVT(splitlist[gridDetails.Tag+2],
                splitlist[gridDetails.Tag]) and
        GetRFM(splitlist[gridDetails.Tag],
-              speDataPoint.Tag, true) then begin
-      bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
-      ts:=bg+nowUTC-now;                 {UTC Zeitstempel errechnen}
+              v_type, true) then begin
+      bg:=ZeitToDT(splitlist[0], v_type);
+      ts:=bg+nowUTC-now;                           {UTC Zeitstempel errechnen}
       fmd:=StrToIntDef(splitlist[gridDetails.Tag], fmdnil);
       ltime:=FormatDateTime(dzf, ts)+'T'+
              FormatDateTime(zzf+zzz, ts)+'Z';
@@ -10936,7 +10890,7 @@ const
 
   procedure kmlBreeze;
   begin
-    bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+    bg:=ZeitToDT(splitlist[0], v_type);
     if (NichtLeer(splitlist[12]) or NichtLeer(splitlist[13])) and
        (trim(splitlist[14])<>'0') and              {real flight mode}
         BrGPSfix(splitlist[20]) and
@@ -10961,7 +10915,7 @@ const
   procedure kmlH501;
   var w: integer;
   begin
-    bg:=dt+ZeitToDT(splitlist[0], speDataPoint.Tag);
+    bg:=dt+ZeitToDT(splitlist[0], v_type);
     if (NichtLeer(splitlist[2]) or
         NichtLeer(splitlist[3])) and
        (bg>0) then begin
@@ -11014,13 +10968,13 @@ begin
   lgcy:=true;                                      {Additional checks}
   dt:=0;
   splitlist.Delimiter:=sep;
-  case speDataPoint.Tag of
+  case v_type of
     brID: begin
             bdt:=9;                                {Start line for conversion}
             lgcy:=false;
           end;
     h501ID: begin
-              splitlist.Delimiter:=dstr;
+              splitlist.Delimiter:=csvsep;
               lgcy:=false;
               dt:=GetDateFile(lbFlights.Items[z]);
             end;
@@ -11040,22 +10994,22 @@ begin
       if inlist.count>12 then
       try
         if lgcy then begin
-          splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
+          splitlist.DelimitedText:=inlist[0];      {Überschrift einlesen, f_mode ermitteln}
           fModeFinden(splitlist);                  {Position f-mode merken}
-          splitlist.DelimitedText:=inlist[bdt+1];    {2. Datenzeile, Zeit}
-          if (speDataPoint.Tag<>YTHPid) then begin    {v_type ermitteln}
-            speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
+          splitlist.DelimitedText:=inlist[bdt+1];  {2. Datenzeile, Zeit}
+          if (v_type<>YTHPid) then begin           {vehicle type ermitteln}
+            v_type:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
             OverWriteVT;                           {Overwrite for PX4 Thunderbird}
           end;
         end;
         splitlist.DelimitedText:=inlist[bdt];      {1. Datenzeile, Zeit}
-        ts:=dt+ZeitToDT(splitlist[0], speDataPoint.Tag)+nowUTC-now;
+        ts:=dt+ZeitToDT(splitlist[0], v_type)+nowUTC-now;
         KMLheader(fn, ts, kmllist);
         for x:=bdt to inlist.Count-1 do
           if CheckE7(inlist[x]) then begin
             splitlist.DelimitedText:=inlist[x];
             if splitlist.Count>14 then begin
-            case speDataPoint.Tag of
+            case v_type of
               brID: kmlBreeze;
               H501ID: kmlH501;
               MQcsvID: kmlMQcsv;
@@ -11223,7 +11177,7 @@ var
 
   procedure gpxH501;
   begin
-    bg:=dt+ZeitToDT(splitlist[0], speDataPoint.Tag);
+    bg:=dt+ZeitToDT(splitlist[0], v_type);
     if (NichtLeer(splitlist[2]) or
         NichtLeer(splitlist[3])) and
        (bg>0) then begin
@@ -11252,9 +11206,9 @@ var
         CheckVT(splitlist[gridDetails.Tag+2],
                 splitlist[gridDetails.Tag]) and
         GetRFM(splitlist[gridDetails.Tag],
-               speDataPoint.Tag, true) and
+               v_type, true) and
         CheckE7(inlist[x]) then begin
-      bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+      bg:=ZeitToDT(splitlist[0], v_type);
       ts:=bg+nowUTC-now;                           {UTC Zeitstempel errechnen}
       ltime:=tab1+'<time>'+FormatDateTime(dzf, ts)+'T'+
                            FormatDateTime(zzf, ts)+'Z</time>';
@@ -11310,13 +11264,13 @@ begin
   lgcy:=true;                                      {Additional checks}
   dt:=0;                                           {additional days not used}
   splitlist.Delimiter:=sep;
-  case speDataPoint.Tag of
+  case v_type of
     brID: begin
             bdt:=9;                                {Start line for conversion}
             lgcy:=false;
           end;
     h501ID: begin
-              splitlist.Delimiter:=dstr;
+              splitlist.Delimiter:=csvsep;
               lgcy:=false;
               dt:=GetDateFile(lbFlights.Items[z]);  {Correction for date}
             end;
@@ -11334,21 +11288,21 @@ begin
       if inlist.count>10 then
       try
         if lgcy then begin
-          splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
+          splitlist.DelimitedText:=inlist[0];      {Überschrift einlesen, f_mode ermitteln}
           fModeFinden(splitlist);                  {Position f-mode merken}
           splitlist.DelimitedText:=inlist[bdt+1];  {2. Datenzeile, Zeit}
-          if speDataPoint.Tag<>YTHPid then begin      {v_type ermitteln}
-            speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
+          if v_type<>YTHPid then begin             {v_type ermitteln}
+            v_type:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
             OverWriteVT;                           {Overwrite for PX4 Thunderbird}
           end;
         end;
-        splitlist.DelimitedText:=inlist[bdt];     {1. Datenzeile, Zeit}
-        ts:=dt+ZeitToDT(splitlist[0], speDataPoint.Tag)+nowUTC-now;
+        splitlist.DelimitedText:=inlist[bdt];      {1. Datenzeile, Zeit}
+        ts:=dt+ZeitToDT(splitlist[0], v_type)+nowUTC-now;
         GPXheader(cbxText.Text, fn, ts, kmllist);
         for x:=bdt to inlist.Count-1 do begin      {Startpunkt ermitteln}
           splitlist.DelimitedText:=inlist[x];
           if splitlist.Count>14 then begin
-            case speDataPoint.Tag of
+            case v_type of
               brID: gpxBreeze;                     {Breeze}
               H501ID: gpxH501;
               MQcsvID: gpxMQcsv;                   {Mantis q CSV format}
@@ -11392,7 +11346,7 @@ begin
               splitlist.DelimitedText:=inlist[x];
               if (splitlist.Count>5) and           {Werte validieren}
                  (NichtLeer(splitlist[1]) or NichtLeer(splitlist[2])) then begin
-                ts:=ZeitToDT(splitlist[0], speDataPoint.Tag)+nowUTC-now;  {UTC Zeitstempel errechnen}
+                ts:=ZeitToDT(splitlist[0], v_type)+nowUTC-now;  {UTC Zeitstempel errechnen}
                 ltime:=tab2+'<time>'+FormatDateTime(dzf, ts)+'T'+
                                  FormatDateTime(zzf, ts)+'Z</time>';
                 lkoor:=tab1+GPXlat+ChrKoor(splitlist[2])+
@@ -11456,9 +11410,9 @@ begin
       for x:=1 to inlist.count-1 do begin
         splitlist.DelimitedText:=inlist[x];
         if splitlist.Count>5 then begin
-          if ZeitToDT(splitlist[0], speDataPoint.Tag)>dt then begin {Startpunkt suchen}
+          if ZeitToDT(splitlist[0], v_type)>dt then begin {Startpunkt suchen}
             hx:=StrToFloatN(splitlist[3]);
-            if (abs(hx)>0.1) and testh(hx) then begin  {nur gültige Höhenwerte zählen}
+            if (abs(hx)>0.1) and testh(hx) then begin     {nur gültige Höhenwerte zählen}
               hw:=hw+hx;
               inc(n);
             end;
@@ -11514,12 +11468,12 @@ begin
     end;
     if inlist.count>2 then
     try
-      splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
+      splitlist.DelimitedText:=inlist[0];          {Überschrift einlesen, f_mode ermitteln}
       fModeFinden(splitlist);                      {Position f-mode merken}
       splitlist.DelimitedText:=inlist[2];          {2. Datenzeile, Zeit}
-      if speDataPoint.Tag<>YTHPid then begin          {v_type ermitteln}
-        speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
-        OverWriteVT;                             {Overwrite for PX4 Thunderbird}
+      if v_type<>YTHPid then begin                 {v_type ermitteln}
+        v_type:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
+        OverWriteVT;                               {Overwrite for PX4 Thunderbird}
       end;
       s:=Trim(inlist[0]);
       s:=StringReplace(s, 'altitude', 'ascent', [rfIgnoreCase]);
@@ -11534,21 +11488,21 @@ begin
           try
             if ((NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and  {GPS}
                (GetRFM(splitlist[gridDetails.Tag],
-                       speDataPoint.Tag, true)) or
+                       v_type, true)) or
                 cbDashw.Checked) then begin
               lat2:=StrToFloatN(splitlist[5]);
               lon2:=StrToFloatN(splitlist[6]);
-              bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+              bg:=ZeitToDT(splitlist[0], v_type);
 {Startpunkt extra validieren, oben ist noch ein OR !}
               if (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and  {GPS}
                  GetRFM(splitlist[gridDetails.Tag],
-                        speDataPoint.Tag, true) then begin
+                        v_type, true) then begin
                 if (lat1=0) and (lon1=0) then begin    {Startpunkt festlegen}
                   hgrd:=GethFromST10(z, bg);
                   dist:=0;
                   lon1:=lon2;
                   lat1:=lat2;
-                end else begin           {Distanz zum Startpunkt berechnen}
+                end else begin                      {Distanz zum Startpunkt berechnen}
                   dist:=DeltaKoord(lat1, lon1, lat2, lon2);   {Entfernung zum Startpunkt}
                 end;
               end else begin
@@ -11618,9 +11572,9 @@ var
       splitlist.DelimitedText:=inlist[x];
       if (NichtLeer(splitlist[12]) or NichtLeer(splitlist[13])) and
           BrGPSfix(splitlist[20]) and
-         (ZeitToDT(splitlist[0], speDataPoint.Tag)>0) and
+         (ZeitToDT(splitlist[0], v_type)>0) and
          ((trim(splitlist[14])<>'0') or cbDashw.Checked) then begin
-        bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+        bg:=ZeitToDT(splitlist[0], v_type);
         lat2:=BrCoordToFloat(splitlist[12]);
         lon2:=BrCoordToFloat(splitlist[13]);
         if (lat1=0) and (lon1=0) then begin        {Startpunkt festlegen}
@@ -11663,15 +11617,15 @@ var
         try
           if ((NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and  {GPS}
              (GetRFM(splitlist[gridDetails.Tag],
-                     speDataPoint.Tag, true)) or
+                     v_type, true)) or
               cbDashw.Checked) then begin
             lat2:=StrToFloatN(splitlist[5]);
             lon2:=StrToFloatN(splitlist[6]);
-            bg:=ZeitToDT(splitlist[0], speDataPoint.Tag);
+            bg:=ZeitToDT(splitlist[0], v_type);
 {Startpunkt extra validieren, oben mit cbDashw () relativiert}
             if (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and  {GPS}
                GetRFM(splitlist[gridDetails.Tag],
-                      speDataPoint.Tag, true) then begin
+                      v_type, true) then begin
               if (lat1=0) and
                  (lon1=0) then begin               {Startpunkt festlegen}
                 dist:=0;
@@ -11712,7 +11666,7 @@ var
   end;
 
 begin
-  case speDataPoint.Tag of
+  case v_type of
     brID: fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
               lbFlights.Items[z]+bext;
   else                                             {Yuneec legacy}
@@ -11739,23 +11693,23 @@ begin
     end;
     if inlist.count>2 then
     try
-      if speDataPoint.Tag<>brID then begin
-        splitlist.DelimitedText:=inlist[0]; {Überschrift einlesen, f_mode ermitteln}
+      if v_type<>brID then begin
+        splitlist.DelimitedText:=inlist[0];          {Überschrift einlesen, f_mode ermitteln}
         fModeFinden(splitlist);                      {Position f-mode merken}
         splitlist.DelimitedText:=inlist[2];          {2. Datenzeile, Zeit}
-        if (speDataPoint.Tag<>YTHPid) then begin        {v_type ermitteln}
-          speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
+        if (v_type<>YTHPid) then begin               {Vehicle type ermitteln}
+          v_type:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
           OverWriteVT;                               {Overwrite for PX4 Thunderbird}
         end;
       end;
       dashlist.Add(rrk+'RaceRender Data');
-      dashlist.Add(rrk+vtypeToStr(speDataPoint.Tag));
-      if speDataPoint.Tag=brID then dashlist.Add(rrk+trim(inlist[5]));
+      dashlist.Add(rrk+vtypeToStr(v_type));
+      if v_type=brID then dashlist.Add(rrk+trim(inlist[5]));
       dashlist.Add('Time'+sep+'Longitude'+sep+'Latitude'+sep+'Altitude (m)'+sep+
                    'Distance (m)'+sep+'GPS_Update'+sep+'Speed (m/s)'+sep+
                    'Heading'+sep+'Pitch'+sep+'Roll'+sep+'FlightMode'+sep+
                    'RSSI'+sep+'Voltage'+sep+'NumSats'+sep+'Accuracy');
-      if speDataPoint.Tag=brID then begin             {Breeze}
+      if v_type=brID then begin             {Breeze}
         RRBreeze;
       end else begin
         RRYLegacy;
@@ -11801,8 +11755,8 @@ begin
     inlist.LoadFromFile(fn);                       {Telemetriefile laden}
     if inlist.Count>50 then begin
       splitlist.DelimitedText:=inlist[2];          {2. Datenzeile, Zeit}
-      if speDataPoint.Tag<>YTHPid then begin          {v_type ermitteln}
-        speDataPoint.Tag:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
+      if v_type<>YTHPid then begin                 {v_type ermitteln}
+        v_type:=StrToIntDef(splitlist[gridDetails.Tag+2], defVT);
         OverWriteVT;                               {Overwrite for PX4 Thunderbird}
       end;
       lat1:=0;
@@ -11820,7 +11774,7 @@ begin
            (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and
             testh(wpele) and
             GetRFM(splitlist[gridDetails.Tag],
-                   speDataPoint.Tag, true) then begin
+                   v_type, true) then begin
           lat2:=StrToFloatN(splitlist[5]);
           lon2:=StrToFloatN(splitlist[6]);
           dist:=DeltaKoord(lat1, lon1, lat2, lon2); {Entfernung zum letzten Punkt}
@@ -11896,18 +11850,18 @@ begin
   end;
 end;
 
-procedure TForm1.rgQuelleClick(Sender: TObject);         {Quelle wählen}
+procedure TForm1.rgQuelleClick(Sender: TObject);   {Quelle wählen}
 begin
-  if (speDataPoint.Tag=MQid) or                       {nichts tun für MantisQ}
-     (speDataPoint.Tag=H5id) then                     {nichts tun für H520}
+  if (v_type=MQid) or                              {nichts tun für MantisQ}
+     (v_type=H5id) then                            {nichts tun für H520}
        exit;
-  if (speDataPoint.Tag=YTHPid) and                    {H Plus Sensor files}
+  if (v_type=YTHPid) and                           {H Plus Sensor files}
      (rgQuelle.ItemIndex=3) then begin
        OpenSensorPlus;
   end else begin
     Anzeige;
   end;
-  rgQuelle.Tag:=0;                              {Resize columns needed again}
+  rgQuelle.Tag:=0;                                 {Resize columns needed again}
 end;
 
 procedure TForm1.rgOutFormatClick(Sender: TObject);    {Format geändert}
@@ -11976,8 +11930,9 @@ end;
 
 procedure TForm1.StaticText1DblClick(Sender: TObject); {In Kopter ID übernehmen}
 begin
-  if StaticText1.Caption<>'' then
+  if StaticText1.Caption<>'' then begin
     cbxText.Text:=StaticText1.Caption; {KopterID}
+  end;
 end;
 
 procedure TForm1.StatusToClipboard;                    {Statuszeile kopieren}
@@ -12008,13 +11963,13 @@ begin
   speDataPoint.Value:=gridDetails.Selection.Top;      {Zeile übernehmen}
   if (rgQuelle.ItemIndex<>3) and
      (gridDetails.ColCount<YTHPcols) then begin    {nicht bei Sensordateien}
-    ts:=ZeitToDT(gridDetails.Cells[0, gridDetails.Row], speDataPoint.Tag);
+    ts:=ZeitToDT(gridDetails.Cells[0, gridDetails.Row], v_type);
     if ts>0 then begin
       if (PageControl1.Tag>0) and
          (Form2.Chart1.Visible) then begin
         try
-          tb:=ZeitToDT(gridDetails.Cells[0, 1], speDataPoint.Tag);
-          te:=ZeitToDT(gridDetails.Cells[0, gridDetails.RowCount-1], speDataPoint.Tag);
+          tb:=ZeitToDT(gridDetails.Cells[0, 1], v_type);
+          te:=ZeitToDT(gridDetails.Cells[0, gridDetails.RowCount-1], v_type);
           Form2.MoveVCursor(ts, round((ts-tb)/(te-tb)*10000));
           Form2.edTime.Visible:=true;
           Form2.Chart1ConstantLine1.Active:=true;
@@ -12043,7 +11998,7 @@ const mxw=1365;
     p:=abs(w);
     if p>mxw then
       p:=mxw;
-    gridDetails.Canvas.Brush.Color:=farbskala[f, p*High(farbskala[0])div mxw];
+    CellColorSetting(gridDetails, farbskala[f, p*High(farbskala[0])div mxw]);
   end;
 
   procedure TelemBreeze;                           {Telemetrie Breeze}
@@ -12053,31 +12008,33 @@ const mxw=1365;
        2: begin                                    {Flight Mode}
             e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);
             case e of
-              2, 4, 5, 7: gridDetails.Canvas.Brush.Color:=clTasks;
-              8:  gridDetails.Canvas.Brush.Color:=clRTH;
-              6:  gridDetails.Canvas.Brush.Color:=clAngle;  {Pilot}
-              10: gridDetails.Canvas.Brush.Color:=clNoGPS;
+              2, 4, 5, 7: CellColorSetting(gridDetails, clTasks);
+              8:  CellColorSetting(gridDetails, clRTH);
+              6:  CellColorSetting(gridDetails, clAngle);  {Pilot}
+              10: CellColorSetting(gridDetails, clNoGPS);
             end;
           end;
       14: begin                                    {AutoTakeOff}
             e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);
             Case e of
-              2:     gridDetails.Canvas.Brush.Color:=clSkyBlue; {Flug}
-              1, 18: gridDetails.Canvas.Brush.Color:=clMoneyGreen;
-              16:    gridDetails.Canvas.Brush.Color:=clAttention;
+              2:     CellColorSetting(gridDetails, clSkyBlue); {Flug}
+              1, 18: CellColorSetting(gridDetails, clMoneyGreen);
+              16:    CellColorSetting(gridDetails, clAttention);
             end;
           end;
       18: if (gridDetails.Cells[aCol, aRow]<>'15') then         {Motorschaden}
-            gridDetails.Canvas.Brush.Color:=clRed;
+            CellColorSetting(gridDetails, clError);
       19: begin                                    {error Zellen einfärben}
             e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);   {Errorflag}
-            if ((e and 1)<>0) or ((e and 2)<>0) then
-              gridDetails.Canvas.Brush.Color:=clSkyBlue;
+            if (e and 1)<>0 then
+              CellColorSetting(gridDetails, clVolt1);
+            if (e and 2)<>0 then
+              CellColorSetting(gridDetails, clVolt2);
             if (e shr 2)<>0 then
-              gridDetails.Canvas.Brush.Color:=clOrange;
+              CellColorSetting(gridDetails, clErrFlag);
           end;
       20: if BrGPSfix(gridDetails.Cells[aCol, aRow]) then
-            gridDetails.Canvas.Brush.Color:=clMoneyGreen;       {Num Sats}
+            CellColorSetting(gridDetails, clFairGood);          {Num Sats}
     end;
   end;
 
@@ -12088,7 +12045,7 @@ const mxw=1365;
     case aCol of
       1: begin
            e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);    {Frames}
-           gridDetails.Canvas.Brush.Color:=FramesToColor(e);
+           CellColorSetting(gridDetails, FramesToColor(e));
            exit;
          end;
       4: begin                                     {Elevaton}
@@ -12105,16 +12062,16 @@ const mxw=1365;
               testh(h) and
               (v>0) and
               (h+0.1>=v) then
-             gridDetails.Canvas.Brush.Color:=clYellow;  {Gipfelhöhe}
+             CellColorSetting(gridDetails, clYellow);  {Gipfelhöhe}
            exit;
          end;
       9: begin                                     {Voltage}
            v:=StrToFloatN(gridDetails.Cells[aCol, aRow]);
-           gridDetails.Canvas.Brush.Color:=VoltToColor(speDataPoint.Tag, v);
+           VoltToColor(gridDetails, v);
          end;
       18: begin                                    {RSSI, 100% as default}
             e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 100);
-            gridDetails.Canvas.Brush.Color:=RSSIpToColor(e);
+            RSSIpToColor(gridDetails, e);
           end;
     end;
   end;
@@ -12132,7 +12089,7 @@ const mxw=1365;
               except
                 h:=0;                              {Max}
               end;
-              gridDetails.Canvas.Brush.Color:=RSSItoColor(h);
+              CellColorSetting(gridDetails, RSSItoColor(h));
             end;
          4: begin                                  {Höhe}
               try
@@ -12148,7 +12105,7 @@ const mxw=1365;
                  testh(h) and
                  (v>0) and
                  (h+0.1>=v) then
-                gridDetails.Canvas.Brush.Color:=clYellow;           {Gipfelhöhe}
+                CellColorSetting(gridDetails, clPeaks);           {Gipfelhöhe}
               exit;
             end;
          7: begin                     {True Air Speed, nicht für vSpeed, hSpeed}
@@ -12165,17 +12122,17 @@ const mxw=1365;
                  (h>1) and
                  (v>0) and
                  (h+0.1>=v) then                   {Korrekturwert wegen Runden}
-               gridDetails.Canvas.Brush.Color:=clYellow;             {Topspeed}
+                CellColorSetting(gridDetails, clPeaks);         {Topspeed}
               exit;
             end;
         19: begin                                  {Flight mode}
               e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);
               case e of                            {flight modes wie Chart1BarSeries}
-                4:   gridDetails.Canvas.Brush.Color:=clNoGPS;  {Manual Mode, no GPS}
-                5:   gridDetails.Canvas.Brush.Color:=clAngle;
-                6:   gridDetails.Canvas.Brush.Color:=clSmart;
-                7:   gridDetails.Canvas.Brush.Color:=clSport;
-                12, 13: gridDetails.Canvas.Brush.Color:=clRTH;
+                4:   CellColorSetting(gridDetails, clNoGPS);    {Manual Mode, no GPS}
+                5:   CellColorSetting(gridDetails, clAngle);
+                6:   CellColorSetting(gridDetails, clSmart);
+                7:   CellColorSetting(gridDetails, clSport);
+                12, 13: CellColorSetting(gridDetails, clRTH);
               end;
             end;
       end;
@@ -12186,20 +12143,20 @@ const mxw=1365;
           h:=10;                                   {Max}
         end;
         if h>2.5 then begin
-          gridDetails.Canvas.Brush.Color:=clRed;
+          CellColorSetting(gridDetails, clError);
           exit;
         end;
         if (h<=2.5) and (h>1.8) then begin
-          gridDetails.Canvas.Brush.Color:=clAttention;
+          CellColorSetting(gridDetails, clAttention);
           exit;
         end;
         if (h<=1.8) and (h>=1) then begin
-          gridDetails.Canvas.Brush.Color:=clMoneyGreen;
+          CellColorSetting(gridDetails, clFairGood);
           exit;
         end;
         if (h<1) and
            (h>0) then
-          gridDetails.Canvas.Brush.Color:=clGreen;
+          CellColorSetting(gridDetails, clVeryGood);
         exit;
       end;
     end;
@@ -12222,11 +12179,11 @@ const mxw=1365;
                 h:=0;                              {Max}
               end;
               if h>0 then
-                gridDetails.Canvas.Brush.Color:=RSSItoColor(h);
+                CellColorSetting(gridDetails, RSSItoColor(h));
             end;
          2: begin                                  {Voltage}
               v:=StrToFloatN(gridDetails.Cells[aCol, aRow]);
-              gridDetails.Canvas.Brush.Color:=VoltToColor(speDataPoint.Tag, v);
+              VoltToColor(gridDetails, v);
             end;
          4: begin                                  {Altitude}
               try
@@ -12242,7 +12199,7 @@ const mxw=1365;
                  testh(h) and
                  (v>0) and
                  (h+0.1>=v) then
-                gridDetails.Canvas.Brush.Color:=clYellow;  {Gipfelhöhe}
+                CellColorSetting(gridDetails, clPeaks);  {Gipfelhöhe}
               exit;
             end;
          7: begin                                  {True Air Speed}
@@ -12259,7 +12216,7 @@ const mxw=1365;
                  (h>1) and
                  (v>0) and
                  (h+0.1>=v) then                   {Korrekturwert wegen Runden}
-                gridDetails.Canvas.Brush.Color:=clYellow; {Topspeed}
+                CellColorSetting(gridDetails, clPeaks); {Topspeed}
               exit;
             end;
         14: begin                                  {Motorstatus}
@@ -12267,28 +12224,25 @@ const mxw=1365;
                  (gridDetails.Cells[aCol, aRow]<>'63') and
                  (gridDetails.Cells[aCol, aRow]<>'-1') and
                  (gridDetails.Cells[aCol, aRow]<>'255') then
-                gridDetails.Canvas.Brush.Color:=clRed; {Motorschaden}
+                CellColorSetting(gridDetails, clError); {Motorschaden}
               exit;
             end;
       end;
       if aCol=(gridDetails.Tag+3) then begin {error Zellen einfärben}
         e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0); {Errorflag}
         if e>0 then begin
-          if ((e and 1)<>0) or ((e and 2)<>0) then
-            gridDetails.Canvas.Brush.Color:=clSkyBlue;
+          if (e and 1)<>0 then
+            CellColorSetting(gridDetails, clVolt1);
+          if (e and 2)<>0 then
+            CellColorSetting(gridDetails, clVolt2);
           if (e shr 2)<>0 then
-            gridDetails.Canvas.Brush.Color:=clOrange;
+            CellColorSetting(gridDetails, clErrFlag);
         end;
         exit;
       end;
       if aCol=gridDetails.Tag then begin           {f_mode Zellen einfärben}
         e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);       {Flight Mode}
-        case speDataPoint.Tag of
-          1, 2:  gridDetails.Canvas.Brush.Color:=LegacyCol(e);
-          3:     gridDetails.Canvas.Brush.Color:=BladeCol(e);   {350QX}
-          4..6:  gridDetails.Canvas.Brush.Color:=LegacyCol(e);
-          ThBid: gridDetails.Canvas.Brush.Color:=ThunderCol(e); {Thunderbird}
-        end;
+        FMColor(gridDetails, e, v_type);           {Flight mode color settings}
         exit;
       end;
       if aCol=gridDetails.Tag+4 then begin         {GPS horizontale accuracy}
@@ -12298,18 +12252,19 @@ const mxw=1365;
           h:=10;                                   {Max}
         end;
         if h>2.5 then begin
-          gridDetails.Canvas.Brush.Color:=clRed;
+          CellColorSetting(gridDetails, clError);
           exit;
         end;
         if (h<=2.5) and (h>1.8) then begin
-          gridDetails.Canvas.Brush.Color:=clAttention;
+          CellColorSetting(gridDetails, clAttention);
           exit;
         end;
         if (h<=1.8) and (h>=1) then begin
-          gridDetails.Canvas.Brush.Color:=clMoneyGreen;
+          CellColorSetting(gridDetails, clFairGood);
           exit;
         end;
-        if (h<1) and (h>0) then gridDetails.Canvas.Brush.Color:=clGreen;
+        if (h<1) and (h>0) then
+          CellColorSetting(gridDetails, clVeryGood);
         exit;
       end;
     end;
@@ -12318,7 +12273,7 @@ const mxw=1365;
   procedure Telemetrie;                            {Farben bei Telemetry je Typ}
   begin
     if gridDetails.Cells[aCol, aRow]>'' then begin
-      case speDataPoint.Tag of
+      case v_type of
         brID: TelemBreeze;                         {Breeze}
         H501ID: TelemH501;
         YTHPid: TelemYTHP;                         {YTH Plus}
@@ -12333,19 +12288,19 @@ const mxw=1365;
   procedure RC_GPS;                                {Farben bei RemoteGPS}
   var e: integer;
   begin
-    if (speDataPoint.Tag=YTHPid) and                  {nur bei YTH Plus}
+    if (v_type=YTHPid) and                         {nur bei YTH Plus}
        (aCol=4) then begin                         {SatelliteCount}
       e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 0);
       if e>0 then begin
         if e>10 then begin                         {11 bis x Sats grün}
-          gridDetails.Canvas.Brush.Color:=clGreen;
+          CellColorSetting(gridDetails, clVeryGood);
           exit;
         end;
         if e<5 then begin                          {1 bis 4 Sats rot}
-          gridDetails.Canvas.Brush.Color:=clRed;
+          CellColorSetting(gridDetails, clAttention);
           exit;
         end else begin                             {5 bis 10 Sats gelb}
-          gridDetails.Canvas.Brush.Color:=clYellow;
+          CellColorSetting(gridDetails, clFairGood);
           exit;
         end;
       end else exit;
@@ -12359,40 +12314,32 @@ const mxw=1365;
       e:=round(trunc(StrToFloatN(gridDetails.Cells[aCol, aRow])));
       case aCol of
         1: begin
-             if e=2048 then
-               gridDetails.Canvas.Brush.Color:=gridDetails.Color
-             else begin
-               p:=e-stkntrl;
-               if p<0 then Farblauf(1, p)          {nach unten}
-                      else Farblauf(0, p);         {nach oben}
-               if e=0 then                         {rote Taste}
-                 gridDetails.Canvas.Brush.Color:=clAttention;
-             end;
+             p:=e-stkntrl;
+             if p<0 then Farblauf(1, p)            {nach unten}
+                    else Farblauf(0, p);           {nach oben}
+             if e=0 then                           {rote Taste}
+               CellColorSetting(gridDetails, clAttention);
            end;
         2, 3, 4:
            begin                                   {die restlichen Knüppel}
-             if e=2048 then
-               gridDetails.Canvas.Brush.Color:=gridDetails.Color
-             else begin
-               p:=e-stkntrl;
-               if p<0 then Farblauf(1, p)          {nach unten}
-                      else Farblauf(0, p);         {nach oben}
-             end;
+             p:=e-stkntrl;
+             if p<0 then Farblauf(1, p)            {nach unten}
+                    else Farblauf(0, p);           {nach oben}
            end;
         5: begin                                   {Flight mode switch}
              if e=stkntrl then begin               {Angle}
-               gridDetails.Canvas.Brush.Color:=clAngle;
+               CellColorSetting(gridDetails, clAngle);
                exit;
              end;
              if e=stkup then begin                 {SportMode: blau}
-               if speDataPoint.Tag=YTHPid then
-                 gridDetails.Canvas.Brush.Color:=clSport
+               if v_type=YTHPid then
+                 CellColorSetting(gridDetails, clSport)
                else                                {Smart}
-                 gridDetails.Canvas.Brush.Color:=clSmart;
+                 CellColorSetting(gridDetails, clSmart);
                exit;
              end;
              if e=stkdown then                     {RTH}
-               gridDetails.Canvas.Brush.Color:=clRTH;
+               CellColorSetting(gridDetails, clRTH);
           end;
       end;
     end;
@@ -12401,20 +12348,20 @@ const mxw=1365;
   procedure FarbenSensor;
   begin
     if (aCol<lenfix-3) then
-      gridDetails.Canvas.Brush.Color:=clMoneyGreen;  {die wirklich fixen Bytes}
+      CellColorSetting(gridDetails, clMoneyGreen);  {die wirklich fixen Bytes}
     if (aCol=lenfix-3) then
-      gridDetails.Canvas.Brush.Color:=clOlive;     {Message ID (0)}
+      CellColorSetting(gridDetails, clOlive);     {Message ID (0)}
     if gridDetails.ColCount>=YTHPcols then begin   {YTH Plus}
       if (aCol=lenfix-2) or
           (aCol=lenfix-1) then
-        gridDetails.Canvas.Brush.Color:=clOlive;   {Message ID 1 und 2}
+        CellColorSetting(gridDetails, clOlive);   {Message ID 1 und 2}
       if (aCol=lenfix) then
-       gridDetails.Canvas.Brush.Color:=clMoneyGreen; {Message Name YTH Plus}
+       CellColorSetting(gridDetails, clMoneyGreen); {Message Name YTH Plus}
       if (aCol=lenfix+1) then
-        gridDetails.Canvas.Brush.Color:=clSilver;  {Längenspalte YTH Plus}
+        CellColorSetting(gridDetails, clSilver);  {Längenspalte YTH Plus}
     end else begin
       if (aCol=lenfix-2) then
-        gridDetails.Canvas.Brush.Color:=clSilver;  {Längenspalte andere mit Sensor Datei}
+        CellColorSetting(gridDetails, clSilver);  {Längenspalte andere mit Sensor Datei}
     end;
 {und was auch immer noch bei Sensor Datei}
   end;
@@ -12423,30 +12370,30 @@ const mxw=1365;
   begin
     if (aCol=0) and
        (aRow>1) then begin                         {Frequenz Timestamps}
-      tpos:=ZeitToDT(gridDetails.Cells[0, aRow], speDataPoint.Tag);
-      npos:=ZeitToDT(gridDetails.Cells[0, aRow-1], speDataPoint.Tag);
+      tpos:=ZeitToDT(gridDetails.Cells[0, aRow], v_type);
+      npos:=ZeitToDT(gridDetails.Cells[0, aRow-1], v_type);
       dta:=tpos-npos;                              {Delta zur vorigen Zeile}
-      if (speDataPoint.Tag=brID) or
-         (speDataPoint.Tag=H501ID) then begin      {Yuneec Breeze/H501 delta timestamps}
+      if (v_type=brID) or
+         (v_type=H501ID) then begin                {Yuneec Breeze/H501 delta timestamps}
         if dta>tsdelta2 then
-          gridDetails.Canvas.Brush.Color:=clAttention;
+          CellColorSetting(gridDetails, clAttention);
         if dta>tsdelta3 then
-          gridDetails.Canvas.Brush.Color:=clRed;   {5sec für Breeze}
+          CellColorSetting(gridDetails, clError);  {5sec für Breeze}
       end else begin                               {andere Kopter}
         if rgQuelle.ItemIndex=1 then begin         {RemoteGPS}
           if dta>tsdelta2 then                     {2sec, für YTH > 1 sec}
-            gridDetails.Canvas.Brush.Color:=clAttention;
+            CellColorSetting(gridDetails, clAttention);
           if dta>tsdelta3 then                     {5sec}
-            gridDetails.Canvas.Brush.Color:=clRed;
+            CellColorSetting(gridDetails, clError);
         end else begin                             {Telemetry/Remote}
           if dta>tsdelta1 then                     {600ms}
-            gridDetails.Canvas.Brush.Color:=clAttention;
+            CellColorSetting(gridDetails, clAttention);
           if dta>tsdelta2 then
-            gridDetails.Canvas.Brush.Color:=clRed; {2sec}
+            CellColorSetting(gridDetails, clError); {2sec}
         end;
       end;
       if npos-tpos>tsdelta1 then                   {Zeitrücksprung}
-        gridDetails.Canvas.Brush.Color:=clLime;
+        CellColorSetting(gridDetails, clLime);
       exit;
     end;
     case rgQuelle.ItemIndex of                     {abh. von Dateityp}
@@ -12462,9 +12409,9 @@ const mxw=1365;
     case aCol of
        1: begin
             e:=StrToIntDef(gridDetails.Cells[aCol, aRow], 100);
-            gridDetails.Canvas.Brush.Color:=RSSIpToColor(e);
+            RSSIpToColor(gridDetails, e);
           end;
-      59: gridDetails.Canvas.Brush.Color:=clOlive; {Message ID}
+      59: CellColorSetting(gridDetails, clOlive); {Message ID}
     end;
   end;
 
@@ -12550,7 +12497,7 @@ var x: integer;
             case p of
               1: s:=s+' [dBm]';
               2: s:=s+' [V]';
-              3: if speDataPoint.Tag=1
+              3: if v_type=1
                    then s:=s+' [A]';               {nur H920}
               4: s:=s+' [m]';
               5, 6: s:=rsDistHome+' [m]';
@@ -12600,11 +12547,11 @@ var x: integer;
 
   procedure ShowDiaBreeze;                         {Zeit + Diagramm zeichnen}
   begin
-    bg:=ZeitToDT(gridDetails.Cells[0, x], speDataPoint.Tag);  {Zeitstempel}
-    w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
+    bg:=ZeitToDT(gridDetails.Cells[0, x], v_type); {Zeitstempel}
+    w:=StrToFloatN(gridDetails.Cells[p, x]);       {default: Wert einfach übernehmen}
     case p of                                      {Telemetrie Breeze}
       12, 13: begin                                {Koordinaten}
-                 if ((lat1<>0) or (lon1<>0)) and {Koordinaten vorhanden}
+                 if ((lat1<>0) or (lon1<>0)) and   {Koordinaten vorhanden}
                     BrGPSfix(gridDetails.Cells[20, x]) then begin {GPS-Fix}
                    w:=DeltaKoord(lat1, lon1, BrCoordToFloat(gridDetails.Cells[12, x]),
                                              BrCoordToFloat(gridDetails.Cells[13, x]));
@@ -12622,11 +12569,11 @@ var x: integer;
 
   procedure ShowDiaH501;                           {Zeit + Diagramm zeichnen}
   begin
-    bg:=ZeitToDT(gridDetails.Cells[0, x], speDataPoint.Tag);  {Zeitstempel}
-    w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
+    bg:=ZeitToDT(gridDetails.Cells[0, x], v_type); {Zeitstempel}
+    w:=StrToFloatN(gridDetails.Cells[p, x]);       {default: Wert einfach übernehmen}
     case p of                                      {Telemetrie H501}
       2, 3: begin
-              if x>1 then begin            {1. Zeile ignorieren}
+              if x>1 then begin                    {Ignore first line}
                 if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
                   w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
                                             StrToFloatN(gridDetails.Cells[3, x]));
@@ -12647,8 +12594,8 @@ var x: integer;
 
   procedure ShowDiaYTHPlus;                        {Zeit + Diagramm zeichnen}
   begin
-    bg:=ZeitToDT(gridDetails.Cells[0, x], speDataPoint.Tag);  {Zeitstempel}
-    case rgQuelle.ItemIndex of                  {Ausgewählte Datei}
+    bg:=ZeitToDT(gridDetails.Cells[0, x], v_type); {Zeitstempel}
+    case rgQuelle.ItemIndex of                     {Ausgewählte Datei}
       0: begin                                     {Telemetry}
            if CheckVT(gridDetails.Cells[gridDetails.Tag+2, x],
                       gridDetails.Cells[gridDetails.Tag, x]) then begin
@@ -12699,16 +12646,16 @@ var x: integer;
 
   procedure ShowDiaYlegacy;                        {Zeit + Diagramm zeichnen}
   begin
-    bg:=ZeitToDT(gridDetails.Cells[0, x], speDataPoint.Tag);  {Zeitstempel}
+    bg:=ZeitToDT(gridDetails.Cells[0, x], v_type); {Zeitstempel}
     w:=StrToFloatN(gridDetails.Cells[p, x]);       {default: Wert einfach übernehmen}
-    case rgQuelle.ItemIndex of                  {Gewählte Datei}
+    case rgQuelle.ItemIndex of                     {Selected file}
       0: begin                                     {Telemetry}
             case p of                              {Liste der Spalten für Dia}
               1: if w=0 then                       {Suppress zero values from WiFi}
                    w:=rssi_alt                     {Hold the old value do not jump to 0}
                  else
                    rssi_alt:=w;                    {Save valid RSSI values}
-              3: if speDataPoint.Tag=1 then
+              3: if v_type=1 then
                    w:=H920Amp(w);                  {Stromsensor bei H920}
               4: if not testh(w) then
                    w:=0;                           {Korrektur unplausibler Höhe}
@@ -12834,7 +12781,7 @@ begin
     lat1:=0;
     lon1:=0;
     alt1:=0;
-    if speDataPoint.Tag=ThBid then
+    if v_type=ThBid then
       alt1:=GethFromST10(lbFlights.ItemIndex, 0);   {Set to ST16 altitude}
     s:=gridDetails.Cells[p, 0];
     Form2.Caption:=rsChart+' "'+s+'"';
@@ -12843,7 +12790,7 @@ begin
     if gridDetails.ColCount=csvanz then begin      {eigenes PX4 CSV Format}
       PrepPX4csv;
     end else begin
-      case speDataPoint.Tag of
+      case v_type of
         brID: PrepBreeze;                          {Y-Achsen vorbereiten}
         H501ID: PrepH501;
         YTHPid: PrepYTHPlus;                       {YTH Plus}
@@ -12858,10 +12805,10 @@ begin
     Form2.Chart1LineSeries1.BeginUpdate;
     Form2.Chart1LineSeries1.Pointer.Visible:=false;
     Form2.Chart1.ZoomFull;
-    Form2.Chart1.Tag:=rgQuelle.ItemIndex;       {Tell that it Telemetry or whatever}
+    Form2.Chart1.Tag:=rgQuelle.ItemIndex;          {Tell that it Telemetry or whatever}
     for x:=2 to gridDetails.RowCount-1 do begin    {skip first line}
       if gridDetails.Cells[p, x]<>'' then begin    {skip empty cells}
-        if (speDataPoint.Tag=ThBid) and               {only for Thunderbird}
+        if (v_type=ThBid) and                      {only for Thunderbird}
            (p=4) and
            (gridDetails.Cells[p, x]=dzfl) then     {absolute altitude = 0}
           Continue;                                {skip zero altitude}
@@ -12869,7 +12816,7 @@ begin
           if gridDetails.ColCount=csvanz then begin  {PX4 CSV}
             ShowDiaPX4csv;
           end else begin
-            case speDataPoint.Tag of
+            case v_type of
               brID: ShowDiaBreeze;                 {Breeze}
               H501ID: ShowDiaH501;
               YTHPid: ShowDiaYTHPlus;              {YTH Plus}
@@ -13042,7 +12989,7 @@ var
         AppLog.Lines.Add(rsError+' during count of PX4 CSV values');
       end;
     end else begin
-      case speDataPoint.Tag of
+      case v_type of
         brID: ZhlBreeze;                           {Breeze}
         H501ID: ZhlH501;
       else
@@ -13070,7 +13017,7 @@ var
 
   procedure CountValues;                           {Sechs Spalten}
   begin
-    a[high(a)].Ende:=ZeitToDT(gridDetails.Cells[0, i], speDataPoint.Tag);
+    a[high(a)].Ende:=ZeitToDT(gridDetails.Cells[0, i], v_type);
     if s<>a[high(a)].Value then begin
       setlength(a, high(a)+2);                     {neuen Wert anlegen}
       a[high(a)].Value:=s;
@@ -13087,15 +13034,15 @@ begin
   PageControl1.Tag:=0;
   a:=nil;
   for i:=1 to gridDetails.RowCount - 1 do begin
-    if (speDataPoint.Tag=H501ID) or
+    if (v_type=H501ID) or
        ((CheckVT(gridDetails.Cells[gridDetails.Tag+2, i], {testen auf YTH Plus Fehler}
                 gridDetails.Cells[gridDetails.Tag, i])) or
        (gridDetails.ColCount=csvanz) or            {eigenes PX4 CSV Format ohne six}
-       (rgQuelle.ItemIndex>0)) then begin       {Test aber nur bei telemetry}
+       (rgQuelle.ItemIndex>0)) then begin          {Test aber nur bei telemetry}
       s:=trim(gridDetails.Cells[p, i]);
       if assigned(a) then begin  {ist array schon einmal initialisiert worden ?}
         six:=false;
-        case speDataPoint.Tag of
+        case v_type of
           brID: begin                              {Breeze}
                   case p of
                     2:  six:=true;                 {FlightMode}
@@ -13149,7 +13096,7 @@ begin
         setlength(a, 1);                           {neuen Wert im Array anlegen}
         a[0].Value:=s;                             {Array Werte initialisieren}
         a[0].Count:=1;
-        a[0].Beginn:=ZeitToDT(gridDetails.Cells[0, i], speDataPoint.Tag);
+        a[0].Beginn:=ZeitToDT(gridDetails.Cells[0, i], v_type);
         a[0].Ende:=a[0].Beginn;                    {Zeitstempel intialisieren}
       end;
     end;
@@ -13176,7 +13123,7 @@ begin
       15, 18, 19, 59: DreiSpalten;
     end;
   end else
-  case speDataPoint.Tag of
+  case v_type of
     brID: begin                   {Liste der kommentierten Statistiken, Breeze}
             case p of                              {muss zu Formatwandlung passen}
               11, 18: DreiSpalten;
@@ -13237,7 +13184,7 @@ begin
   end else                                         {sonstige, wie gehabt}
   case rgQuelle.ItemIndex of
     0: begin
-         case speDataPoint.Tag of
+         case v_type of
            brID: begin                             {Yuneec Breeze}
                    case Index of                   {Telemetrie Spalten auswerten}
                      2..9, 11, 14, 18, 19: ZhlWerte(Index);
@@ -13291,7 +13238,7 @@ begin
   if key=vk_F3 then TabSuchen;                     {F3 weitersuchen}
   if key=vk_F4 then TabSelect;                     {F4 Filter setzen}
   if (key=vk_F5) or (key=vk_ESCAPE) then begin     {F5 Filter rücksetzen}
-    case speDataPoint.Tag of
+    case v_type of
       brID: BrAnzeigeCSV(0);                       {Breeze}
       H501ID: H501AnzeigeCSV(0);
     else
@@ -13384,7 +13331,7 @@ end;
 procedure TForm1.gridOverviewDblClick(Sender: TObject);  {Doppelclick zu Tabelle}
 begin
   if lbFlights.Items.Count>0 then begin
-    case speDataPoint.Tag of
+    case v_type of
       MQid: ShowMQ;                                {MantisQ}
       H5id: ShowH520;                              {eine TLOG Datei H520 anzeigen}
       else begin
@@ -13403,20 +13350,22 @@ begin
      (aCol>0) and (aRow>0) then begin              {1. Spalte ausschliessen}
     if aRow<gridOverview.RowCount-1 then begin     {Fußzeile ausschliessen}
       if (topp[aRow-1, 6] and 32)>0 then           {Compass error, ganze Zeile}
-        gridOverview.Canvas.Brush.Color:=clOrange;
+        CellColorSetting(gridOverview, clErrFlag);
       if ((topp[aRow-1, 6] and 1)>0) and
          (aCol=10) then                            {Voltage 1}
-        gridOverview.Canvas.Brush.Color:=clSkyBlue;
+        CellColorSetting(gridOverview, clVolt1);
       if ((topp[aRow-1, 6] and 2)>0) and
          (aCol=10) then                            {Voltage 2}
-        gridOverview.Canvas.Brush.Color:=clVolt2;
+        CellColorSetting(gridOverview, clVolt2);
       if ((topp[aRow-1, 6] and 256)>0) and
          (aCol<4) then                             {Emergency}
-        gridOverview.Canvas.Brush.Color:=clMaroon;
-    end else
-      if (speDataPoint.Tag<>MQid) and
-         (speDataPoint.Tag<>H5id) then
-        gridOverview.Canvas.Brush.Color:=clMoneyGreen; {Summenzeile}
+        CellColorSetting(gridOverview, clEmergency);
+    end else begin
+      if (v_type<>MQid) and
+         (v_type<>H5id) then begin
+        CellColorSetting(gridOverview, clMoneyGreen); {Summenzeile}
+      end;
+    end;
   end;
 end;
 
@@ -13460,7 +13409,7 @@ begin
     end else begin
       case sp of
         9, 10: gridOverview.Hint:=                 {min/max voltage}
-               ShowVoltageF(GetFVal(gridOverview.Cells[sp, zl]), speDataPoint.Tag);
+               ShowVoltageF(GetFVal(gridOverview.Cells[sp, zl]), v_type);
       else
         gridOverview.Hint:=gridOverview.Cells[sp, 0]+'='+
                           gridOverview.Cells[sp, zl];     {Default hint}
@@ -13502,7 +13451,7 @@ end;
 procedure TForm1.gridFirmwareHeaderClick(Sender: TObject; IsColumn: Boolean;
   Index: Integer);                                 {Firmware Anzeige}
 begin
-  if (speDataPoint.Tag=brID) and
+  if (v_type=brID) and
      (not IsColumn) and
      (Index=5) then mmoText.Lines.Add(gridFirmware.Cells[1, Index]);
 end;
@@ -13537,7 +13486,7 @@ begin
         PageControl1.ActivePageIndex:=7;           {Springe zum AppLogHighlighter}
       end else
       if (rgErrType.ItemIndex<8) or                {Sensor Dateien}
-         (speDataPoint.Tag<>YTHPid) then begin     {H Plus}
+         (v_type<>YTHPid) then begin               {H Plus}
         fn:=gridScanResult.Cells[1, gridScanResult.Tag];
         cbxLogDir.Text:=GetFlightLogDir(fn);
         SelDirAct(fn);
@@ -13592,21 +13541,21 @@ procedure TForm1.TimerDblClickTimer(Sender: TObject); {Abfrage Doppelclick Form2
 var tp: TDateTime;
     i: integer;
 begin
-  if Form2.st<>'' then begin                       {Tageszeit auslesen}
+  if timestr<>'' then begin                        {Tageszeit auslesen}
     try
-      tp:=EncodeTime(StrToInt(copy(Form2.st,1,2)),
-                     StrToInt(copy(Form2.st,4,2)),
-                     StrToInt(copy(Form2.st,7,2)), 0);
+      tp:=EncodeTime(StrToInt(copy(timestr,1,2)),
+                     StrToInt(copy(timestr,4,2)),
+                     StrToInt(copy(timestr,7,2)), 0);
     except
       tp:=0;
-      cbxSearch.Text:=Form2.st;                    {andere Werte in Spalte suchen}
+      cbxSearch.Text:=timestr;                     {andere Werte in Spalte suchen}
       TabSuchen;
     end;
-    Form2.st:='';                                  {Aktion zurücksetzen}
+    timestr:='';                                   {Aktion zurücksetzen}
     Form2.MenuItem3.Enabled:=false;
     if (tp>0) and (gridDetails.RowCount>10) then begin {nur wenn es sich lohnt}
       for i:=1 to gridDetails.RowCount-1 do begin      {Zeitstempel suchen}
-        if frac(ZeitToDT(gridDetails.Cells[0, i], speDataPoint.Tag))>=tp then begin
+        if frac(ZeitToDT(gridDetails.Cells[0, i], v_type))>=tp then begin
           speDataPoint.Value:=i;                   {gefunden und springen}
           GoToZ(1);
           break;
@@ -13650,7 +13599,7 @@ begin
     exit;
   end;
   if lbFlights.Items.Count>0 then begin
-    case speDataPoint.Tag of                       {Breeze lat/lon Format}
+    case v_type of                                 {Breeze lat/lon Format}
       brID: OpenURL(URLGMap(BrCoordFormat(gridDetails.Cells[12,gridDetails.Selection.Top]),
                       BrCoordFormat(gridDetails.Cells[13,gridDetails.Selection.Top])));
 
@@ -13765,14 +13714,14 @@ begin
     if cbxSearch.Text<>'' then begin               {mit Filter}
       Merkliste(cbxSearch, AnzDirs);               {Suchwerte DropDownListe füllen}
       cbxSearch.Hint:=rsSelection+' in '+gridDetails.Cells[Label3.Tag, 0];
-      case speDataPoint.Tag of
+      case v_type of
         brID: BrAnzeigeCSV(1);                     {Breeze Filtermode}
         H501ID: H501AnzeigeCSV(1);
       else
         AnzeigeCSV(1);                             {legacy Yuneec Filtermode}
       end;
     end else                                       {wenn leer, alles anzeigen}
-      Case speDataPoint.Tag of
+      Case v_type of
         brID: BrAnzeigeCSV(0);                     {Breeze}
         H501ID: H501AnzeigeCSV(0);
       else
@@ -13906,9 +13855,9 @@ end;
 
 procedure TForm1.mnSlideshowClick(Sender: TObject); {Menu Diashow Profiles}
 begin
-  if (speDataPoint.Tag=MQid) or                    {nichts tun für MantisQ}
-     (speDataPoint.Tag=H5id) or                    {nichts tun für H520}
-     (speDataPoint.Tag=BrID) then                  {nichts tun für Breeze}
+  if (v_type=MQid) or                              {nichts tun für MantisQ}
+     (v_type=H5id) or                              {nichts tun für H520}
+     (v_type=BrID) then                            {nichts tun für Breeze}
        exit;
   TimerDiashow.Tag:=0;
   TimerDiashow.Enabled:=true;
@@ -14026,8 +13975,8 @@ begin
     end;
 
     if n=0 then begin                              {Test auf log files vom Breeze}
-      speDataPoint.Tag:=brID;                      {erstmal ID für Breeze setzen
-                                            wegen Dateinamen zerlegen und bauen}
+      v_type:=brID;                                {erstmal ID für Breeze setzen
+                                                    wegen Dateinamen zerlegen und bauen}
       if FindFirst(IncludeTrailingPathDelimiter(dn)+wldcd+
                    bext, faAnyFile, sr)=0 then try
         repeat
@@ -14055,7 +14004,7 @@ begin
     end;
 
     if n=0 then begin                              {noch ein Versuch für Mantis}
-      speDataPoint.Tag:=MQid;                      {erstmal ID für MantisQ setzen}
+      v_type:=MQid;                                {erstmal ID für MantisQ setzen}
       if FindFirst(IncludeTrailingPathDelimiter(dn)+nfile+wldcd, faAnyFile, sr)=0 then
       try
         repeat
@@ -14091,7 +14040,7 @@ begin
     end;
 
     if n=0 then begin                              {noch ein Versuch für H520}
-      speDataPoint.Tag:=H5id;                      {erstmal ID für MantisQ setzen}
+      v_type:=H5id;                                {erstmal ID für MantisQ setzen}
       if FindFirst(IncludeTrailingPathDelimiter(dn)+wldcd+hext, faAnyFile, sr)=0 then
       try
         repeat                                     {*.tlog files}
@@ -14112,7 +14061,7 @@ begin
     end;
 
     if n=0 then begin                              {V4.3: Just another try for Hubsan}
-      speDataPoint.Tag:=H501ID;                    {erstmal ID für H501 setzen}
+      v_type:=H501ID;                              {erstmal ID für H501 setzen}
       if FindFirst(IncludeTrailingPathDelimiter(dn)+h5file+wldcd+fext, faAnyFile, sr)=0 then
       try
         repeat                                     {H501_*.csv files}
@@ -14146,6 +14095,7 @@ begin
         topp[x, 5]:=0;                             {Suchpointer löschen}
         topp[x, 6]:=0;                             {ErrorID für Datei löschen}
       end;
+      gridOverview.BeginUpdate;
       gridOverview.RowCount:=lbFlights.Items.Count+1; {Übersichtstabelle ohne Summe}
       gridOverview.Row:=1;
       gridOverview.Col:=1;
@@ -14156,8 +14106,8 @@ begin
       btnFlugBuch.Tag:=0;
       for x:=0 to lbFlights.Items.Count-1 do
         gridOverview.Cells[0, x+1]:=lbFlights.Items[x];
-      if (speDataPoint.Tag<>MQid) and              {nicht nur Sensor PX4}
-         (speDataPoint.Tag<>H5id) then begin       {Übersichtstabelle füllen}
+      if (v_type<>MQid) and                        {nicht nur Sensor PX4}
+         (v_type<>H5id) then begin                 {Übersichtstabelle füllen}
         gridOverview.RowCount:=gridOverview.RowCount+1; {Summenzeile}
         for x:=0 to lbFlights.Items.Count-1 do
           Werte(x);                                {Telemetrie durchsuchen für Übersicht}
@@ -14212,15 +14162,17 @@ begin
         end;
         AppLog.Lines.Add('}');
       end;
+      GridOverview.EndUpdate;
+      GridOverview.AutoSizeColumns;
       lbFlights.ItemIndex:=0;                      {Default: 1. Zeile auswählen}
     end;                                           {Ende Übersichtstabelle}
   except
     n:=0;                                          {nix gefunden}
-    AppLog.Lines.Add('''13611'+suff+'File error CheckNumTurns');
+    AppLog.Lines.Add('''14164'+suff+'File error CheckNumTurns');
   end;
   result:=n;                                       {Anzahl übergeben}
   if n>0 then
-    rgQuelle.Tag:=0;                                {Resize columns needed again}
+    rgQuelle.Tag:=0;                               {Resize columns needed again}
 end;
 
 {###############################################################################
@@ -14368,6 +14320,15 @@ begin
     FreeAndNil(splitlist);
     Screen.Cursor:=crDefault;
   end;
+end;
+
+procedure TForm1.cbHighLightChange(Sender: TObject); {AppLog Highlighter}
+begin
+  if cbHighLight.Checked then                      {Switch on HighLighter}
+    AppLog.Highlighter:=AppLogHighlighter
+  else
+    AppLog.HighLighter:=nil;
+  AppLog.Refresh;
 end;
 
 procedure TForm1.mnHexdumpClick(Sender: TObject);  {Tools Menu Hexdump}

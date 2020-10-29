@@ -305,7 +305,9 @@ resourcestring                                     {english}
   capHexdump='Hex dump';
   hntHexdump='Hexadecimal dump of one block from file.';
   hntBlockNum='Block number to dump as hexadecimal.';
-  hntBlockSize='Length of blocks in kByte';
+  hntBlockSize='Length of blocks in kByte for hexdump in AppLog';
   rsFilesize='File size';
+  capHighLight='AppLog highlighter';
+  hntHighLight='Enable colored text fragments in AppLog';
 
 

@@ -13,8 +13,6 @@ type
 
     TForm4 = class(TForm)
     Image1: TImage;
-    StaticText1: TStaticText;
-    StaticText2: TStaticText;
   private
     { private declarations }
   public

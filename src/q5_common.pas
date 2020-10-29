@@ -5,11 +5,22 @@ unit q5_common;
 interface
 
 uses
-  SysUtils, Graphics, lazUTF8, math;
+  SysUtils, Graphics, lazUTF8, math, Grids;
 
 const
 {public constants}
-  Version ='V4.5 10/2020';
+  Version ='V4.6 10/2020';
+
+  defaultcol=5;                                    {muss kleiner als die Mindestmenge der Spalten sein}
+  defVT=5;                                         {Default vehicle YTH, need 5 for Thunderbird}
+  YTHPid=10;                                       {YTH Plus ID}
+  MQid=11;                                         {MantisQ ID, PX4 Quadcopter}
+  H5id=12;                                         {Yuneec H520, *.tlog files (PX4)}
+  MQcsvID=13;                                      {neues CSV Format beim MQ}
+  ThBid=14;                                        {Thunderbird, H480 customized firmware on base of PX4}
+  brID=90;                                         {Breeze ID}
+  H501ID=91;                                       {Hubsan flaretom Rekorder}
+  YTHPcols=276;                                    {Anzahl Spalten bei YTH Plus Sensorfiles = ID für Anzeige}
 
   InvalidChars: set of char=['\', '/', ':', '*', '?', '"', '<', '>', '|', '&'];
   ziff=['0'..'9'];                                 {gültige Ziffern}
@@ -17,17 +28,48 @@ const
   tab2='  ';
   tab4='    ';
   tab6='      ';
+  csvsep=';';
+  spk=4;                                           {Korrekturwert Spaltenbreite}
+  zzf='hh:nn:ss';
+  mzf='yyyy-mm-dd hh:nn';                          {Datum/Zeit Formate}
+  dzf='yyyy-mm-dd';
+  vzf=dzf+' '+zzf;
+  zzz='.zzz';
+  dzfl='0.0';                                      {Formatierung für FormatFloat}
+  ctfl='0.00';
+  mlfl='0.000';
+
+  fkmh=3.6;                                        {m/s --> km/h}
+  fmph=2.2369362920544;                            {m/s --> mph}
+  fmile=1.609344;
+  fft=0.3048;                                      {Faktor Umrechnung ft --> m}
+
+  fmode='f_mode';                                  {Spalte Flightmode, Position der Spalte in gridDetails.Tag}
+  pfmode='fMode';                                  {Spaltenbezeichnung beim YTH Plus}
+  brfmode='flightMode';                            {FlightMode beim Breeze}
 
   clOrange=$000080FF;
   clNoGPS=$000080FF;                               {Dark Orange}
+
   clAngle=clFuchsia;
   clEmergency=clMaroon;
   clSmart=clGreen;
   clRTH=clRed;
   clSport=clBlue;
+
+  clFairGood=clMoneyGreen;
+  clVeryGood=clGreen;
   clTasks=clMoneyGreen;
   clAttention=$008080F0;                           {Farbe Achtung}
-  clVolt2    =$00FF901E;                           {Voltage 2 Farbe}
+  clError=clRed;
+
+  clVolt1=clSkyBlue;
+  clVolt2=$00FF901E;                               {Voltage 2 Farbe}
+  clErrFlag=$000080FF;                             {Orange}
+  clPeaks=clYellow;
+
+var timestr: string;
+    v_type: integer;
 
 
 {Public functions and procedures}
@@ -42,6 +84,8 @@ const
   function GetFVal(const s: string): double;       {get a float from a string}
   function tabs(const prefix, suffix: string; const t: integer): string;  {Tabulator + suff}
   function DeltaKoord(lat1, lon1, lat2, lon2: double): double;   {Entfernung in m}
+  procedure CellColorSetting(aGrid: TStringGrid; Farbe: TColor); {Zellen einfärben}
+  procedure FMcolor(aGrid: TStringGrid; fm, vt: integer);  {Flight mode coloe r settings}
 
 implementation
 
@@ -112,7 +156,7 @@ begin
 end;
 
 function tabs(const prefix, suffix: string; const t: integer): string;  {Tabulator + suff}
-begin                  {formatiert einen string in Länge t zur Ausgabe}
+begin                                     {formatiert einen string in Länge t zur Ausgabe}
   result:=prefix;
   while UTF8Length(result)<t do
     result:=result+tab1;
@@ -150,6 +194,61 @@ end;
 function RadToGrad(r: double): double;
 begin
   result:=r*180/pi;                                {rad to ° +/-180}
+end;
+
+procedure CellColorSetting(aGrid: TStringGrid; Farbe: TColor); {Zellen einfärben}
+begin
+  aGrid.Canvas.Brush.Color:=Farbe;
+  aGrid.Canvas.Font.Color:=clBlack;                {Text always black}
+end;
+
+procedure BladeCol(aGrid: TStringGrid; fm: integer);
+begin
+  case fm of                                       {flight modes; wie Chart1BarSeries}
+    25:             CellColorSetting(aGrid, clAngle);
+    11:             CellColorSetting(aGrid, clSport);
+    9, 14, 10, 13:  CellColorSetting(aGrid, clRTH);
+    12:             CellColorSetting(aGrid, clSmart);
+    8:              CellColorSetting(aGrid, clEmergency);
+    5:              CellColorSetting(aGrid, clSilver);        {Motor Starting}
+  end;
+end;
+
+procedure LegacyCol(aGrid: TStringGrid; fm: integer);
+begin
+  case fm of                                       {flight modes wie Chart1BarSeries}
+    3, 4:                  CellColorSetting(aGrid, clAngle);
+    2, 5, 7, 22, 24, 32:   CellColorSetting(aGrid, clNoGPS);
+    13, 14, 20:            CellColorSetting(aGrid, clRTH);
+    6, 21, 23:             CellColorSetting(aGrid, clSmart);
+    9, 10, 11, 12, 17, 18: CellColorSetting(aGrid, clEmergency);
+    0, 1:                  CellColorSetting(aGrid, clSport);
+    26..29, 33:            CellColorSetting(aGrid, clTasks);  {Tasks}
+    8:                     CellColorSetting(aGrid, clSilver); {Motor Starting}
+  end;
+end;
+
+procedure ThunderCol(aGrid: TStringGrid; fm: integer);
+begin
+  case fm of                                       {flight modes; wie Chart1BarSeries}
+    0:      CellColorSetting(aGrid, clSport);                 {Stabilized blue}
+    1:      CellColorSetting(aGrid, clNoGPS);                 {Altitude orange}
+    3:      CellColorSetting(aGrid, clAngle);                 {Position purple}
+    13, 14: CellColorSetting(aGrid, clAttention);             {RTH other red}
+    20:     CellColorSetting(aGrid, clRTH);                   {Rattitude/Rate red}
+    33:     CellColorSetting(aGrid, clSmart);                 {Mission green}
+    16:     CellColorSetting(aGrid, clSilver);                {Ready silver}
+  end;
+end;
+
+procedure FMcolor(aGrid: TStringGrid; fm, vt: integer);       {Flight mode coloe r settings}
+begin
+  case vt of
+    1, 2:  LegacyCol(aGrid, fm);
+    3:     BladeCol(aGrid, fm);                    {350QX}
+    4..6:  LegacyCol(aGrid, fm);
+    ThBid: ThunderCol(aGrid, fm);                  {Thunderbird}
+  end;
 end;
 
 end.
