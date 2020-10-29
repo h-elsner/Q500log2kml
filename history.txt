@@ -126,3 +126,12 @@ History:
 2020-09-21       Message ALTITUDE (141) added. Tools: List of used MAVlink messages.
 2020-09-30       Tools - Hexdump added. Bugfix Motorstatus hexacopter (223).
 2020-10-25       Correct strage Coordinates format from ST16S in RemoteGPS*.csv.
+2020-08-21       Clean up KML files from PX4 sensor files
+2020-09-20       Message POSITION_TARGET_GLOBAL_INT added (only for AppLogHighlighter)
+2020-09-21       Message ALTITUDE (141) added. Tools: List of used MAVlink messages.
+2020-09-30       Tools - Hexdump added. Bugfix Motorstatus hexacopter (223).
+2020-10-25       Correct strange Coordinates format from ST16S in RemoteGPS*.csv.
+2020-10-29 V4.6  Update for Windows High Contrast (own colors removed).
+                 AppLog highlighter switchable. Some Colors updated.
+                 Open the last (newest) item in the list instead of the first (oldest).
+                 Model list handling improved.
