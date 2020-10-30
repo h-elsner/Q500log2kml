@@ -74,6 +74,9 @@ var timestr: string;
 
 {Public functions and procedures}
 
+  function BoolToDouble(const s: string): double;  {zum Darstellen von Boolean}
+  function StatusToByte(const s: string): byte;    {wandelt negative Statusanzeigen um}
+  function StrToFloatN(s: string): double; {kapselt StrToFloat, gibt bei Fehler 0 zurück}
   function CleanDN(const s: string): string;       {Ungültige Zeichen entfernen}
   function CleanNum(const s: string): string;      {Ziffern filtern}
   function FormSR(const s: string; const p: integer): string;  {füllt string mit führenden
@@ -84,10 +87,59 @@ var timestr: string;
   function GetFVal(const s: string): double;       {get a float from a string}
   function tabs(const prefix, suffix: string; const t: integer): string;  {Tabulator + suff}
   function DeltaKoord(lat1, lon1, lat2, lon2: double): double;   {Entfernung in m}
+
   procedure CellColorSetting(aGrid: TStringGrid; Farbe: TColor); {Zellen einfärben}
   procedure FMcolor(aGrid: TStringGrid; fm, vt: integer);  {Flight mode coloe r settings}
 
 implementation
+
+function BoolToDouble(const s: string): double;    {zum Darstellen von Boolean}
+begin
+  result:=0;
+  if LowerCase(trim(s))='false' then
+    result:=-1;
+  if LowerCase(trim(s))='true' then
+    result:=1;
+end;
+
+function StatusToByte(const s: string): byte;      {wandelt negative Statusanzeigen um}
+var p: integer;
+begin
+  try
+    p:=StrToInt(s);
+  except
+    p:=0;
+  end;
+  result:=(p and 255);                             {positive Zahlen übernehmen}
+end;
+
+function StrToFloatN(s: string): double; {kapselt StrToFloat, gibt bei Fehler 0 zurück}
+var m: integer;
+
+begin
+  result:=0;
+  if length(s)>0 then begin
+    m:=1;                                          {Multiplikator bei Expo}
+    if pos('E', s)>0 then begin
+      if pos('E7', s)>0 then begin
+        s:=StringReplace(s, 'E7','',[rfReplaceAll, rfIgnoreCase]);
+      end else
+      if pos('E8', s)>0 then begin                 {*10}
+        m:=10;
+        s:=StringReplace(s, 'E8','',[rfReplaceAll, rfIgnoreCase]);
+      end else
+      if pos('E9', s)>0 then begin                 {*100}
+        m:=100;
+        s:=StringReplace(s, 'E9','',[rfReplaceAll, rfIgnoreCase]);
+      end;
+    end;
+    try
+      result:=StrToFloat(s)*m;
+    except
+      result:=BoolToDouble(s);
+    end;
+  end;
+end;
 
 function CleanDN(const s: string): string;         {Ungültige Zeichen entfernen}
 var i: integer;

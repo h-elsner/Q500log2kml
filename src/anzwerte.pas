@@ -111,6 +111,9 @@ begin
   MenuItem2.Caption:=rsFileSave;
   MenuItem3.Caption:=capGoToVal;
   MenuItem3.Enabled:=false;
+  {$IFDEF LINUX}                                     {Linux}
+    Chart1LineSeries1.LinePen.Color:=clNavy;
+  {$ENDIF}
   Chart1ConstantLine1.Active:=false;
   StringGrid1.Tag:=0;
   edTime.Color:=clOrange;                          {Moving label}

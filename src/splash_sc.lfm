@@ -1,22 +1,22 @@
 object Form4: TForm4
-  Left = 1463
-  Height = 295
-  Top = 812
-  Width = 411
+  Left = 1494
+  Height = 292
+  Top = 820
+  Width = 409
   BorderStyle = bsNone
   Caption = 'Log'
-  ClientHeight = 295
-  ClientWidth = 411
+  ClientHeight = 292
+  ClientWidth = 409
   FormStyle = fsSplash
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.6.0'
+  LCLVersion = '2.0.10.0'
   object Image1: TImage
     Left = 0
-    Height = 296
+    Height = 292
     Top = 0
-    Width = 413
-    Center = True
+    Width = 409
+    Align = alClient
     Picture.Data = {
       1754506F727461626C654E6574776F726B47726170686963E0A2010089504E47
       0D0A1A0A0000000D4948445200000199000001250802000000B9CF0897000000

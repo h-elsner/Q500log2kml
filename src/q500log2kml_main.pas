@@ -202,10 +202,10 @@ History:
 2020-09-21       Message ALTITUDE (141) added. Tools: List of used MAVlink messages.
 2020-09-30       Tools - Hexdump added. Bugfix Motorstatus hexacopter (223).
 2020-10-25       Correct strange Coordinates format from ST16S in RemoteGPS*.csv.
-2020-10-29 V4.6  Update for Windows High Contrast (own colors removed).
+2020-10-30 V4.6  Update for Windows High Contrast (own colors removed).
                  AppLog highlighter switchable. Some Colors updated.
                  Open the last (newest) item in the list instead of the first (oldest).
-                 Model list handling improved.
+                 Model list window removed. Model drop down list handling improved.
 *)
 
 unit q500log2kml_main;
@@ -247,6 +247,7 @@ type
     btnScreenshot: TBitBtn;
     btnCut: TBitBtn;                               {Ausschneiden}
     btnCGO3Status: TBitBtn;
+    btnSpecial: TButton;
     btnVideoStart: TBitBtn;
     btnVideoStop: TBitBtn;
     btnCGO3Reset: TBitBtn;
@@ -263,9 +264,9 @@ type
     btnDelAppLog: TBitBtn;
     btnArchive: TBitBtn;
     btnShowHex: TBitBtn;
-    btnSpecial: TButton;
     cbCap: TCheckBox;
     cbHighLight: TCheckBox;
+    cbThunder: TCheckBox;
     Chart1: TChart;
     Chart1BarSeries1: TBarSeries;
     Chart1BarSeries2: TBarSeries;
@@ -298,7 +299,6 @@ type
     cbSensorKML: TCheckBox;
     cbExtrude: TCheckBox;
     cbReduced: TCheckBox;
-    cbThunder: TCheckBox;
     cbRTSP: TCheckBox;
     cbDashw: TCheckBox;
     cbFileList: TCheckBox;
@@ -307,7 +307,11 @@ type
     cbPilot: TCheckBox;
     cbMAVasCSV: TCheckBox;
     cbCleanHplus: TCheckBox;
+    edCGOURL: TEdit;
     gbBatt: TGroupBox;
+    Image4: TImage;
+    Label10: TLabel;
+    Label19: TLabel;
     lblBaseLoad: TLabel;
     lblMAVcommon: TLabel;
     MAVmsg: TCheckGroup;
@@ -331,10 +335,9 @@ type
     DateTimeIntervalChartSource4: TDateTimeIntervalChartSource;
     edSendCGO3: TEdit;
     edReceiveCGO3: TEdit;
-    edCGOURL: TEdit;
     rgBlockSize: TRadioGroup;
     speExpo: TFloatSpinEdit;
-    GroupBox1: TGroupBox;
+    gbDiverse: TGroupBox;
     GroupBox10: TGroupBox;
     GroupBox11: TGroupBox;
     GroupBox12: TGroupBox;
@@ -349,7 +352,6 @@ type
     Image1: TImage;
     Image2: TImage;
     Image3: TImage;
-    Image4: TImage;
     Label9: TLabel;
     MenuItem1: TMenuItem;
     mnHexdump: TMenuItem;
@@ -368,6 +370,7 @@ type
     gridScanResult: TStringGrid;
     AppLogHighlighter: TSynAnySyn;
     AppLog: TSynEdit;
+    speItems: TSpinEdit;
     TabImages: TImageList;
     indGnouMeterSDused: TindGnouMeter;
     Label1: TLabel;
@@ -377,7 +380,6 @@ type
     Label15: TLabel;
     Label16: TLabel;
     Label18: TLabel;
-    Label19: TLabel;
     Label2: TLabel;
     Label20: TLabel;
     Label21: TLabel;
@@ -396,7 +398,6 @@ type
     LabeledEdit3: TLabeledEdit;
     lbFlights: TListBox;
     MainMenu1: TMainMenu;
-    mmoText: TMemo;
     mnGoogleMap: TMenuItem;
     MenuItem14: TMenuItem;
     MenuItem15: TMenuItem;
@@ -638,7 +639,6 @@ type
     procedure sbtnScanDirClick(Sender: TObject);
     procedure sbtnSendCGO3Click(Sender: TObject);
     procedure speLinePathChange(Sender: TObject);
-    procedure StaticText1DblClick(Sender: TObject);
     procedure StatusBar1DblClick(Sender: TObject);
     procedure StatusBar1Hint(Sender: TObject);
     procedure gridDetailsClick(Sender: TObject);
@@ -669,8 +669,6 @@ type
       aState: TGridDrawState);
     procedure gridCGO3KeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure gridFirmwareHeaderClick(Sender: TObject; IsColumn: Boolean;
-      Index: Integer);
     procedure gridFirmwareKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure gridFirmwareMouseUp(Sender: TObject; Button: TMouseButton;
@@ -938,7 +936,6 @@ const
   m50val=1365;                                     {-50%}
   spt=10;                                          {zusätzliche Spaltenbreite  für Telemetrie in pix}
   rrk='# ';                                        {RaceRender Kommentar}
-  AnzDirs=12;                                      {Anzahl der letzen Verzeichnisse}
   FWsz=18;                                         {Mindestgröße Datei für FW}
   CGO3dir='100MEDIA/';
   CGO3cgi='cgi-bin/cgi?CMD=';
@@ -982,6 +979,15 @@ implementation
 {$R *.lfm}
                                                    {TForm1: Hauptfenster}
 
+procedure Merkliste(ml: TComboBox; maxAnzahl: integer);
+begin                                              {DropDownListe füllen}
+  if (ml.Text<>'') and
+     (ml.Items.IndexOf(ml.Text)<0) then            {noch nicht in Liste}
+    ml.Items.Insert(0, ml.Text);
+  if ml.Items.Count>MaxAnzahl then                 {Anzahl in Liste begrenzen}
+    ml.Items.Delete(MaxAnzahl);
+end;
+
 function GetExePath: string; {Gibt den Pfad zur exe-Datei mit Slash am Ende zurück}
 begin
   result:=IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
@@ -1003,6 +1009,9 @@ begin
         if pos(mndirp, splitlist[i])=1 then begin
           result:='';                              {Pfad zusammenbauen}
           v_type:=YTHPid;
+          StaticText1.Caption:=vtypeToStr(v_type); {Type hard wired}
+          cbxText.Text:=StaticText1.Caption;       {Drone ID}
+          Merkliste(cbxText, speItems.Value);
           for k:=0 to i do
             result:=result+splitlist[k]+Pathdelim;
           exit;
@@ -1162,10 +1171,9 @@ begin
   TabSheet9.Hint:=capTabSheet9;
   TabSheet10.Caption:=capTabSheet10;
   TabSheet10.Hint:=capTabSheet10;
-  GroupBox1.Caption:=capGroupBox1;
+  gbDiverse.Caption:=capDiverse;
   TabSheet12.Caption:=capTabSheet12;
   TabSheet12.Hint:=capTabSheet12;
-  mmoText.Hint:=hntMemo1;
   Label1.Caption:=capLabel1;
   Label1.Hint:=hntLabel1;
   speLinePath.Hint:=hntLabel1;
@@ -1185,6 +1193,9 @@ begin
   Label14.Hint:=capLabel14;
   Label15.Caption:=rsDauer;
   Label15.Hint:=rsDauer;
+  Label10.Caption:=capItems;
+  Label10.Hint:=hntItems;
+  speItems.Hint:=hntItems;
   Label7.Hint:=GetExePath+manual;                  {default}
   if not FileExists(Label7.Hint) then begin
     Label7.Hint:=homepage+hpmydat+manual;          {mit Internet überschreiben}
@@ -1348,6 +1359,7 @@ begin
   btnDelAppLog.Hint:=hntDel;
   btnShowHex.Caption:=capHexdump;
   btnShowHex.Hint:=hntHexdump;
+  rgBlockSize.Caption:=capBlockSize;
   rgBlockSize.Hint:=hntBlockSize;
   speBlockNum.Hint:=hntBlockNum;
   mnHexDump.Hint:=hntHexdump;
@@ -1382,43 +1394,6 @@ begin
   MAVmsgDefault;                                   {default: all MAV messages selected}
   MAVmsg.Hint:=hntMAVmsg;
   FreigabeCut(false);                              {ohne Statusausgabe}
-end;
-
-function BoolToDouble(const s: string): double;    {zum Darstellen von Boolean}
-begin
-  result:=0;
-  if LowerCase(trim(s))='false' then
-    result:=-1;
-  if LowerCase(trim(s))='true' then
-    result:=1;
-end;
-
-function StrToFloatN(s: string): double; {kapselt StrToFloat, gibt bei Fehler 0 zurück}
-var m: integer;
-
-begin
-  result:=0;
-  if length(s)>0 then begin
-    m:=1;                                          {Multiplikator bei Expo}
-    if pos('E', s)>0 then begin
-      if pos('E7', s)>0 then begin
-        s:=StringReplace(s, 'E7','',[rfReplaceAll, rfIgnoreCase]);
-      end else
-      if pos('E8', s)>0 then begin                 {*10}
-        m:=10;
-        s:=StringReplace(s, 'E8','',[rfReplaceAll, rfIgnoreCase]);
-      end else
-      if pos('E9', s)>0 then begin                 {*100}
-        m:=100;
-        s:=StringReplace(s, 'E9','',[rfReplaceAll, rfIgnoreCase]);
-      end;
-    end;
-    try
-      result:=StrToFloat(s)*m;
-    except
-      result:=BoolToDouble(s);
-    end;
-  end;
 end;
 
 function testh(const a: double): boolean; inline;  {Datensätze mit unsinniger Höhe ausblenden}
@@ -1467,17 +1442,6 @@ begin
   except
     result:=trunc(now);
   end;
-end;
-
-function StatusToByte(const s: string): byte; inline; {wandelt negative Statusanzeigen um}
-var p: integer;
-begin
-  try
-    p:=StrToInt(s);
-  except
-    p:=0;
-  end;
-  result:=(p and 255);                             {positive Zahlen übernehmen}
 end;
 
 function ByteToBin(w: byte): string;               {Byte to Binary string}
@@ -1647,7 +1611,6 @@ function TForm1.fmodeToStr(const f: integer): string; {Flight Mode abh. vom Typ 
       27: result:='Task Journey';
       28: result:='Task Point of Interest';
       29: result:='Task Orbit';
-//      31: result:='seen during WLAN only';       {??}
       32: result:='IPS';                           {FMODE_ANGLE_MODE_IPS_ONLY:I = 0x20}
       33: result:='Waypoints';
     end;
@@ -1691,15 +1654,6 @@ begin                                              {für Yuneec Breeze}
      10: result:='Pilot'+GPSoff;
     else result:='Mode '+IntToStr(f);
   end;
-end;
-
-procedure Merkliste(ml: TComboBox; maxAnzahl: integer); {DropDownListe füllen}
-begin
-  if (ml.Text<>'') and
-     (ml.Items.IndexOf(ml.Text)<0) then            {noch nicht in Liste}
-    ml.Items.Insert(0, ml.Text);
-  if ml.Items.Count>MaxAnzahl then                 {Anzahl in Liste begrenzen}
-    ml.Items.Delete(MaxAnzahl);
 end;
 
 {from  DroneStatusParserUtil.java
@@ -3493,6 +3447,7 @@ function GetGPXval(GPXpar, s: string): string;     {gibt den Zahlenwert zurück}
 var p, x: integer;
 begin
   result:='';                                      {leer bei Nichtgefunden}
+  x:=0;
   p:=pos(GPXpar, s);
   if p>0 then begin                                {Parameter gefunden}
     for x:=p+length(GPXpar) to length(s) do
@@ -3511,6 +3466,8 @@ begin
      (v_type=defVT) then begin                     {Overwrite for PX4 Thunderbird}
     v_type:=ThBid;                                 {Set to v_type}
     StaticText1.Caption:=capThunder;               {Type hard wired}
+    cbxText.Text:=StaticText1.Caption;             {Drone ID}
+    Merkliste(cbxText, speItems.Value);
   end;
 end;
 
@@ -3634,11 +3591,6 @@ begin
   result:=StringReplace(result, 'ö', '&ouml;',  [rfReplaceAll]);
   result:=StringReplace(result, 'ü', '&uuml;',  [rfReplaceAll]);
   result:=StringReplace(result, 'ß', '&szlig;', [rfReplaceAll]);
-  result:=StringReplace(result, '€', '&euro;',  [rfReplaceAll]);
-  result:=StringReplace(result, '§', '&sect;',  [rfReplaceAll]);
-  result:=StringReplace(result, '°', '&deg;',   [rfReplaceAll]);
-  result:=StringReplace(result, '²', '&sup2;',  [rfReplaceAll]);
-  result:=StringReplace(result, '³', '&sup3;',  [rfReplaceAll]);
 end;
 
 function write_nme(nm: string): string; inline;    {Set an "name" line tagged}
@@ -3804,7 +3756,6 @@ begin
     TimerDblClick.Enabled:=false;
     if Form2<>nil then
       Form2.Close;              {zusätzliches Diagramm schließen beim Neuladen}
-    Merkliste(cbxText, 20);                        {Model list check and fill}
     rgQuelle.Enabled:=false;
     btnConv.Enabled:=false;
     btnArchive.Enabled:=true;
@@ -3828,7 +3779,7 @@ begin
         StatusBar1.Panels[5].Text:=rsFLDir;
 {FlightLog Verzeichnis in Dropdown-Liste eintragen}
         cbxLogDir.Text:=ExcludeTrailingPathDelimiter(cbxLogDir.Text);
-        Merkliste(cbxLogDir, AnzDirs);             {DropDownListe füllen}
+        Merkliste(cbxLogDir, speItems.Value);      {DropDownListe füllen}
         if PageControl1.ActivePageIndex>4 then
           PageControl1.ActivePageIndex:=0;
         lbFlights.ItemIndex:=-1;                   {Default none selected}
@@ -3847,7 +3798,7 @@ begin
       end;
     except
       StatusBar1.Panels[5].Text:=rsError;
-      AppLog.Lines.Add('''3697'+suff+StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add('''3806'+suff+StatusBar1.Panels[5].Text);
     end;
   end else
     btnArchive.Enabled:=false;                     {Archive Button ausblenden}
@@ -3972,7 +3923,7 @@ begin
               AusgabeSensor;                       {Kein Filter, alles ausgeben}
               StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
               StatusBar1.Panels[5].Text:=errSelection;
-              AppLog.Lines.Add('''3821'+suff+StatusBar1.Panels[5].Text);
+              AppLog.Lines.Add('''3931'+suff+StatusBar1.Panels[5].Text);
             end;
           end;
         except
@@ -5418,6 +5369,7 @@ procedure TForm1.btnConvClick(Sender: TObject);    {Button Konvertieren}
 var x: integer;
     fn: string;
 begin
+  Merkliste(cbxText, speItems.Value);              {Type merken}
   if lbFlights.Items.Count>0 then begin
     for x:=0 to lbFlights.Items.Count-1 do begin
       case v_type of
@@ -5737,7 +5689,7 @@ begin
       end;
     except
       StatusBar1.Panels[5].Text:=rsTimeOut;
-      AppLog.Lines.Add('''5242'+suff+StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add('''5697'+suff+StatusBar1.Panels[5].Text);
       result:=-1;                                  {Fehler, Timeout}
       StopLightSensor1.State:=slRED;
     end;
@@ -6069,7 +6021,7 @@ begin
         tend:=ZeitToDT(splitlist[0], v_type);      {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
-        AppLog.Lines.Add('''5572'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''6029'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
 
@@ -6262,7 +6214,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS; {Ende Konsistenz checken}
-            AppLog.Lines.Add('''5765'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''6222'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Einlesen}
         flt:=flt+ed-bg1;
@@ -6270,7 +6222,7 @@ begin
         tend:=dtm+ZeitToDT(splitlist[0], H501ID);  {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
-        AppLog.Lines.Add('''5773'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''6230'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
 
@@ -6457,7 +6409,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS; {Ende Konsistenz checken}
-            AppLog.Lines.Add('''5960'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''6417'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Einlesen}
         flt:=flt+ed-bg1;
@@ -6465,7 +6417,7 @@ begin
         tend:=ZeitToDT(splitlist[0], brID);        {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
-        AppLog.Lines.Add('''5968'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''6425'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
 
@@ -6890,7 +6842,7 @@ begin
       StatusBar1.Panels[5].Text:=IntToStr(zhl)+rsSuspect;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
-      MerkListe(cbxScanDir, AnzDirs);
+      MerkListe(cbxScanDir, speItems.Value);
     end else begin
       StatusBar1.Panels[5].Text:=rsNoFound;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
@@ -7059,7 +7011,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
   if (cbxScanDir.Text<>'') and
      (DirectoryExists(cbxScanDir.Text)) then begin
     cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
-    MerkListe(cbxScanDir, AnzDirs);
+    MerkListe(cbxScanDir, speItems.Value);
     Screen.Cursor:=crHourGlass;
     vlist:=TStringList.Create;
     flist:=TStringList.Create;
@@ -7133,7 +7085,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     end;
   end else begin
     StatusBar1.Panels[5].Text:=rsError;
-    AppLog.Lines.Add('''6632'+suff+StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add('''7093'+suff+StatusBar1.Panels[5].Text);
   end;
 end;
 
@@ -7270,7 +7222,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
   if (cbxScanDir.Text<>'') and
      (DirectoryExists(cbxScanDir.Text)) then begin
     cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
-    MerkListe(cbxScanDir, AnzDirs);
+    MerkListe(cbxScanDir, speItems.Value);
     Screen.Cursor:=crHourGlass;
     vlist:=TStringList.Create;
     flist:=TStringList.Create;
@@ -7344,7 +7296,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     end;
   end else begin
     StatusBar1.Panels[5].Text:=rsError;
-    AppLog.Lines.Add('''6843'+suff+StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add('''7304'+suff+StatusBar1.Panels[5].Text);
   end;
 end;
 
@@ -7477,7 +7429,7 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
   if (cbxScanDir.Text<>'') and
      (DirectoryExists(cbxScanDir.Text)) then begin
     cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
-    MerkListe(cbxScanDir, AnzDirs);
+    MerkListe(cbxScanDir, speItems.Value);
     Screen.Cursor:=crHourGlass;
     vlist:=TStringList.Create;
     flist:=TStringList.Create;
@@ -7551,12 +7503,13 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
     end;
   end else begin
     StatusBar1.Panels[5].Text:=rsError;
-    AppLog.Lines.Add('''7050'+suff+StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add('''7511'+suff+StatusBar1.Panels[5].Text);
   end;
 end;
 
 procedure TForm1.btnFlugBuchClick(Sender: TObject); {Flugbuch erstellen}
 begin
+  Merkliste(cbxText, speItems.Value);
   gridScanResult.RowCount:=1;                      {Tabelle löschen}
   gridScanResult.Cells[1, 0]:=capNachweis;         {Überschrift}
   ProgressBarScan.Position:=0;
@@ -8088,14 +8041,6 @@ procedure TForm1.FormShow(Sender: TObject);        {All to do after load session
 var i, bl: integer;
 begin
   bl:=MAVmsg.Tag;
-  if mmoText.Lines.Count>0 then
-    for i:=0 to mmoText.Lines.Count-1 do begin     {Take over the models from model list}
-      if (mmoText.Lines[i]<>'') and
-         (cbxText.Items.IndexOf(mmoText.Lines[i])<0) then
-        cbxText.Items.Insert(0, mmoText.Lines[i]);
-    end;
-  if cbxText.Text='' then                          {if empty take first entry}
-    cbxText.Text:=cbxText.Items[0];
   if cbHighLight.Checked then                      {Switch on HighLighter}
     AppLog.Highlighter:=AppLogHighlighter;
   for i:=MAVmsg.Items.count-1 downto 0 do begin    {Get back Item check settings from .Tag}
@@ -8430,6 +8375,7 @@ begin
   if (v_type=MQid) or                              {nichts tun für MantisQ}
      (v_type=H5id) then                            {nichts tun für H520}
        exit;
+  Merkliste(cbxText, speItems.Value);              {Save type in model list}
   AppLogTimeStamp('');
   DefaultFormatSettings.DecimalSeparator:='.';
   if (PageControl1.Tag>0) and
@@ -8555,7 +8501,7 @@ begin
 end;
 
 procedure TForm1.MAVmsgDblClick(Sender: TObject);  {All messages true by double click}
-var i: integer;                                    {or invert with Ctrl}
+var i: integer=0;                                    {or invert with Ctrl}
     shstate: TShiftState;
 begin
   shstate:=GetKeyShiftState;
@@ -8803,7 +8749,7 @@ const bgid=999999;
         end;                                       {Ende realer Flug}
       end else begin
         StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-        AppLog.Lines.Add('''8287'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''8757'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
     flt:=flt+ed-bg1;
@@ -8886,7 +8832,7 @@ const bgid=999999;
         end;                                       {Ende realer Flug}
       end else begin
         StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-        AppLog.Lines.Add('''8370'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''8840'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
     flt:=flt+ed-bg1;
@@ -9021,7 +8967,7 @@ const bgid=999999;
          tend:=ZeitToDT(splitlist[0], v_type);     {letzten Zeitstempel merken}
        end else begin
          StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;    {Ende Konsistenz checken}
-         AppLog.Lines.Add('''8505'+suff+StatusBar1.Panels[5].Text);
+         AppLog.Lines.Add('''8975'+suff+StatusBar1.Panels[5].Text);
        end;
      end;
    end;
@@ -9527,7 +9473,7 @@ begin
           end else begin
             StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsEmpty+tab1+
                                        capLabel6+Format('%6d', [x]);
-            AppLog.Lines.Add('''9011'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9481'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
         if mode=1 then begin
@@ -9563,7 +9509,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [zhl]);
-        AppLog.Lines.Add('''9050'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9517'+suff+StatusBar1.Panels[5].Text);
       end;
       if PageControl1.ActivePageIndex=1 then gridDetails.SetFocus;
     end else begin                                 {Datei leer}
@@ -9649,17 +9595,19 @@ begin
     end;
     if inlist.count>10 then begin
       try
+        StaticText1.Caption:=vtypeToStr(brid);     {Typ anzeigen}
         if pos(plfAndr, inlist[2])>0 then
-          btnArchive.Tag:=1                           {Platform is Android}
+          btnArchive.Tag:=1                        {Platform is Android}
         else
-          btnArchive.Tag:=0;                          {else iOS}
+          btnArchive.Tag:=0;                       {else iOS}
         if pos(brsnid, inlist[5])=1 then           {Serial number}
           StaticText1.Caption:=StringReplace(inlist[5], brsnid,
                                vtypeToStr(brID),[rfIgnoreCase]);
+        cbxText.Text:=StaticText1.Caption;
+        Merkliste(cbxText, speItems.Value);
         splitlist.DelimitedText:=inlist[8];        {Überschrift einlesen}
         rgQuelle.ItemIndex:=0;
-        topp[lbFlights.ItemIndex, 5]:=0;            {Pointer Null setzen}
-        StaticText1.Caption:=vtypeToStr(brid);     {Typ anzeigen}
+        topp[lbFlights.ItemIndex, 5]:=0;           {Pointer Null setzen}
         speDataPoint.MaxValue:=inlist.Count-9;
         speAnalyze.MaxValue:=inlist.Count-10;
         speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
@@ -9731,7 +9679,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-            AppLog.Lines.Add('''9217'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9687'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
         if mode=1 then begin
@@ -9767,7 +9715,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        AppLog.Lines.Add('''9253'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9723'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
@@ -9843,7 +9791,7 @@ begin
       try
         splitlist.DelimitedText:=inlist[0];        {Überschrift einlesen}
         rgQuelle.ItemIndex:=0;
-        topp[lbFlights.ItemIndex, 5]:=0;            {Pointer Null setzen}
+        topp[lbFlights.ItemIndex, 5]:=0;           {Pointer Null setzen}
         StaticText1.Caption:=vtypeToStr(H501id);   {Typ anzeigen}
         speDataPoint.MaxValue:=inlist.Count;
         speAnalyze.MaxValue:=inlist.Count-10;
@@ -9887,7 +9835,7 @@ begin
             inc(p);
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-            AppLog.Lines.Add('''9378'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9843'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
         if mode=1 then begin
@@ -9921,7 +9869,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        AppLog.Lines.Add('''9412'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9877'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
@@ -9969,17 +9917,19 @@ begin
     end;
     if inlist.count>15 then begin
       try
+        StaticText1.Caption:=vtypeToStr(MQcsvID);  {Typ anzeigen}
         if pos(plfAndr, inlist[2])>0 then
-          btnArchive.Tag:=1                           {Platform is Android}
+          btnArchive.Tag:=1                        {Platform is Android}
         else
-          btnArchive.Tag:=0;                          {else iOS}
+          btnArchive.Tag:=0;                       {else iOS}
         if pos(brsnid, inlist[8])=1 then           {Serial number}
           StaticText1.Caption:=StringReplace(inlist[5], brsnid,
                                vtypeToStr(MQcsvID),[rfIgnoreCase]);
+        cbxText.Text:=StaticText1.Caption;         {Drone ID Mantis}
+        Merkliste(cbxText, speItems.Value);
         splitlist.DelimitedText:=inlist[15];       {Überschrift einlesen}
         rgQuelle.ItemIndex:=0;
-        topp[lbFlights.ItemIndex, 5]:=0;            {Pointer Null setzen}
-        StaticText1.Caption:=vtypeToStr(MQcsvID);  {Typ anzeigen}
+        topp[lbFlights.ItemIndex, 5]:=0;           {Pointer Null setzen}
         speDataPoint.MaxValue:=inlist.Count-16;
         speAnalyze.MaxValue:=inlist.Count-17;
         speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
@@ -10016,7 +9966,7 @@ begin
 
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-            AppLog.Lines.Add('''9513'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9974'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
         if mode=1 then begin
@@ -10052,7 +10002,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        AppLog.Lines.Add('''9549'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''10010'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
@@ -10101,6 +10051,8 @@ Chart1BarSeries7: Series Color:=clBlue     (Sports Mode, Stability)
 }
 
 procedure TForm1.HDiaInit;
+var
+  bwPercent: Integer=100;
 begin
   Chart1.Title.Text.Clear;
   Chart1.ZoomFull;                                 {Zoomen beenden}
@@ -10118,6 +10070,14 @@ begin
   Chart1BarSeries4.Clear;
   Chart1BarSeries5.Clear;
   Chart1BarSeries7.Clear;
+  if v_type=3 then                                 {for Blade 350QX}
+    bwPercent:=60;
+  Chart1BarSeries1.BarWidthPercent:=bwPercent;
+  Chart1BarSeries2.BarWidthPercent:=bwPercent;
+  Chart1BarSeries3.BarWidthPercent:=bwPercent;
+  Chart1BarSeries4.BarWidthPercent:=bwPercent;
+  Chart1BarSeries5.BarWidthPercent:=bwPercent;
+  Chart1BarSeries7.BarWidthPercent:=bwPercent;
 {$IFDEF LINUX}
   Chart1BarSeries1.Transparency:=0;                {sonst schwarzer Hintergrund}
 {$ELSE}
@@ -10281,7 +10241,7 @@ begin
             end;
           except
             StatusBar1.Panels[5].Text:=rsInvalid;
-            AppLog.Lines.Add('''10013'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+            AppLog.Lines.Add('''10239'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                                suff+StatusBar1.Panels[5].Text);
           end;
         end;
@@ -10308,7 +10268,7 @@ begin
             end;
           except
             StatusBar1.Panels[5].Text:=rsInvalid;
-            AppLog.Lines.Add('''10040'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+            AppLog.Lines.Add('''10266'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                                suff+StatusBar1.Panels[5].Text);
           end;
         end;
@@ -10359,7 +10319,7 @@ begin
           end;
         except
           StatusBar1.Panels[5].Text:=rsInvalid;
-          AppLog.Lines.Add('''10091'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
+          AppLog.Lines.Add('''10317'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
                              suff+StatusBar1.Panels[5].Text);
         end;
       end;
@@ -10443,7 +10403,7 @@ begin
         end;
       except
         StatusBar1.Panels[5].Text:=rsInvalid;
-        AppLog.Lines.Add('''9927'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+        AppLog.Lines.Add('''10401'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                            suff+StatusBar1.Panels[5].Text);
       end;
       if not gps then
@@ -10534,7 +10494,7 @@ begin
         end;
       except
         StatusBar1.Panels[5].Text:=rsInvalid;
-        AppLog.Lines.Add('''10018'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+        AppLog.Lines.Add('''10492'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                            suff+StatusBar1.Panels[5].Text);
       end;
       if not gps then
@@ -10745,7 +10705,7 @@ begin
       end;
     except
       StatusBar1.Panels[5].Text:=rsCheckSettings+capAnalyse;
-      AppLog.Lines.Add('''10248'+suff+StatusBar1.Panels[5].Text+tab1+rsDS);
+      AppLog.Lines.Add('''10703'+suff+StatusBar1.Panels[5].Text+tab1+rsDS);
     end;
   finally
     Chart3LineSeries1.EndUpdate;
@@ -11094,11 +11054,11 @@ begin
             if rgOutFormat.ItemIndex=1 then MacheKMZ(dn);
           except
             StatusBar1.Panels[5].Text:=dn+tab1+rsNotSaved;
-            AppLog.Lines.Add('''10617'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''11052'+suff+StatusBar1.Panels[5].Text);
           end;
         end;
       except
-        AppLog.Lines.Add('''10610'+suff+rsInvalid+tab1+rsDS);
+        AppLog.Lines.Add('''11056'+suff+rsInvalid+tab1+rsDS);
       end;
     end;
   finally
@@ -11311,7 +11271,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid;
-            AppLog.Lines.Add('''10818'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''11269'+suff+StatusBar1.Panels[5].Text);
           end;
         end;
         kmllist.Add('<wpt'+skoor);                 {Startpunkt}
@@ -11372,11 +11332,11 @@ begin
             AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           except
             StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-            AppLog.Lines.Add('''10894'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''11330'+suff+StatusBar1.Panels[5].Text);
           end;
         end;
       except
-        AppLog.Lines.Add('''10898'+suff+rsInvalid+tab1+rsDS);
+        AppLog.Lines.Add('''11334'+suff+rsInvalid+tab1+rsDS);
       end;
     end;
   finally
@@ -11538,7 +11498,7 @@ begin
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         except
           StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-          AppLog.Lines.Add('''11060'+suff+StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add('''11496'+suff+StatusBar1.Panels[5].Text);
         end;
       end;
     except
@@ -11721,11 +11681,11 @@ begin
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         except
           StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-          AppLog.Lines.Add('''11447'+suff+StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add('''11679'+suff+StatusBar1.Panels[5].Text);
         end;
       end;
     except
-      AppLog.Lines.Add('''11451'+suff+rsInvalid);
+      AppLog.Lines.Add('''11683'+suff+rsInvalid);
     end;
   finally
     FreeAndNil(inlist);
@@ -11833,11 +11793,11 @@ begin
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         except
           StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-          AppLog.Lines.Add('''11559'+suff+StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add('''11791'+suff+StatusBar1.Panels[5].Text);
         end;
       end else begin
         StatusBar1.Panels[5].Text:=rsError;
-        AppLog.Lines.Add('''11563'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''11795'+suff+StatusBar1.Panels[5].Text);
       end;
       StatusBar1.Panels[5].Text:=IntToStr(np)+rsNumWP;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
@@ -11926,13 +11886,6 @@ end;
 procedure TForm1.speLinePathChange(Sender: TObject);     {Liniendicke}
 begin
   EnSave;                                              {Speichern erlauben}
-end;
-
-procedure TForm1.StaticText1DblClick(Sender: TObject); {In Kopter ID übernehmen}
-begin
-  if StaticText1.Caption<>'' then begin
-    cbxText.Text:=StaticText1.Caption; {KopterID}
-  end;
 end;
 
 procedure TForm1.StatusToClipboard;                    {Statuszeile kopieren}
@@ -12802,7 +12755,7 @@ begin
     Form2.Chart1.AxisList[0].LabelSize:=lblsize;   {y-Achse ausrichten}
     Form2.Chart1.Visible:=true;
     Form2.Chart1LineSeries1.Clear;
-    Form2.Chart1LineSeries1.BeginUpdate;
+//    Form2.Chart1LineSeries1.DisableRedrawing;
     Form2.Chart1LineSeries1.Pointer.Visible:=false;
     Form2.Chart1.ZoomFull;
     Form2.Chart1.Tag:=rgQuelle.ItemIndex;          {Tell that it Telemetry or whatever}
@@ -12835,7 +12788,7 @@ begin
         end;
       end;
     end;
-    Form2.Chart1LineSeries1.EndUpdate;
+//    Form2.Chart1LineSeries1.EnableRedrawing;
   end;                                             {Ende p>0}
 end;
 
@@ -13448,14 +13401,6 @@ begin
   if (key=vk_c) and (ssCtrl in Shift) then gridCGO3.CopyToClipBoard(false);
 end;
 
-procedure TForm1.gridFirmwareHeaderClick(Sender: TObject; IsColumn: Boolean;
-  Index: Integer);                                 {Firmware Anzeige}
-begin
-  if (v_type=brID) and
-     (not IsColumn) and
-     (Index=5) then mmoText.Lines.Add(gridFirmware.Cells[1, Index]);
-end;
-
 procedure TForm1.gridFirmwareKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);                             {Firmwarestände kopieren}
 begin
@@ -13712,7 +13657,7 @@ begin
     tpos:=0;                                       {Position zurücksetzen}
     cbxSearch.Text:=UpCase(trim(cbxSearch.Text));
     if cbxSearch.Text<>'' then begin               {mit Filter}
-      Merkliste(cbxSearch, AnzDirs);               {Suchwerte DropDownListe füllen}
+      Merkliste(cbxSearch, speItems.Value);        {Suchwerte DropDownListe füllen}
       cbxSearch.Hint:=rsSelection+' in '+gridDetails.Cells[Label3.Tag, 0];
       case v_type of
         brID: BrAnzeigeCSV(1);                     {Breeze Filtermode}
@@ -13739,7 +13684,7 @@ begin
   cbxSearch.Text:=UpCase(trim(cbxSearch.Text));
   if cbxSearch.Enabled and (cbxSearch.Text<>'') then begin  {Suchen}
     if cbxSearch.Tag<2 then GroupBox11.Tag:=0;     {oben nix gefunden}
-    Merkliste(cbxSearch, AnzDirs);                 {DropDownListe füllen}
+    Merkliste(cbxSearch, speItems.Value);          {DropDownListe füllen}
     cbxSearch.Hint:=hntComboBox9+' in '+gridDetails.Cells[Label3.Tag, 0];
     for x:=cbxSearch.Tag to gridDetails.RowCount-1 do begin
       cbxSearch.Tag:=x+1;
@@ -13994,7 +13939,6 @@ begin
         if n>0 then begin    {Breeze: nur, wenn dort wirklich was gefunden wurde}
           gridOverview.ColWidths[0]:=fw1;
           gridOverview.Update;
-          StaticText1.Caption:=VTypeToStr(MQid);
         end else begin                             {doch kein Breeze}
           GetDefVT;                                {Overwrite for PX4 Thunderbird}
         end;
@@ -14032,7 +13976,6 @@ begin
 
       if n>0 then begin    {Mantis: nur, wenn dort wirklich was gefunden wurde}
         gridOverview.ColWidths[0]:=fw1;
-        StaticText1.Caption:=VTypeToStr(MQid);
         lbFlights.Tag:=-1;                         {noch keine Datei angezeigt}
       end else begin                               {doch kein MantisQ}
         GetDefVT;                                  {Overwrite for PX4 Thunderbird}
@@ -14053,7 +13996,6 @@ begin
 
       if n>0 then begin     {H520: nur, wenn dort wirklich was gefunden wurde}
         gridOverview.ColWidths[0]:=fw1;
-        StaticText1.Caption:=VTypeToStr(H5id);
         lbFlights.Tag:=-1;                         {noch keine Datei angezeigt}
       end else begin                               {doch kein H520}
         GetDefVT;                                  {Overwrite for PX4 Thunderbird}
@@ -14074,7 +14016,6 @@ begin
 
       if n>0 then begin     {Hubsan: nur, wenn dort wirklich was gefunden wurde}
         gridOverview.ColWidths[0]:=fw1;
-        StaticText1.Caption:=VTypeToStr(H501ID);
         lbFlights.Tag:=-1;                         {noch keine Datei angezeigt}
         btnArchive.Enabled:=false;                 {no achive function}
         btnScanErr.Enabled:=false;                 {No Scan function}
@@ -14084,6 +14025,9 @@ begin
     end;
 
     if n>0 then begin                              {irgendwas von oben wurde gefunden}
+      StaticText1.Caption:=VTypeToStr(v_type);
+      cbxText.Text:=StaticText1.Caption;           {Drone ID Mantis}
+      Merkliste(cbxText, speItems.Value);          {Type merken}
       topp:=nil;
       SetLength(topp, n);                          {Topzeilen array festlegen}
       for x:=0 to High(topp) do begin              {Alles auf Null setzen}
@@ -14168,7 +14112,7 @@ begin
     end;                                           {Ende Übersichtstabelle}
   except
     n:=0;                                          {nix gefunden}
-    AppLog.Lines.Add('''14164'+suff+'File error CheckNumTurns');
+    AppLog.Lines.Add('''14110'+suff+'Valid files missing in CheckNumTurns');
   end;
   result:=n;                                       {Anzahl übergeben}
   if n>0 then
@@ -14284,7 +14228,7 @@ begin
           end else begin
             StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsEmpty+tab1+
                                        capLabel6+Format('%6d', [i]);
-            AppLog.Lines.Add('''9011'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''14226'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
 
@@ -14306,7 +14250,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [zhl]);
-        AppLog.Lines.Add('''13909'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''14248'+suff+StatusBar1.Panels[5].Text);
       end;
       PageControl1.ActivePageIndex:=1;
       gridDetails.SetFocus;

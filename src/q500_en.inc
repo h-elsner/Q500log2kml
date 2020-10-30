@@ -102,8 +102,7 @@ resourcestring                                     {english}
   rsStatistik='Statistics for';
   rsChart='Chart for';
   rsDescript='Description';
-  capGroupBox1='Saved models ';
-  hntMemo1='Enter all vehicles that send flight log data';
+  capDiverse='More settings';
   capGroupBox5='Altitude mode';
   hntGroupBox5='Select altitude mode for output file';
   capDirSuffix='Path suffix';
@@ -305,9 +304,12 @@ resourcestring                                     {english}
   capHexdump='Hex dump';
   hntHexdump='Hexadecimal dump of one block from file.';
   hntBlockNum='Block number to dump as hexadecimal.';
+  capBlockSize='Block size hex dump';
   hntBlockSize='Length of blocks in kByte for hexdump in AppLog';
   rsFilesize='File size';
   capHighLight='AppLog highlighter';
   hntHighLight='Enable colored text fragments in AppLog';
+  hntItems='Maximum number of items in drop down lists.';
+  capItems='Number items';
 
 

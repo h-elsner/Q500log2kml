@@ -102,8 +102,7 @@ resourcestring                                     {deutsch}
   rsStatistik='Statistik für';
   rsChart='Diagramm für';
   rsDescript='Beschreibung';
-  capGroupBox1='Modellspeicher';
-  hntMemo1='Trage hier alle Modelle ein, für die Daten ausgeben werden';
+  capDiverse='Weitere Einstellungen';
   capGroupBox5='Höhenangabe';
   hntGroupBox5='Art und Weise der Höhenangabe wählen für Ausgabedatei';
   capDirSuffix='Pfadsuffix';
@@ -306,9 +305,12 @@ resourcestring                                     {deutsch}
   capHexdump='Hexdump';
   hntHexdump='Hexadezimale Ausgabe eines Blockes aus der Datei.';
   hntBlockNum='Nummer des Blocks zur Ausgabe hexadezimal.';
-  hntBlockSize='Länge eines Blockes in kByte für Hexadezimale Ausgabe in AppLog';
+  capBlockSize='Block Größe Hexdump';
+  hntBlockSize='Länge eines Blockes in kByte für Hexadezimale Ausgabe in AppLog.';
   rsFilesize='Dateigröße';
   capHighLight='AppLog Highlighter';
   hntHighLight='Farbige Textteile in AppLog erlauben';
+  hntItems='Maximale Anzahl von Einträgen, die in Auswahllisten gespeichert werden.';
+  capItems='Anzahl Einträge';
 
 
