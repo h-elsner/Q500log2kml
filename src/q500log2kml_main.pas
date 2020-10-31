@@ -10052,7 +10052,7 @@ Chart1BarSeries7: Series Color:=clBlue     (Sports Mode, Stability)
 
 procedure TForm1.HDiaInit;
 var
-  bwPercent: Integer=100;
+  bwPercent: Integer;
 begin
   Chart1.Title.Text.Clear;
   Chart1.ZoomFull;                                 {Zoomen beenden}
@@ -10070,8 +10070,12 @@ begin
   Chart1BarSeries4.Clear;
   Chart1BarSeries5.Clear;
   Chart1BarSeries7.Clear;
-  if v_type=3 then                                 {for Blade 350QX}
-    bwPercent:=60;
+  case v_type of
+    3: bwPercent:=60;                              {for Blade 350QX}
+    ThBid: bwPercent:=50;                          {Thunderbird}
+  else
+    bwPercent:=100;
+  end;
   Chart1BarSeries1.BarWidthPercent:=bwPercent;
   Chart1BarSeries2.BarWidthPercent:=bwPercent;
   Chart1BarSeries3.BarWidthPercent:=bwPercent;

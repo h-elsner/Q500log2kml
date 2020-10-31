@@ -12,7 +12,7 @@ object Form2: TForm2
   PopupMenu = PopupMenu1
   Position = poDefaultPosOnly
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.10.0'
+  LCLVersion = '2.0.8.0'
   object StringGrid1: TStringGrid
     Left = 8
     Height = 235
@@ -51,9 +51,9 @@ object Form2: TForm2
     TabOrder = 1
   end
   object Chart1: TChart
-    Left = 0
+    Left = 8
     Height = 235
-    Top = 250
+    Top = 8
     Width = 657
     AxisList = <    
       item
@@ -99,12 +99,13 @@ object Form2: TForm2
       Active = False
       LineStyle = lsVertical
       Pen.Color = clRed
+      Position = 0
     end
   end
   object edTime: TEdit
     Left = 8
-    Height = 21
-    Top = 250
+    Height = 15
+    Top = 256
     Width = 64
     Alignment = taCenter
     Anchors = [akLeft, akBottom]
@@ -117,13 +118,13 @@ object Form2: TForm2
     Visible = False
   end
   object DateTimeIntervalChartSource1: TDateTimeIntervalChartSource
-    Left = 392
-    Top = 40
+    left = 392
+    top = 40
   end
   object PopupMenu1: TPopupMenu
     Images = Form1.TabImages
-    Left = 328
-    Top = 114
+    left = 328
+    top = 114
     object MenuItem2: TMenuItem
       Caption = 'B'
       ImageIndex = 30
@@ -142,12 +143,12 @@ object Form2: TForm2
   end
   object SaveDialog1: TSaveDialog
     Filter = '*.png|*.png|*.csv|*.csv'
-    Left = 392
-    Top = 114
+    left = 392
+    top = 114
   end
   object ChartToolset1: TChartToolset
-    Left = 328
-    Top = 40
+    left = 328
+    top = 40
     object ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool
       ZoomFactor = 1.1
       ZoomRatio = 0.909090909090909
