@@ -27,12 +27,12 @@ object Form1: TForm1
     Height = 563
     Top = 96
     Width = 746
-    ActivePage = TabSheet4
+    ActivePage = TabSheet8
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 6
+    TabIndex = 3
     TabOrder = 1
     OnChange = PageControl1Change
     Options = [nboKeyboardTabSwitch]
@@ -107,14 +107,14 @@ object Form1: TForm1
       end
     end
     object TabSheet2: TTabSheet
-      ClientHeight = 525
-      ClientWidth = 740
+      ClientHeight = 535
+      ClientWidth = 738
       ImageIndex = 2
       object Chart1: TChart
         Left = 0
-        Height = 513
+        Height = 535
         Top = 0
-        Width = 740
+        Width = 738
         AxisList = <        
           item
             Grid.Color = clGray
@@ -231,8 +231,8 @@ object Form1: TForm1
       end
     end
     object TabSheet8: TTabSheet
-      ClientHeight = 525
-      ClientWidth = 740
+      ClientHeight = 535
+      ClientWidth = 738
       ImageIndex = 3
       OnResize = TabSheet8Resize
       PopupMenu = PopupMenuProfile
@@ -240,7 +240,7 @@ object Form1: TForm1
         Left = 0
         Height = 176
         Top = 0
-        Width = 740
+        Width = 738
         AxisList = <        
           item
             Grid.Color = clGray
@@ -274,7 +274,6 @@ object Form1: TForm1
         )
         Toolset = ChartToolset1
         Align = alTop
-        Color = clDefault
         ParentShowHint = False
         OnMouseUp = Chart3MouseUp
         object Chart3LineSeries1: TLineSeries
@@ -284,7 +283,7 @@ object Form1: TForm1
         Left = 0
         Height = 168
         Top = 184
-        Width = 602
+        Width = 600
         AxisList = <        
           item
             Grid.Color = clGray
@@ -317,7 +316,6 @@ object Form1: TForm1
         )
         Toolset = ChartToolset1
         Anchors = [akTop, akLeft, akRight]
-        Color = clDefault
         OnMouseUp = Chart4MouseUp
         object Chart4LineSeries1: TLineSeries
         end
@@ -325,8 +323,8 @@ object Form1: TForm1
       object Chart5: TChart
         Left = 0
         Height = 156
-        Top = 357
-        Width = 740
+        Top = 379
+        Width = 738
         AxisList = <        
           item
             Grid.Color = clGray
@@ -360,7 +358,6 @@ object Form1: TForm1
         )
         Toolset = ChartToolset1
         Align = alBottom
-        Color = clDefault
         OnMouseUp = Chart5MouseUp
         object Chart5LineSeries1: TLineSeries
         end
@@ -1584,14 +1581,14 @@ object Form1: TForm1
       end
     end
     object TabSheet4: TTabSheet
-      ClientHeight = 535
-      ClientWidth = 738
+      ClientHeight = 525
+      ClientWidth = 740
       ImageIndex = 4
       object PageControl2: TPageControl
         Left = 0
-        Height = 535
+        Height = 525
         Top = 0
-        Width = 738
+        Width = 740
         ActivePage = TabSheet10
         Align = alClient
         Images = TabImages
@@ -1776,8 +1773,8 @@ object Form1: TForm1
           end
         end
         object TabSheet10: TTabSheet
-          ClientHeight = 507
-          ClientWidth = 730
+          ClientHeight = 490
+          ClientWidth = 734
           ImageIndex = 7
           object GroupBox3: TGroupBox
             Left = 8
@@ -1790,15 +1787,15 @@ object Form1: TForm1
             TabOrder = 0
             object Label5: TLabel
               Left = 8
-              Height = 15
+              Height = 17
               Top = 8
-              Width = 34
+              Width = 37
               Caption = 'Label5'
               ParentColor = False
             end
             object speAnalyze: TSpinEdit
               Left = 8
-              Height = 23
+              Height = 27
               Top = 32
               Width = 96
               Alignment = taRightJustify
@@ -1835,20 +1832,20 @@ object Form1: TForm1
           end
           object GroupBox4: TGroupBox
             Left = 232
-            Height = 469
+            Height = 452
             Top = 24
             Width = 384
             Anchors = [akTop, akLeft, akBottom]
             Caption = 'sel'
-            ClientHeight = 449
+            ClientHeight = 432
             ClientWidth = 380
             TabOrder = 1
             object LabeledEdit1: TLabeledEdit
               Left = 256
-              Height = 23
+              Height = 27
               Top = 32
               Width = 112
-              EditLabel.Height = 15
+              EditLabel.Height = 17
               EditLabel.Width = 112
               EditLabel.Caption = 'LabeledEdit1'
               EditLabel.ParentColor = False
@@ -1860,10 +1857,10 @@ object Form1: TForm1
             end
             object LabeledEdit2: TLabeledEdit
               Left = 256
-              Height = 23
+              Height = 27
               Top = 120
               Width = 112
-              EditLabel.Height = 15
+              EditLabel.Height = 17
               EditLabel.Width = 112
               EditLabel.Caption = 'LabeledEdit2'
               EditLabel.ParentColor = False
@@ -1874,10 +1871,10 @@ object Form1: TForm1
             end
             object LabeledEdit3: TLabeledEdit
               Left = 256
-              Height = 23
+              Height = 27
               Top = 208
               Width = 112
-              EditLabel.Height = 15
+              EditLabel.Height = 17
               EditLabel.Width = 112
               EditLabel.Caption = 'LabeledEdit3'
               EditLabel.ParentColor = False
@@ -1888,7 +1885,7 @@ object Form1: TForm1
             end
             object TreeView1: TTreeView
               Left = 8
-              Height = 435
+              Height = 420
               Top = 8
               Width = 216
               Anchors = [akTop, akLeft, akBottom]
@@ -1996,16 +1993,16 @@ object Form1: TForm1
             end
             object Label9: TLabel
               Left = 256
-              Height = 15
+              Height = 17
               Top = 278
-              Width = 39
+              Width = 42
               Caption = 'Profiles'
               ParentColor = False
             end
           end
           object Label13: TLabel
             Left = 8
-            Height = 15
+            Height = 17
             Top = 312
             Width = 14
             Caption = 'bg'
@@ -2013,9 +2010,9 @@ object Form1: TForm1
           end
           object Label14: TLabel
             Left = 8
-            Height = 15
+            Height = 17
             Top = 336
-            Width = 13
+            Width = 14
             Caption = 'ed'
             ParentColor = False
           end
@@ -2033,17 +2030,17 @@ object Form1: TForm1
           end
           object Label15: TLabel
             Left = 8
-            Height = 15
+            Height = 17
             Top = 360
-            Width = 18
+            Width = 19
             Caption = 'dur'
             ParentColor = False
           end
           object cbCleanHplus: TCheckBox
             Left = 8
-            Height = 19
+            Height = 22
             Top = 272
-            Width = 48
+            Width = 53
             Caption = 'ChVT'
             Checked = True
             State = cbChecked
@@ -2091,17 +2088,17 @@ object Form1: TForm1
           end
           object cbMAVasCSV: TCheckBox
             Left = 632
-            Height = 19
+            Height = 22
             Top = 336
-            Width = 37
+            Width = 42
             Caption = 'csv'
             TabOrder = 5
           end
           object lblMAVcommon: TLabel
             Left = 632
-            Height = 15
+            Height = 17
             Top = 392
-            Width = 147
+            Width = 149
             Caption = 'MAVlink C-library/common'
             Font.Color = clNavy
             Font.Style = [fsUnderline]
