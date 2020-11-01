@@ -77,10 +77,10 @@ object Form2: TForm2
         Minors = <>
         Title.LabelBrush.Style = bsClear
       end>
-    BackColor = clDefault
     Foot.Brush.Color = clBtnFace
     Foot.Font.Color = clBlue
     Title.Brush.Color = clBtnFace
+    Title.Font.Color = clBlue
     Title.Text.Strings = (
       'TAChart'
     )

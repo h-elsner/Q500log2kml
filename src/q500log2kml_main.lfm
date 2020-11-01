@@ -150,7 +150,6 @@ object Form1: TForm1
             Title.LabelBrush.Style = bsClear
             Transformations = ChartAxisTransformations2
           end>
-        BackColor = clDefault
         ExtentSizeLimit.UseXMax = True
         ExtentSizeLimit.XMax = 20
         Foot.Brush.Color = clBtnFace
@@ -262,7 +261,6 @@ object Form1: TForm1
             Minors = <>
             Title.LabelBrush.Style = bsClear
           end>
-        BackColor = clDefault
         ExtentSizeLimit.UseXMax = True
         ExtentSizeLimit.XMax = 20
         Foot.Brush.Color = clBtnFace
@@ -305,7 +303,6 @@ object Form1: TForm1
             Minors = <>
             Title.LabelBrush.Style = bsClear
           end>
-        BackColor = clDefault
         ExtentSizeLimit.XMax = 20
         Foot.Brush.Color = clBtnFace
         Foot.Font.Color = clBlue
@@ -346,7 +343,6 @@ object Form1: TForm1
             Minors = <>
             Title.LabelBrush.Style = bsClear
           end>
-        BackColor = clDefault
         ExtentSizeLimit.UseXMax = True
         ExtentSizeLimit.XMax = 20
         Foot.Brush.Color = clBtnFace
