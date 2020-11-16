@@ -1,4 +1,5 @@
 resourcestring                                     {english}
+
   manual='Q500log2kml_en.pdf';
   {$IFDEF LINUX}
     DownURL='/downloads/q500log2kml_en.tar.gz';
@@ -311,5 +312,11 @@ resourcestring                                     {english}
   hntHighLight='Enable colored text fragments in AppLog';
   hntItems='Maximum number of items in drop down lists.';
   capItems='Number items';
+  capFlDel='Delete FlightLog';
+  hntFlDel='Delete all files belonging to selected FlightLog item.';
+  capReload='Reload';
+  hntReload='Reload all FlightLogs. This may take time.';
+  rsFLdelete='Delete FlightLog';
+  rsFilesDel='files deleted';
 
 

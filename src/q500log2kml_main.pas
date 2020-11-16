@@ -55,7 +55,7 @@ btnClose.Tag:     1=Breeze telemetry als ft, sonst Meter
 btnArchive.Tag:   Plattform for Breeze: 1: Android, 0: iOS
 gridDetails.Tag:  Spaltennummer, wo f_mode steht.
 StringGrid2.Tag:  Merker für zuletzt benutztes Tabsheet, gesetzt beim Umschalten
-PageControl1.Tag: Indikator, ob Form2 angezeigt wurde (0 .. nein, >0 .. ja)
+pcMain.Tag: Indikator, ob Form2 angezeigt wurde (0 .. nein, >0 .. ja)
 v_type:           Vehicle Type as Integer (default = 5, YTH Plus = 10,
                                            Breeze = 90 = brID)
 Label3.Tag:       Spalte für Suche/Filter in Tabelle merken.
@@ -165,7 +165,7 @@ History:
                  times for Typhoon H Plus improved (Overview and Flight records).
 2018-12-07       Added envelope to Elevation histogram.
 2018-12-22       Crosshair Tool recreated and streamlined.
-2019-01-09 V4.1	 PX Sensor data export to CSV file.
+2019-01-09  V4.1 PX Sensor data export to CSV file.
                  Some more MAV messages decoded.
 2019-01-15       Self-defined CSV format changed - more flexible.
                  RF channels added.
@@ -180,32 +180,41 @@ History:
 2019-04-10       Wording updated. Text message added to CSV file.
 2019-04-16       MAV Message PARAM_VALUE added.
 2019-08-16       Manual Link updated.
-2019-09-04 V4.2  Option LiPo remaining capacity added.
+2019-09-04  V4.2 Option LiPo remaining capacity added.
 2019-11-12       Scan for 'EMERGENCY' in PX4 sensor files
 2019-12-10       Update für ST24/H920 alte Firmware (Telemetry ohne Header)
 2019-12-31       Setting for Thunderbird (H480 with PX4 firmware)
 2020-01-30       Throttle in % added to CSV Header and cell info
-2020-02-28 V4.3  Tom's Hubsan Log Recorder added. MAVlink messages
+2020-02-28  V4.3 Tom's Hubsan Log Recorder added. MAVlink messages
                  selectable for data reduction in PX4 CSV format.
                  Remaining battery capacity now according RC Groups table for
                  voltage vs. capacity.
 2020-03-09       Additional placemarks in KML. Colors for Hubsan frames updated.
 2020-03-11       Visualize RC gaps in telemetry by double click to additional chart.
 2020-04-02       Current unit for H920 updated.
-2020-04-25 V4.4  GLOBAL_POSITION_INT and BATTERY_STATUS added.
+2020-04-25  V4.4 GLOBAL_POSITION_INT and BATTERY_STATUS added.
 2020-05-11       Updates for H480 Thunderbird.
 2020-05-29       Used capacity for PX4 sensor files instead of SW load.
 2020-07-07       Remarks in KML files from PX4 Sensor files
-2020-07-30 V4.5  Added Text messages overview for PX4 sensor files
+2020-07-30  V4.5 Added Text messages overview for PX4 sensor files
 2020-08-21       Clean up KML files from PX4 sensor files
 2020-09-20       Message POSITION_TARGET_GLOBAL_INT added (only for AppLogHighlighter)
 2020-09-21       Message ALTITUDE (141) added. Tools: List of used MAVlink messages.
 2020-09-30       Tools - Hexdump added. Bugfix Motorstatus hexacopter (223).
 2020-10-25       Correct strange Coordinates format from ST16S in RemoteGPS*.csv.
-2020-10-30 V4.6  Update for Windows High Contrast (own colors removed).
+2020-10-30  V4.6 Update for Windows High Contrast (own colors removed).
                  AppLog highlighter switchable. Some Colors updated.
                  Open the last (newest) item in the list instead of the first (oldest).
                  Model list window removed. Model drop down list handling improved.
+2020-11-01       Context menu for FlightLog list added.
+                 Removed double click to refresh, menu item instead.
+                 Delete a FlightLog function added.
+2020-11-13       MAV link messages reviewed. Missing messages added.
+
+ToDo: geotagging
+https://github.com/afriess/dexif/
+
+
 *)
 
 unit q500log2kml_main;
@@ -335,6 +344,9 @@ type
     DateTimeIntervalChartSource4: TDateTimeIntervalChartSource;
     edSendCGO3: TEdit;
     edReceiveCGO3: TEdit;
+    mnReload: TMenuItem;
+    mnFlDel: TMenuItem;
+    PopUpMenuFlights: TPopupMenu;
     rgBlockSize: TRadioGroup;
     speExpo: TFloatSpinEdit;
     gbDiverse: TGroupBox;
@@ -455,8 +467,8 @@ type
     mnGoTable: TMenuItem;
     mnOSM: TMenuItem;
     OpenDialog1: TOpenDialog;
-    PageControl1: TPageControl;
-    PageControl2: TPageControl;
+    pcMain: TPageControl;
+    pcSettings3: TPageControl;
     PopupMenuTab: TPopupMenu;
     PopupMenuHist: TPopupMenu;
     PopupMenuProfile: TPopupMenu;                  {Popup Menü Schellanalyse}
@@ -484,17 +496,17 @@ type
     gridOverview: TStringGrid;
     gridCGO3: TStringGrid;
     gridFirmware: TStringGrid;
-    TabSheet1: TTabSheet;                          {Übersicht}
-    TabSheet10: TTabSheet;                         {Settings Analyse}
-    TabSheet11: TTabSheet;                         {CGO3}
-    TabSheet12: TTabSheet;                         {Settings Sonstige}
-    TabSheet2: TTabSheet;                          {Höhendiagramm}
-    TabSheet3: TTabSheet;                          {Datentabelle}
-    TabSheet4: TTabSheet;                          {Settings}
-    TabSheet5: TTabSheet;
-    TabSheet6: TTabSheet;
-    TabSheet8: TTabSheet;                          {Schnellanalyse}
-    TabSheet9: TTabSheet;                          {Settings Konvert}
+    tabOverview: TTabSheet;                          {Übersicht}
+    tabData: TTabSheet;                         {Settings Analyse}
+    tabCGO3: TTabSheet;                         {CGO3}
+    tabCommon: TTabSheet;                         {Settings Sonstige}
+    tabHdia: TTabSheet;                          {Höhendiagramm}
+    tabDetails: TTabSheet;                          {Datentabelle}
+    tabSettings: TTabSheet;                          {Settings}
+    tabScan: TTabSheet;
+    tabAppLog: TTabSheet;
+    tabAnalyze3: TTabSheet;                          {Schnellanalyse}
+    tabConvert: TTabSheet;                          {Settings Konvert}
     Timer1: TTimer;                                {CGO3 Statusabfrage}
     TimerDblClick: TTimer;
     TimerDiashow: TTimer;
@@ -563,6 +575,8 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure edSendCGO3KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edReceiveCGO3DblClick(Sender: TObject);
+    procedure mnFlDelClick(Sender: TObject);
+    procedure mnReloadClick(Sender: TObject);
     procedure speExpoChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -590,7 +604,6 @@ type
     procedure lblMAVcommonMouseEnter(Sender: TObject);
     procedure lblMAVcommonMouseLeave(Sender: TObject);
     procedure lbFlightsClick(Sender: TObject);
-    procedure lbFlightsDblClick(Sender: TObject);
     procedure MAVmsgDblClick(Sender: TObject);
     procedure MAVmsgItemClick(Sender: TObject; Index: integer);
     procedure mnSaveAsQuickClick(Sender: TObject);
@@ -625,7 +638,7 @@ type
     procedure mnGoTableClick(Sender: TObject);
     procedure mnOSMClick(Sender: TObject);
     procedure mnCleanCSVClick(Sender: TObject);
-    procedure PageControl1Change(Sender: TObject);
+    procedure pcMainChange(Sender: TObject);
     procedure rgQuelleClick(Sender: TObject);
     procedure rgOutFormatClick(Sender: TObject);
     procedure rgSpeedUnitClick(Sender: TObject);
@@ -679,7 +692,7 @@ type
     procedure gridScanResultMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure gridScanResultResize(Sender: TObject);
-    procedure TabSheet8Resize(Sender: TObject);
+    procedure tabAnalyze3Resize(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure TimerDblClickTimer(Sender: TObject);
     procedure TimerDiashowTimer(Sender: TObject);
@@ -795,6 +808,10 @@ type
     procedure MAVmsgDefault;                       {Set all messages to true}
     procedure HexAusgabe(const fn: string);        {Tools: Display a binary file as hex print}
     procedure HexHeader(const fn: string);         {Write header for file and take block size}
+
+{Special analysis with (hidden) extra button "Special" on Settings > Common settings}
+//    procedure TLOGanalysis(fn: string);          {Special analysis}
+//    procedure AuswertungCSVdatei;                {Spezielle Auswertung für CSV-Datei}
   end;
 
 {$I language.inc}
@@ -957,6 +974,7 @@ const
 var
   Form1: TForm1;
   tend, tpos, cutb, cute: TDateTime;               {Ende-Zeit, Zeit-Position in Tabellen}
+  cutbidx: integer;                                {Index to what file the timestamps belong}
   kpath: string;
   topp: array of array[0..6] of integer;           {Positionen Topzeile der Tabellen
   i..Index der Datei mit Null beginnend i, 0  Pos TopRow Telemetrie
@@ -1040,14 +1058,20 @@ begin
   end;
 end;
 
+procedure ResetCut;                                {Reset timestamps for Cut}
+begin
+  cutb:=0;                                         {Zeitstempel zum Ausschneiden}
+  cute:=0;                                         {Beginn und Ende löschen}
+  cutbidx:=-1;
+end;
+
 procedure TForm1.FormCreate(Sender: TObject);      {Anwendung initialisieren und starten}
 var i: integer;
 begin
   Randomize;                                       {Zufallsgenerator initialisieren}
   v_type:=DefVT;
   nhw:=0.00002;                                    {default Koordinaten in der Nähe}
-  cutb:=0;                                         {Zeitstempel zum Ausschneiden}
-  cute:=0;                                         {Beginn und Ende löschen}
+  ResetCut;                                        {Reset timestamps for Cut}
   topp:=nil;
   SetLength(topp, 4);                              {Topzeilen array}
   kpath:=IncludeTrailingPathDelimiter(dkpath);     {default setzen}
@@ -1133,6 +1157,10 @@ begin
   mnCleanCSV.Hint:=hntCleanCSV;
   mnMAVlist.Caption:=capMAVlist;                   {Tools: List of used MAVlink messages}
   mnMAVlist.Hint:=hntMAVlist;
+  mnFlDel.Caption:=capFlDel;
+  mnFlDel.Hint:=hntFlDel;
+  mnReload.Caption:=capReload;
+  mnReload.Hint:=hntReload;
   rgQuelle.Caption:=capRadioGroup1;
   rgQuelle.Hint:=hntRadioGroup1;
   rgQuelle.Items[0]:=dkpath;
@@ -1158,22 +1186,22 @@ begin
   rgVoltRule.Caption:=capVrule;
   rgVoltRule.Hint:=hntVrule;
   StatusBar1.Hint:=hntStatus1;
-  TabSheet1.Caption:=rsPC1Tab1;
-  TabSheet2.Caption:=rsPC1Tab2;
-  TabSheet3.Caption:=rsPC1Tab3;
-  TabSheet4.Caption:=rsPC1Tab4;
-  TabSheet5.Caption:=capScan;
-  TabSheet5.Hint:=hntScan;
-  TabSheet6.Hint:=TabSheet6.Caption;
-  TabSheet11.Hint:=hntTabSheet11;
-  TabSheet8.Caption:=capAnalyse;
-  TabSheet9.Caption:=capTabSheet9;
-  TabSheet9.Hint:=capTabSheet9;
-  TabSheet10.Caption:=capTabSheet10;
-  TabSheet10.Hint:=capTabSheet10;
+  tabOverview.Caption:=rsPC1Tab1;
+  tabHdia.Caption:=rsPC1Tab2;
+  tabDetails.Caption:=rsPC1Tab3;
+  tabSettings.Caption:=rsPC1Tab4;
+  tabScan.Caption:=capScan;
+  tabScan.Hint:=hntScan;
+  tabAppLog.Hint:=tabAppLog.Caption;
+  tabCGO3.Hint:=hntTabSheet11;
+  tabAnalyze3.Caption:=capAnalyse;
+  tabConvert.Caption:=capTabSheet9;
+  tabConvert.Hint:=capTabSheet9;
+  tabData.Caption:=capTabSheet10;
+  tabData.Hint:=capTabSheet10;
   gbDiverse.Caption:=capDiverse;
-  TabSheet12.Caption:=capTabSheet12;
-  TabSheet12.Hint:=capTabSheet12;
+  tabCommon.Caption:=capTabSheet12;
+  tabCommon.Hint:=capTabSheet12;
   Label1.Caption:=capLabel1;
   Label1.Hint:=hntLabel1;
   speLinePath.Hint:=hntLabel1;
@@ -1300,9 +1328,9 @@ begin
   gridOverview.Cells[10,0]:=rsGridCell10;
   gridOverview.Tag:=2;                             {Used Tab; default: Tabelle}
   gridFirmware.Hint:=hntStringGrid4;
-  PageControl1.ActivePageIndex:=0;
-  PageControl2.ActivePageIndex:=0;
-  PageControl2.Hint:=rsPC1Tab4;                    {Einstellungen}
+  pcMain.ActivePageIndex:=0;
+  pcSettings3.ActivePageIndex:=0;
+  pcSettings3.Hint:=rsPC1Tab4;                    {Einstellungen}
   AdvLed1.State:=lsDisabled;
   AdvLed1.Hint:=hntRec;
   Image2.Hint:=rsVdo;
@@ -1353,11 +1381,11 @@ begin
   btnFoto.Caption:=capBitBtn22;
   btnFoto.Hint:=hntBitBtn22;
   btnScanErr.Caption:=capScan;
-  btnSaveApplog.Caption:=rsSave;                   {AppLogHighlighter speichern}
+  btnSaveApplog.Caption:=sckey+rsSave;             {AppLogH speichern}
   btnSaveApplog.Hint:=hntBitBtn27;
-  btnDelAppLog.Caption:=capDel;                    {AppLogHighlighter löschen}
+  btnDelAppLog.Caption:=sckey+capDel;              {AppLog löschen}
   btnDelAppLog.Hint:=hntDel;
-  btnShowHex.Caption:=capHexdump;
+  btnShowHex.Caption:=sckey+capHexdump;
   btnShowHex.Hint:=hntHexdump;
   rgBlockSize.Caption:=capBlockSize;
   rgBlockSize.Hint:=hntBlockSize;
@@ -1843,6 +1871,7 @@ end;
 
 {Message Struktur:
  https://github.com/mavlink/c_library_v2/tree/master/common
+      inconsistent !
  https://github.com/YUNEEC/MavlinkLib/blob/master/message_definitions/common.xml
  https://github.com/YUNEEC/MavlinkLib}
 
@@ -1858,14 +1887,16 @@ begin
       5:  result:='change_operator_control';
       6:  result:='change_operator_control_ack';
       7:  result:='auth_key';
+      8:  result:='link_node_status';
      11:  result:='set_mode';
-    $14:  result:='param_request_read';
-    $15:  result:='param_request_list';
-    $16:  result:='param_value';
-    $17:  result:='param_set';
-    $18:  result:='gps_raw_int';                   {Supported Msg Länge 31/32}
-    $19:  result:='gps_status';                    {Länge 1}
-    $1A:  result:='scaled_imu';
+     19:  result:='param_ack_transaction';
+     20:  result:='param_request_read';
+     21:  result:='param_request_list';
+     22:  result:='param_value';
+     23:  result:='param_set';
+     24:  result:='gps_raw_int';                   {Supported Msg Länge 31/32}
+     25:  result:='gps_status';                    {Länge 1}
+     26:  result:='scaled_imu';
     $1B:  result:='raw_imu';
     $1C:  result:='raw_pressure';
     $1D:  result:='scaled_pressure';
@@ -1881,8 +1912,8 @@ begin
     $27:  result:='mission_item';
     $28:  result:='mission_request';
     $29:  result:='mission_set_current';
-    $2B:  result:='mission_current';
-    $2A:  result:='mission_request_list';
+    $2A:  result:='mission_current';
+     43:  result:='mission_request_list';
     $2C:  result:='mission_count';                 {Länge 3 oder 5}
     $2D:  result:='mission_clear_all';
     $2E:  result:='mission_item_reached';
@@ -1890,9 +1921,11 @@ begin
     $30:  result:='set_gps_global_origin';
     $31:  result:='gps_global_origin';
     $32:  result:='param_map_rc';
-    $33:  result:='mission_request_int';
-    $36:  result:='safety_set_allowed_area';
-    $37:  result:='safety_allowed_area';
+     51:  result:='mission_request_int';
+     52:  result:='mission_changed';
+
+     54:  result:='safety_set_allowed_area';
+     55:  result:='safety_allowed_area';
     $3D:  result:='attitude_quaternion_cov';
     $3E:  result:='nav_controller_output';
     $3F:  result:='global_position_int_cov';
@@ -1907,8 +1940,8 @@ begin
     $4B:  result:='command_int';
     $4C:  result:='command_long';                  {Länge 20}
     $4D:  result:='command_ack';
-    $4E:  result:='command_int_stamped';           {78: UTC time stamp, Boot time}
-    $4F:  result:='command_long_stamped';          {79}
+    $4E:  result:='command_cancel';                {78: UTC time stamp, Boot time}
+    $4F:  result:='command_long_stamped';          {79: not supported anymore}
     $51:  result:='manual_setpoint';
     $52:  result:='set_attitude_target';
     $53:  result:='attitude_target';               {Länge 24}
@@ -1921,6 +1954,7 @@ begin
     $5B:  result:='hil_controls';
     $5C:  result:='hil_rc_inputs_raw';
     $5D:  result:='hil_actuator_controls';
+
     $64:  result:='optical_flow';
     $65:  result:='global_vision_position_estimate';
     $66:  result:='vision_position_estimate';
@@ -1937,7 +1971,7 @@ begin
     $71:  result:='hil_gps';
     $72:  result:='hil_optical_flow';
     $73:  result:='hil_state_quaternion';
-    $74:  result:='scaled_imu1';
+    116:  result:='scaled_imu2';
     $75:  result:='log_request_list';
     $76:  result:='log_entry';
     $77:  result:='log_request_data';
@@ -1950,7 +1984,7 @@ begin
     $7E:  result:='serial_control';
     $7F:  result:='gps_rtk';
     $80:  result:='gps2_rtk';
-    $81:  result:='scaled_imu2';
+    $81:  result:='scaled_imu3';
     $82:  result:='data_transmission_handshake';
     $83:  result:='encapsulated_data';
     $84:  result:='distance_sensor';
@@ -1964,12 +1998,18 @@ begin
     $8C:  result:='actuator_control_target';       {Länge 14}
     $8D:  result:='altitude';                      {Länge 20}
     $8E:  result:='resource_request';
-    $8F:  result:='scaled_pressure2';
+    $8F:  result:='scaled_pressure3';
     $90:  result:='follow_target';
     $92:  result:='control_system_state';
     $93:  result:='battery_status';
     $94:  result:='autopilot_version';             {Länge 34, 48, 4C}
-    $95:  result:='landing_target';
+    149:  result:='landing_target';
+
+    162:  result:='fence_status';
+    192:  result:='mag_cal_report';
+
+    225:  result:='efi_status';
+
 {MESSAGE IDs 180 - 229: Space for custom messages in
  individual projectname_messages.xml files -->}
 (*  201:  result:='sens_power';                    {not know if used}
@@ -1985,27 +2025,28 @@ begin
     211:  result:='sensorpod_status';
     212:  result:='sens_power_board';
     213:  result:='gsm_link_status';               {LTE too}       *)
-    $E6:  result:='estimator_status';              {Länge 2A}
+
+    230:  result:='estimator_status';              {Länge 2A}
     $E7:  result:='wind_cov';                      {Länge 20}
     $E8:  result:='gps_input';
     $E9:  result:='gps_rtcm_data';
     $EA:  result:='high_latency';
     $EB:  result:='high_latency2';
-    $F1:  result:='vibration';                     {Länge 14}
+    241:  result:='vibration';                     {Länge 14}
     $F2:  result:='home_position';                 {Supported Msg Länge 28 oder 3C}
     $F3:  result:='set_home_position';
     $F4:  result:='message_interval';
     $F5:  result:='extended_sys_state';            {Länge 02}
     $F6:  result:='adsb_vehicle';
     $F7:  result:='collision';
-    $F9:  result:='memory_vect';
     $F8:  result:='v2_extension';
+    $F9:  result:='memory_vect';
     $FA:  result:='debug_vect';
     $FB:  result:='named_value_float';
     $FC:  result:='named_value_int';
     $FD:  result:='statustext';                    {Länge variabel}
     $FE:  result:='debug';
-    $100: result:='setup_signing';
+    256:  result:='setup_signing';
     $101: result:='button_change';
     $102: result:='play_tune';
     $103: result:='camera_information';
@@ -2019,10 +2060,30 @@ begin
     $10B: result:='logging_data_acked';
     $10C: result:='logging_ack';
     $10D: result:='video_stream_information';
-    $10E: result:='set_video_stream_settings';
-    $12B: result:='wifi_config_ap';
-    $12C: result:='protocol_version';
-    $136: result:='uavcan_node_status';
+    $10E: result:='video_stream_status';           {270 len 19}
+    $10F: result:='camera_fov_status';             {271 len 52}
+
+    275:  result:='camera_tracking_image_status';  {275 len 31}
+    276:  result:='camera_tracking_geo_status';    {276 len 49}
+
+    280:  result:='gimbal_manager_information';
+    281:  result:='gimbal_manager_status';
+    282:  result:='gimbal_manager_set_attitude';
+    283:  result:='gimbal_device_information';
+    284:  result:='gimbal_device_set_attitude';
+    285:  result:='gimbal_device_attitude_status';
+    286:  result:='autopilot_state_for_gimbal_device';
+    287:  result:='gimbal_manager_set_pitchyaw';
+    288:  result:='gimbal_manager_set_manual_control';
+    290:  result:='esc_info';
+    291:  result:='esc_status';
+
+    299:  result:='wifi_config_ap';
+    300:  result:='protocol_version';              {12C'h not supported anymore}
+
+    301:  result:='ais_vessel';
+
+    310:  result:='uavcan_node_status';
     $137: result:='uavcan_node_info';
     $140: result:='param_ext_request_read';
     $141: result:='param_ext_request_list';
@@ -2033,20 +2094,34 @@ begin
     $14B: result:='odometry';
     $14C: result:='trajectory_representation_waypoints';
     $14D: result:='trajectory_representation_bezier';
+
+    336:  result:='cellular_config';
+
+    339:  result:='raw_rpm';
     340:  result:='UTM_global_position';           {154'h}
     350:  result:='debug_float_array';
     360:  result:='orbit_execution_status';
-    //      21: result:='CMD_NAV_LAND';
-    //      22: result:='CMD_NAV_TAKEOFF';
-    400: result:='CMD_COMPONENT_ARM_DISARM';
-    520: result:='CMD_REQUEST_AUTOPILOT_CAPABILITIES';
-    528: result:='CMD_REQUEST_FLIGHT_INFORMATION';
-    //    4005: result:='';
-    //    4007: result:='';
-    5000: result:='CMD_NAV_FENCE_RETURN_POINT';
 
-    40001: result:='CMD_RESET_MPPT'; {Mission command to reset Maximum Power Point Tracker (MPPT)}
-    40002: result:='CMD_PAYLOAD_CONTROL';    {Mission command to perform a power cycle on payload}
+    370:  result:='smart_battery_info';
+    373:  result:='generator_status';
+    375:  result:='actuator_output_status';
+    380:  result:='time_estimate_to_target';
+    385:  result:='tunnel';
+    390:  result:='onboard_computer_status';
+    395:  result:='component_information';
+    400:  result:='play_tune v2';
+    401:  result:='supported_tunes';
+
+    9000: result:='wheel_distance';                {2328'h}
+    9005: result:='winch_status';
+
+   12900: result:='open_drone_id_basic_id';        {3264'h}
+   12901: result:='open_drone_id_location';
+   12902: result:='open_drone_id_authentication';
+   12903: result:='open_drone_id_self_id';
+   12904: result:='open_drone_id_system';
+   12905: result:='open_drone_id_operator_id';
+   12915: result:='open_drone_id_message_pack';
   end;
 end;
 
@@ -3481,10 +3556,10 @@ procedure TForm1.DoForm2Show(p: integer);          {Detailfenster anzeigen mit B
 begin                                              {p=0 --> Breite Form1}
   Form2.Show;                                      {oberhalb Hauptfesnter anzeigen}
   if p=0 then
-    Form2.Width:=PageControl1.Width
+    Form2.Width:=pcMain.Width
   else
     Form2.Width:=p;
-  Form2.Left:=Form1.Left+PageControl1.Left;        {linksbündig zu Diagrams anzeigen}
+  Form2.Left:=Form1.Left+pcMain.Left;        {linksbündig zu Diagrams anzeigen}
   Form2.Top:=Form1.Top-Form2.Height-20;            {20 Pixel von Fensterleiste Kopf zeigen}
   if Form2.Top<Screen.DesktopTop then
     Form2.Top:=Screen.DesktopTop;
@@ -3494,7 +3569,7 @@ end;
 {http://www.joerg-buchwitz.de/temp/googlemapssyntax.htm
  https://www.google.de/maps?q=48.235367,10.0922553&z=13&om=0 }
 
-function URLGMap(lati, long: string): string; {URL für Koordinate in Google Maps}
+function URLGMap(lati, long: string): string;      {URL für Koordinate in Google Maps}
 begin
   result:=gmapURL+'?q='+ChrKoor(lati)+sep+
                         ChrKoor(long)+'&z='+
@@ -3504,7 +3579,7 @@ end;
 { http://wiki.openstreetmap.org/wiki/Browsing
  https://www.openstreetmap.org/?mlat=49.9676&mlon=9.9673#map=10/49.9676/9.9673&layers=Q}
 
-function URLosm(lati, long: string): string; {URL für Koordinate in OpenStreetMap}
+function URLosm(lati, long: string): string;       {URL für Koordinate in OpenStreetMap}
 begin
   result:=osmURL+'?mlat='+lati+'&mlon='+long+'#map='+
           gzoom+'/'+lati+'/'+long+'&layers=S';
@@ -3780,8 +3855,8 @@ begin
 {FlightLog Verzeichnis in Dropdown-Liste eintragen}
         cbxLogDir.Text:=ExcludeTrailingPathDelimiter(cbxLogDir.Text);
         Merkliste(cbxLogDir, speItems.Value);      {DropDownListe füllen}
-        if PageControl1.ActivePageIndex>4 then
-          PageControl1.ActivePageIndex:=0;
+        if pcMain.ActivePageIndex>4 then
+          pcMain.ActivePageIndex:=0;
         lbFlights.ItemIndex:=-1;                   {Default none selected}
         if fn<>'' then begin                       {Index der Datei, wenn übergeben}
           fnum:=GetNr(ExtractFileName(fn));
@@ -4292,7 +4367,38 @@ var dsbuf: array[0..YTHPcols] of byte;
     SenCSVAusgabe;
   end;
 
-{https://github.com/mavlink/c_library_v2/blob/master/common/mavlink_msg_altitude.h}
+{https://github.com/mavlink/c_library_v2/blob/master/common/mavlink_msg_altitude.h
+
+ 8 altitude_monotonic [m] This altitude measure is initialized on system boot
+                          and monotonic (it is never reset, but represents the
+                          local altitude change).
+                          The only guarantee on this field is that it will never
+                          be reset and is consistent within a flight.
+                          The recommended value for this field is the
+                          uncorrected barometric altitude at boot time.
+                          This altitude will also drift and vary between flights.
+12 altitude_amsl     +[m] This altitude measure is strictly above mean sea level
+                          and might be non-monotonic (it might reset on events
+                          like GPS lock or when a new QNH value is set).
+                          It should be the altitude to which global altitude
+                          waypoints are compared to.
+                          Note that it is *not* the GPS altitude, however,
+                          most GPS modules already output MSL by default and
+                          not the WGS84 altitude.
+16 altitude_local     [m] This is the local altitude in the local coordinate frame.
+                          It is not the altitude above home, but in reference to
+                          the coordinate origin (0, 0, 0). It is up-positive.
+20 altitude_relative +[m] This is the altitude above the home position.
+                          It resets on each change of the current home position.
+24 altitude_terrain   [m] This is the altitude above terrain. It might be fed
+                          by a terrain database or an altimeter.
+                          Values smaller than -1000 should be interpreted as unknown.
+28 bottom_clearance   [m] This is not the altitude, but the clear space below
+                          the system according to the fused clearance estimate.
+                          It generally should max out at the maximum range of
+                          e.g. the laser altimeter. It is generally a moving target.
+                          A negative value indicates no measurement available.}
+
   procedure Altitude;                              {MAVLINK_MSG_ID_ALTITUDE 141 ($8D)}
   var tme: uint64;                                 {unsigned Integer}
       fval: double;
@@ -4826,9 +4932,9 @@ begin
       Chart3.AxisList[0].Title.Caption:=csvVolt+' [V]';    {y-Achse top}
       Chart4.AxisList[0].Title.Caption:=csvAmp+' [A]';     {y-Achse middle}
       Chart5.AxisList[0].Title.Caption:=csvUcap+' [mAh]';  {y-Achse bottom}
-      if (PageControl1.ActivePageIndex>3) or
-         (PageControl1.ActivePageIndex=0) then
-        PageControl1.ActivePageIndex:=1;           {Zur Tabelle springen}
+      if (pcMain.ActivePageIndex>3) or
+         (pcMain.ActivePageIndex=0) then
+        pcMain.ActivePageIndex:=1;           {Zur Tabelle springen}
 
       gridDetails.BeginUpdate;
       gridDetails.RowCount:=1;
@@ -5202,11 +5308,11 @@ end;
 procedure TForm1.btnScreenshotClick(Sender: TObject);   {Take screenshot}
 begin
   SaveDialog1.Title:=rsScreenshot;
-  if PageControl1.ActivePageIndex>=0 then begin
-    SaveDialog1.FileName:=CleanDN(rsScreenshot+PageControl1.ActivePage.Caption+pngdef);
-    if (PageControl1.ActivePageIndex=6) and        {Settings}
-       (PageControl2.ActivePageIndex>=0) then
-      SaveDialog1.FileName:=CleanDN(rsScreenshot+PageControl2.ActivePage.Caption+pngdef);
+  if pcMain.ActivePageIndex>=0 then begin
+    SaveDialog1.FileName:=CleanDN(rsScreenshot+pcMain.ActivePage.Caption+pngdef);
+    if (pcMain.ActivePageIndex=6) and        {Settings}
+       (pcSettings3.ActivePageIndex>=0) then
+      SaveDialog1.FileName:=CleanDN(rsScreenshot+pcSettings3.ActivePage.Caption+pngdef);
   end else
     SaveDialog1.FileName:=CleanDN(rsScreenshot+capForm1+pngdef);
   if SaveDialog1.Execute then
@@ -5331,7 +5437,9 @@ var inlist, outlist: TStringList;
   end;
 
 begin
-  if (cutb>0) and (cute>cutb) then begin           {nur zur Sicherheit}
+  if (cutb>0) and                                  {nur zur Sicherheit}
+     (cute>cutb) and
+     (cutbidx=lbflights.ItemIndex) then begin
     inlist:=TStringList.Create;
     outlist:=TStringList.Create;
     fno:='';
@@ -6849,7 +6957,7 @@ begin
     end;
     ProgressBarScan.Position:= ProgressBarScan.Max;
     if rgErrType.ItemIndex=11 then                 {Go to AppLogHighlighter}
-      PageControl1.ActivePageIndex:=7;
+      pcMain.ActivePageIndex:=7;
   finally
     FreeAndNil(flist);
     FreeAndNil(vlist);
@@ -6862,11 +6970,11 @@ end;
 procedure TForm1.btnSaveApplogClick(Sender: TObject);   {AppLogHighlighter speichern}
 begin
   SaveDialog1.Title:=rsFileSave;
-  SaveDialog1.FileName:=ComplFN(TabSheet6.Caption, now)+wext;
+  SaveDialog1.FileName:=ComplFN(tabAppLog.Caption, now)+wext;
   if SaveDialog1.Execute then begin
     AppLog.Lines.SaveToFile(SaveDialog1.FileName);
     AppLog.Lines.Clear;
-    StatusBar1.Panels[5].Text:=TabSheet6.Caption+tab1+rsSaved+
+    StatusBar1.Panels[5].Text:=tabAppLog.Caption+tab1+rsSaved+
                                suff+SaveDialog1.FileName;
   end;
 end;
@@ -7601,7 +7709,7 @@ procedure TForm1.FirmwareLesen;          {Firmwarestände aus Sensor anzeigen}
 var FWarr: TarrFW;
     i, az: integer;
 begin
-  if PageControl2.ActivePageIndex=2 then begin
+  if pcSettings3.ActivePageIndex=2 then begin
     gridFirmware.Cells[0, 1]:=rsKamera;
     gridFirmware.Cells[0, 2]:=rsGimbal;
     gridFirmware.Cells[0, 3]:=rsAutoP;
@@ -7953,7 +8061,7 @@ begin
   else
     ProfileYLegacy;
   end;
-  PageControl1.ActivePageIndex:=3;                 {Umschalten auf Schnellanalyse}
+  pcMain.ActivePageIndex:=3;                 {Umschalten auf Schnellanalyse}
   Anzeige;                                         {Schnellanalyse ausführen}
   if TimerDiashow.Enabled and
      (idx>0) then begin
@@ -7964,7 +8072,7 @@ end;
 
 procedure TForm1.cbxProfilesDblClick(Sender: TObject);
 begin
-  PageControl1.ActivePageIndex:=3;                 {Umschalten auf Schnellanalyse}
+  pcMain.ActivePageIndex:=3;                 {Umschalten auf Schnellanalyse}
   Anzeige;
 end;
 
@@ -7985,10 +8093,99 @@ begin
     cbxLogDir.Items.Clear;
 end;
 
-procedure TForm1.edReceiveCGO3DblClick(Sender: TObject);   {CGO3 Test Copy to Clipboard}
+procedure TForm1.edReceiveCGO3DblClick(Sender: TObject);  {CGO3 Test Copy to Clipboard}
 begin
   If edReceiveCGO3.Text>'' then
     ClipBoard.AsText:=edSendCGO3.Text+LineEnding+edReceiveCGO3.Text;
+end;
+
+procedure TForm1.mnFlDelClick(Sender: TObject);    {Delete selected FlightLog}
+var nf: integer;                                   {Number files deleted}
+
+  function DeleteOneFile(fnx: string): boolean;    {Delete file with file name fn}
+  begin
+    result:=false;
+    if FileExists(fnx) then begin
+      if DeleteFile(fnx) then begin
+        result:=true;                              {Successful}
+        inc(nf);                                   {Number files deleted +1}
+      end;
+    end;
+  end;
+
+  procedure DelMQ;                                 {Mantis Q}
+  begin
+                                                   {Sensor_*.txt vom Mantis Q}
+    if not DeleteOneFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                         nfile+lbFlights.Items[lbFlights.ItemIndex]+wext) then
+                                                   {alternativ yuneec_*.log file}
+      DeleteOneFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                    mfile+lbFlights.Items[lbFlights.ItemIndex]+bext);
+  end;
+
+  function Del3files: boolean;                     {Legacy without sensor files}
+  var fn: string;
+  begin
+    result:=false;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text);                                                {Delete Telemetry}
+    if DeleteOneFile(fn+dkpath+PathDelim+kfile+    {Telemetry}
+                          lbFlights.Items[lbFlights.ItemIndex]+fext) then begin
+      DeleteOneFile(fn+spath+PathDelim+sfile+      {Try RemoteGPS}
+                    lbFlights.Items[lbFlights.ItemIndex]+fext);
+      DeleteOneFile(fn+fpath+PathDelim+ffile+      {Try Remote file}
+                    lbFlights.Items[lbFlights.ItemIndex]+fext);
+      result:=true;                                {At last Telemetry deleted}
+    end;
+  end;
+
+  procedure Del4Files;                              {legacy with sensor files}
+  begin
+    if Del3files then begin                         {Delete also sensor file für Typhoon H}
+      DeleteOneFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+npath+
+                    PathDelim+nfile+lbFlights.Items[lbFlights.ItemIndex]+sext);
+    end;
+  end;
+
+begin
+  nf:=0;                                            {Number files deleted}
+  if lbFlights.ItemIndex>=0 then begin              {Only if the selection is valid}
+    case v_type of
+      1..4, 6, YTHPid, ThBid: Del3files;
+      5: Del4Files;
+      MQid: DelMQ;                                  {Sensor files Mantis Q}
+      H5id: DeleteOneFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                          lbFlights.Items[lbFlights.ItemIndex]+hext);   {.tlog}
+      MQcsvID: DeleteOneFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                          lbFlights.Items[lbFlights.ItemIndex]+bext);   {.log}
+      BrID: DeleteOneFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+                          lbFlights.Items[lbFlights.ItemIndex]+bext);
+      H501ID: DeleteOneFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+h5file+
+                            lbFlights.Items[lbFlights.ItemIndex]+fext); {Hubsan}
+
+    end;
+    if nf>0 then begin
+      StatusBar1.Panels[5].Text:=rsFLdelete+tab1+
+                                 lbFlights.Items[lbFlights.ItemIndex]+suff+
+                                 IntToStr(nf)+tab1+rsFilesDel;
+      StatusBar1.Refresh;
+      AppLog.Lines.Add('');
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add('');
+      ResetCut;                                       {Reset cut timestamps}
+      FreigabeCut(true);                              {Output to status is true}
+      TimerDblClick.Enabled:=false;
+      TimerDiashow.Enabled:=false;                    {Stop Diashow Profiles}
+      if Form2<>nil then
+        Form2.Close;                                  {Detailfenster schließen}
+      tpos:=0;                                        {Position zurücksetzen}
+      SelDirAct('');                                  {Reload all}
+    end;
+  end;
+end;
+
+procedure TForm1.mnReloadClick(Sender: TObject);    {Reload files}
+begin
+  SelDirAct('');
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -8013,7 +8210,7 @@ end;
 
 procedure TForm1.FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if PageControl1.ActivePageIndex=2 then begin     {Höhendiagramm}
+  if pcMain.ActivePageIndex=2 then begin     {Höhendiagramm}
     if ssCtrl in Shift then begin
       if ChartToolset2DataPointCrosshairTool1.Enabled then begin
         case key of               {Analyse erweitern/einschränken mit +  oder -}
@@ -8029,7 +8226,7 @@ begin
     if key=vk_ESCAPE then
       KursorAus;                                   {Fadenkreuz aus}
   end;
-  if PageControl1.ActivePageIndex=3 then begin     {Schellanalyse}
+  if pcMain.ActivePageIndex=3 then begin     {Schellanalyse}
     if key=vk_ESCAPE then TimerDiashow.Enabled:=false;   {Diashow Profiles stoppen}
     if (key=vk_F5) and
        (v_type<>BrID) then                         {H501 ???}
@@ -8336,7 +8533,7 @@ var x: integer;
   begin
     rgQuelle.ItemIndex:=0;
     rgQuelle.Enabled:=false;                       {nur Telemetrie}
-    case PageControl1.ActivePageIndex of
+    case pcMain.ActivePageIndex of
       0: gridOverview.TopRow:=topp[0, 4];          {0 wird sowieso gefüllt}
       1: BrAnzeigeCSV(0);
       2: BrHDiagramm(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
@@ -8349,7 +8546,7 @@ var x: integer;
   procedure AnzYLegacy;
   begin
     rgQuelle.Enabled:=true;                        {Auswahl Remote möglich}
-    case PageControl1.ActivePageIndex of
+    case pcMain.ActivePageIndex of
       0: gridOverview.TopRow:=topp[0, 4];          {0 wird sowieso gefüllt}
       1: AnzeigeCSV(0);
       2: HDiagramm(IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
@@ -8362,7 +8559,7 @@ var x: integer;
   procedure AnzH501;
   begin
     rgQuelle.Enabled:=true;                        {Auswahl Remote möglich}
-    case PageControl1.ActivePageIndex of
+    case pcMain.ActivePageIndex of
       0: gridOverview.TopRow:=topp[0, 4];          {0 wird sowieso gefüllt}
       1: H501AnzeigeCSV(0);
       2: H501HDiagramm(IncludeTrailingPathDelimiter(cbxLogDir.Text)+H5file+
@@ -8378,8 +8575,8 @@ begin
   Merkliste(cbxText, speItems.Value);              {Save type in model list}
   AppLogTimeStamp('');
   DefaultFormatSettings.DecimalSeparator:='.';
-  if (PageControl1.Tag>0) and
-     (PageControl1.ActivePageIndex<>3) then
+  if (pcMain.Tag>0) and
+     (pcMain.ActivePageIndex<>3) then
     try
       Form2.Chart1ConstantLine1.Active:=false;     {nicht bei Schnellanalyse}
     except
@@ -8424,7 +8621,7 @@ begin
     PopupMenuTab.Items[6].Enabled:=false;          {GoTo Errorflags}
     PopupMenuTab.Items[9].Enabled:=false;          {Start}
     PopupMenuTab.Items[10].Enabled:=false;         {Stop}
-    PageControl1.ActivePageIndex:=1;               {Detail}
+    pcMain.ActivePageIndex:=1;               {Detail}
     rgQuelle.ItemIndex:=3;                         {Sensor Files}
     rgQuelle.Enabled:=false;
     lbFlights.Tag:=lbFlights.ItemIndex;            {Dateinummer merken}
@@ -8455,7 +8652,7 @@ begin
     PopupMenuTab.Items[6].Enabled:=false;          {GoTo Errorflags}
     PopupMenuTab.Items[9].Enabled:=false;          {Start}
     PopupMenuTab.Items[10].Enabled:=false;         {Stop}
-    PageControl1.ActivePageIndex:=1;               {Detail}
+    pcMain.ActivePageIndex:=1;               {Detail}
     rgQuelle.ItemIndex:=3;                         {Sensor Files}
     rgQuelle.Enabled:=false;
     lbFlights.Tag:=lbFlights.ItemIndex;            {Dateinummer Index merken}
@@ -8476,8 +8673,7 @@ begin
     TimerDiashow.Enabled:=false;                   {Stop Diashow Profiles}
     if Form2<>nil then
       Form2.Close;                                 {Detailfenster schließen}
-    cutb:=0;                                       {Zeitstempel zum Ausschneiden}
-    cute:=0;                                       {löschen}
+    ResetCut;                                      {Reset timestamps for Cut}
     tpos:=0;                                       {Position zurücksetzen}
     case v_type of
       MQid: ShowMQ;                                {Sensor_*.txt vom Mantis Q}
@@ -8485,11 +8681,6 @@ begin
       else Anzeige;                                {alle anderen herkömmlich}
     end;
   end;
-end;
-
-procedure TForm1.lbFlightsDblClick(Sender: TObject); {Re-read the Filelist}
-begin
-  SelDirAct('');
 end;
 
 procedure TForm1.MAVmsgDefault;                    {All messages true}
@@ -8529,8 +8720,8 @@ end;
 
 procedure TForm1.mnSaveAsQuickClick(Sender: TObject); {Menü: GoTo Settings}
 begin
-  PageControl1.ActivePageIndex:=6;
-  PageControl2.ActivePageIndex:=1;
+  pcMain.ActivePageIndex:=6;
+  pcSettings3.ActivePageIndex:=1;
 end;
 
 procedure TForm1.mnResetProfileClick(Sender: TObject); {Menü: Default}
@@ -8571,6 +8762,7 @@ begin
   if (cutb>0) and
      (cute>cutb) then begin                        {Dauer anzeigen}
     btnCut.Enabled:=true;
+    cutbidx:=lbflights.ItemIndex;                  {To what file timestamps belong}
     Label15.Caption:=rsDauer+tab1+FormatDateTime('= nn:ss'+zzz, cute-cutb);
     if a then begin
       StatusBar1.Panels[5].Text:=Label15.Caption;  {Textfeld überschreiben}
@@ -8589,8 +8781,7 @@ end;
 
 procedure TForm1.mnDelTabClick(Sender: TObject);   {Reset Beginn/Ende}
 begin
-  cutb:=0;
-  cute:=0;
+  ResetCut;                                        {Reset timestamps for Cut}
   FreigabeCut(true);
 end;
 
@@ -8624,7 +8815,7 @@ begin
   FreigabeCut(true);
 end;
 
-procedure TForm1.PageControl1Change(Sender: TObject);
+procedure TForm1.pcMainChange(Sender: TObject);
 begin                                              {Tabs umschalten}
   if gridDetails.ColCount>=csvanz then             {nichts tun bei Anzeige Sensor}
     exit;
@@ -8634,7 +8825,7 @@ begin                                              {Tabs umschalten}
   cbxProfiles.ItemIndex:=0;                        {Profiles zurücksetzen}
   rgVehicleType.Enabled:=cbVehicleType.Checked;
   cbxSearch.Enabled:=false;
-  case PageControl1.ActivePageIndex of             {alle anderen Fälle ohne Änderung}
+  case pcMain.ActivePageIndex of             {alle anderen Fälle ohne Änderung}
     1: begin                                       {Datentabelle}
          cbxSearch.Enabled:=true;                  {nur bei Datentabelle}
          if gridDetails.ColCount<YTHPcols then begin
@@ -9511,7 +9702,7 @@ begin
                                    capLabel6+Format('%6d', [zhl]);
         AppLog.Lines.Add('''9517'+suff+StatusBar1.Panels[5].Text);
       end;
-      if PageControl1.ActivePageIndex=1 then gridDetails.SetFocus;
+      if pcMain.ActivePageIndex=1 then gridDetails.SetFocus;
     end else begin                                 {Datei leer}
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
@@ -9528,11 +9719,11 @@ procedure TForm1.AnzeigePX4CSV(fn: string);        {CSV aus eigenem Format anzei
 var n, i: integer;
     inlist: TStringList;
 begin
-  n:=Label3.Tag;                        {zwischenspeichern, wird sonst zerstört}
+  n:=Label3.Tag;                                   {zwischenspeichern, wird sonst zerstört}
   Screen.Cursor:=crHourGlass;
   SetSensorEnv;
-  mnGoogleMap.Enabled:=true;                         {GoogleMaps Link}
-  mnOSM.Enabled:=true;                         {OSM Link}
+  mnGoogleMap.Enabled:=true;                       {GoogleMaps Link}
+  mnOSM.Enabled:=true;                             {OSM Link}
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   inlist:=TStringList.Create;
   try
@@ -9540,7 +9731,7 @@ begin
 
     if inlist.count>1 then begin                   {Laden inklusive Überschrift}
       gridDetails.BeginUpdate;
-      PageControl1.ActivePageIndex:=1;
+      pcMain.ActivePageIndex:=1;
       gridDetails.ColCount:=csvanz;                {auch ID für PX4 CSV}
       gridDetails.RowCount:=inlist.Count;          {nur wenn Daten vorhanden sind}
       for i:=0 to Inlist.Count-1 do begin
@@ -9722,7 +9913,7 @@ begin
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     gridDetails.TopRow:=topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]; {Top setzen}
-    if PageControl1.ActivePageIndex=1 then
+    if pcMain.ActivePageIndex=1 then
       gridDetails.SetFocus;
   finally
     FreeAndNil(inlist);
@@ -9876,7 +10067,7 @@ begin
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     gridDetails.TopRow:=topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]; {Top setzen}
-    if PageControl1.ActivePageIndex=1 then
+    if pcMain.ActivePageIndex=1 then
       gridDetails.SetFocus;
   finally
     FreeAndNil(inlist);
@@ -10009,7 +10200,7 @@ begin
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     gridDetails.TopRow:=topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]; {Top setzen}
-    if PageControl1.ActivePageIndex=1 then
+    if pcMain.ActivePageIndex=1 then
       gridDetails.SetFocus;
   finally
     FreeAndNil(inlist);
@@ -11922,7 +12113,7 @@ begin
      (gridDetails.ColCount<YTHPcols) then begin    {nicht bei Sensordateien}
     ts:=ZeitToDT(gridDetails.Cells[0, gridDetails.Row], v_type);
     if ts>0 then begin
-      if (PageControl1.Tag>0) and
+      if (pcMain.Tag>0) and
          (Form2.Chart1.Visible) then begin
         try
           tb:=ZeitToDT(gridDetails.Cells[0, 1], v_type);
@@ -12732,7 +12923,7 @@ begin
   if (p>0) and                                     {Spalte Datum/Zeit ausschließen}
      (gridDetails.RowCount>25) then begin          {genügend Zeilen}
     DoForm2Show(0);
-    PageControl1.Tag:=1;
+    pcMain.Tag:=1;
     w:=0;
     rssi_alt:=0;
     lat1:=0;
@@ -12986,9 +13177,9 @@ var
   end;
 
 begin
-  if PageControl1.Tag>0 then
+  if pcMain.Tag>0 then
     Form2.Chart1ConstantLine1.Active:=false;
-  PageControl1.Tag:=0;
+  pcMain.Tag:=0;
   a:=nil;
   for i:=1 to gridDetails.RowCount - 1 do begin
     if (v_type=H501ID) or
@@ -13292,7 +13483,7 @@ begin
       MQid: ShowMQ;                                {MantisQ}
       H5id: ShowH520;                              {eine TLOG Datei H520 anzeigen}
       else begin
-        PageControl1.ActivePageIndex:=gridOverview.Tag;  {Merker für letztes TabSheet}
+        pcMain.ActivePageIndex:=gridOverview.Tag;  {Merker für letztes TabSheet}
         Anzeige;                                   {alle andern Typen}
       end;
     end;
@@ -13432,7 +13623,7 @@ begin
          (rgErrType.ItemIndex=11) then begin
         fn:=gridScanResult.Cells[1, gridScanResult.Tag];
         ShowSensorPlus(fn, 0, false, true, false, false);
-        PageControl1.ActivePageIndex:=7;           {Springe zum AppLogHighlighter}
+        pcMain.ActivePageIndex:=7;           {Springe zum AppLogHighlighter}
       end else
       if (rgErrType.ItemIndex<8) or                {Sensor Dateien}
          (v_type<>YTHPid) then begin               {H Plus}
@@ -13440,7 +13631,7 @@ begin
         cbxLogDir.Text:=GetFlightLogDir(fn);
         SelDirAct(fn);
         cbxSearch.Enabled:=true;                   {Suche erlauben}
-        PageControl1.ActivePageIndex:=1;           {Springe zur Dateiansicht}
+        pcMain.ActivePageIndex:=1;           {Springe zur Dateiansicht}
       end;
     end;
   end;
@@ -13471,18 +13662,18 @@ begin
   gridScanResult.ColWidths[1]:=gridScanResult.Width-gridScanResult.ColWidths[0]-30;
 end;
 
-procedure TForm1.TabSheet8Resize(Sender: TObject); {Höhe Diagramme anpassen}
+procedure TForm1.tabAnalyze3Resize(Sender: TObject); {Höhe Diagramme anpassen}
 begin
-  Chart3.Height:=TabSheet8.Height div 3;
-  Chart4.Height:=TabSheet8.Height div 3;
-  Chart5.Height:=TabSheet8.Height div 3;
+  Chart3.Height:=tabAnalyze3.Height div 3;
+  Chart4.Height:=tabAnalyze3.Height div 3;
+  Chart5.Height:=tabAnalyze3.Height div 3;
   Chart4.Width:=Chart3.Width;
   Chart4.Top:=Chart3.Top+Chart3.Height;
 end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);     {CGO3 Statusabfrage}
 begin
-  if TabSheet11.Visible then
+  if tabCGO3.Visible then
     CGO3run('', 0);
 end;
 
@@ -13594,7 +13785,7 @@ begin
         if SaveDialog1.Execute then begin
           mlist.SaveToFile(SaveDialog1.FileName);
         end;
-        PageControl1.ActivePageIndex:=7;           {Switch to AppLogHighlighter}
+        pcMain.ActivePageIndex:=7;           {Switch to AppLogHighlighter}
         AppLog.TopLine:=AppLog.Lines.Count;
       end;
     end;
@@ -13606,7 +13797,7 @@ end;
 procedure TForm1.mnSaveAsHistClick(Sender: TObject); {PopUp Höhenprofil als Datei}
 begin
   SaveDialog1.Title:=rsHDiaSave;
-  SaveDialog1.FileName:=CleanDN(PageControl1.Page[2].Caption+pngdef);
+  SaveDialog1.FileName:=CleanDN(pcMain.Page[2].Caption+pngdef);
   if SaveDialog1.Execute then
     Chart1.SaveToFile(TPortableNetworkGraphic, SaveDialog1.FileName);
 end;
@@ -13867,7 +14058,7 @@ end;
 procedure TForm1.mnGoTableClick(Sender: TObject);  {gehe zur Tabelle}
 begin
   if lbFlights.Items.Count>0 then begin
-    PageControl1.ActivePageIndex:=1;
+    pcMain.ActivePageIndex:=1;
     GoToZ(4);
   end;
 end;
@@ -14123,11 +14314,135 @@ begin
     rgQuelle.Tag:=0;                               {Resize columns needed again}
 end;
 
+procedure TForm1.cbHighLightChange(Sender: TObject); {AppLog Highlighter}
+begin
+  if cbHighLight.Checked then                      {Switch on HighLighter}
+    AppLog.Highlighter:=AppLogHighlighter
+  else
+    AppLog.HighLighter:=nil;
+  AppLog.Refresh;
+end;
+
+procedure TForm1.mnHexdumpClick(Sender: TObject);  {Tools Menu Hexdump}
+begin
+  OpenDialog1.Title:='Select file for '+capHexdump+'...';
+  if OpenDialog1.Execute then begin
+    HexHeader(OpenDialog1.FileName);               {Block size taken only once per file, changes ingnored}
+    HexAusgabe(OpenDialog1.FileName);
+  end;
+end;
+
+procedure TForm1.btnShowHexClick(Sender: TObject); {Button Hexdump}
+begin
+  if btnShowhex.Tag=0 then begin                   {No file selected}
+    OpenDialog1.Title:='Select file for '+capHexdump+'...';
+    if OpenDialog1.Execute then begin              {Select one file for dump}
+      HexHeader(OpenDialog1.FileName);
+    end;
+  end;
+  if btnShowhex.Tag>1 then
+    HexAusgabe(OpenDialog1.FileName);
+end;
+
+procedure TForm1.HexHeader(const fn: string);      {all actions before hexdump}
+var fnsize, numblk: integer;
+begin
+  pcMain.ActivePageIndex:=7;                 {Switch to AppLogHighlighter}
+  AppLog.Lines.Clear;                              {Empty AppLog for hexdump}
+  fnsize:=FileSize(fn);
+  btnShowHex.Tag:=2048;                            {File selected}
+  btnShowHex.Tag:=btnShowHex.Tag shl rgBlockSize.ItemIndex;  {Block size at 1st run}
+  numblk:=fnsize div btnShowHex.Tag + 1;
+  speBlockNum.Value:=1;
+  speBlockNum.MaxValue:=numblk;
+  AppLog.Lines.Add('');
+  StatusBar1.Panels[0].Text:=IntToStr(fnsize);
+  StatusBar1.Panels[1].Text:=IntToStr(numblk);
+  StatusBar1.Panels[5].Text:=CapHexdump+suff+ExtractFileName(fn);
+  AppLog.Lines.Add(StatusBar1.Panels[5].Text);
+  AppLog.Lines.Add(rsFilesize+suff+StatusBar1.Panels[0].Text+
+                     ' bytes = '+StatusBar1.Panels[1].Text+' blocks');
+  AppLog.Lines.Add('');
+end;
+
+procedure TForm1.HexAusgabe(const fn: string);     {Display a binary file as hex print}
+var bytesread, adr, p1, p2, i, zhl: integer;
+    instream: TFileStream;
+    rwert: array [1..8192] of byte;
+    zeile: string;
+    zch: char;                                     {Block size in btnShowhex.Tag}
+const
+  hdrstr1='Relative  Bytes                                             ASCII';
+  hdrstr2='address   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F';
+  strstr= '----------------------------------------------------------------------------';
+  adrlen=8;                                        {Length addres string}
+  numbyte=16;                                      {Number of bytes in one line}
+begin
+  zeile:='Block No: '+IntToStr(speBlockNum.Value); {write block header}
+  AppLog.Lines.Add(zeile);
+  AppLog.Lines.Add(hdrstr1);
+  AppLog.Lines.Add(hdrstr2);
+  AppLog.Lines.Add(strstr);
+  zhl:=4;
+  instream:=TFileStream.Create(fn, fmOpenRead or fmShareDenyWrite); {file open}
+  try
+    instream.position:=btnShowhex.Tag*(speBlockNum.Value-1);  {Start address of block}
+    bytesread:=instream.Read(rwert, btnShowhex.Tag);
+    adr:=0;                                        {Address counter offset}
+    p1:=1;                                         {position in buffer for Hex}
+    p2:=1;                                         {position in buffer for Char}
+    AppLog.BeginUpdate(false);
+      repeat                                       {Go through the whole read buffer}
+        zeile:=IntToHex(adr+(speBlockNum.Value-1)*btnShowhex.Tag, adrlen)+tab2;
+        for i:=1 to numbyte do begin               {Hex dump of one line á 16 bytes}
+          if p1<=bytesread then
+            zeile:=zeile+IntToHex(rwert[p1], 2)+tab1
+          else
+            zeile:=zeile+tab2+tab1;                {Fill the rest with spaces}
+          inc(adr);
+          inc(p1);
+        end;
+        zeile:=zeile+tab2;
+        for i:=1 to numbyte do begin               {ASCII part of the line}
+          case rwert[p2] of
+            32..126, 128, 166, 167, 169, 177..179, 181, 188..190, 215, 247: zch:=Chr(rwert[p2]);
+            196, 214, 220, 223, 228, 246, 252: zch:=Chr(rwert[p2]); {Umlaute}
+          else
+            zch:='.';                              {not a character}
+          end;
+          if p2<=bytesread then
+            zeile:=Zeile+zch;
+          inc(p2);
+        end;
+        AppLog.Lines.Add(zeile);
+        inc(zhl);
+      until p1>bytesread;                          {all copied bytes read}
+      AppLog.Lines.Add('');
+      AppLog.TopLine:=AppLog.Lines.Count-zhl;
+    AppLog.EndUpdate;
+    if speBlockNum.Value=speBlockNum.MaxValue then {last block dumped, end file}
+      btnShowhex.Tag:=0;                           {next file?}
+    speBlockNum.Value:=speBlockNum.Value+1;        {next block}
+  finally
+    instream.Free
+  end;
+end;
+
 {###############################################################################
  Für spezielle Sonderauswertungen einer CSV Datei. Diese Sonderfälle müssen extra
  programmiert werden. Hier ist der Rahmen dazu.}
 
 procedure TForm1.btnSpecialClick(Sender: TObject);  {Spezielle Auswertung für CSV-Datei}
+begin
+//  AuswertungCSVdatei;
+//  if OpenDialog1.Execute then
+//    TLOGanalysis(OpenDialog1.FileName);
+end;
+
+(*
+{Sonderauswertung einer CSV-Datei : Hier ist der Rahmen dazu.}
+
+procedure TForm1.AuswertungCSVdatei;               {Spezielle Auswertung für CSV-Datei}
 var i, j, zhl: integer;
     inlist, splitlist: TStringList;
     fn, slat, slon, vlat, vlon: string;
@@ -14256,7 +14571,7 @@ begin
                                    capLabel6+Format('%6d', [zhl]);
         AppLog.Lines.Add('''14248'+suff+StatusBar1.Panels[5].Text);
       end;
-      PageControl1.ActivePageIndex:=1;
+      pcMain.ActivePageIndex:=1;
       gridDetails.SetFocus;
       gridDetails.CopyToClipboard(false);          {Tabelle im Clipboard ablegen}
     end else begin                                 {Datei leer}
@@ -14268,120 +14583,228 @@ begin
     FreeAndNil(splitlist);
     Screen.Cursor:=crDefault;
   end;
-end;
+end; *)
 
-procedure TForm1.cbHighLightChange(Sender: TObject); {AppLog Highlighter}
-begin
-  if cbHighLight.Checked then                      {Switch on HighLighter}
-    AppLog.Highlighter:=AppLogHighlighter
-  else
-    AppLog.HighLighter:=nil;
-  AppLog.Refresh;
-end;
+(*
 
-procedure TForm1.mnHexdumpClick(Sender: TObject);  {Tools Menu Hexdump}
-begin
-  OpenDialog1.Title:='Select file for '+capHexdump+'...';
-  if OpenDialog1.Execute then begin
-    HexHeader(OpenDialog1.FileName);               {Block size taken only once per file, changes ingnored}
-    HexAusgabe(OpenDialog1.FileName);
+{https://github.com/mavlink/c_library_v2/tree/master/common
+
+ Special analysis TLOG (Beispiel für eigene CSV Listen:
+ Hier: Schreibe alle Höhenangaben aus 24, 33 und 141 in eine Tabelle
+ Siehe function ShowSensorPlus}
+
+procedure TForm1.TLOGanalysis(fn: string);
+
+var dsbuf: array[0..YTHPcols] of byte;
+    i, len, zhl: integer;
+    infn: TMemoryStream;
+    b: byte;
+    csvlist: TStringList;
+    s: string;                                     {GPX Ausgabe, homepoint}
+    bg: TDateTime;
+    csvarr: array[1..csvanz] of string;            {Werte für CSV-Ausgabe}
+
+  procedure SenCSVausgabe;                         {Ausgabe Werte aus Sensor}
+  var i: integer;
+      c: string;
+  begin
+    c:=FormatDateTime(zzf+zzz, bg);                {aktueller Zeitstempel}
+    for i:=1 to 14 do                              {csv Daten ausgeben}
+      c:=c+sep+csvarr[i];
+    csvlist.Add(c);
+ //   for i:=1 to 14 do csvarr[i]:='';             {ggf. CSV löschen -> Rohdaten}
   end;
-end;
 
-procedure TForm1.btnShowHexClick(Sender: TObject); {Button Hexdump}
-begin
-  if btnShowhex.Tag=0 then begin                   {No file selected}
-    OpenDialog1.Title:='Select file for '+capHexdump+'...';
-    If OpenDialog1.Execute then                    {Select one file for dump}
-      HexHeader(OpenDialog1.FileName);
+  function GetIntFromBuf(const p, a: integer): uint64; {Position/Anzahl Bytes}
+  var i: integer;
+  begin
+    result:=0;
+    for i:=0 to a-1 do begin
+      result:=result+dsbuf[lenfix+i+p]*(256**i);
+    end;
   end;
-  if btnShowhex.Tag>1 then
-    HexAusgabe(OpenDialog1.FileName);
-end;
 
-procedure TForm1.HexHeader(const fn: string);      {all actions before hexdump}
-var fnsize, numblk: integer;
-begin
-  PageControl1.ActivePageIndex:=7;                 {Switch to AppLogHighlighter}
-  AppLog.Lines.Clear;
-  fnsize:=FileSize(fn);
-  btnShowHex.Tag:=2048;                            {File selected}
-  btnShowHex.Tag:=btnShowHex.Tag shl rgBlockSize.ItemIndex;  {Block size at 1st run}
-  numblk:=fnsize div btnShowHex.Tag + 1;
-  speBlockNum.Value:=1;
-  speBlockNum.MaxValue:=numblk;
-  AppLog.Lines.Add('');
-  StatusBar1.Panels[0].Text:=IntToStr(fnsize);
-  StatusBar1.Panels[1].Text:=IntToStr(numblk);
-  StatusBar1.Panels[5].Text:=CapHexdump+suff+ExtractFileName(fn);
-  AppLog.Lines.Add(StatusBar1.Panels[5].Text);
-  AppLog.Lines.Add(rsFilesize+suff+StatusBar1.Panels[0].Text+
-                     ' bytes = '+StatusBar1.Panels[1].Text+' blocks');
-  AppLog.Lines.Add('');
-end;
+  function GetFloatFromBuf(const p: integer): double; {Position, Länge immer 4}
+  var i: integer;
+      wfl: array[0..3] of Byte;
+      wx: Single absolute wfl;
+  begin
+    result:=0;
+    for i:=0 to 3 do                               {Endianess prüfen (to/downto)}
+      wfl[i]:=dsbuf[lenfix+i+p];                   {4 byte aus Buffer ausschneiden}
+    result:=wx;                                    {Typecast mittels absolute}
+  end;
 
-procedure TForm1.HexAusgabe(const fn: string);     {Display a binary file as hex print}
-var bytesread, adr, p1, p2, i, zhl: integer;
-    instream: TFileStream;
-    rwert: array [1..8192] of byte;
-    zeile: string;
-    zch: char;                                     {Block size in btnShowhex.Tag}
-const
-  hdrstr1='Relative  Bytes                                             ASCII';
-  hdrstr2='address   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F';
-  strstr= '----------------------------------------------------------------------------';
-  adrlen=8;                                        {Length addres string}
-  numbyte=16;                                      {Number of bytes in one line}
+ {GPS_RAW_INT 24:
+  alt [mm] Altitude (MSL). Positive for up. Note that virtually all GPS modules
+           provide the MSL altitude in addition to the WGS84 altitude.}
+
+  procedure GPSAusgabe;                            {GPS_RAW_INT auswerten (24)}
+  var tme: uint64;                                 {unsigned Integer}
+      lat, lon, ele: integer;                      {int32}
+
+  begin
+    tme:=GetIntFromBuf(0, 8);                      {in mysec}
+    bg:=tme/(Secpd*1000000);                       {Zeitstempel überall verfügbar}
+    lat:=GetIntFromBuf(8, 4);                      {uint32}
+    lon:=GetIntFromBuf(12, 4);
+    ele:=GetIntFromBuf(16, 4);                     {Höhe}
+
+    csvarr[1]:=FormatFloat(ctfl, ele/1000);        {Altitude MSL (51 -> 1)}
+    csvarr[10]:=FloatToStr(lat/10000000);
+    csvarr[11]:=FloatToStr(lon/10000000);
+
+    SenCSVAusgabe;
+  end;
+
+{GLOBAL_POSITION_INT 33:
+ alt [mm]          Altitude (MSL). Note that virtually all GPS modules provide
+                   both WGS84 and MSL.*/
+ relative_alt [mm] Altitude above ground}
+
+  procedure GlobalPosInt;                          {Msg Global_POSTION_INT (33)}
+  var tme: uint32;
+      lat, lon, altr, ele: integer;                {int32}
+
+  begin
+    if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
+      tme:=GetIntFromBuf(0, 4);                    {in ms}
+      bg:=tme/(Secpd*1000);                        {Zeitstempel überall verfügbar}
+
+      lat:=GetIntFromBuf(4, 4);
+      lon:=GetIntFromBuf(8, 4);                    {degrees E7  (/10000000)}
+      ele:=GetIntFromBuf(12, 4);                   {altitude MSL [mm]}
+      altr:=GetIntFromBuf(16, 4);                  {relative alt [mm]}
+
+      csvarr[2]:=FormatFloat(ctfl, ele/1000);      {altitude MSL 51 -> 2}
+      csvarr[3]:=FormatFloat(ctfl, altr/1000);     {altitude relative  4 -> 3}
+      csvarr[12]:=FloatToStr(lat/10000000);        {Koordinaten}
+      csvarr[13]:=FloatToStr(lon/10000000);
+
+      SenCSVAusgabe;                               {CSV Datensatz schreiben}
+    end;
+  end;
+
+{8 altitude_monotonic [m] This altitude measure is initialized on system boot
+                          and monotonic (it is never reset, but represents the
+                          local altitude change).
+                          The only guarantee on this field is that it will never
+                          be reset and is consistent within a flight.
+                          The recommended value for this field is the
+                          uncorrected barometric altitude at boot time.
+                          This altitude will also drift and vary between flights.
+12 altitude_amsl     +[m] This altitude measure is strictly above mean sea level
+                          and might be non-monotonic (it might reset on events
+                          like GPS lock or when a new QNH value is set).
+                          It should be the altitude to which global altitude
+                          waypoints are compared to.
+                          Note that it is *not* the GPS altitude, however,
+                          most GPS modules already output MSL by default and
+                          not the WGS84 altitude.
+16 altitude_local     [m] This is the local altitude in the local coordinate frame.
+                          It is not the altitude above home, but in reference to
+                          the coordinate origin (0, 0, 0). It is up-positive.
+20 altitude_relative +[m] This is the altitude above the home position.
+                          It resets on each change of the current home position.
+24 altitude_terrain   [m] This is the altitude above terrain. It might be fed
+                          by a terrain database or an altimeter.
+                          Values smaller than -1000 should be interpreted as unknown.
+28 bottom_clearance   [m] This is not the altitude, but the clear space below
+                          the system according to the fused clearance estimate.
+                          It generally should max out at the maximum range of
+                          e.g. the laser altimeter. It is generally a moving target.
+                          A negative value indicates no measurement available.}
+
+  procedure Altitude;                              {MAVLINK_MSG_ID_ALTITUDE 141 ($8D)}
+  var tme: uint64;                                 {unsigned Integer}
+      fval: double;
+  begin
+    tme:=GetIntFromBuf(0, 8);                      {in mysec}
+    bg:=tme/(Secpd*1000000);                       {Zeitstempel überall verfügbar}
+
+    fval:=GetFloatFromBuf(8);                      {altitude_monotonic x -> 4}
+    csvarr[4]:=FormatFloat(ctfl, fval);
+    fval:=GetFloatFromBuf(12);                     {altitude MSL in m  51 -> 5}
+    csvarr[5]:=FormatFloat(ctfl, fval);
+    fval:=GetFloatFromBuf(16);                     {altitude_local x -> 6}
+    csvarr[6]:=FormatFloat(ctfl, fval);
+    fval:=GetFloatFromBuf(20);                     {altitude relative in m  4 -> 7}
+    csvarr[7]:=FormatFloat(ctfl, fval);
+    fval:=GetFloatFromBuf(24);                     {altitude_terrain x -> 8}
+    csvarr[8]:=FormatFloat(ctfl, fval);
+    fval:=GetFloatFromBuf(24);                     {bottom_clearance x -> 9}
+    csvarr[9]:=FormatFloat(ctfl, fval);
+
+    SenCSVAusgabe;
+  end;
+
+  procedure AusgabeSensor;                         {Datenausgabe abh. von MsgID}
+  var e: integer;
+  begin
+    e:=GetIntFromBuf(-3, 3);                       {MsgID 3 Byte als Zahl}
+    csvarr[14]:=IntToStr(e);                       {Message ID dezimal hinten}
+    inc(zhl);                                      {Datensätze zählen}
+    case e of                                      {Ausgabe spez MAVmsg}
+      24:  GPSAusgabe;                             {GPS_RAW_INT 24 ($18)}
+      33:  GlobalPosInt;                           {GLOBAL_POSITION_INT 33 ($21)}
+      141: Altitude;                               {MSG_ID_ALTITUDE 141 ($8D)}
+    end;
+  end;
+
 begin
-  zeile:='Block No: '+IntToStr(speBlockNum.Value); {write block header}
-  AppLog.Lines.Add(zeile);
-  AppLog.Lines.Add(hdrstr1);
-  AppLog.Lines.Add(hdrstr2);
-  AppLog.Lines.Add(strstr);
-  zhl:=4;
-  instream:=TFileStream.Create(fn, fmOpenRead or fmShareDenyWrite); {file open}
-  try
-    instream.position:=btnShowhex.Tag*(speBlockNum.Value-1);  {Start address of block}
-    bytesread:=instream.Read(rwert, btnShowhex.Tag);
-    adr:=0;                                        {Address counter offset}
-    p1:=1;                                         {position in buffer for Hex}
-    p2:=1;                                         {position in buffer for Char}
-    AppLog.BeginUpdate(false);
-      repeat                                       {Go through the whole read buffer}
-        zeile:=IntToHex(adr+(speBlockNum.Value-1)*btnShowhex.Tag, adrlen)+tab2;
-        for i:=1 to numbyte do begin               {Hex dump of one line á 16 bytes}
-          if p1<=bytesread then
-            zeile:=zeile+IntToHex(rwert[p1], 2)+tab1
-          else
-            zeile:=zeile+tab2+tab1;                {Fill the rest with spaces}
-          inc(adr);
-          inc(p1);
-        end;
-        zeile:=zeile+tab2;
-        for i:=1 to numbyte do begin               {ASCII part of the line}
-          case rwert[p2] of
-            32..126, 128, 166, 167, 169, 177..179, 181, 188..190, 215, 247: zch:=Chr(rwert[p2]);
-            196, 214, 220, 223, 228, 246, 252: zch:=Chr(rwert[p2]); {Umlaute}
-          else
-            zch:='.';                              {not a character}
-          end;
-          if p2<=bytesread then
-            zeile:=Zeile+zch;
-          inc(p2);
-        end;
-        AppLog.Lines.Add(zeile);
-        inc(zhl);
-      until p1>bytesread;                          {all copied bytes read}
+  mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  zhl:=0;
+  s:='';                                           {noch keine Ausgabe}
+  bg:=0;                                           {Zeitstempel allg}
+  for i:=0 to csvanz do
+    csvarr[i]:='';
+  if FileSize(fn)>lenfixP then begin
+    Screen.Cursor:=crHourGlass;
+    FillChar(dsbuf, length(dsbuf), 0);             {Datenbuffer löschen}
+    csvlist:=TStringList.Create;                   {Ausgabedatei für csv-Daten}
+    infn:=TMemoryStream.Create;
+    try
+      infn.LoadFromFile(fn);
       AppLog.Lines.Add('');
-      AppLog.TopLine:=AppLog.Lines.Count-zhl;
-    AppLog.EndUpdate;
-    if speBlockNum.Value=speBlockNum.MaxValue then {last block dumped, end file}
-      btnShowhex.Tag:=0;                           {next file?}
-    speBlockNum.Value:=speBlockNum.Value+1;        {next block}
-  finally
-    instream.Free
+      AppLog.Lines.Add(fn);
+      while infn.Position<(infn.Size-lenfixP) do begin {bis zum Ende der Datei}
+        len:=0;                                    {Reset for error detection}
+        try
+          repeat
+            b:=infn.ReadByte;
+          until (b=dsIDP) or (infn.Position>infn.Size-lenfixP);
+          len:=infn.ReadByte;                      {Länge Payload mit CRC}
+          infn.ReadBuffer(dsbuf, len+lenfixP-2);   {Länge Rest-Datensatz mit
+                                    FixPart, aber ohne $FD und Längen-Byte (-2)}
+          AusgabeSensor;                           {alles anzeigen}
+        except
+          if zhl>0 then
+            AppLog.Lines.Add('''Broken record No'''+suff+
+                               IntToStr(zhl)+', Byte'+suff+IntToHex(b, 2)+
+                               ', Payload length'+suff+IntToStr(len));
+{Usually the last record in a tlog file is too short compared to payload length,
+ thus this exception will be raised for each file at the end.}
+        end;
+      end;
+
+      if (csvlist.Count>2) then begin              {CSV Header generieren}
+         s:=csvTime+sep+'alt [24]'+sep
+            +'alt [33]'+sep+'relative_alt [33]'+sep+
+            'altitude_monotonic [141]'+sep+'altitude_amsl [141]'+sep+
+            'altitude_local [141]'+sep+'altitude_relative [141]'+sep+
+            'altitude_terrain [141]'+sep+'bottom_clearance [141]'+sep+
+            'lat [24]'+sep+'lon [24]'+sep+
+            'lat [33]'+sep+'lon [33]'+sep+csvMsgID;
+        csvlist.Insert(0, s);
+        csvlist.SaveToFile(ChangeFileExt(fn, fext));  {als *.csv speichern}
+      end;
+    finally
+      infn.Free;
+      csvlist.Free;
+      Screen.Cursor:=crDefault;
+    end;
   end;
-end;
+end;        *)
 
 end.
 

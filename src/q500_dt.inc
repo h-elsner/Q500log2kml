@@ -1,4 +1,5 @@
 resourcestring                                     {deutsch}
+
   manual='Q500log2kml.pdf';
 {$IFDEF LINUX}
   DownURL='/downloads/q500log2kml.tar.gz';
@@ -305,12 +306,18 @@ resourcestring                                     {deutsch}
   capHexdump='Hexdump';
   hntHexdump='Hexadezimale Ausgabe eines Blockes aus der Datei.';
   hntBlockNum='Nummer des Blocks zur Ausgabe hexadezimal.';
-  capBlockSize='Block Größe Hexdump';
+  capBlockSize='Blockgröße Hexdump';
   hntBlockSize='Länge eines Blockes in kByte für Hexadezimale Ausgabe in AppLog.';
   rsFilesize='Dateigröße';
   capHighLight='AppLog Highlighter';
   hntHighLight='Farbige Textteile in AppLog erlauben';
   hntItems='Maximale Anzahl von Einträgen, die in Auswahllisten gespeichert werden.';
   capItems='Anzahl Einträge';
+  capFlDel='FlightLog löschen';
+  hntFlDel='Alle Dateien zum ausgewählten FlightLog-Eintrag löschen.';
+  capReload='Neu laden';
+  hntReload='Alle FlightLogs neu laden. Geduld, das kann dauern.';
+  rsFLdelete='Lösche FlightLog';
+  rsFilesDel='Dateien gelöscht';
 
 

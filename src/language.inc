@@ -2,8 +2,6 @@
 {.$I q500_dt.inc}
 {$I q500_en.inc}
 
-
-
 resourcestring                                     {Länderneutral}
 
   fmAltitude='Altitude mode';

@@ -1,4 +1,4 @@
-unit q5_common;
+unit q5_common;                                    {Common definitions and variables}
 
 {$mode objfpc}{$H+}
 
@@ -9,7 +9,7 @@ uses
 
 const
 {public constants}
-  Version ='V4.6 10/2020';
+  Version ='V4.6 11/2020';
 
   defaultcol=5;                                    {muss kleiner als die Mindestmenge der Spalten sein}
   defVT=5;                                         {Default vehicle YTH, need 5 for Thunderbird}
@@ -28,6 +28,8 @@ const
   tab2='  ';
   tab4='    ';
   tab6='      ';
+  sckey='&';
+
   csvsep=';';
   spk=4;                                           {Korrekturwert Spaltenbreite}
   zzf='hh:nn:ss';

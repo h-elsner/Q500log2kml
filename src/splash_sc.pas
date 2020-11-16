@@ -9,7 +9,7 @@ uses
 
 type
 
-  { TForm4 }
+  { TForm4: Splashscreen }
 
     TForm4 = class(TForm)
     Image1: TImage;

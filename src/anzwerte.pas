@@ -1,4 +1,4 @@
-unit anzwerte;
+unit anzwerte;                                     {Additinal chart or table}
 
 {$mode objfpc}{$H+}
 
@@ -11,7 +11,7 @@ uses
 
 type
 
-  {TForm2: Detailanzeige kontextabhängig Diagramme oder Statistiken}
+  {TForm2: Detailanzeige kontextabhängig Diagramme oder Statistiken bei Klick auf Header}
 
   TForm2 = class(TForm)
     btnOKform2: TBitBtn;
