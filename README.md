@@ -1,5 +1,5 @@
 # Q500log2kml
-This application was made to display and analyze FlightLog data (including Telemetry) from Yuneec copter Q500, H520, H920, Typhoon H, Typhoon H Plus, Breeze, Mantis Q, but also Blade Chroma or Blade 350QX controlled by ST10).
+This application was made to display and analyze FlightLog data (including Telemetry) from Yuneec copter Q500, H520, H920, Typhoon H, Typhoon H Plus, H3, Breeze, Mantis Q, but also Blade Chroma or Blade 350QX controlled by ST10).
 Additionally the CSV files from Tom's flight data recorder for Hubsan can be displayed and analyzed.
 
 The FlightLog data are available on RC-Controller or smart device used to control the aircraft. The FlightLog can be downloaded via micro USB connector.
@@ -38,6 +38,8 @@ Control CGO3: Test environment for commands to CGO3 via 5G WLAN connection.
 Settings: Three tab sheets for commission settings of the application.
 
 AppLog: Listing of actions, messages and errors from the application. For sensor files from the Typhoon H Plus, H520 or Mantis Q, text messages (MAV link "statustext") and some other data from different messages will be listed too.
+
+Hex dump: Dump an unknown file as hexadecimal for analysis. Result can be saved as text.
 
 ---------------------------------------
 
