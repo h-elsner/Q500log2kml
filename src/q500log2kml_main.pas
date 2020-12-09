@@ -133,7 +133,7 @@ History:
 2018-06-21  V3.7 Basic functions for Typhoon H Plus.
                  Clean up of data telemetry records for YTH Plus added.
                  YTH Plus Sensor loaded as single file in main menu.
-2018-07-02       Profiles as "Diashow" (3s).
+2018-07-02       Profiles as "slideshow" (3s).
 2018-07-05       Sort table overview by click on column header.
                  Bugfix for Breeze: Support 'strange' coordinates in
                  Breeze telemetry.
@@ -147,7 +147,7 @@ History:
 2018-09-14       SHARPNESS for CGO3+ updated, TeamMode at Gimbal Pan Mode.
 2018-09-28	 Coordinates from GPS_RAW_INT in AppLogHighlighter, Message names in Sensor
                  file display for Typhoon H Plus.
-2018-10-02 V3.9  Mantis Q Support, H Plus sensor files renamed to PX4 sensor files
+2018-10-02  V3.9 Mantis Q Support, H Plus sensor files renamed to PX4 sensor files
                  in menu. System health information from PX4 sensor files added
                  to AppLogHighlighter.
 2018-10-24       Identification of Mantis Q flylog files improved. Flight path
@@ -155,7 +155,7 @@ History:
 2018-10-28	 Show sensor files faster.
 2018-10-29       Reverse geocoding removed, Bugfix: Mantis Q identification,
                  Check only Heartbeat from AUTOPILOT1
-2018-11-03 V4.0  H520 *.tlog files support added similar to Mantis Q.
+2018-11-03  V4.0 H520 *.tlog files support added similar to Mantis Q.
                  Batch conversion, button 'Convert' to KML/KMZ or GPX files
                  works now also for Mantis Q and H520.
                  Quick analysis filled: Voltage, current and SW-load.
@@ -210,6 +210,8 @@ History:
                  Removed double click to refresh, menu item instead.
                  Delete a FlightLog function added.
 2020-11-13       MAV link messages reviewed. Missing messages added.
+2020-12-09  V4.7 GeoTagging for pictures taken at same time as the drone was flying.
+
 
 ToDo: geotagging
 https://github.com/afriess/dexif/
@@ -230,7 +232,8 @@ uses
   Zipper, math, TAChartUtils, TAFuncSeries, Clipbrd, anzwerte,
   TACustomSeries, TATools, indGnouMeter, AdvLed, Sensors, graphutil,
   fphttpclient, lazUTF8, SynEdit, SynHighlighterMulti, SynHighlighterAny,
-  strutils, dateutils, lazsysutils, q5_common;
+  strutils, dateutils, lazsysutils, q5_common, Types, fpeMetaData, fpeTags,
+  fpeExifData;
 
 type
   TarrFW = array[0..7] of string;
@@ -251,6 +254,8 @@ type
 
   TForm1 = class(TForm)
     AdvLed1: TAdvLed;
+    btnScanPic: TBitBtn;
+    btnWritePic: TBitBtn;
     btnClose: TBitBtn;
     btnDefaultProfile: TBitBtn;
     btnScreenshot: TBitBtn;
@@ -316,11 +321,21 @@ type
     cbPilot: TCheckBox;
     cbMAVasCSV: TCheckBox;
     cbCleanHplus: TCheckBox;
+    cbBackupPic: TCheckBox;
+    cbxPicFolder: TComboBox;
+    cbxTelemetry: TComboBox;
+    cgpCamera: TCheckGroup;
     edCGOURL: TEdit;
     gbBatt: TGroupBox;
+    Label11: TLabel;
+    Label17: TLabel;
+    gbStkProz: TGroupBox;
     Image4: TImage;
     Label10: TLabel;
     Label19: TLabel;
+    lblTelemetry: TLabel;
+    lblTimeOffset: TLabel;
+    lblPicFolder: TLabel;
     lblBaseLoad: TLabel;
     lblMAVcommon: TLabel;
     MAVmsg: TCheckGroup;
@@ -344,10 +359,17 @@ type
     DateTimeIntervalChartSource4: TDateTimeIntervalChartSource;
     edSendCGO3: TEdit;
     edReceiveCGO3: TEdit;
+    N1: TMenuItem;
+    mnGeoGMap: TMenuItem;
+    mnGeoOSM: TMenuItem;
+    mnShowPic: TMenuItem;
     mnReload: TMenuItem;
     mnFlDel: TMenuItem;
+    PopupMenuGeo: TPopupMenu;
     PopUpMenuFlights: TPopupMenu;
     rgBlockSize: TRadioGroup;
+    sbtnPicFolder: TSpeedButton;
+    sbtnTelemetry: TSpeedButton;
     speExpo: TFloatSpinEdit;
     gbDiverse: TGroupBox;
     GroupBox10: TGroupBox;
@@ -365,7 +387,6 @@ type
     Image2: TImage;
     Image3: TImage;
     Label9: TLabel;
-    MenuItem1: TMenuItem;
     mnHexdump: TMenuItem;
     mnMAVlist: TMenuItem;
     mnSlideshow: TMenuItem;
@@ -383,6 +404,11 @@ type
     AppLogHighlighter: TSynAnySyn;
     AppLog: TSynEdit;
     speItems: TSpinEdit;
+    speStk: TSpinEdit;
+    speProz: TSpinEdit;
+    gridEXIFPic: TStringGrid;
+    speTimeOffset: TSpinEdit;
+    gridTimeArea: TStringGrid;
     TabImages: TImageList;
     indGnouMeterSDused: TindGnouMeter;
     Label1: TLabel;
@@ -496,17 +522,18 @@ type
     gridOverview: TStringGrid;
     gridCGO3: TStringGrid;
     gridFirmware: TStringGrid;
-    tabOverview: TTabSheet;                          {Übersicht}
-    tabData: TTabSheet;                         {Settings Analyse}
-    tabCGO3: TTabSheet;                         {CGO3}
-    tabCommon: TTabSheet;                         {Settings Sonstige}
-    tabHdia: TTabSheet;                          {Höhendiagramm}
-    tabDetails: TTabSheet;                          {Datentabelle}
-    tabSettings: TTabSheet;                          {Settings}
+    tabOverview: TTabSheet;                        {Übersicht}
+    tabData: TTabSheet;                            {Settings Analyse}
+    tabCGO3: TTabSheet;                            {CGO3}
+    tabCommon: TTabSheet;                          {Settings Sonstige}
+    tabHdia: TTabSheet;                            {Höhendiagramm}
+    tabDetails: TTabSheet;                         {Datentabelle}
+    tabSettings: TTabSheet;                        {Settings}
     tabScan: TTabSheet;
     tabAppLog: TTabSheet;
-    tabAnalyze3: TTabSheet;                          {Schnellanalyse}
-    tabConvert: TTabSheet;                          {Settings Konvert}
+    tabAnalyze3: TTabSheet;                        {Schnellanalyse}
+    tabConvert: TTabSheet;                         {Settings Konvert}
+    tabGeo: TTabSheet;
     Timer1: TTimer;                                {CGO3 Statusabfrage}
     TimerDblClick: TTimer;
     TimerDiashow: TTimer;
@@ -516,6 +543,7 @@ type
     TreeView1: TTreeView;
     XMLPropStorage1: TXMLPropStorage;
     procedure btnDefaultProfileClick(Sender: TObject);
+    procedure btnScanPicClick(Sender: TObject);
     procedure btnScreenshotClick(Sender: TObject);
     procedure btnCutClick(Sender: TObject);        {Ausschneiden}
     procedure btnCGO3StatusClick(Sender: TObject);
@@ -537,8 +565,11 @@ type
     procedure btnArchiveClick(Sender: TObject);
     procedure btnShowHexClick(Sender: TObject);
     procedure btnSpecialClick(Sender: TObject);
+    procedure btnWritePicClick(Sender: TObject);
     procedure cbHighLightChange(Sender: TObject);
     procedure cbThunderChange(Sender: TObject);
+    procedure cbxPicFolderDblClick(Sender: TObject);
+    procedure cbxTelemetryDblClick(Sender: TObject);
     procedure cbxTextMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -575,8 +606,16 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure edSendCGO3KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edReceiveCGO3DblClick(Sender: TObject);
+    procedure gridEXIFPicDblClick(Sender: TObject);
+    procedure gridEXIFPicPrepareCanvas(sender: TObject; aCol, aRow: Integer;
+      aState: TGridDrawState);
     procedure mnFlDelClick(Sender: TObject);
+    procedure mnGeoGMapClick(Sender: TObject);
+    procedure mnGeoOSMClick(Sender: TObject);
     procedure mnReloadClick(Sender: TObject);
+    procedure mnShowPicClick(Sender: TObject);
+    procedure sbtnPicFolderClick(Sender: TObject);
+    procedure sbtnTelemetryClick(Sender: TObject);
     procedure speExpoChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -652,6 +691,9 @@ type
     procedure sbtnScanDirClick(Sender: TObject);
     procedure sbtnSendCGO3Click(Sender: TObject);
     procedure speLinePathChange(Sender: TObject);
+    procedure speProzChange(Sender: TObject);
+    procedure speProzEditingDone(Sender: TObject);
+    procedure speStkEditingDone(Sender: TObject);
     procedure StatusBar1DblClick(Sender: TObject);
     procedure StatusBar1Hint(Sender: TObject);
     procedure gridDetailsClick(Sender: TObject);
@@ -702,6 +744,7 @@ type
     procedure TreeView1Click(Sender: TObject);
     procedure TreeView1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+
 
   private
     function CheckNumTurns(const dn: string): integer;
@@ -808,6 +851,7 @@ type
     procedure MAVmsgDefault;                       {Set all messages to true}
     procedure HexAusgabe(const fn: string);        {Tools: Display a binary file as hex print}
     procedure HexHeader(const fn: string);         {Write header for file and take block size}
+    procedure GeoShowPic;                          {Menu Show picture}
 
 {Special analysis with (hidden) extra button "Special" on Settings > Common settings}
 //    procedure TLOGanalysis(fn: string);          {Special analysis}
@@ -943,12 +987,13 @@ const
   minh=0.01;                                       {Höhengrenzen bei Übernahme}
   maxh=300;
   defh=10;                                         {default Höhe in m}
+  stkang=2184;                                     {switch tilt angle, 10%}
   stkntrl=2048;                                    {neutral; 0%}
   stkdown=683;                                     {-100%}
   stkup  =3412;                                    {+100%}
   stkmax=4095;                                     {+150%}
   stkmin=0;                                        {-150%}
-  m45val=1433;                                     {Pan -45% TeamMode}
+  m45val=1433;                                     {Pan -40% TeamMode}
   p50val=2730;                                     {+50%}
   m50val=1365;                                     {-50%}
   spt=10;                                          {zusätzliche Spaltenbreite  für Telemetrie in pix}
@@ -971,6 +1016,23 @@ const
   posChan=60;                                      {Startposition Spalten RC-Channels}
   deltayaw=15;                                     {Change of direction [°] for Waypoints}
 
+{Used EXIF tags}
+  exMake=  'Make';
+  exModel= 'Model';
+  exTime1= 'DateTimeOriginal';
+  exTime2= 'DateTime';
+  exTime3= 'DateTimeDigitized';
+  exUser=  'UserComment';
+
+  exLatRef='GPSLatitudeRef';                       {'N' = North; 'S' = South}
+  exLonRef='GPSLongitudeRef';                      {'E' = East; 'W' = West}
+  exLat=   'GPSLatitude';
+  exLon=   'GPSLongitude';
+  exAlt=   'GPSAltitude';
+  exAltRef='GPSAltitudeRef';                       {0 = Above Sea Level; 1 = Below Sea Level}
+  exID=' ';
+
+
 var
   Form1: TForm1;
   tend, tpos, cutb, cute: TDateTime;               {Ende-Zeit, Zeit-Position in Tabellen}
@@ -989,6 +1051,7 @@ var
                                               256..Emergency
                                               512..  frei
                                               1024.. usw}
+  CellFocus: array[0..3, 0..1] of integer;         {source, cell [col, row]}
   nhw: double;                                     {Delta für Koordinaten in der Nähe}
   farbskala: array [0..2, 0..63] of TColor;        {Farbeverlauf entspreched Werte}
 
@@ -1065,6 +1128,16 @@ begin
   cutbidx:=-1;
 end;
 
+function StkToProz(const w: double): integer;      {Stick Position to percent}
+begin
+  result:=round(w/stkmax*300)-150;
+end;
+
+function ProzToStk(const w: double): integer;
+begin
+  result:=round(w*stkmax/300)+stkntrl;
+end;
+
 procedure TForm1.FormCreate(Sender: TObject);      {Anwendung initialisieren und starten}
 var i: integer;
 begin
@@ -1076,11 +1149,11 @@ begin
   SetLength(topp, 4);                              {Topzeilen array}
   kpath:=IncludeTrailingPathDelimiter(dkpath);     {default setzen}
   AppLog.Lines.Clear;
-  AppLogTimeStamp(Application.ExeName+tab4+version);
+  AppLogTimeStamp(AppName+tab4+AppVersion);
   AppLog.Color:=AppLog.GetColorResolvingParent;
   AppLog.Font.Color:=(not ColorToRGB(AppLog.Color)) and $00FFFFFF;
   AppLog.RightEdgeColor:=AppLog.Color;             {Make it invisible}
-  Caption:=capForm1+tab2+Version;                  {Name und Version}
+  Caption:=capForm1+tab2+AppVersion;                  {Name und Version}
   Hint:=capForm1;
   btnClose.Caption:=capBitBtn1;
   btnClose.Hint:=hntBitBtn1;
@@ -1117,6 +1190,7 @@ begin
   sbtnLogDir.Hint:=DefaultStatus;
   sbtnScanDir.Hint:=capSelProt;                    {Protokollverzeichnis}
   mnGoogleMap.Caption:=rsToGMaps;
+  mnGeoGMap.Caption:=rsToGMaps;
   mnCopyHist.Caption:=rsToClipBoard;
   mnSaveAsHist.Caption:=rsHDiaSave;
   mnCursorEin.Caption:=capCrossHairOn;
@@ -1126,6 +1200,8 @@ begin
   mnGoToErr.Caption:=capMenuItem7;
   mnGoTable.Caption:=capMenuItem8;
   mnOSM.Caption:=rsToOSM;
+  mnGeoOSM.Caption:=rsToOSM;
+  mnShowPic.Caption:=capShowPic;
   mnDelTab.Caption:=rsResetCutBE;
   mnStartTab.Caption:=rsStartTpunkt;
   mnStopTab.Caption:=rsEndTPunkt;
@@ -1326,11 +1402,11 @@ begin
   gridOverview.Cells[8,0]:=rsGridCell8;
   gridOverview.Cells[9,0]:=rsGridCell9;
   gridOverview.Cells[10,0]:=rsGridCell10;
-  gridOverview.Tag:=2;                             {Used Tab; default: Tabelle}
+  gridOverview.Tag:=1;                             {Used Tab; default: Tabelle}
   gridFirmware.Hint:=hntStringGrid4;
-  pcMain.ActivePageIndex:=0;
-  pcSettings3.ActivePageIndex:=0;
-  pcSettings3.Hint:=rsPC1Tab4;                    {Einstellungen}
+  pcMain.ActivePage:=tabOverview;
+  pcSettings3.ActivePage:=tabConvert;
+  pcSettings3.Hint:=rsPC1Tab4;                     {Einstellungen}
   AdvLed1.State:=lsDisabled;
   AdvLed1.Hint:=hntRec;
   Image2.Hint:=rsVdo;
@@ -1402,17 +1478,59 @@ begin
   rgErrType.Caption:=capProb;
   GroupBox6.Caption:=capProbScan;
   GroupBox6.Hint:=hntProb;
+  gbStkProz.Caption:=capStkProz;                   {Stick to percent converter}
+  gbStkProz.Hint:=hntStkProz;
+  Label11.Caption:=capStk;
+  Label17.Caption:=capProz;
+  speStk.MaxValue:=stkmax;
+  speStk.Value:=stkntrl;
+  speProz.Value:=StkToProz(stkntrl);
   Chart1BarSeries1.SeriesColor:=clAngle;           {Angle Mode – Purple status LED}
   Chart1BarSeries2.SeriesColor:=clSmart;           {für Smart Mode - Green status LED}
   Chart1BarSeries3.SeriesColor:=clRTH;             {für RTH}
   Chart1BarSeries4.SeriesColor:=clEmergency;       {Emergency}
   Chart1BarSeries5.SeriesColor:=clNoGPS;           {Ohne GPS Orange}
   Chart1BarSeries7.SeriesColor:=clSport;           {Sports Mode, Stability}
+
+{GeoTagging}
+  lblPicFolder.Caption:=capPicFolder;
+  lblPicFolder.Hint:=hntPicFolder;
+  cbxPicFolder.Hint:=hntPicFolder;
+  sbtnPicFolder.Hint:=hntPicFolder;
+  lblTelemetry.Caption:=capTelemetry;
+  lblTelemetry.Hint:=hntTelemetry;
+  cbxTelemetry.Hint:=hntTelemetry;
+  sbtnTelemetry.Hint:=hntTelemetry;
+  btnScanPic.Caption:=capScanPic;
+  btnScanPic.Hint:=hntScanPic;
+  btnWritePic.Caption:=capWritePic;
+  btnWritePic.Hint:=hntWritePic;
+  gridTimeArea.Cells[0, 0]:=capScanPic;
+  gridTimeArea.Cells[1, 0]:=rsGridCell2;
+  gridTimeArea.Cells[2, 0]:=rsGridCell3;
+  gridTimeArea.Cells[0, 1]:=capPicFolder;
+  gridTimeArea.Cells[0, 2]:=capTelemetry;
+  cbBackupPic.Caption:=capBackupPic;
+  cbBackupPic.Hint:=hntBackupPic;
+  lblTimeOffset.Caption:=capTimeOffset;
+  lblTimeOffset.Hint:=hntTimeOffset;
+  speTimeOffset.Hint:=hntTimeOffset;
+  gridEXIFPic.Rows[0].Delimiter:=sep;
+  gridEXIFPic.Rows[0].StrictDelimiter:=true;
+  gridEXIFPic.Rows[0].DelimitedText:=hdrEXIFPic;
+  gridEXIFPic.AutoSizeColumns;
+  cgpCamera.Caption:=capCams;
+  cgpCamera.Hint:=hntCams;
+
 {Mit Hue, Luminance und Saturation gearbeitet (gleichbedeutend mit HSV oder TSW)}
   for i:=0 to High(farbskala[0]) do begin {nur einmal aufbauen und dann über Index nutzen}
     farbskala[0, i]:=HLStoColor(160, 255-round(i/High(farbskala[0])*150), 230);  {blau}
     farbskala[1, i]:=HLStoColor(80,  255-round(i/High(farbskala[0])*150), 230);  {grün}
     farbskala[2, i]:=HLStoColor(0,   255-round(i/High(farbskala[0])*150), 230);  {rot}
+  end;
+  for i:=0 to 3 do begin
+    CellFocus[i, 0]:=0;                            {Focus default settings: Column}
+    CellFocus[i, 1]:=1;                            {Row}
   end;
   tpos:=0;                                         {keine Position in der Tabelle}
   StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
@@ -2330,7 +2448,6 @@ begin
   result:=d*10;
 end;
 
-
 function H501velo(v: double): double; inline;      {H501 speed}
 begin
   result:=v/10;
@@ -2414,7 +2531,7 @@ begin
     9: begin                                       {S1 Gimbal Tilt mode}
          if stk=stkup then
            result:='Velocity mode';
-         if stk=2184 then
+         if stk=stkang then
            result:=fmAngle;
          if stk=stkntrl  then
            result:=rsNeutral;
@@ -2439,13 +2556,8 @@ begin
   result:='';
   if round(w)=stkntrl then
     result:=rsNeutral
-  else begin
-    if w>stkntrl then
-      result:='+'+IntToStr(round((w-stkntrl)*150/stkntrl))+'%';
-    if (w<stkntrl) and
-       (w>10) then
-      result:='-'+IntToStr(round((stkntrl-w)*150/stkntrl))+'%';
-  end;
+  else
+    result:=IntToStr(StkToProz(w))+'%';
 end;
 
 function StickToStr(const p: integer; const s: string): string;
@@ -2876,7 +2988,7 @@ begin
     result:=clVeryGood;
 end;
 
-function RadToStr(const p: integer; const s: string): string;  {Drehrad-Einstellung}
+function RadToStr(const s: string): string;        {Camera tilt slider}
 var w: double;
 begin
   result:='';
@@ -2885,9 +2997,7 @@ begin
   except
     exit;
   end;
-  case p of
-    7: result:='K1 (Camera tilt)'+suff+IntToStr(round(TiltToGrad(w)))+'°';
-  end;
+  result:='K1 (Camera tilt)'+suff+IntToStr(round(TiltToGrad(w)))+'°';
 end;
 
 function ShowVoltageF(const w: double; vt: integer): string;
@@ -3008,7 +3118,8 @@ begin                                              {Geschwindigkeit umrechnen}
   end;
 end;
 
-function TForm1.TransformW(const fnr, inx: integer; const w: double): double;
+function TForm1.TransformW(const fnr, inx: integer;
+                           const w: double): double;
    {fnr: 0..Telemetry, 1..RemoteGPS, 2..Remote
     inx: Index of column
     w: Value to transform}
@@ -3361,7 +3472,7 @@ var e: integer;
     case sp of
       1:       s:=StickToStr(sp, gridDetails.Cells[sp, zl]);
       2..4, 8: s:=StickToStr(sp, gridDetails.Cells[sp, zl]);
-      7:    s:=RadToStr(sp, gridDetails.Cells[sp, zl]);
+      7:    s:=RadToStr(gridDetails.Cells[sp, zl]);
       5, 6, 9, 10: s:=SwitchToStr(sp, gridDetails.Cells[sp, zl]);
       11:   s:=LandGearToStr(gridDetails.Cells[sp, zl]);
     end;
@@ -3855,8 +3966,8 @@ begin
 {FlightLog Verzeichnis in Dropdown-Liste eintragen}
         cbxLogDir.Text:=ExcludeTrailingPathDelimiter(cbxLogDir.Text);
         Merkliste(cbxLogDir, speItems.Value);      {DropDownListe füllen}
-        if pcMain.ActivePageIndex>4 then
-          pcMain.ActivePageIndex:=0;
+        if pcMain.ActivePageIndex>4 then           {CGO3 and after that}
+          pcMain.ActivePage:=tabOverview;
         lbFlights.ItemIndex:=-1;                   {Default none selected}
         if fn<>'' then begin                       {Index der Datei, wenn übergeben}
           fnum:=GetNr(ExtractFileName(fn));
@@ -4932,9 +5043,9 @@ begin
       Chart3.AxisList[0].Title.Caption:=csvVolt+' [V]';    {y-Achse top}
       Chart4.AxisList[0].Title.Caption:=csvAmp+' [A]';     {y-Achse middle}
       Chart5.AxisList[0].Title.Caption:=csvUcap+' [mAh]';  {y-Achse bottom}
-      if (pcMain.ActivePageIndex>3) or
-         (pcMain.ActivePageIndex=0) then
-        pcMain.ActivePageIndex:=1;           {Zur Tabelle springen}
+      if (pcMain.ActivePageIndex>3) or             {tabScan and higher}
+         (pcMain.ActivePage=tabOverview) then
+        pcMain.ActivePage:=tabDetails;             {Zur Tabelle springen}
 
       gridDetails.BeginUpdate;
       gridDetails.RowCount:=1;
@@ -5308,9 +5419,9 @@ end;
 procedure TForm1.btnScreenshotClick(Sender: TObject);   {Take screenshot}
 begin
   SaveDialog1.Title:=rsScreenshot;
-  if pcMain.ActivePageIndex>=0 then begin
+  if pcMain.ActivePageIndex>=0 then begin          {Something selected}
     SaveDialog1.FileName:=CleanDN(rsScreenshot+pcMain.ActivePage.Caption+pngdef);
-    if (pcMain.ActivePageIndex=6) and        {Settings}
+    if (pcMain.ActivePage=tabSettings) and         {Settings}
        (pcSettings3.ActivePageIndex>=0) then
       SaveDialog1.FileName:=CleanDN(rsScreenshot+pcSettings3.ActivePage.Caption+pngdef);
   end else
@@ -5602,6 +5713,18 @@ begin
     rgAltitudeType.ItemIndex:=0;                   {Set to 'Absolute'}
   end else
     rgAltitudeType.ItemIndex:=cbThunder.Tag;       {restore setting}
+end;
+
+procedure TForm1.cbxPicFolderDblClick(Sender: TObject);
+begin
+  if cbxPicFolder.Text<>'' then
+    OpenDocument(IncludeTrailingPathDelimiter(cbxPicFolder.Text));
+end;
+
+procedure TForm1.cbxTelemetryDblClick(Sender: TObject);
+begin
+  if cbxTelemetry.Text<>'' then
+    OpenDocument(ExtractFilePath(cbxTelemetry.Text));
 end;
 
 procedure TForm1.cbxTextMouseUp(Sender: TObject; Button: TMouseButton;
@@ -6957,7 +7080,7 @@ begin
     end;
     ProgressBarScan.Position:= ProgressBarScan.Max;
     if rgErrType.ItemIndex=11 then                 {Go to AppLogHighlighter}
-      pcMain.ActivePageIndex:=7;
+      pcMain.ActivePage:=tabApplog;
   finally
     FreeAndNil(flist);
     FreeAndNil(vlist);
@@ -6999,7 +7122,7 @@ var vlist, flist, outlist: TStringList;
     outlist.Add(tabs(rsFlightReport, suff, tabu)+cbxText.text);  {ggf. Seriennummer}
     outlist.Add(tabs(rsCreat+tab1, suff, tabu)+
                 FormatDateTime(mzf, now)+'h  '+tab1+rsBy+tab1+
-                ExtractFileName(Application.ExeName)+tab2+version);
+                AppName+tab2+AppVersion);
     if cbCleanHplus.Checked then
       outlist.Add(capCheckBox9);
     outlist.Add('');
@@ -7039,7 +7162,7 @@ var vlist, flist, outlist: TStringList;
     outlist.Add(capNachweis);
     outlist.Add('');
     s:=rsCreat+tab1+csvsep+FormatDateTime(mzf, now)+'h'+csvsep+
-       tab1+rsBy+tab1+ExtractFileName(Application.ExeName)+tab2+version;
+       tab1+rsBy+tab1+AppName+tab2+AppVersion;
     if cbCleanHplus.Checked then s:=s+csvsep+capCheckBox9;
     outlist.Add(s);
     outlist.Add('');
@@ -7212,7 +7335,7 @@ var vlist, flist, outlist: TStringList;
     outlist.Add(tabs(rsFlightReport, suff, tabu)+cbxText.text); {ggf. Seriennummer}
     outlist.Add(tabs(rsCreat+tab1, suff, tabu)+
                 FormatDateTime(mzf, now)+'h  '+tab1+rsBy+tab1+
-                ExtractFileName(Application.ExeName)+tab2+version);
+                AppName+tab2+AppVersion);
     outlist.Add('');
     for x:=0 to vlist.count-1 do begin             {Textausgabe}
       flist.DelimitedText:=vlist[x];
@@ -7249,7 +7372,7 @@ var vlist, flist, outlist: TStringList;
     outlist.Add(capNachweis);
     outlist.Add('');
     outlist.Add(rsCreat+tab1+csvsep+FormatDateTime(mzf, now)+'h'+csvsep+tab1+rsBy+tab1+
-                ExtractFileName(Application.ExeName)+tab2+version);
+                AppName+tab2+AppVersion);
     outlist.Add('');
     csvlist[0]:=rsFlightNr;
     csvlist[1]:=rsVType;
@@ -7423,7 +7546,7 @@ var vlist, flist, outlist: TStringList;
     outlist.Add(tabs(rsFlightReport, suff, tabu)+cbxText.text); {ggf. Seriennummer}
     outlist.Add(tabs(rsCreat+tab1, suff, tabu)+
                 FormatDateTime(mzf, now)+'h  '+tab1+rsBy+tab1+
-                ExtractFileName(Application.ExeName)+tab2+version);
+                AppName+tab2+AppVersion);
     outlist.Add('');
     for x:=0 to vlist.count-1 do begin             {Textausgabe}
       flist.DelimitedText:=vlist[x];
@@ -7460,7 +7583,7 @@ var vlist, flist, outlist: TStringList;
     outlist.Add(capNachweis);
     outlist.Add('');
     outlist.Add(rsCreat+tab1+csvsep+FormatDateTime(mzf, now)+'h'+csvsep+tab1+rsBy+tab1+
-                ExtractFileName(Application.ExeName)+tab2+version);
+                AppName+tab2+AppVersion);
     outlist.Add('');
     csvlist[0]:=rsFlightNr;
     csvlist[1]:=rsVType;
@@ -7709,7 +7832,7 @@ procedure TForm1.FirmwareLesen;          {Firmwarestände aus Sensor anzeigen}
 var FWarr: TarrFW;
     i, az: integer;
 begin
-  if pcSettings3.ActivePageIndex=2 then begin
+  if pcSettings3.ActivePage=tabCommon then begin
     gridFirmware.Cells[0, 1]:=rsKamera;
     gridFirmware.Cells[0, 2]:=rsGimbal;
     gridFirmware.Cells[0, 3]:=rsAutoP;
@@ -7885,18 +8008,392 @@ begin                     {Erneut Speichern erlauben, wenn Farbe geändert wurde
 end;
 
 procedure TForm1.btnDefaultProfileClick(Sender: TObject);   {Defaulteinstellung}
-begin                  {Reset Schnellanalyse für alle drei Histogramme}
+begin                     {Reset Schnellanalyse für alle drei Histogramme}
   TimerDiashow.Enabled:=false;
   SetProfile(0);
   cbxProfiles.ItemIndex:=0;                         {Profiles rücksetzen}
 end;
+
+(*Begin Geotagging #############################################################
+  Needed component: https://sourceforge.net/p/lazarus-ccr/svn/HEAD/tree/components/fpexif/
+  EXIF tags:        https://exiftool.org/TagNames/EXIF.html
+
+  In some pictures the space between segments is filled with $00 --->
+  rsJpegSegmentMarkerExpected = 'Defective JPEG structure: Segment marker ($FF) expected.';
+
+  Patch in "fpemetadata.pas" procedure TImgInfo.MergeToJpegStream(AInputStream, AOutputStream: TStream);
+  ....
+  while AInputStream.Position < AInputStream.Size do begin
+    savedPos := AInputStream.Position;      // just for debugging
+    n := AInputStream.Read(header{%H-}, SizeOf(header));
+    if n <> Sizeof(header) then
+      Error(rsIncompleteJpegSegmentHeader);
+ --------------------------------------------------------------------------------
+  // In some pictures the space between segments is filled with $00 (patch 11/2020)
+    if header.Key = 0 then
+      repeat                                //skip unnecessary $00
+        inc(savedPos);
+        AInputStream.Position := savedPos;  // Read next byte
+        n := AInputStream.Read(header{%H-}, SizeOf(header));
+        if n <> Sizeof(header) then
+          Error(rsIncompleteJpegSegmentHeader);
+      until header.Key <> 0;                // something else, hopefully a new segment
+ --------------------------------------------------------------------------------
+    if header.Key <> $FF then
+      Error(rsJpegSegmentMarkerExpected);
+    header.Size := BEToN(header.Size);
+ ....
+ *)
+
+function GetEXIFtime(RdData: TImgInfo): TDateTime;     {Get date/time from EXIF}
+var TimeTag: TTag;
+begin
+  result:=0;                                           {Invalid date far in the past as default}
+  TimeTag:=RdData.ExifData.TagByName[exTime1];         {Try mostly used tag}
+  if TimeTag=nil then
+    TimeTag:=RdData.ExifData.TagByName[exTime2];       {Try another tag}
+  if TimeTag=nil then
+    TimeTag:=RdData.ExifData.TagByName[exTime3];
+  if TimeTag is TDateTimeTag then
+    result:=TDateTimeTag(TimeTag).AsDateTime;
+end;
+
+function ReadTag(RdData: TImgInfo; TagName, ErrorMsg: string): string;
+var TagToRead: TTag;
+begin
+  result:=ErrorMsg;                                    {Error message}
+  TagToRead:=RdData.ExifData.TagByName[TagName];
+  if TagToRead<>nil then                               {Check if tag is available}
+    result:=TagToRead.AsString;
+end;
+
+function ReadFloat(RdData: TImgInfo; TagName: string): double;
+var TagToRead: TTag;
+begin
+  result:=0;
+  TagToRead:=RdData.ExifData.TagByName[TagName];
+  if TagToRead<>nil then                               {Check if tag is available}
+    result:=TagToRead.AsFloat;
+end;
+
+procedure TForm1.btnScanPicClick(Sender: TObject); {Geotagging: Scan picture folder}
+var i, zhl: integer;
+    filelist, inlist, splitlist: TStringlist;
+    aImgInfo: TImgInfo;
+    picdat, tmin, tmax: TDateTime;
+    lat, lon, alt: double;
+    ref, cam: string;
+
+  procedure FindPicData;                           {Find time stamp in telemetry}
+  var pos: integer;
+  begin
+    if inlist.Count>10 then begin                  {Check telemetry file}
+      pos:=FindTP(inlist, picdat+(speTimeOffset.Value/24), 2);  {Time point like Q500}
+      if pos>1 then begin                          {Found someting inside CSV file}
+        gridEXIFPic.Cells[3, i+1]:=IntToStr(pos);  {ID for doing something}
+        inc(zhl);
+        splitlist.DelimitedText:=inlist[pos];
+        gridEXIFPic.Cells[4, i+1]:=splitlist[5];
+        gridEXIFPic.Cells[5, i+1]:=splitlist[6];
+        gridEXIFPic.Cells[6, i+1]:=splitlist[4];
+      end;
+    end else
+      Statusbar1.Panels[5].Text:=errNoTelemetryFile;
+  end;
+
+begin
+  if DirectoryExists(cbxPicFolder.Text) then begin
+    Screen.Cursor:=crHourGlass;
+    filelist:=TStringlist.Create;
+    inlist:=TStringlist.Create;
+    splitlist:=TStringlist.Create;
+    splitlist.Delimiter:=sep;
+    splitlist.StrictDelimiter:=True;
+    gridEXIFPic.RowCount:=1;                       {Empty picture list}
+    cgpCamera.Items.Clear;                         {Empty camera list}
+    aImgInfo:=TImgInfo.Create;
+    tmax:=0;
+    tmin:=now;
+    zhl:=0;
+    try
+      FindAllFiles(filelist, cbxPicFolder.Text, '*.jpg;*.jpeg', false);
+      if filelist.Count>0 then begin
+        StatusBar1.Panels[0].Text:=IntToStr(filelist.Count);
+        gridEXIFPic.RowCount:=filelist.Count+1;    {Table to list JPG files}
+        if FileExists(cbxTelemetry.Text) then
+          inlist.LoadFromFile(cbxTelemetry.Text);   {Load related telemetry}
+        for i:=0 to filelist.Count-1 do begin
+          picdat:=FileDateToDateTime(FileAge(filelist[i]));  {File date time}
+
+          gridEXIFPic.BeginUpdate;
+            gridEXIFPic.Cells[0, i+1]:=ExtractFileName(filelist[i]);
+            aImgInfo.LoadFromFile(filelist[i]);
+            if aImgInfo.HasEXIF then begin         {Read data from EXIF, check what is in}
+              try
+                picdat:=GetEXIFtime(aImgInfo);
+                cam:=trim(ReadTag(aImgInfo, exModel, ''));
+                if (cam<>'') and                   {Fill camera listing}
+                   (cgpCamera.Items.IndexOf(cam)<0) then  {Not yet in list}
+                  cgpCamera.Items.Add(cam);
+                gridEXIFPic.Cells[1, i+1]:=cam;
+
+                lat:=ReadFloat(aImgInfo, exLat);   {Check if coordinates already in}
+                lon:=ReadFloat(aImgInfo, exLon);
+
+                if (lat<>0) or (lon<>0) then begin {Valid coordinates found in EXIF}
+                  alt:=ReadFloat(aImgInfo, exAlt);
+                  ref:=uppercase(ReadTag(aImgInfo, exLatRef, 'N'));
+                  if (ref[1]='S') and (lat>0) then
+                    lat:=-lat;                     {Correct lat for southern hemisphere}
+                  ref:=uppercase(ReadTag(aImgInfo, exLatRef, 'E'));
+                  if (ref[1]='W') and (lon>0) then
+                    lon:=-lon;                     {Correct lon for western hemisphere}
+                  gridEXIFPic.Cells[4, i+1]:=FormatFloat(coordfrm, lat)+exID;
+                  gridEXIFPic.Cells[5, i+1]:=FormatFloat(coordfrm, lon)+exID;
+                  gridEXIFPic.Cells[6, i+1]:=FormatFloat(dzfl, alt)+exID;
+                end else                           {No valid coordinates found in EXIF}
+                  FindPicData;                     {Find time stamp in telemetry}
+
+              except                               {Error message EXIF}
+                on e: Exception do begin
+                  Statusbar1.Panels[5].Text:=e.Message;
+                  AppLog.Lines.Add(ExtractFileName(filelist[i])+suff+
+                                   Statusbar1.Panels[5].Text);
+                end;
+              end;
+            end else                               {End hasEXIF, possibly create new EXIF part}
+              FindPicData;                         {Find time stamp in telemetry for pics w/o EXIF}
+                                                   {File time or overwritten by EXIF time}
+            gridEXIFPic.Cells[2, i+1]:=FormatdateTime(vzf, picdat);
+
+            if picdat>tmax then
+              tmax:=picdat;
+            if picdat<tmin then
+              tmin:=picdat;
+          gridEXIFPic.EndUpdate;
+
+          gridEXIFPic.AutoSizeColumns;
+        end;
+
+        gridTimeArea.Cells[1, 1]:=FormatdateTime(vzf, tmin);
+        gridTimeArea.Cells[2, 1]:=FormatdateTime(vzf, tmax);
+        if inlist.Count>10 then begin              {Show timing in telemetry}
+          tmin:=ZeitToDT(copy(inlist[1], 1, lzyu), 0);
+          tmax:=ZeitToDT(copy(inlist[inlist.Count-1], 1, lzyu), 0);
+          gridTimeArea.Cells[1, 2]:=FormatdateTime(vzf, tmin);
+          gridTimeArea.Cells[2, 2]:=FormatdateTime(vzf, tmax);
+        end;
+
+        for i:=0 to cgpCamera.Items.Count-1 do
+          cgpCamera.Checked[i]:=true;
+        StatusBar1.Panels[1].Text:=IntToStr(zhl);  {Number if pic files to be updated}
+      end else
+        Statusbar1.Panels[5].Text:=errNoPictures;
+      btnWritePic.Enabled:=(zhl>0);                {Allow write action to pictures}
+    finally
+      filelist.Free;
+      inlist.Free;
+      splitlist.Free;
+      aImgInfo.Free;
+      Screen.Cursor:=crDefault;
+    end;
+  end else
+    Statusbar1.Panels[5].Text:=errNoPicFolder;
+end;
+
+function CamInList(ca: string; list: TCheckGroup): boolean; {Select camera type}
+var i: integer;
+begin
+  result:=true;                                    {Get all cameras if there is no list}
+  if list.Items.Count>0 then begin
+    result:=false;
+    for i:=0 to list.Items.Count-1 do
+      if list.Checked[i] and (ca=list.Items[i]) then begin
+        result:=true;
+        break;
+      end;
+  end;
+end;
+
+procedure WriteTagAsString(var WrData: TImgInfo;       {EXIF data set}
+                           TagName, NewValue: string;  {Tag name and new string}
+                           Overwrite: boolean=false);  {Name, value, allow}
+var WantedTag, InsertedTag: TTag;
+begin
+  WantedTag:=WrData.ExifData.TagByName[TagName];
+  if WantedTag=nil then begin                          {Check if tag is missing}
+    InsertedTag:=WrData.EXIFdata.AddTagByName(TagName);
+    InsertedTag.AsString:=NewValue;                    {Insert the nw value}
+  end else begin                                       {If tag was already there}
+    if Overwrite then
+      WantedTag.AsString:=NewValue;                    {Overwrite value if allowed}
+  end;
+end;
+
+procedure WriteTagAsFloat(var WrData: TImgInfo;        {EXIF data set}
+                          TagName: string;             {Tag name to write into}
+                          NewValue: double;            {New value}
+                          Overwrite: boolean=false);   {Name, value, allow}
+var WantedTag, InsertedTag: TTag;
+begin
+  WantedTag:=WrData.ExifData.TagByName[TagName];
+  if WantedTag=nil then begin                          {Check if tag is missing}
+    InsertedTag:=WrData.EXIFdata.AddTagByName(TagName);
+    InsertedTag.AsFloat:=NewValue;                     {Insert the nw value}
+  end else begin                                       {If tag was already there}
+    if Overwrite then
+      WantedTag.AsFloat:=NewValue;                     {Overwrite value if allowed}
+  end;
+end;
+
+function GetCoords(lats, lons: string; var la, lo: double;
+                                       var lar, lor: string): boolean;
+begin
+  lar:='N';                                        {Default hemisphere}
+  lor:='E';
+  la:=StrToFloatN(lats);
+  lo:=StrToFloatN(lons);
+  if la<0 then begin
+    lar:='S';                                      {Southern hemisphere}
+    la:=abs(la);
+  end;
+  if lo<0 then begin
+    lor:='W';                                      {Western hemisphere}
+    lo:=abs(lo);
+  end;
+  result:=(la<>0) or (lo<>0);                      {Valid coordinates}
+end;
+
+procedure TForm1.btnWritePicClick(Sender: TObject); {Geotagging: Write EXIF data}
+var i, zhl: integer;
+    fn, cam, latref, lonref: string;
+    lat, lon, alt: double;
+    aImgInfo: TImgInfo;
+    newtag: TTag;
+begin
+  zhl:=0;
+  if gridEXIFPic.RowCount>1 then begin             {If pictures available}
+    for i:=1 to gridEXIFPic.RowCount-1 do begin
+      if gridEXIFPic.Cells[3, i]<>'' then begin    {ID to do something}
+        fn:=IncludeTrailingPathDelimiter(cbxPicFolder.Text)+gridEXIFPic.Cells[0, i];
+        cam:=gridEXIFPic.Cells[1, i];
+        alt:=StrToFloatN(gridEXIFPic.Cells[6, i]); {Altitude relative}
+        if cam<>'' then begin                      {Picture has already EXIF data}
+          if CamInList(cam, cgpCamera) then begin
+            if GetCoords(gridEXIFPic.Cells[4, i], gridEXIFPic.Cells[5, i],
+                         lat, lon, latref, lonref) then begin
+              aImgInfo:=TImgInfo.Create;
+              try
+                aImgInfo.LoadFromFile(fn);
+                if aImgInfo.HasEXIF then begin     {Update EXIF}
+                  try
+                    WriteTagAsFloat(aImgInfo, exLat, lat, true);
+                    WriteTagAsString(aImgInfo, exLatRef, latref, true);
+
+                    WriteTagAsFloat(aImgInfo, exLon, lon, true);
+                    WriteTagAsString(aImgInfo, exLonRef, lonref, true);
+
+                    WriteTagAsFloat(aImgInfo, exAlt, alt, true);
+                    WriteTagAsString(aImgInfo, exAltRef, '0', false);
+
+                    if cbBackupPic.Checked then    {Make backup file}
+                      CopyFile(fn, ChangeFileExt(fn, '.bak'), [cffOverWriteFile]);
+                    aImgInfo.SaveToFile(fn);
+                    gridEXIFPic.Cells[7, i]:=resUpd;
+                    inc(zhl);
+                  except
+                    on e: Exception do begin
+                      Statusbar1.Panels[5].Text:=e.Message;
+                      AppLog.Lines.Add('Update EXIF '+ExtractFileName(fn)+suff+
+                                       Statusbar1.Panels[5].Text);
+                    end;
+                  end;
+                end;
+              finally
+                aImgInfo.Free;
+              end;
+            end;
+          end;
+        end else begin                             {Picture had no EXIF data}
+          if GetCoords(gridEXIFPic.Cells[4, i], gridEXIFPic.Cells[5, i],
+                       lat, lon, latref, lonref) then begin
+            aImgInfo:=TImgInfo.Create;             {Create EXIF}
+            try
+              try
+                newtag:=aImgInfo.CreateExifData().AddTagByName(exMake);
+                newtag.AsString:=AppName;          {Fake manufacturer}
+                newtag:=aImgInfo.EXIFdata.AddTagByName(exModel);
+                newtag.AsString:=AppVersion;       {Fake camera type}
+
+                newtag:=aImgInfo.EXIFdata.AddTagByName(exLat);
+                newtag.AsFloat:=lat;
+                newtag:=aImgInfo.EXIFdata.AddTagByName(exLatRef);
+                newtag.AsString:=latref;
+
+                newtag:=aImgInfo.EXIFdata.AddTagByName(exLon);
+                newtag.AsFloat:=lon;
+                newtag:=aImgInfo.EXIFdata.AddTagByName(exLonRef);
+                newtag.AsString:=lonref;
+
+                newtag:=aImgInfo.EXIFdata.AddTagByName(exAlt);
+                newtag.AsFloat:=alt;
+                newtag:=aImgInfo.EXIFdata.AddTagByName(exAltRef);
+                newtag.AsString:='0';              {Above sea level}
+
+                if cbBackupPic.Checked then
+                  CopyFile(fn, ChangeFileExt(fn, '.bak'), [cffOverWriteFile]);
+                aImgInfo.SaveToFile(fn);
+                gridEXIFPic.Cells[7, i]:=resNew;
+                inc(zhl);
+              except
+                on e: Exception do begin
+                  Statusbar1.Panels[5].Text:=e.Message;
+                  AppLog.Lines.Add('Create EXIF '+ExtractFileName(fn)+suff+
+                                   Statusbar1.Panels[5].Text);
+                end;
+              end;
+            finally
+              aImgInfo.Free;
+            end;
+          end;
+        end;
+      end;
+    end;
+    if zhl=0 then
+      Statusbar1.Panels[5].Text:=errNoUpdates
+    else
+      Statusbar1.Panels[1].Text:=IntToStr(zhl);
+    gridEXIFPic.AutoSizeColumns;
+    btnWritePic.Enabled:=false;                    {Close write action}
+  end;
+end;
+
+procedure TForm1.gridEXIFPicPrepareCanvas(sender: TObject; aCol, aRow: Integer;
+  aState: TGridDrawState);                         {Set colors for EXIF updates}
+begin
+  if (aRow>0) and                                  {not to header}
+     (aState=[]) then begin                        {not if selected}
+    case aCol of
+      3: if gridEXIFPic.Cells[aCol, aRow]<>'' then
+              CellColorSetting(gridEXIFPic, clAttention);
+      2: if gridEXIFPic.Cells[3, aRow]<>'' then
+              CellColorSetting(gridEXIFPic, clMoneyGreen);
+      4..6: if pos(exID, gridEXIFPic.Cells[aCol, aRow])>0 then
+              CellColorSetting(gridEXIFPic, clMoneyGreen);
+      7: if gridEXIFPic.Cells[aCol, aRow]<>'' then
+              CellColorSetting(gridEXIFPic, clMoneyGreen);
+    end;
+  end;
+end;
+
 
 {Profiles sind von mir häufig benutzte Einstellungen für die Schnellanalyse.
  Sie sind hier hart codiert und vom Benutzer nicht editierbar.}
 
 procedure TForm1.cbxProfilesChange(Sender: TObject);
 begin                                              {Profile ausgewählt}
-  if cbxProfiles.ItemIndex>0 then SetProfile(cbxProfiles.ItemIndex);
+  if cbxProfiles.ItemIndex>0 then
+    SetProfile(cbxProfiles.ItemIndex);
 end;
 
 procedure TForm1.SetProfile(idx: integer);         {Profile ausgewählt}
@@ -8061,7 +8558,7 @@ begin
   else
     ProfileYLegacy;
   end;
-  pcMain.ActivePageIndex:=3;                 {Umschalten auf Schnellanalyse}
+  pcMain.ActivePage:=tabAnalyze3;                  {Umschalten auf Schnellanalyse}
   Anzeige;                                         {Schnellanalyse ausführen}
   if TimerDiashow.Enabled and
      (idx>0) then begin
@@ -8072,7 +8569,7 @@ end;
 
 procedure TForm1.cbxProfilesDblClick(Sender: TObject);
 begin
-  pcMain.ActivePageIndex:=3;                 {Umschalten auf Schnellanalyse}
+  pcMain.ActivePage:=tabAnalyze3;                  {Umschalten auf Schnellanalyse}
   Anzeige;
 end;
 
@@ -8097,6 +8594,11 @@ procedure TForm1.edReceiveCGO3DblClick(Sender: TObject);  {CGO3 Test Copy to Cli
 begin
   If edReceiveCGO3.Text>'' then
     ClipBoard.AsText:=edSendCGO3.Text+LineEnding+edReceiveCGO3.Text;
+end;
+
+procedure TForm1.gridEXIFPicDblClick(Sender: TObject);
+begin
+  GeoShowPic;                                      {Show picture}
 end;
 
 procedure TForm1.mnFlDelClick(Sender: TObject);    {Delete selected FlightLog}
@@ -8138,21 +8640,21 @@ var nf: integer;                                   {Number files deleted}
     end;
   end;
 
-  procedure Del4Files;                              {legacy with sensor files}
+  procedure Del4Files;                             {legacy with sensor files}
   begin
-    if Del3files then begin                         {Delete also sensor file für Typhoon H}
+    if Del3files then begin                        {Delete also sensor file für Typhoon H}
       DeleteOneFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+npath+
                     PathDelim+nfile+lbFlights.Items[lbFlights.ItemIndex]+sext);
     end;
   end;
 
 begin
-  nf:=0;                                            {Number files deleted}
-  if lbFlights.ItemIndex>=0 then begin              {Only if the selection is valid}
+  nf:=0;                                           {Number files deleted}
+  if lbFlights.ItemIndex>=0 then begin             {Only if the selection is valid}
     case v_type of
       1..4, 6, YTHPid, ThBid: Del3files;
       5: Del4Files;
-      MQid: DelMQ;                                  {Sensor files Mantis Q}
+      MQid: DelMQ;                                 {Sensor files Mantis Q}
       H5id: DeleteOneFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
                           lbFlights.Items[lbFlights.ItemIndex]+hext);   {.tlog}
       MQcsvID: DeleteOneFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
@@ -8171,21 +8673,70 @@ begin
       AppLog.Lines.Add('');
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       AppLog.Lines.Add('');
-      ResetCut;                                       {Reset cut timestamps}
-      FreigabeCut(true);                              {Output to status is true}
+      ResetCut;                                    {Reset cut timestamps}
+      FreigabeCut(true);                           {Output to status is true}
       TimerDblClick.Enabled:=false;
-      TimerDiashow.Enabled:=false;                    {Stop Diashow Profiles}
+      TimerDiashow.Enabled:=false;                 {Stop Diashow Profiles}
       if Form2<>nil then
-        Form2.Close;                                  {Detailfenster schließen}
-      tpos:=0;                                        {Position zurücksetzen}
-      SelDirAct('');                                  {Reload all}
+        Form2.Close;                               {Detailfenster schließen}
+      tpos:=0;                                     {Position zurücksetzen}
+      SelDirAct('');                               {Reload all}
     end;
   end;
 end;
 
-procedure TForm1.mnReloadClick(Sender: TObject);    {Reload files}
+procedure TForm1.mnGeoGMapClick(Sender: TObject);  {Menu GeoTagging show in GoogleMaps}
+var lat, lon: string;
+begin
+  lat:=gridEXIFPic.Cells[4, gridEXIFPic.Selection.Top];
+  lon:=gridEXIFPic.Cells[5, gridEXIFPic.Selection.Top];
+  if (lat<>'') and (lon<>'') then
+    OpenURL(URLGMap(lat, lon));
+end;
+
+procedure TForm1.mnGeoOSMClick(Sender: TObject);  {Menu GeoTagging show in OSM}
+var lat, lon: string;
+begin
+  lat:=gridEXIFPic.Cells[4, gridEXIFPic.Selection.Top];
+  lon:=gridEXIFPic.Cells[5, gridEXIFPic.Selection.Top];
+  if (lat<>'') and (lon<>'') then
+    OpenURL(URLosm(lat, lon));
+end;
+
+procedure TForm1.mnReloadClick(Sender: TObject);   {Reload files}
 begin
   SelDirAct('');
+end;
+
+procedure TForm1.GeoShowPic;                       {Menu Show picture}
+var fn: string;
+begin
+  fn:=gridEXIFPic.Cells[0, gridEXIFPic.Selection.Top];
+  if fn<>'' then
+    OpenDocument(IncludeTrailingPathDelimiter(cbxPicFolder.Text)+fn);
+end;
+
+procedure TForm1.mnShowPicClick(Sender: TObject);  {Menu Show picture}
+begin
+  GeoShowPic;
+end;
+
+procedure TForm1.sbtnPicFolderClick(Sender: TObject); {Geotagging picture folder}
+begin
+  SelectDirectoryDialog1.Title:=capSelPicFolder;
+  if SelectDirectoryDialog1.Execute then begin
+    cbxPicFolder.Text:=SelectDirectoryDialog1.FileName;
+    Merkliste(cbxPicFolder, speItems.Value);
+  end;
+end;
+
+procedure TForm1.sbtnTelemetryClick(Sender: TObject); {Select telemetry file name}
+begin
+  OpenDialog1.Title:=capTelemetryFile;
+  if OpenDialog1.Execute then begin
+    cbxTelemetry.Text:=OpenDialog1.FileName;
+    Merkliste(cbxTelemetry, speItems.Value);
+  end;
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -8196,7 +8747,7 @@ end;
 
 procedure TForm1.FormDblClick(Sender: TObject);    {AboutBox}
 begin
-  if MessageDlg(capForm1+sLineBreak+ExtractFileName(Application.ExeName)+tab2+version+
+  if MessageDlg(capForm1+sLineBreak+AppName+tab2+AppVersion+
                 sLineBreak+sLineBreak+meinname+sLineBreak+homepage+sLineBreak+email,
                 mtInformation,[mbHelp, mbOK],0)=mrNone then OpenManual;
 end;
@@ -8210,7 +8761,7 @@ end;
 
 procedure TForm1.FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if pcMain.ActivePageIndex=2 then begin     {Höhendiagramm}
+  if pcMain.ActivePage=tabHDia then begin          {Höhendiagramm}
     if ssCtrl in Shift then begin
       if ChartToolset2DataPointCrosshairTool1.Enabled then begin
         case key of               {Analyse erweitern/einschränken mit +  oder -}
@@ -8226,7 +8777,7 @@ begin
     if key=vk_ESCAPE then
       KursorAus;                                   {Fadenkreuz aus}
   end;
-  if pcMain.ActivePageIndex=3 then begin     {Schellanalyse}
+  if pcMain.ActivePage=tabAnalyze3 then begin      {Schellanalyse}
     if key=vk_ESCAPE then TimerDiashow.Enabled:=false;   {Diashow Profiles stoppen}
     if (key=vk_F5) and
        (v_type<>BrID) then                         {H501 ???}
@@ -8539,7 +9090,7 @@ var x: integer;
       2: BrHDiagramm(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
                      lbFlights.Items[lbFlights.ItemIndex]+bext);
       3: AnzeigeSchnell;
-      6: PlatformLesen;
+      7: PlatformLesen;                            {tabSettings}
     end;
   end;
 
@@ -8552,7 +9103,7 @@ var x: integer;
       2: HDiagramm(IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
                    kfile+lbFlights.Items[lbFlights.ItemIndex]+fext);
       3: AnzeigeSchnell;
-      6: FirmwareLesen;
+      7: FirmwareLesen;
     end;
   end;
 
@@ -8576,7 +9127,7 @@ begin
   AppLogTimeStamp('');
   DefaultFormatSettings.DecimalSeparator:='.';
   if (pcMain.Tag>0) and
-     (pcMain.ActivePageIndex<>3) then
+     (pcMain.ActivePage<>tabAnalyze3) then
     try
       Form2.Chart1ConstantLine1.Active:=false;     {nicht bei Schnellanalyse}
     except
@@ -8621,7 +9172,7 @@ begin
     PopupMenuTab.Items[6].Enabled:=false;          {GoTo Errorflags}
     PopupMenuTab.Items[9].Enabled:=false;          {Start}
     PopupMenuTab.Items[10].Enabled:=false;         {Stop}
-    pcMain.ActivePageIndex:=1;               {Detail}
+    pcMain.ActivePage:=tabDetails;                 {Details - table of CSV data}
     rgQuelle.ItemIndex:=3;                         {Sensor Files}
     rgQuelle.Enabled:=false;
     lbFlights.Tag:=lbFlights.ItemIndex;            {Dateinummer merken}
@@ -8652,7 +9203,7 @@ begin
     PopupMenuTab.Items[6].Enabled:=false;          {GoTo Errorflags}
     PopupMenuTab.Items[9].Enabled:=false;          {Start}
     PopupMenuTab.Items[10].Enabled:=false;         {Stop}
-    pcMain.ActivePageIndex:=1;               {Detail}
+    pcMain.ActivePage:=tabDetails;                 {Details}
     rgQuelle.ItemIndex:=3;                         {Sensor Files}
     rgQuelle.Enabled:=false;
     lbFlights.Tag:=lbFlights.ItemIndex;            {Dateinummer Index merken}
@@ -8720,8 +9271,8 @@ end;
 
 procedure TForm1.mnSaveAsQuickClick(Sender: TObject); {Menü: GoTo Settings}
 begin
-  pcMain.ActivePageIndex:=6;
-  pcSettings3.ActivePageIndex:=1;
+  pcMain.ActivePage:=tabSettings;
+  pcSettings3.ActivePage:=tabData;
 end;
 
 procedure TForm1.mnResetProfileClick(Sender: TObject); {Menü: Default}
@@ -8825,25 +9376,25 @@ begin                                              {Tabs umschalten}
   cbxProfiles.ItemIndex:=0;                        {Profiles zurücksetzen}
   rgVehicleType.Enabled:=cbVehicleType.Checked;
   cbxSearch.Enabled:=false;
-  case pcMain.ActivePageIndex of             {alle anderen Fälle ohne Änderung}
+  case pcMain.ActivePageIndex of                   {alle anderen Fälle ohne Änderung}
     1: begin                                       {Datentabelle}
          cbxSearch.Enabled:=true;                  {nur bei Datentabelle}
          if gridDetails.ColCount<YTHPcols then begin
-           gridOverview.Tag:=1;
+           gridOverview.Tag:=pcMain.ActivePageIndex;
            Anzeige;
          end;
        end;
     2: begin
-         gridOverview.Tag:=2;                      {Höhendiagramm}
+         gridOverview.Tag:=pcMain.ActivePageIndex; {Höhendiagramm}
          Anzeige;
        end;
     3: begin
-         gridOverview.Tag:=3;                      {Schnellanalyse}
+         gridOverview.Tag:=pcMain.ActivePageIndex; {Schnellanalyse}
          Anzeige;
        end;
-    4: cbxSearch.Enabled:=true;                    {Scan, Suche erlauben}
-    6: Anzeige;                                    {FW anzeigen wenn vorhanden}
-  end;                                             {Tabs merken}
+    4: cbxSearch.Enabled:=true;                    {Scan, enable search, no recording of ActivePageIndex}
+    7: Anzeige;                                    {FW anzeigen wenn vorhanden}
+  end;
 end;
 
 procedure TForm1.Werte(z: integer); {min/max Werte suchen, z: Index der Datei}
@@ -9667,6 +10218,9 @@ begin
             AppLog.Lines.Add('''9481'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
+        gridDetails.Col:=CellFocus[rgQuelle.ItemIndex, 0]; {load cell focus}
+        gridDetails.Row:=CellFocus[rgQuelle.ItemIndex, 1];
+
         if mode=1 then begin
           StatusBar1.Panels[1].Text:=IntToStr(p-1 );
           StatusBar1.Panels[2].Text:=rsSelection;
@@ -9688,6 +10242,10 @@ begin
               if ZeitToDT(gridDetails.Cells[0, i], v_type)>tpos1 then
                 break;                             {Stelle gefunden}
             gridDetails.TopRow:=i-gridDetails.VisibleRowCount-1;   {zeitl. Pos setzen}
+            gridDetails.Row:=i;
+            gridDetails.Col:=CellFocus[rgQuelle.ItemIndex, 0];     {load column focus}
+            CellFocus[rgQuelle.ItemIndex, 0]:=gridDetails.Col;     {save cell focus}
+            CellFocus[rgQuelle.ItemIndex, 1]:=gridDetails.Row;
           end;
         end;
         gridDetails.AutoSizeColumn(0);
@@ -9702,7 +10260,7 @@ begin
                                    capLabel6+Format('%6d', [zhl]);
         AppLog.Lines.Add('''9517'+suff+StatusBar1.Panels[5].Text);
       end;
-      if pcMain.ActivePageIndex=1 then gridDetails.SetFocus;
+      if pcMain.ActivePage=tabDetails then gridDetails.SetFocus;
     end else begin                                 {Datei leer}
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
@@ -9731,7 +10289,7 @@ begin
 
     if inlist.count>1 then begin                   {Laden inklusive Überschrift}
       gridDetails.BeginUpdate;
-      pcMain.ActivePageIndex:=1;
+      pcMain.ActivePage:=tabdetails;
       gridDetails.ColCount:=csvanz;                {auch ID für PX4 CSV}
       gridDetails.RowCount:=inlist.Count;          {nur wenn Daten vorhanden sind}
       for i:=0 to Inlist.Count-1 do begin
@@ -9913,7 +10471,7 @@ begin
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     gridDetails.TopRow:=topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]; {Top setzen}
-    if pcMain.ActivePageIndex=1 then
+    if pcMain.ActivePage=tabDetails then
       gridDetails.SetFocus;
   finally
     FreeAndNil(inlist);
@@ -10067,7 +10625,7 @@ begin
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     gridDetails.TopRow:=topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]; {Top setzen}
-    if pcMain.ActivePageIndex=1 then
+    if pcMain.ActivePage=tabDetails then
       gridDetails.SetFocus;
   finally
     FreeAndNil(inlist);
@@ -10200,7 +10758,7 @@ begin
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     gridDetails.TopRow:=topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]; {Top setzen}
-    if pcMain.ActivePageIndex=1 then
+    if pcMain.ActivePage=tabDetails then
       gridDetails.SetFocus;
   finally
     FreeAndNil(inlist);
@@ -12033,7 +12591,7 @@ end;
 
 procedure TForm1.rgAltitudeTypeClick(Sender: TObject);
 begin
-  EnSave;                                              {Speichern erlauben}
+  EnSave;                                          {Speichern erlauben}
 end;
 
 {Einstellungen für Schnellanalyse, Zuordnung der Spalten zu den Diagrammen}
@@ -12052,7 +12610,7 @@ begin
   GetDDdata(LabeledEdit3);
 end;
 
-procedure TForm1.sbtnLogDirClick(Sender: TObject);   {FlightLog Verzeichnis}
+procedure TForm1.sbtnLogDirClick(Sender: TObject); {FlightLog Verzeichnis}
 begin
   SelDirSet;
 end;
@@ -12062,7 +12620,7 @@ begin
   SelDirProt;                  {Verzeichnis zum Durchsuchen auswählen}
 end;
 
-procedure TForm1.SendCGOcmd;                           {Command zu CGO3}
+procedure TForm1.SendCGOcmd;                       {Command zu CGO3}
 begin
   if edSendCGO3.Text>'' then
     if CGO3run(edSendCGO3.Text, 0)=0 then begin
@@ -12078,14 +12636,29 @@ begin
   SendCGOcmd;
 end;
 
-procedure TForm1.speLinePathChange(Sender: TObject);     {Liniendicke}
+procedure TForm1.speLinePathChange(Sender: TObject);   {Liniendicke}
 begin
-  EnSave;                                              {Speichern erlauben}
+  EnSave;                                          {Speichern erlauben}
 end;
 
-procedure TForm1.StatusToClipboard;                    {Statuszeile kopieren}
+procedure TForm1.speProzChange(Sender: TObject);   {Percent to remote value}
 begin
-  if StatusBar1.Tag>0 then                             {Zeiten mit kopieren}
+  speStk.Value:=ProzToStk(speProz.Value);
+end;
+
+procedure TForm1.speProzEditingDone(Sender: TObject);
+begin
+  speStk.Value:=ProzToStk(speProz.Value);          {Remote value to percent}
+end;
+
+procedure TForm1.speStkEditingDone(Sender: TObject);
+begin
+  speProz.Value:=StkToProz(speStk.Value);
+end;
+
+procedure TForm1.StatusToClipboard;                {Statuszeile kopieren}
+begin
+  if StatusBar1.Tag>0 then                         {Zeiten mit kopieren}
     ClipBoard.AsText:=StatusBar1.Panels[3].Text+bind+
                       StatusBar1.Panels[4].Text+tab2+
                       StatusBar1.Panels[5].Text
@@ -12108,7 +12681,9 @@ procedure TForm1.gridDetailsClick(Sender: TObject);{Kursor im Diagramm anzeigen}
 var ts, tb, te: TDateTime;
 begin
   Label3.Tag:=gridDetails.Selection.Left;          {selektierte Spalte ermitteln}
-  speDataPoint.Value:=gridDetails.Selection.Top;      {Zeile übernehmen}
+  speDataPoint.Value:=gridDetails.Selection.Top;   {Zeile übernehmen}
+  CellFocus[rgQuelle.ItemIndex, 0]:=gridDetails.Col;   {save cell focus}
+  CellFocus[rgQuelle.ItemIndex, 1]:=gridDetails.Row;
   if (rgQuelle.ItemIndex<>3) and
      (gridDetails.ColCount<YTHPcols) then begin    {nicht bei Sensordateien}
     ts:=ZeitToDT(gridDetails.Cells[0, gridDetails.Row], v_type);
@@ -12132,7 +12707,7 @@ end;
 procedure TForm1.gridDetailsDblClick(Sender: TObject); {Hilfe zum Zelleninhalt}
 begin
   StatusBar1.Panels[5].Text:=GetCellInfo(gridDetails.Col, gridDetails.Row);
-  AppLog.Lines.Add(StatusBar1.Panels[5].Text);   {in AppLogHighlighter aufnehmen}
+  AppLog.Lines.Add(StatusBar1.Panels[5].Text);     {in AppLogHighlighter aufnehmen}
 end;
 
 procedure TForm1.gridDetailsPrepareCanvas(sender: TObject; aCol, aRow: Integer;
@@ -12141,7 +12716,7 @@ var dta, npos: double;
 const mxw=1365;
 
   procedure Farblauf(f, w: integer);               {Farbabstufung zeichnen}
-  var p: integer;                     {f.. Farbe (index im Array), w..Wert}
+  var p: integer;                                  {f.. Farbe (index im Array), w..Wert}
   begin
     p:=abs(w);
     if p>mxw then
@@ -12787,7 +13362,8 @@ var x: integer;
          end;
       2: begin                                     {Remote: nur Angle}
            w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
-           if p=7 then w:=TiltToGrad(StrToFloatN(gridDetails.Cells[p, x]));
+           if p=7 then
+             w:=TiltToGrad(StrToFloatN(gridDetails.Cells[p, x]));
          end;
     end;
   end;
@@ -13623,7 +14199,7 @@ begin
          (rgErrType.ItemIndex=11) then begin
         fn:=gridScanResult.Cells[1, gridScanResult.Tag];
         ShowSensorPlus(fn, 0, false, true, false, false);
-        pcMain.ActivePageIndex:=7;           {Springe zum AppLogHighlighter}
+        pcMain.ActivePage:=tabAppLog;              {Springe zum AppLogHighlighter}
       end else
       if (rgErrType.ItemIndex<8) or                {Sensor Dateien}
          (v_type<>YTHPid) then begin               {H Plus}
@@ -13631,7 +14207,7 @@ begin
         cbxLogDir.Text:=GetFlightLogDir(fn);
         SelDirAct(fn);
         cbxSearch.Enabled:=true;                   {Suche erlauben}
-        pcMain.ActivePageIndex:=1;           {Springe zur Dateiansicht}
+        pcMain.ActivePage:=tabDetails;             {Springe zur Dateiansicht}
       end;
     end;
   end;
@@ -13785,7 +14361,7 @@ begin
         if SaveDialog1.Execute then begin
           mlist.SaveToFile(SaveDialog1.FileName);
         end;
-        pcMain.ActivePageIndex:=7;           {Switch to AppLogHighlighter}
+        pcMain.ActivePage:=tabAppLog;              {Switch to AppLogHighlighter}
         AppLog.TopLine:=AppLog.Lines.Count;
       end;
     end;
@@ -14020,6 +14596,7 @@ begin
     grSel.Bottom:=grSel.Top;
     gridDetails.Selection:=grSel;
     speDataPoint.Value:=z;
+    CellFocus[rgQuelle.ItemIndex, 1]:=z;
   end;
   topp[lbFlights.ItemIndex, rgQuelle.ItemIndex]:=gridDetails.TopRow; {Top merken}
 end;
@@ -14048,6 +14625,7 @@ begin
           topp[lbFlights.ItemIndex, 5]:=x+gridDetails.VisibleRowCount+1;
           GoToZ(4);
           gridDetails.Col:=gridDetails.Tag+3;
+          CellFocus[rgQuelle.ItemIndex, 0]:=gridDetails.Col;
         end;
         break;
       end;
@@ -14058,7 +14636,7 @@ end;
 procedure TForm1.mnGoTableClick(Sender: TObject);  {gehe zur Tabelle}
 begin
   if lbFlights.Items.Count>0 then begin
-    pcMain.ActivePageIndex:=1;
+    pcMain.ActivePage:=tabDetails;
     GoToZ(4);
   end;
 end;
@@ -14347,7 +14925,7 @@ end;
 procedure TForm1.HexHeader(const fn: string);      {all actions before hexdump}
 var fnsize, numblk: integer;
 begin
-  pcMain.ActivePageIndex:=7;                 {Switch to AppLogHighlighter}
+  pcMain.ActivePage:=tabApplog;                    {Switch to AppLogHighlighter}
   AppLog.Lines.Clear;                              {Empty AppLog for hexdump}
   fnsize:=FileSize(fn);
   btnShowHex.Tag:=2048;                            {File selected}
@@ -14571,7 +15149,7 @@ begin
                                    capLabel6+Format('%6d', [zhl]);
         AppLog.Lines.Add('''14248'+suff+StatusBar1.Panels[5].Text);
       end;
-      pcMain.ActivePageIndex:=1;
+      pcMain.ActivePage:=tabDetails;
       gridDetails.SetFocus;
       gridDetails.CopyToClipboard(false);          {Tabelle im Clipboard ablegen}
     end else begin                                 {Datei leer}

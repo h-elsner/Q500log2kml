@@ -319,5 +319,35 @@ resourcestring                                     {deutsch}
   hntReload='Alle FlightLogs neu laden. Geduld, das kann dauern.';
   rsFLdelete='Lösche FlightLog';
   rsFilesDel='Dateien gelöscht';
+  capSTKProz='Remote-Werte <> Prozent';
+  hntStkProz='Umrechnung der Remote-Werte zu Prozent und umgekehrt';
+  capStk='Remote-Werte';
+  capProz='Prozent';
+
+{GeoTagging}
+  hdrEXIFPic='Dateiname,Kamera,Datum/Zeit,Treffer bei,Breitengrad,Längengrad,Relative Höhe,EXIF Daten';
+  capShowPic='Zeige Bild';
+  capPicFolder='Bilder';
+  hntPicFolder='Verzeichnis mit Bildern zum Durchsuchen auswählen';
+  capTelemetry='Telemetrie';
+  hntTelemetry='Telemetriedatei mit Referenz-Koordinaten auswählen';
+  capScanPic='Bilder prüfen';
+  hntScanPic='Bilder durchsuchen und auflisten';
+  capWritePic='EXIF schreiben';
+  hntWritePic='Gefundene Daten in die EXIF Daten des entsprechenden Bildes schreiben';
+  capBackupPic='Backup';
+  hntBackupPic='Originalbilder behalten';
+  capTimeOffset='Zeitkorrektur';
+  hntTimeOffset='Eventuell notwendige Zeitverschiebung zwischen Bildern und Telemetrie einstellen';
+  capCams='Kameras';
+  hntCams='Filterliste für Kameras';
+  capSelPicFolder='Bilderverzeichnis auswählen...';
+  capTelemetryFile='Telemetriedatei auswählen...';
+  errNoPicFolder='Bilderverzeichnis existiert nicht';
+  errNoPictures='Keine JPG-Bilder im Verzeichnis';
+  errNoTelemetryFile='Telemetriedatei existiert nicht';
+  errNoUpdates='Keine EXIF Daten geschrieben';
+  resNew='Neu angelegt';
+  resUpd='Geändert';
 
 

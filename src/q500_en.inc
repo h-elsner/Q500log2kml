@@ -318,5 +318,35 @@ resourcestring                                     {english}
   hntReload='Reload all FlightLogs. This may take time.';
   rsFLdelete='Delete FlightLog';
   rsFilesDel='files deleted';
+  capSTKProz='Remote values <> percent';
+  hntStkProz='Convert Remote values to percent and vice-versa';
+  capStk='Remote values';
+  capProz='Percent';
+
+{GeoTagging}
+  hdrEXIFPic='File name,Camera,Date/time,Match at,Latitude,Longitude,Altitude relative,EXIF data';
+  capShowPic='Show picture';
+  capPicFolder='Pictures';
+  hntPicFolder='Select folder with JPG pictures to update';
+  capTelemetry='Telemetry';
+  hntTelemetry='Select telemetry file with reference data';
+  capScanPic='Find pictures';
+  hntScanPic='Find and list pictures';
+  capWritePic='Write EXIF';
+  hntWritePic='Write related data to EXIF meta data of the picture';
+  capBackupPic='Backup';
+  hntBackupPic='Keep original picture files';
+  capTimeOffset='ZTime offset';
+  hntTimeOffset='Set possibly needed time shift between picture time stamp and telemetry times';
+  capCams='Cameras';
+  hntCams='Filter list of cameras';
+  capSelPicFolder='Select picture folder...';
+  capTelemetryFile='Select telemetry file...';
+  errNoPicFolder='Picture folder does not exist';
+  errNoPictures='No valid picture files in folder';
+  errNoTelemetryFile='Telemetry file does not exist';
+  errNoUpdates='EXIF data not written';
+  resNew='Created';
+  resUpd='Updated';
 
 
