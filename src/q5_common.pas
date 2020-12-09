@@ -9,7 +9,8 @@ uses
 
 const
 {public constants}
-  Version ='V4.6 11/2020';
+  AppName=   'q500log2kml';
+  AppVersion='V4.7 12/2020';
 
   defaultcol=5;                                    {muss kleiner als die Mindestmenge der Spalten sein}
   defVT=5;                                         {Default vehicle YTH, need 5 for Thunderbird}
@@ -40,6 +41,7 @@ const
   dzfl='0.0';                                      {Formatierung für FormatFloat}
   ctfl='0.00';
   mlfl='0.000';
+  coordfrm='0.000000';
 
   fkmh=3.6;                                        {m/s --> km/h}
   fmph=2.2369362920544;                            {m/s --> mph}

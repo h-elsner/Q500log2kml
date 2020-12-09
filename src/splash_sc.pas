@@ -9,7 +9,8 @@ uses
 
 type
 
-  { TForm4: Splashscreen }
+  { TForm4: Splashscreen
+    Font in Paint.net for version: Calibri 18 bold}
 
     TForm4 = class(TForm)
     Image1: TImage;
