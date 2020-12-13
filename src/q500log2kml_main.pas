@@ -12101,8 +12101,10 @@ begin
   end;
 end;
 
+{https://support.virtual-surveyor.com/en/support/solutions/articles/1000261351
+ https://support.virtual-surveyor.com/en/support/solutions/articles/1000261349}
 function TForm1.GethFromST10(const z: integer; const dt: TDateTime): double;
-             {Höhe über NN aus RemoteGPS_xxxx}
+             {Höhe über ellipsoid WGS84 aus RemoteGPS_xxxx}
              {z: Index der Datei, dt: Zeitpunkt wo Höhe genommen werden soll}
 var
   inlist, splitlist: TStringList;
@@ -12123,18 +12125,19 @@ begin
       for x:=1 to inlist.count-1 do begin
         splitlist.DelimitedText:=inlist[x];
         if splitlist.Count>5 then begin
-          if ZeitToDT(splitlist[0], v_type)>dt then begin {Startpunkt suchen}
+          if ZeitToDT(splitlist[0], v_type)>dt then begin {Find time (take-off)}
             hx:=StrToFloatN(splitlist[3]);
-            if (abs(hx)>0.1) and testh(hx) then begin     {nur gültige Höhenwerte zählen}
+            if (abs(hx)>0.1) and testh(hx) then begin     {check if valid value}
               hw:=hw+hx;
               inc(n);
             end;
             if n>40 then
-              break;                               {Abbrechen nach 40 Werten zum Runden}
+              break;                               {Break after 41 values}
           end;
         end;
       end;
-      result:=(hw/n)-1;                            {Durchschnittswert}
+      result:=hw/n-1;                              {Average value from 41 data sets,
+                                                    minus alt of the RC controller to ground (1m)}
     except
       result:=0;
       AppLog.Lines.Add('Altitude taken from RC GPS failed! Requested time stamp: '+
