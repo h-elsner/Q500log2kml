@@ -1031,6 +1031,12 @@ const
   exAlt=   'GPSAltitude';
   exAltRef='GPSAltitudeRef';                       {0 = Above Sea Level; 1 = Below Sea Level}
   exID=' ';
+  exN='N';
+  exS='S';
+  exW='W';
+  exE='E';
+  exDwn='1';                                       {1 = Below Sea Level}
+  exUp='0';                                        {0 = Above Sea Level}
 
 
 var
@@ -4247,9 +4253,9 @@ var dsbuf: array[0..YTHPcols] of byte;
 {https://www.delphipraxis.net/122021-single-byte-array-konvertieren-und-umgekehrt.html
  http://forum.lazarus-ide.org/index.php?topic=42182.0
  Direkter Typecast mit dem Zieldatentyp oder die Deklaration mittels absolute}
-  function GetFloatFromBuf(const p: integer): double; {Position, Länge immer 4}
+  function GetFloatFromBuf(const p: integer): single; {Position, Länge immer 4}
   var i: integer;
-      wfl: array[0..3] of Byte;
+      wfl: packed array[0..3] of Byte;
       wx: Single absolute wfl;
   begin
     result:=0;
@@ -8142,11 +8148,11 @@ begin
 
                 if (lat<>0) or (lon<>0) then begin {Valid coordinates found in EXIF}
                   alt:=ReadFloat(aImgInfo, exAlt);
-                  ref:=uppercase(ReadTag(aImgInfo, exLatRef, 'N'));
-                  if (ref[1]='S') and (lat>0) then
+                  ref:=uppercase(ReadTag(aImgInfo, exLatRef, exN));
+                  if (ref[1]=exS) and (lat>0) then
                     lat:=-lat;                     {Correct lat for southern hemisphere}
-                  ref:=uppercase(ReadTag(aImgInfo, exLatRef, 'E'));
-                  if (ref[1]='W') and (lon>0) then
+                  ref:=uppercase(ReadTag(aImgInfo, exLatRef, exE));
+                  if (ref[1]=exW) and (lon>0) then
                     lon:=-lon;                     {Correct lon for western hemisphere}
                   gridEXIFPic.Cells[4, i+1]:=FormatFloat(coordfrm, lat)+exID;
                   gridEXIFPic.Cells[5, i+1]:=FormatFloat(coordfrm, lon)+exID;
@@ -8221,12 +8227,12 @@ procedure WriteTagAsString(var WrData: TImgInfo;       {EXIF data set}
 var WantedTag, InsertedTag: TTag;
 begin
   WantedTag:=WrData.ExifData.TagByName[TagName];
-  if WantedTag=nil then begin                          {Check if tag is missing}
+  if WantedTag=nil then begin                      {Check if tag is missing}
     InsertedTag:=WrData.EXIFdata.AddTagByName(TagName);
-    InsertedTag.AsString:=NewValue;                    {Insert the nw value}
-  end else begin                                       {If tag was already there}
+    InsertedTag.AsString:=NewValue;                {Insert the nw value}
+  end else begin                                   {If tag was already there}
     if Overwrite then
-      WantedTag.AsString:=NewValue;                    {Overwrite value if allowed}
+      WantedTag.AsString:=NewValue;                {Overwrite value if allowed}
   end;
 end;
 
@@ -8237,28 +8243,28 @@ procedure WriteTagAsFloat(var WrData: TImgInfo;        {EXIF data set}
 var WantedTag, InsertedTag: TTag;
 begin
   WantedTag:=WrData.ExifData.TagByName[TagName];
-  if WantedTag=nil then begin                          {Check if tag is missing}
+  if WantedTag=nil then begin                      {Check if tag is missing}
     InsertedTag:=WrData.EXIFdata.AddTagByName(TagName);
-    InsertedTag.AsFloat:=NewValue;                     {Insert the nw value}
-  end else begin                                       {If tag was already there}
+    InsertedTag.AsFloat:=NewValue;                 {Insert the nw value}
+  end else begin                                   {If tag was already there}
     if Overwrite then
-      WantedTag.AsFloat:=NewValue;                     {Overwrite value if allowed}
+      WantedTag.AsFloat:=NewValue;                 {Overwrite value if allowed}
   end;
 end;
 
 function GetCoords(lats, lons: string; var la, lo: double;
                                        var lar, lor: string): boolean;
 begin
-  lar:='N';                                        {Default hemisphere}
-  lor:='E';
+  lar:=exN;                                        {Default hemisphere}
+  lor:=exE;
   la:=StrToFloatN(lats);
   lo:=StrToFloatN(lons);
   if la<0 then begin
-    lar:='S';                                      {Southern hemisphere}
+    lar:=exS;                                      {Southern hemisphere}
     la:=abs(la);
   end;
   if lo<0 then begin
-    lor:='W';                                      {Western hemisphere}
+    lor:=exW;                                      {Western hemisphere}
     lo:=abs(lo);
   end;
   result:=(la<>0) or (lo<>0);                      {Valid coordinates}
@@ -8293,8 +8299,11 @@ begin
                     WriteTagAsFloat(aImgInfo, exLon, lon, true);
                     WriteTagAsString(aImgInfo, exLonRef, lonref, true);
 
-                    WriteTagAsFloat(aImgInfo, exAlt, alt, true);
-                    WriteTagAsString(aImgInfo, exAltRef, '0', false);
+                    if alt<0 then
+                      WriteTagAsString(aImgInfo, exAltRef, exDwn, false)
+                    else
+                      WriteTagAsString(aImgInfo, exAltRef, exUp, false);
+                    WriteTagAsFloat(aImgInfo, exAlt, abs(alt), true);
 
                     if cbBackupPic.Checked then    {Make backup file}
                       CopyFile(fn, ChangeFileExt(fn, '.bak'), [cffOverWriteFile]);
@@ -8335,10 +8344,13 @@ begin
                 newtag:=aImgInfo.EXIFdata.AddTagByName(exLonRef);
                 newtag.AsString:=lonref;
 
-                newtag:=aImgInfo.EXIFdata.AddTagByName(exAlt);
-                newtag.AsFloat:=alt;
                 newtag:=aImgInfo.EXIFdata.AddTagByName(exAltRef);
-                newtag.AsString:='0';              {Above sea level}
+                if alt<0 then
+                  newtag.AsString:=exDwn           {Below sea level}
+                else
+                  newtag.AsString:=exUp;           {Above sea level}
+                newtag:=aImgInfo.EXIFdata.AddTagByName(exAlt);
+                newtag.AsFloat:=abs(alt);
 
                 if cbBackupPic.Checked then
                   CopyFile(fn, ChangeFileExt(fn, '.bak'), [cffOverWriteFile]);

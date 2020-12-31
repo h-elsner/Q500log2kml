@@ -27,12 +27,12 @@ object Form1: TForm1
     Height = 497
     Top = 96
     Width = 838
-    ActivePage = tabDetails
+    ActivePage = tabGeo
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 1
+    TabIndex = 6
     TabOrder = 1
     OnChange = pcMainChange
     Options = [nboKeyboardTabSwitch]
@@ -1603,9 +1603,9 @@ object Form1: TForm1
       end
       object cbBackupPic: TCheckBox
         Left = 136
-        Height = 19
+        Height = 22
         Top = 96
-        Width = 88
+        Width = 94
         Caption = 'cbBackupPic'
         Checked = True
         State = cbChecked
@@ -1630,7 +1630,7 @@ object Form1: TForm1
       end
       object cbxPicFolder: TComboBox
         Left = 96
-        Height = 23
+        Height = 29
         Top = 15
         Width = 246
         Anchors = [akTop, akLeft, akRight]
@@ -1640,7 +1640,7 @@ object Form1: TForm1
       end
       object cbxTelemetry: TComboBox
         Left = 96
-        Height = 23
+        Height = 29
         Top = 56
         Width = 246
         Anchors = [akTop, akLeft, akRight]
@@ -1650,9 +1650,9 @@ object Form1: TForm1
       end
       object lblPicFolder: TLabel
         Left = 8
-        Height = 15
+        Height = 17
         Top = 19
-        Width = 62
+        Width = 64
         Caption = 'lblPicFolder'
         ParentColor = False
       end
@@ -1678,7 +1678,7 @@ object Form1: TForm1
       end
       object speTimeOffset: TSpinEdit
         Left = 374
-        Height = 23
+        Height = 27
         Top = 92
         Width = 56
         Anchors = [akTop, akRight]
@@ -1703,32 +1703,32 @@ object Form1: TForm1
         TabOrder = 7
         ColWidths = (
           85
-          110
-          110
+          111
+          111
         )
       end
       object lblTimeOffset: TLabel
-        Left = 447
-        Height = 15
+        Left = 443
+        Height = 17
         Top = 100
-        Width = 71
+        Width = 75
         Anchors = [akTop, akRight]
         Caption = 'lblTimeOffset'
         ParentColor = False
       end
       object lblTelemetry: TLabel
         Left = 8
-        Height = 15
+        Height = 17
         Top = 60
-        Width = 64
+        Width = 70
         Caption = 'lblTelemetry'
         ParentColor = False
       end
       object cgpCamera: TCheckGroup
-        Left = 742
-        Height = 51
+        Left = 749
+        Height = 52
         Top = 8
-        Width = 80
+        Width = 73
         Anchors = [akTop, akRight]
         AutoFill = True
         AutoSize = True
@@ -1741,8 +1741,8 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
-        ClientHeight = 33
-        ClientWidth = 78
+        ClientHeight = 34
+        ClientWidth = 71
         Items.Strings = (
           'CGO3'
         )
