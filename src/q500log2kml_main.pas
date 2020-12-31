@@ -568,7 +568,9 @@ type
     procedure btnWritePicClick(Sender: TObject);
     procedure cbHighLightChange(Sender: TObject);
     procedure cbThunderChange(Sender: TObject);
+    procedure cbxPicFolderChange(Sender: TObject);
     procedure cbxPicFolderDblClick(Sender: TObject);
+    procedure cbxTelemetryChange(Sender: TObject);
     procedure cbxTelemetryDblClick(Sender: TObject);
     procedure cbxTextMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -852,6 +854,7 @@ type
     procedure HexAusgabe(const fn: string);        {Tools: Display a binary file as hex print}
     procedure HexHeader(const fn: string);         {Write header for file and take block size}
     procedure GeoShowPic;                          {Menu Show picture}
+    procedure ScanPicEnable;                       {Enable picture scanning for geotagging}
 
 {Special analysis with (hidden) extra button "Special" on Settings > Common settings}
 //    procedure TLOGanalysis(fn: string);          {Special analysis}
@@ -919,9 +922,9 @@ const
   rfm3=[8..14, 25];                                {Real flight modes Blade}
   rfmT=[0, 1, 3, 13, 14, 20, 33];                  {Real flight modes Thunderbird}
   rfmP=[4..7, 10, 12, 13, 17];                     {Real flight modes YTH Plus  ???}
-  lipomin=3.3;          {minimale Zellenspannung von LiPos,
-                         die nicht unterschritten werden sollte}
+  lipomin=3.3;                                     {Minimum LiPo voltage}
   lipomax=4.2;
+  minlines=10;                                     {Minimum number if lines that makes sense to deal with}
 
   emcyID='EMERGENCY';
 
@@ -3745,7 +3748,7 @@ begin
       btnShowhex.Tag:=0;                           {No file selected for Block --> Hex}
       inlist.LoadFromFile(OpenDialog1.FileName);   {Load telemetry file}
       StatusBar1.Panels[0].Text:=IntToStr(inlist.Count-1);
-      if inlist.Count>10 then begin
+      if inlist.Count>minlines then begin
         inlist.SaveToFile(ChangeFileExt(OpenDialog1.FileName, '.bak'));
         outlist.Clear;
         outlist.Add(inlist[0]);                    {Header}
@@ -5721,10 +5724,29 @@ begin
     rgAltitudeType.ItemIndex:=cbThunder.Tag;       {restore setting}
 end;
 
+procedure TForm1.cbxPicFolderChange(Sender: TObject);
+begin
+  ScanPicEnable;
+end;
+
+procedure TForm1.ScanPicEnable;
+begin
+  if DirectoryExists(cbxPicFolder.Text) and
+     FileExists(cbxTelemetry.Text) then
+    btnScanPic.Enabled:=true
+  else
+    btnScanPic.Enabled:=false;
+end;
+
 procedure TForm1.cbxPicFolderDblClick(Sender: TObject);
 begin
   if cbxPicFolder.Text<>'' then
     OpenDocument(IncludeTrailingPathDelimiter(cbxPicFolder.Text));
+end;
+
+procedure TForm1.cbxTelemetryChange(Sender: TObject);
+begin
+  ScanPicEnable;
 end;
 
 procedure TForm1.cbxTelemetryDblClick(Sender: TObject);
@@ -6130,7 +6152,6 @@ var x, n, g, fmod: integer;
     lfmode, fxmode, modestr: string;               {letzter Flightmode}
 
 const bgid=999999;
-      minlines=10;
 
 begin
   inlist:=TStringList.Create;
@@ -6366,7 +6387,6 @@ var x, n, g, frme: integer;
     modestr: string;                               {letzter Flightmode}
 
 const bgid=999999;
-      minlines=10;
 
 begin
   inlist:=TStringList.Create;
@@ -6552,7 +6572,6 @@ var x, n, g: integer;
     fxmode, lfmode, modestr: string;               {letzter Flightmode}
 
 const bgid=999999;
-      minlines=10;
 
 begin
   inlist:=TStringList.Create;
@@ -6758,7 +6777,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     num:=0;
     result:=false;
     inlist.LoadFromFile(fn);
-    if inlist.Count>10 then begin                  {Datei durchsuchen}
+    if inlist.Count>minlines then begin            {Datei durchsuchen}
       if GetFMPos then exit;
       case v_type of
         3: vstr:='8';                              {8 nur bei 350QX}
@@ -6787,7 +6806,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     num:=0;
     result:=false;
     inlist.LoadFromFile(fn);
-    if inlist.Count>10 then begin                  {Datei durchsuchen}
+    if inlist.Count>minlines then begin            {Datei durchsuchen}
       if GetFMPos then exit;
       vstr:='32';                                  {Compass Cali Warning}
       cbxSearch.Text:=vstr;                        {Suche vordefinieren}
@@ -6815,7 +6834,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     ed:=0;
     result:=false;
     inlist.LoadFromFile(fn);
-    if inlist.Count>10 then begin                  {Datei durchsuchen}
+    if inlist.Count>minlines then begin            {Datei durchsuchen}
       if GetFMPos then
         exit;
       vstr:='32';                                  {Compass Cali Warning}
@@ -6846,7 +6865,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     FillChar(num, SizeOf(num), 0);                 {Array löschen}
     result:=false;
     inlist.LoadFromFile(fn);
-    if inlist.Count>10 then begin                  {Datei durchsuchen}
+    if inlist.Count>minlines then begin            {Datei durchsuchen}
       cbxSearch.Text:=IntToStr(stkntrl);           {Suche vordefinieren 2048}
       for k:=1 to inlist.Count-1 do begin          {Nach Fehlern suchen}
         splitlist.DelimitedText:=inlist[k];
@@ -6871,7 +6890,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     num:=0;
     result:=false;
     inlist.LoadFromFile(fn);
-    if inlist.Count>10 then begin                  {Datei durchsuchen}
+    if inlist.Count>minlines then begin            {Datei durchsuchen}
       if GetFMPos then
         exit;
       vstr:='2';
@@ -6900,7 +6919,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     w:=0;
     result:=false;
     inlist.LoadFromFile(fn);
-    if inlist.Count>10 then begin                  {Datei durchsuchen}
+    if inlist.Count>minlines then begin            {Datei durchsuchen}
       if GetFMPos then
         exit;
       try
@@ -6933,7 +6952,7 @@ var vlist, flist, inlist, splitlist: TStringList;
   begin
     result:=false;
     inlist.LoadFromFile(fn);
-    if inlist.Count>10 then begin                  {Remote Datei durchsuchen}
+    if inlist.Count>minlines then begin            {Remote Datei durchsuchen}
       for i:=2 to inlist.Count-1 do begin          {1. Zeile ignorieren}
         splitlist.DelimitedText:=inlist[i];
         if splitlist.Count>10 then begin           {S2 Gimbal pan mode=1433 suchen}
@@ -6952,7 +6971,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     p:=0;
     result:=false;
     inlist.LoadFromFile(fn);
-    if inlist.Count>10 then begin                  {Datei durchsuchen}
+    if inlist.Count>minlines then begin            {Datei durchsuchen}
       if GetFMPos then exit;
       splitlist.DelimitedText:=inlist[0];          {Spalte suchen}
       for k:=1 to splitlist.Count-1 do
@@ -8093,7 +8112,7 @@ var i, zhl: integer;
   procedure FindPicData;                           {Find time stamp in telemetry}
   var pos: integer;
   begin
-    if inlist.Count>10 then begin                  {Check telemetry file}
+    if inlist.Count>minlines then begin            {Check telemetry file}
       pos:=FindTP(inlist, picdat+(speTimeOffset.Value/24), 2);  {Time point like Q500}
       if pos>1 then begin                          {Found someting inside CSV file}
         gridEXIFPic.Cells[3, i+1]:=IntToStr(pos);  {ID for doing something}
@@ -8118,8 +8137,6 @@ begin
     gridEXIFPic.RowCount:=1;                       {Empty picture list}
     cgpCamera.Items.Clear;                         {Empty camera list}
     aImgInfo:=TImgInfo.Create;
-    tmax:=0;
-    tmin:=now;
     zhl:=0;
     try
       FindAllFiles(filelist, cbxPicFolder.Text, '*.jpg;*.jpeg', false);
@@ -8127,7 +8144,16 @@ begin
         StatusBar1.Panels[0].Text:=IntToStr(filelist.Count);
         gridEXIFPic.RowCount:=filelist.Count+1;    {Table to list JPG files}
         if FileExists(cbxTelemetry.Text) then
-          inlist.LoadFromFile(cbxTelemetry.Text);   {Load related telemetry}
+          inlist.LoadFromFile(cbxTelemetry.Text);  {Load related telemetry}
+        if inlist.Count>minlines then begin        {Show timing in telemetry}
+          tmin:=ZeitToDT(copy(inlist[minlines-1], 1, lzyu), defVT);
+          tmax:=ZeitToDT(copy(inlist[inlist.Count-1], 1, lzyu), defVT);
+          gridTimeArea.Cells[1, 2]:=FormatdateTime(vzf, tmin);
+          gridTimeArea.Cells[2, 2]:=FormatdateTime(vzf, tmax);
+        end;
+        tmax:=0;
+        tmin:=now;
+
         for i:=0 to filelist.Count-1 do begin
           picdat:=FileDateToDateTime(FileAge(filelist[i]));  {File date time}
 
@@ -8180,15 +8206,9 @@ begin
 
           gridEXIFPic.AutoSizeColumns;
         end;
-
+                                                   {Show time area for pictures}
         gridTimeArea.Cells[1, 1]:=FormatdateTime(vzf, tmin);
         gridTimeArea.Cells[2, 1]:=FormatdateTime(vzf, tmax);
-        if inlist.Count>10 then begin              {Show timing in telemetry}
-          tmin:=ZeitToDT(copy(inlist[1], 1, lzyu), 0);
-          tmax:=ZeitToDT(copy(inlist[inlist.Count-1], 1, lzyu), 0);
-          gridTimeArea.Cells[1, 2]:=FormatdateTime(vzf, tmin);
-          gridTimeArea.Cells[2, 2]:=FormatdateTime(vzf, tmax);
-        end;
 
         for i:=0 to cgpCamera.Items.Count-1 do
           cgpCamera.Checked[i]:=true;
@@ -8800,6 +8820,7 @@ end;
 procedure TForm1.FormShow(Sender: TObject);        {All to do after load session properties}
 var i, bl: integer;
 begin
+  ScanPicEnable;
   bl:=MAVmsg.Tag;
   if cbHighLight.Checked then                      {Switch on HighLighter}
     AppLog.Highlighter:=AppLogHighlighter;
@@ -10354,7 +10375,7 @@ begin
       StatusBar1.Panels[5].Text:=fn+nixda;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    if inlist.count>10 then begin
+    if inlist.count>minlines then begin
       try
         StaticText1.Caption:=vtypeToStr(brid);     {Typ anzeigen}
         if pos(plfAndr, inlist[2])>0 then
@@ -10374,7 +10395,7 @@ begin
         speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-10);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
-        if inlist.count>10 then begin
+        if inlist.count>minlines then begin
           StatusBar1.Panels[5].Text:=fn;
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         end else begin
@@ -11124,7 +11145,7 @@ begin
       StatusBar1.Panels[5].Text:=fn+nixda;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    if inlist.count>10 then begin
+    if inlist.count>minlines then begin
       KursorAus;                                   {Fadenkreuz aus bei neuem Flug}
       speDataPoint.MaxValue:=inlist.Count-9;
       speAnalyze.MaxValue:=inlist.Count-10;
@@ -11211,7 +11232,7 @@ begin
       StatusBar1.Panels[5].Text:=fn+nixda;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    if inlist.count>10 then begin
+    if inlist.count>minlines then begin
       KursorAus;                                   {Fadenkreuz aus bei neuem Flug}
       speDataPoint.MaxValue:=inlist.Count;
       speAnalyze.MaxValue:=inlist.Count-10;
@@ -11716,7 +11737,7 @@ begin
         StatusBar1.Panels[5].Text:=fn+nixda;
         AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       end;
-      if inlist.count>12 then
+      if inlist.count>minlines then
       try
         if lgcy then begin
           splitlist.DelimitedText:=inlist[0];      {Überschrift einlesen, f_mode ermitteln}
@@ -12010,7 +12031,7 @@ begin
         StatusBar1.Panels[5].Text:=fn+nixda;
         AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       end;
-      if inlist.count>10 then
+      if inlist.count>minlines then
       try
         if lgcy then begin
           splitlist.DelimitedText:=inlist[0];      {Überschrift einlesen, f_mode ermitteln}
@@ -15075,7 +15096,7 @@ begin
       StatusBar1.Panels[5].Text:=fn+tab1+rsEmpty;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    if inlist.count>10 then begin
+    if inlist.count>minlines then begin
       try
         splitlist.DelimitedText:=inlist[0];        {Überschrift einlesen}
         speDataPoint.MaxValue:=inlist.Count;
