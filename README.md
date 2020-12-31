@@ -39,6 +39,8 @@ Settings: Three tab sheets for commission settings of the application.
 
 AppLog: Listing of actions, messages and errors from the application. For sensor files from the Typhoon H Plus, H520 or Mantis Q, text messages (MAV link "statustext") and some other data from different messages will be listed too.
 
+Geotagging: Add position data to EXIF metadata of pictures taken during flight (also those from the ground).
+
 Hex dump: Dump an unknown file as hexadecimal for analysis. Result can be saved as text.
 
 ---------------------------------------
