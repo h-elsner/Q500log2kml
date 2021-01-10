@@ -27,12 +27,12 @@ object Form1: TForm1
     Height = 500
     Top = 96
     Width = 838
-    ActivePage = tabGeo
+    ActivePage = tabScan
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 6
+    TabIndex = 4
     TabOrder = 1
     OnChange = pcMainChange
     Options = [nboKeyboardTabSwitch]
@@ -359,8 +359,8 @@ object Form1: TForm1
     end
     object tabScan: TTabSheet
       Caption = 'Scan'
-      ClientHeight = 462
-      ClientWidth = 832
+      ClientHeight = 472
+      ClientWidth = 830
       ImageIndex = 9
       object GroupBox10: TGroupBox
         Left = 0
@@ -419,7 +419,7 @@ object Form1: TForm1
         Left = 8
         Height = 23
         Top = 14
-        Width = 407
+        Width = 405
         Anchors = [akTop, akLeft, akRight]
         ItemHeight = 15
         OnDblClick = cbxScanDirDblClick
@@ -427,7 +427,7 @@ object Form1: TForm1
         TabOrder = 1
       end
       object sbtnScanDir: TSpeedButton
-        Left = 414
+        Left = 412
         Height = 25
         Top = 13
         Width = 25
@@ -437,7 +437,7 @@ object Form1: TForm1
         OnClick = sbtnScanDirClick
       end
       object ProgressBarScan: TProgressBar
-        Left = 471
+        Left = 469
         Height = 23
         Top = 14
         Width = 349
@@ -547,9 +547,9 @@ object Form1: TForm1
       end
       object gridScanResult: TStringGrid
         Left = 376
-        Height = 417
+        Height = 427
         Top = 48
-        Width = 442
+        Width = 440
         Anchors = [akTop, akLeft, akRight, akBottom]
         Color = clDefault
         ColCount = 2
@@ -1579,7 +1579,7 @@ object Form1: TForm1
       object btnScanPic: TBitBtn
         Left = 8
         Height = 30
-        Top = 89
+        Top = 88
         Width = 107
         Caption = 'btnScanPic'
         Enabled = False

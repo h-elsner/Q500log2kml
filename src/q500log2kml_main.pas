@@ -1948,8 +1948,9 @@ begin
         result:=result+'Motor 4 off ';
 
       if (u and 64)<>1 then begin                  {Hexakopter}
-   if u<>255 then AppLog.Lines.Add(IntToStr(u));
-       if (u and 16)=0 then
+        if u<>255 then
+          AppLog.Lines.Add(IntToStr(u));
+        if (u and 16)=0 then
           result:=result+'Motor 5 off ';
         if (u and 32)=0 then
           result:=result+'Motor 6 off';
@@ -2257,8 +2258,8 @@ function CoordFrameToStr(f: integer): string;      {for POSITION_TARGET_GLOBAL_I
 begin
   result:='';
   case f of
-    5: result:='GLOBAL';
-    6: result:='GLOBAL_RELATIVE_ALT';
+    5:  result:='GLOBAL';
+    6:  result:='GLOBAL_RELATIVE_ALT';
     11: result:='GLOBAL_TERRAIN_ALT';
   end;
 end;
@@ -3045,12 +3046,12 @@ end;
 function ResultDN(const s, ex: string): string;    {erzeuge Ergebnis-Dateinamen}
 begin
   case v_type of
-     brID: result:=ExtractFileDir(s)+PathDelim+    {im gleichen Verzeichnis}
+    brID: result:=ExtractFileDir(s)+PathDelim+     {im gleichen Verzeichnis}
                   '#'+GetNr(ExtractFileName(s))+ex;
 
   else                                             {Yuneec legacy}
-     result:=ExtractFileDir(s)+
-             GetNr(ExtractFileName(s))+ex;         {im übergeordnedten Dir}
+    result:=ExtractFileDir(s)+
+            GetNr(ExtractFileName(s))+ex;          {im übergeordnedten Dir}
   end;
 end;
 
@@ -3065,7 +3066,8 @@ begin
   else begin
     try
       w:=StrToFloat(s);
-      if w=0 then result:=false;
+      if w=0 then
+        result:=false;
     except
     end;
   end;
@@ -3112,8 +3114,8 @@ function H501TransformW(const inx: integer; const w: double): double;
 begin
   result:=w;                                       {default: in=out}
   case inx of
-    4: result:=H501alt(w);
-    5: result:=H501dist(w);
+    4:  result:=H501alt(w);
+    5:  result:=H501dist(w);
     19: result:=H501velo(w);
   end;
 end;
@@ -7208,9 +7210,11 @@ var vlist, flist, outlist: TStringList;
     csvlist[14]:=rsAvgSpeed;
     csvlist[15]:=rsRest;
     prtext:=csvlist[0];
-    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+csvsep+csvlist[y];
+    for y:=low(csvlist)+1 to high(csvlist) do
+      prtext:=prtext+csvsep+csvlist[y];
     outlist.Add(prtext);
-    for y:=low(csvlist) to high(csvlist) do csvlist[y]:=''; {Array löschen}
+    for y:=low(csvlist) to high(csvlist) do
+      csvlist[y]:=''; {Array löschen}
     for x:=0 to vlist.count-1 do begin             {Textausgabe}
       flist.DelimitedText:=vlist[x];
       if flist[0]=rsFlightNr then begin            {neuer Datensatz}
@@ -7224,24 +7228,40 @@ var vlist, flist, outlist: TStringList;
         end;
         csvlist[0]:=flist[1];
       end;
-      if flist[0]=rsVType then csvlist[1]:=flist[1];
-      if flist[0]='' then csvlist[2]:=flist[1];
-      if flist[0]=rsGridCell1 then csvlist[3]:=flist[1];
-      if flist[0]=rsGridCell2 then csvlist[4]:=flist[1];
-      if flist[0]=rsGridCell3 then csvlist[5]:=flist[1];
-      if flist[0]=rsDauer then csvlist[6]:=flist[1];
-      if flist[0]=rsStartpkt then csvlist[7]:=flist[1];
-      if flist[0]=rsAdresse then csvlist[8]:=flist[1];
-      if flist[0]=rsMode then csvlist[9]:=flist[1];
-      if flist[0]=rsGridCell5 then csvlist[10]:=flist[1];
-      if flist[0]=rsGridCell6 then csvlist[11]:=flist[1];
-      if flist[0]=rsGridCell7 then csvlist[12]:=flist[1];
-      if flist[0]=rsGridCell8 then csvlist[13]:=flist[1];
-      if flist[0]=rsAvgSpeed then csvlist[14]:=flist[1];
-      if flist[0]=rsRest then csvlist[15]:=flist[1];
+      if flist[0]=rsVType then
+        csvlist[1]:=flist[1];
+      if flist[0]='' then
+        csvlist[2]:=flist[1];
+      if flist[0]=rsGridCell1 then
+        csvlist[3]:=flist[1];
+      if flist[0]=rsGridCell2 then
+        csvlist[4]:=flist[1];
+      if flist[0]=rsGridCell3 then
+        csvlist[5]:=flist[1];
+      if flist[0]=rsDauer then
+        csvlist[6]:=flist[1];
+      if flist[0]=rsStartpkt then
+        csvlist[7]:=flist[1];
+      if flist[0]=rsAdresse then
+        csvlist[8]:=flist[1];
+      if flist[0]=rsMode then
+        csvlist[9]:=flist[1];
+      if flist[0]=rsGridCell5 then
+        csvlist[10]:=flist[1];
+      if flist[0]=rsGridCell6 then
+        csvlist[11]:=flist[1];
+      if flist[0]=rsGridCell7 then
+        csvlist[12]:=flist[1];
+      if flist[0]=rsGridCell8 then
+        csvlist[13]:=flist[1];
+      if flist[0]=rsAvgSpeed then
+        csvlist[14]:=flist[1];
+      if flist[0]=rsRest then
+        csvlist[15]:=flist[1];
     end;
     prtext:=csvlist[0];                            {letzten DS ausgeben}
-    for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+csvsep+csvlist[y];
+    for y:=low(csvlist)+1 to high(csvlist) do
+      prtext:=prtext+csvsep+csvlist[y];
     outlist.Add(prtext);
     outlist.Add('');
     if gfd=0 then                                  {ohne Tage}
@@ -8159,7 +8179,15 @@ begin
 
           gridEXIFPic.BeginUpdate;
             gridEXIFPic.Cells[0, i+1]:=ExtractFileName(filelist[i]);
-            aImgInfo.LoadFromFile(filelist[i]);
+            try
+              aImgInfo.LoadFromFile(filelist[i]);
+            except                                 {Error message EXIF data structure}
+              on e: Exception do begin
+                Statusbar1.Panels[5].Text:=e.Message;
+                AppLog.Lines.Add(ExtractFileName(filelist[i])+suff+
+                                 Statusbar1.Panels[5].Text);
+              end;
+            end;
             if aImgInfo.HasEXIF then begin         {Read data from EXIF, check what is in}
               try
                 picdat:=GetEXIFtime(aImgInfo);
