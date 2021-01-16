@@ -215,6 +215,7 @@ History:
 2020-11-13       MAV link messages reviewed. Missing messages added.
 2020-12-09  V4.7 GeoTagging for pictures taken at same time as the drone was flying.
 2021-01-12       Time marker in KML tracks
+2021-01-16       Query for latest version, GitHub link
 
 *)
 
