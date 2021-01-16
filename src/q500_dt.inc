@@ -139,7 +139,6 @@ resourcestring                                     {deutsch}
   hntCheckBox3='Alle Daten nach Dashware exportieren, nicht nur Flugdaten';
   rsK1='K1 (Kamera drehen)';
   rsK2='K2 (Kamera neigen)';
-  rsFMode='Flight Mode';
   rsFModeSw='Flight Mode Schalter';
   capTopDia='Oberes Histogramm';
   capMiddleDia='Mittleres Histogramm';
@@ -323,6 +322,10 @@ resourcestring                                     {deutsch}
   hntStkProz='Umrechnung der Remote-Werte zu Prozent und umgekehrt';
   capStk='Remote-Werte';
   capProz='Prozent';
+  rsLatestVersion='Du hast bereits die neueste Version.';
+  rsDownloading='Download ZIP Datei...';
+  errDownloading='Repository nicht vorhanden';
+  capGitHub='GitHub Repository';
 
 {GeoTagging}
   hdrEXIFPic='Dateiname,Kamera,Datum/Zeit,Treffer bei,Breitengrad,Längengrad,Relative Höhe,EXIF Daten';

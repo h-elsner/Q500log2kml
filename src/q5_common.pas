@@ -10,7 +10,14 @@ uses
 const
 {public constants}
   AppName=   'q500log2kml';
-  AppVersion='V4.7 12/2020';
+  AppVersion='V4.7 01/2021';
+
+  homepage='http://192.168.1.15';
+//  homepage='http://h-elsner.mooo.com';             {My Homepage}
+  githublink='https://github.com/h-elsner/Q500log2kml';
+
+  VersValue='4.7.1';
+  VersFile='/v';
 
   defaultcol=5;                                    {muss kleiner als die Mindestmenge der Spalten sein}
   defVT=5;                                         {Default vehicle YTH, need 5 for Thunderbird}
@@ -30,6 +37,8 @@ const
   tab4='    ';
   tab6='      ';
   sckey='&';
+  suff=': ';                                       {Suffix zur Datenausgabe}
+  emcyID='EMERGENCY';
 
   csvsep=';';
   spk=4;                                           {Korrekturwert Spaltenbreite}
@@ -41,7 +50,8 @@ const
   dzfl='0.0';                                      {Formatierung für FormatFloat}
   ctfl='0.00';
   mlfl='0.000';
-  coordfrm='0.000000';
+  coordfl6='0.000000';
+  coordfl8='0.00000000';
 
   fkmh=3.6;                                        {m/s --> km/h}
   fmph=2.2369362920544;                            {m/s --> mph}
@@ -90,7 +100,7 @@ var timestr: string;
   function GetFNr(const s: string): string;        {filter a float from a string}
   function GetFVal(const s: string): double;       {get a float from a string}
   function tabs(const prefix, suffix: string; const t: integer): string;  {Tabulator + suff}
-  function DeltaKoord(lat1, lon1, lat2, lon2: double): double;   {Entfernung in m}
+  function DeltaKoord(const lat1, lon1, lat2, lon2: double): double;      {Entfernung in m}
 
   procedure CellColorSetting(aGrid: TStringGrid; Farbe: TColor); {Zellen einfärben}
   procedure FMcolor(aGrid: TStringGrid; fm, vt: integer);  {Flight mode coloe r settings}
@@ -233,7 +243,7 @@ Test-3566 : 0.1 von 48.86739 9.366313 48.86739  9.366315
 Test-3567 : Nan von 48.86739 9.366315 48.86739  9.366315
 Test-3568 : 0.5 von 48.86739 9.366315 48.867386 9.366317
 }
-function DeltaKoord(lat1, lon1, lat2, lon2: double): double;
+function DeltaKoord(const lat1, lon1, lat2, lon2: double): double;
 begin
   result:=0;
   try

@@ -322,6 +322,10 @@ resourcestring                                     {english}
   hntStkProz='Convert Remote values to percent and vice-versa';
   capStk='Remote values';
   capProz='Percent';
+  rsLatestVersion='You have already the latest version.';
+  rsDownloading='Download ZIP file...';
+  errDownloading='Repository not available';
+  capGitHub='GitHub repository';
 
 {GeoTagging}
   hdrEXIFPic='File name,Camera,Date/time,Match at,Latitude,Longitude,Altitude relative,EXIF data';

@@ -89,6 +89,7 @@ History:
 2016-02-05  V1.7 Update for Blade 350QX
 2016-02-10  V1.8 Open Street Map added
 2016-02-15  V1.9 Detailed tables and histograms for values in columns added
+
 2016-03-02  V2.0 Update Flight Modes, Vehicle Types, Archive suffix changeable
 2016-03-24  V2.1 Histogram distance at Lon/Lat,
                  IMU_status explanations updated (Pressure init supposed)
@@ -105,6 +106,7 @@ History:
                  Quick analysis and cut files added.
 2017-05-01  V2.9 Main Menu added, source code cleaned, Directory selection
                  with ComboBox that holds last used directories.
+
 2017-05-18  V3.0 Control for CGO3 as test system.
 2017-06-15  V3.1 Overview improved, flight record added. Track of RemoteGPS
                  coordinates in KML/KMZ added (black line).
@@ -155,6 +157,7 @@ History:
 2018-10-28	 Show sensor files faster.
 2018-10-29       Reverse geocoding removed, Bugfix: Mantis Q identification,
                  Check only Heartbeat from AUTOPILOT1
+
 2018-11-03  V4.0 H520 *.tlog files support added similar to Mantis Q.
                  Batch conversion, button 'Convert' to KML/KMZ or GPX files
                  works now also for Mantis Q and H520.
@@ -211,11 +214,7 @@ History:
                  Delete a FlightLog function added.
 2020-11-13       MAV link messages reviewed. Missing messages added.
 2020-12-09  V4.7 GeoTagging for pictures taken at same time as the drone was flying.
-
-
-ToDo: geotagging
-https://github.com/afriess/dexif/
-
+2021-01-12       Time marker in KML tracks
 
 *)
 
@@ -229,11 +228,11 @@ uses
   Classes, SysUtils, FileUtil, TAGraph, TAIntervalSources, TASeries, LCLType,
   TATransformations, Forms, Controls, Graphics, Dialogs, ExtCtrls, ComCtrls,
   Buttons, EditBtn, XMLPropStorage, Grids, Menus, lclintf, StdCtrls, Spin,
-  Zipper, math, TAChartUtils, TAFuncSeries, Clipbrd, anzwerte,
-  TACustomSeries, TATools, indGnouMeter, AdvLed, Sensors, graphutil,
-  fphttpclient, lazUTF8, SynEdit, SynHighlighterMulti, SynHighlighterAny,
-  strutils, dateutils, lazsysutils, q5_common, Types, fpeMetaData, fpeTags,
-  fpeExifData;
+  Zipper, math, TAChartUtils, TAFuncSeries, Clipbrd, anzwerte, TACustomSeries,
+  TATools, indGnouMeter, AdvLed, Sensors, graphutil, fphttpclient, lazUTF8,
+  SynEdit, SynHighlighterMulti, SynHighlighterAny, strutils, dateutils,
+  lazsysutils, q5_common, Types, fpeMetaData, fpeTags,
+  fpeExifData, mav_defs, Iphttpbroker, IpHtml;
 
 type
   TarrFW = array[0..7] of string;
@@ -250,7 +249,7 @@ type
     gimbalPitch: double;
   end;
 
-  {TForm1: Hauptprogramm}
+  {TForm1: Main program}
 
   TForm1 = class(TForm)
     AdvLed1: TAdvLed;
@@ -259,7 +258,7 @@ type
     btnClose: TBitBtn;
     btnDefaultProfile: TBitBtn;
     btnScreenshot: TBitBtn;
-    btnCut: TBitBtn;                               {Ausschneiden}
+    btnCut: TBitBtn;                               {Cut something from flight log}
     btnCGO3Status: TBitBtn;
     btnSpecial: TButton;
     btnVideoStart: TBitBtn;
@@ -325,14 +324,17 @@ type
     cbxPicFolder: TComboBox;
     cbxTelemetry: TComboBox;
     cgpCamera: TCheckGroup;
+    cbMarker: TCheckBox;
     edCGOURL: TEdit;
     gbBatt: TGroupBox;
+    IpHttpDataProvider1: TIpHttpDataProvider;
     Label11: TLabel;
     Label17: TLabel;
     gbStkProz: TGroupBox;
     Image4: TImage;
     Label10: TLabel;
     Label19: TLabel;
+    lblGitHub: TLabel;
     lblTelemetry: TLabel;
     lblTimeOffset: TLabel;
     lblPicFolder: TLabel;
@@ -343,7 +345,7 @@ type
     ColorButton2: TColorButton;
     ColorButton3: TColorButton;
     ColorButton4: TColorButton;
-    cbxText: TComboBox;                            {Kopter ID - Hint}
+    cbxText: TComboBox;                            {Drone ID - Hint}
     cbxProfiles: TComboBox;                        {Schnellanalyse Profiles}
     cbxLogDir: TComboBox;                          {FlightLog Directory}
     cbxCGO3Video: TComboBox;                       {CGO3 Video}
@@ -359,6 +361,7 @@ type
     DateTimeIntervalChartSource4: TDateTimeIntervalChartSource;
     edSendCGO3: TEdit;
     edReceiveCGO3: TEdit;
+    mnDownload: TMenuItem;
     N1: TMenuItem;
     mnGeoGMap: TMenuItem;
     mnGeoOSM: TMenuItem;
@@ -412,7 +415,7 @@ type
     TabImages: TImageList;
     indGnouMeterSDused: TindGnouMeter;
     Label1: TLabel;
-    Label12: TLabel;
+    lblDistWP: TLabel;
     Label13: TLabel;
     Label14: TLabel;
     Label15: TLabel;
@@ -426,7 +429,7 @@ type
     Label24: TLabel;
     Label25: TLabel;
     Label3: TLabel;
-    Label4: TLabel;
+    lblSaturation: TLabel;
     Label5: TLabel;
     Label6: TLabel;
     Label7: TLabel;
@@ -545,7 +548,7 @@ type
     procedure btnDefaultProfileClick(Sender: TObject);
     procedure btnScanPicClick(Sender: TObject);
     procedure btnScreenshotClick(Sender: TObject);
-    procedure btnCutClick(Sender: TObject);        {Ausschneiden}
+    procedure btnCutClick(Sender: TObject);        {Cut flight log}
     procedure btnCGO3StatusClick(Sender: TObject);
     procedure btnVideoStartClick(Sender: TObject);
     procedure btnVideoStopClick(Sender: TObject);
@@ -567,6 +570,7 @@ type
     procedure btnSpecialClick(Sender: TObject);
     procedure btnWritePicClick(Sender: TObject);
     procedure cbHighLightChange(Sender: TObject);
+    procedure cbMarkerChange(Sender: TObject);
     procedure cbThunderChange(Sender: TObject);
     procedure cbxPicFolderChange(Sender: TObject);
     procedure cbxPicFolderDblClick(Sender: TObject);
@@ -611,6 +615,10 @@ type
     procedure gridEXIFPicDblClick(Sender: TObject);
     procedure gridEXIFPicPrepareCanvas(sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
+    procedure lblGitHubClick(Sender: TObject);
+    procedure lblGitHubMouseEnter(Sender: TObject);
+    procedure lblGitHubMouseLeave(Sender: TObject);
+    procedure mnDownloadClick(Sender: TObject);
     procedure mnFlDelClick(Sender: TObject);
     procedure mnGeoGMapClick(Sender: TObject);
     procedure mnGeoOSMClick(Sender: TObject);
@@ -822,7 +830,6 @@ type
     function vTypeToStr(const v: integer): string; {vehicle type ausgeben}
     function ZeitToDT(const s: string; const vt: integer): TDateTime;
     function FindTP(wlist: TStringList; tp: TDateTime; const vt: integer): integer;
-    function fmodeToStr(const f: integer): string; {Flight Mode abh. vom Typ ausgeben}
     function PCGstatusToStr(const u: uint8): string; {pressure_compass_status}
     function MotStatusToStr(const u: uint8): string; {Motor_status}
     function SwitchToStr(const p: integer; const s: string): string;
@@ -855,6 +862,8 @@ type
     procedure HexHeader(const fn: string);         {Write header for file and take block size}
     procedure GeoShowPic;                          {Menu Show picture}
     procedure ScanPicEnable;                       {Enable picture scanning for geotagging}
+    procedure ScanPic;                             {Geotagging: Scan picture folder}
+    procedure CheckVersion;                        {Call version file and check}
 
 {Special analysis with (hidden) extra button "Special" on Settings > Common settings}
 //    procedure TLOGanalysis(fn: string);          {Special analysis}
@@ -864,11 +873,10 @@ type
 {$I language.inc}
 
 const
-  homepage='http://h-elsner.mooo.com';             {meine Homepage}
   hpmydat='/pdf/';
   meinname='Helmut Elsner';
-  email   ='helmut.elsner@live.com';               {meine e-mail Adresse}
-  lazURL  ='https://www.lazarus-ide.org/';         {Werbung}
+  email   ='helmut.elsner@live.com';               {My e-mail address}
+  lazURL  ='https://www.lazarus-ide.org/';         {Advertisement}
   lazForum='https://www.lazarusforum.de/app.php/portal';
   mndir='FlightLog';
   mndirp='Flight2Log';                             {YTH Plus}
@@ -898,7 +906,6 @@ const
   plfAndr='ndroid';                                {Breeze Platform, all other is iOS}
   idtrue='true';
   sep=',';                                         {Datenseperator im CSV file}
-  suff=': ';                                       {Suffix zur Datenausgabe}
   kma=', ';                                        {Kommaausgabe}
   bind=' - ';                                      {von/bis ID}
   anzsp=20;                                        {Mindestanzahl Spalten}
@@ -913,8 +920,7 @@ const
   lcol='gps_accH';                                 {letzte Spalte in Überschrift, wegen ST16-FW Fehler}
   hsw=2;                                           {Höhen-Schwellwert für Analyse in m}
   Secpd=86400;                                     {Sekunden per Tag}
-  tsdelta1=6/864000;                               {Schwellwert für Zeitstempel in
-                                                    Zehntelsekunden, default 6=600ms}
+  tsdelta1=6/864000;                               {Schwellwert für Zeitstempel in 1/10s, default 6=600ms}
   tsdelta2=2/86400;                                {> 2sec Telemtrie verloren}
   tsdelta3=5/86400;                                {5 sec für Breeze}
   minflt=10/86400;                                 {Mindestflugzeit beim YTH Plus 10s}
@@ -925,8 +931,6 @@ const
   lipomin=3.3;                                     {Minimum LiPo voltage}
   lipomax=4.2;
   minlines=10;                                     {Minimum number if lines that makes sense to deal with}
-
-  emcyID='EMERGENCY';
 
 {http://docwiki.embarcadero.com/RADStudio/Seattle/de/Farben_in_der_VCL}
   osmURL='https://www.openstreetmap.org/';         {als Karte}
@@ -940,18 +944,12 @@ const
   infoicon= 'https://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_yellow.png';
   aircrafticon='https://earth.google.com/images/kml-icons/track-directional/track-0.png';
   fotoicon='https://maps.google.com/mapfiles/kml/pal4/icon38.png';
+//  wpicon='http://maps.google.com/mapfiles/kml/pal4/icon49.png';
+  wpicon='https://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_shadow.png';
+
 {Mapicons: https://sites.google.com/site/gmapicons/home/
            https://sites.google.com/site/gmapsdevelopment/
-           http://kml4earth.appspot.com/icons.html
- Alternativen, aber oben gefällt mir besser}
-//  starticon='https://maps.google.com/mapfiles/north.png';
-//  stopicon='https://maps.google.com/mapfiles/south.png';
-//  stopicon='https://maps.google.com/mapfiles/dir_60.png';     {blau}
-//  aircrafticon='https://maps.google.com/mapfiles/kml/shapes/airports.png';
-
-  MAVurl='https://github.com/mavlink/c_library_v2/tree/master/common';
-{Extract data from following messages}
-  MAVmsgX=[0, 1, 22, 24, 30, 32, 33, 65, 74, 87, 105, 141, 147, 245, 253];
+           http://kml4earth.appspot.com/icons.html  }
 
   idxpage='INDEX_PAGE';
   getshpn='GET_SHARPNESS';
@@ -1221,6 +1219,7 @@ begin
   mnMainHelp.Caption:=capHelp;
   mnManual.Caption:=capLabel7;
   mnInfo.Caption:=capInfo;
+  mnDownload.Caption:=capLabel8;
   mnMainDel.Caption:=rsResetCutBE;
   mnMainStart.Caption:=rsStartTPunkt;
   mnMainStop.Caption:=rsEndTPunkt;
@@ -1292,14 +1291,13 @@ begin
   speLinePath.Hint:=hntLabel1;
   Label2.Caption:=capLabel2;
   Label3.Caption:=capLabel3;
-  Label4.Caption:=capLabel4;
-  Label4.Hint:=hntTrackBar1;
+  lblSaturation.Hint:=hntTrackBar1;
   Label5.Caption:=capLabel5;
   Label6.Caption:=capLabel6;
   Label7.Caption:=capLabel7;
   Label8.Caption:=capLabel8;
-  Label12.Caption:=capLabel12;
-  Label12.Hint:=hntTrackBar2;
+  lblDistWP.Caption:=capLabel12;
+  lblDistWP.Hint:=hntTrackBar2;
   Label13.Caption:=capLabel13;
   Label13.Hint:=capLabel13;
   Label14.Caption:=capLabel14;
@@ -1491,6 +1489,8 @@ begin
   gbStkProz.Hint:=hntStkProz;
   Label11.Caption:=capStk;
   Label17.Caption:=capProz;
+  lblGitHub.Caption:=capGitHub;
+  lblGitHub.Hint:=githublink;
   speStk.MaxValue:=stkmax;
   speStk.Value:=stkntrl;
   speProz.Value:=StkToProz(stkntrl);
@@ -1660,7 +1660,7 @@ end;
 
 function ChToStr(const s: string; const p: integer): string; {Channel CHxx umbenennen}
 begin
-  result:=s;                                        {Nehmen, wie es kommt - CHxx}
+  result:=s;                                       {Nehmen, wie es kommt - CHxx}
   {wenn S leer ist, dann Channel wie in Channel settings in ST16:
    Chxx, xx beginnend mit 1 statt 0, wie im FlightLog - Remote}
   if s='' then
@@ -1698,101 +1698,104 @@ begin
   end;
 end;
 
-function TForm1.fmodeToStr(const f: integer): string; {Flight Mode abh. vom Typ ausgeben}
-
-  procedure Mode350;                               {Blade 350 QX}
-  begin
-    case f of
-       3: result:=rsWaitRC;
-       4: result:=rsInitializing;
-       5: result:=rsMotorStarting;
-       8: result:=rsEmergency;
-       9: result:=fmRTH+tab1+rsLanding;
-      10: result:=fmAgility+GPSoff;
-      11: result:=fmStability;
-      12: result:=fmSmart;
-      13: result:=fmAgility;
-      14: result:=fmRTH+tab1+rsComing;
-      17: result:=rsMagCali+rsCali;
-      23: result:=rsBinding;
-      25: result:='AP mode';
-    end;
-  end;
-
-  procedure ModeYTHP;                              {neu YTH Plus}
-  begin
-    case f of
-      4: result:=fmManual;          {C0409R.drawable.ic_drone_flying_mode_m}
-      5: result:=fmAngle;           {C0409R.drawable.ic_drone_flying_mode_a}
-      6: result:=fmSmart;           {C0409R.drawable.ic_drone_flying_mode_smart}
-      7: result:=fmSportMode;       {C0409R.drawable.ic_drone_flying_mode_sport}
-      8: result:='Flight mode 8';
-     10: result:='Flight mode 10';                 {IPS mode ?, no GPS ?}
-     12: result:=fmRTH+'12';
-     13: result:=fmRTH+'13';
-     17: result:='GPS lost';                       {Really ?}
-    end;
-  end;
-
-  procedure ModeLegacy;                            {Q500, YTH and all other legacy}
-  begin
-    case f of
-       0: result:=fmStability;
-       1: result:='Blue flashing'+GPSoff;
-       2: result:='Blue'+GPSlost;
-       3: result:=fmAngle+' (Purple solid)';
-       4: result:=fmAngle+' (Purple flashing)'+GPSoff;
-       5: result:=fmAngle+' (Purple solid)'+GPSlost;
-       6: result:=fmSmart;
-       7: result:=fmSmart+GPSlost;
-       8: result:=rsMotorStarting;
-       9: result:='Temperature'+rsCali;
-      10: result:='Pressure'+rsCali;
-      11: result:='Accelerometer bias'+rsCali;
-      12: result:=rsEmergency;
-      13: result:=fmRTH+tab1+rsComing;
-      14: result:=fmRTH+tab1+rsLanding;
-      15: result:=rsBinding;
-      16: result:=rsInitializing;                  {Ready to start}
-      17: result:=rsWaitRC;
-      18: result:=rsMagCali+rsCali;
-      19: result:=rsUnknown;
-      20: result:=fmAgility;                       {Rate}
-      21: result:=fmSmart+' - Follow me';
-      22: result:=fmSmart+' - Follow me'+GPSlost;
-      23: result:=fmSmart+' - Camera tracking';
-      24: result:='Camera tracking'+GPSlost;
-      26: result:='Task Curve Cable Cam';
-      27: result:='Task Journey';
-      28: result:='Task Point of Interest';
-      29: result:='Task Orbit';
-      32: result:='IPS';                           {FMODE_ANGLE_MODE_IPS_ONLY:I = 0x20}
-      33: result:='Waypoints';
-    end;
-  end;
-
-  procedure ModeThB;                               {Thunderbird}
-  begin
-    case f of                                      {Overwrite for Thunderbird}
-      0: result:=fmStabilized;
-      1: result:=fmAltitude+' or '+fmStabilized;   {??}
-      3: result:=fmPosition;
-      8: result:='GPS Aquiring';
-      13: result:=fmRTH;
-      16: result:='Ready';                         {Ready to start}
-      20: result:=fmRattitude;
-      33: result:=fmMission;
-    end;
-  end;
-
+function Mode350(const f: integer): string;        {Blade 350 QX}
 begin
   result:='';
+  case f of
+     3: result:=rsWaitRC;
+     4: result:=rsInitializing;
+     5: result:=rsMotorStarting;
+     8: result:=rsEmergency;
+     9: result:=fmRTH+tab1+rsLanding;
+    10: result:=fmAgility+GPSoff;
+    11: result:=fmStability;
+    12: result:=fmSmart;
+    13: result:=fmAgility;
+    14: result:=fmRTH+tab1+rsComing;
+    17: result:=rsMagCali+rsCali;
+    23: result:=rsBinding;
+    25: result:='AP mode';
+  end;
+end;
+
+function ModeYTHP(const f: integer): string;       {neu YTH Plus}
+begin
+  result:='';
+  case f of
+    4: result:=fmManual;                           {ic_drone_flying_mode_m}
+    5: result:=fmAngle;                            {ic_drone_flying_mode_a}
+    6: result:=fmSmart;                            {ic_drone_flying_mode_smart}
+    7: result:=fmSportMode;                        {ic_drone_flying_mode_sport}
+    8: result:='Flight mode 8';
+   10: result:='Flight mode 10';                   {IPS mode ?, no GPS ?}
+   12: result:=fmRTH+'12';
+   13: result:=fmRTH+'13';
+   17: result:='GPS lost';                         {Really ?}
+  end;
+end;
+
+function ModeLegacy(const f: integer): string;     {Q500, YTH and all other legacy}
+begin
+  result:='';
+  case f of
+     0: result:=fmStability;
+     1: result:='Blue flashing'+GPSoff;
+     2: result:='Blue'+GPSlost;
+     3: result:=fmAngle+' (Purple solid)';
+     4: result:=fmAngle+' (Purple flashing)'+GPSoff;
+     5: result:=fmAngle+' (Purple solid)'+GPSlost;
+     6: result:=fmSmart;
+     7: result:=fmSmart+GPSlost;
+     8: result:=rsMotorStarting;
+     9: result:='Temperature'+rsCali;
+    10: result:='Pressure'+rsCali;
+    11: result:='Accelerometer bias'+rsCali;
+    12: result:=rsEmergency;
+    13: result:=fmRTH+tab1+rsComing;
+    14: result:=fmRTH+tab1+rsLanding;
+    15: result:=rsBinding;
+    16: result:=rsInitializing;                    {Ready to start}
+    17: result:=rsWaitRC;
+    18: result:=rsMagCali+rsCali;
+    19: result:=rsUnknown;
+    20: result:=fmAgility;                         {Rate}
+    21: result:=fmSmart+' - Follow me';
+    22: result:=fmSmart+' - Follow me'+GPSlost;
+    23: result:=fmSmart+' - Camera tracking';
+    24: result:='Camera tracking'+GPSlost;
+    26: result:='Task Curve Cable Cam';
+    27: result:='Task Journey';
+    28: result:='Task Point of Interest';
+    29: result:='Task Orbit';
+    32: result:='IPS';                             {FMODE_ANGLE_MODE_IPS_ONLY:I = 0x20}
+    33: result:='Waypoints';
+  end;
+end;
+
+function ModeThB(const f: integer): string;        {Thunderbird}
+begin
+  result:='';
+  case f of                                        {Overwrite for Thunderbird}
+    0: result:=fmStabilized;
+    1: result:=fmAltitude+' or '+fmStabilized;     {??}
+    3: result:=fmPosition;
+    8: result:='GPS Aquiring';
+    13: result:=fmRTH;
+    16: result:='Ready';                           {Ready to start}
+    20: result:=fmRattitude;
+    33: result:=fmMission;
+  end;
+end;
+
+
+function fmodeToStr(const fm: integer): string;    {Flight Mode abh. vom Typ ausgeben}
+begin
   case v_type of
-    3: Mode350;
-    YTHPid: ModeYTHP;
-    ThBid: ModeThB;
+    3:      result:=Mode350(fm);
+    YTHPid: result:=ModeYTHP(fm);
+    ThBid:  result:=ModeThB(fm);
   else
-    ModeLegacy;
+    result:=ModeLegacy(fm);
   end;
 end;
 
@@ -1910,8 +1913,8 @@ begin
     81: result:='Baro+GPS+Sonar';
     85: result:='Baro+Compass+GPS+Sonar';
     117: result:='Baro+Compass+GPS+Sonar+RealSense';
-    245: result:=rsAllSet;  {YTH + RS -- bit 7 unbekannt, IPS?}
-    else begin              {fehlende Bits interpretieren}
+    245: result:=rsAllSet;                         {YTH + RS -- bit 7 unbekannt, IPS?}
+    else begin                                     {fehlende Bits interpretieren}
       result:='';
       if (u and 1)=0 then
         result:=result+'Baro fail ';
@@ -1984,454 +1987,17 @@ begin
     if (e and 4) >0 then
       result:=result+'Motor Failsafe Mode ';
     if (e and 8) >0 then
-      result:=result+'Complete Motor ESC Failure ';   {Ultrasonic error warning?}
+      result:=result+'Complete Motor ESC Failure ';  {Ultrasonic error warning?}
     if (e and 16)>0 then
-      result:=result+'Temperature Warning ';          {temp high}
+      result:=result+'Temperature Warning ';       {temp high}
     if (e and 32)>0 then
       result:=result+'Compass Calibration Warning ';
     if (e and 64)>0 then
-      result:=result+'Fly-away Checker Warning ';     {temp low}
+      result:=result+'Fly-away Checker Warning ';  {temp low}
     if (e and 128)>0 then
       result:=result+'Airport Warning (NFZ) ';
   end else
     result:=rsAllOK;
-end;
-
-{Message Struktur:
- https://github.com/mavlink/c_library_v2/tree/master/common
-      inconsistent !
- https://github.com/YUNEEC/MavlinkLib/blob/master/message_definitions/common.xml
- https://github.com/YUNEEC/MavlinkLib}
-
-function MsgIDtoStr(id: integer): string;
-begin
-  result:=rsUnknown+' MAV_CMD'+' $'+IntToHex(id, 2)+
-          ' ('+IntToStr(id)+')';                   {default}
-  case id of
-      0:  result:='heartbeat';                     {Supported Msg Länge 9}
-      1:  result:='sys_status';                    {Supported Msg Länge 1F}
-      2:  result:='system_time';                   {Länge 0B}
-      4:  result:='ping';
-      5:  result:='change_operator_control';
-      6:  result:='change_operator_control_ack';
-      7:  result:='auth_key';
-      8:  result:='link_node_status';
-     11:  result:='set_mode';
-     19:  result:='param_ack_transaction';
-     20:  result:='param_request_read';
-     21:  result:='param_request_list';
-     22:  result:='param_value';
-     23:  result:='param_set';
-     24:  result:='gps_raw_int';                   {Supported Msg Länge 31/32}
-     25:  result:='gps_status';                    {Länge 1}
-     26:  result:='scaled_imu';
-    $1B:  result:='raw_imu';
-    $1C:  result:='raw_pressure';
-    $1D:  result:='scaled_pressure';
-    $1E:  result:='attitude';                      {Länge 1C}
-    $1F:  result:='attitude_quaternion';           {Supported Msg Länge 20}
-    $20:  result:='local_position_ned';            {Länge 1C}
-    $21:  result:='global_position_int';           {Supported Msg Länge 1C}
-    $22:  result:='rc_channels_scaled';
-    $23:  result:='rc_channels_raw';
-    $24:  result:='servo_output_raw';              {Länge 10 oder 15}
-    $25:  result:='mission_request_partial_list';
-    $26:  result:='mission_write_partial_list';
-    $27:  result:='mission_item';
-    $28:  result:='mission_request';
-    $29:  result:='mission_set_current';
-    $2A:  result:='mission_current';
-     43:  result:='mission_request_list';
-    $2C:  result:='mission_count';                 {Länge 3 oder 5}
-    $2D:  result:='mission_clear_all';
-    $2E:  result:='mission_item_reached';
-    $2F:  result:='mission_ack';
-    $30:  result:='set_gps_global_origin';
-    $31:  result:='gps_global_origin';
-    $32:  result:='param_map_rc';
-     51:  result:='mission_request_int';
-     52:  result:='mission_changed';
-
-     54:  result:='safety_set_allowed_area';
-     55:  result:='safety_allowed_area';
-    $3D:  result:='attitude_quaternion_cov';
-    $3E:  result:='nav_controller_output';
-    $3F:  result:='global_position_int_cov';
-    $40:  result:='local_position_ned_cov';
-    $41:  result:='rc_channels';                   {Supported Msg Länge 2A}
-    $42:  result:='request_data_stream';
-    $43:  result:='data_stream';
-    $45:  result:='manual_control';                {Länge 0B}
-    $46:  result:='rc_channels_override';          {Länge 11}
-    $49:  result:='mission_item_int';
-    $4A:  result:='vfr_hud';                       {Länge 11}
-    $4B:  result:='command_int';
-    $4C:  result:='command_long';                  {Länge 20}
-    $4D:  result:='command_ack';
-    $4E:  result:='command_cancel';                {78: UTC time stamp, Boot time}
-    $4F:  result:='command_long_stamped';          {79: not supported anymore}
-    $51:  result:='manual_setpoint';
-    $52:  result:='set_attitude_target';
-    $53:  result:='attitude_target';               {Länge 24}
-    $54:  result:='set_position_target_local_ned';
-    $55:  result:='position_target_local_ned';     {Länge 33}
-    $56:  result:='set_position_target_global_int';
-    $57:  result:='position_target_global_int';    {Länge 3}
-    $59:  result:='local_position_ned_system_global_offset';
-    $5A:  result:='hil_state';
-    $5B:  result:='hil_controls';
-    $5C:  result:='hil_rc_inputs_raw';
-    $5D:  result:='hil_actuator_controls';
-
-    $64:  result:='optical_flow';
-    $65:  result:='global_vision_position_estimate';
-    $66:  result:='vision_position_estimate';
-    $67:  result:='vision_speed_estimate';
-    $68:  result:='vicon_position_estimate';
-    $69:  result:='highres_imu';                   {Länge 3E}
-    $6A:  result:='optical_flow_rad';
-    $6B:  result:='hil_sensor';
-    $6C:  result:='sim_state';
-    $6D:  result:='radio_status';
-    $6E:  result:='file_transfer_protocol';
-    $6F:  result:='timesync';                      {Länge 0D}
-    $70:  result:='camera_trigger';
-    $71:  result:='hil_gps';
-    $72:  result:='hil_optical_flow';
-    $73:  result:='hil_state_quaternion';
-    116:  result:='scaled_imu2';
-    $75:  result:='log_request_list';
-    $76:  result:='log_entry';
-    $77:  result:='log_request_data';
-    $78:  result:='log_data';
-    $79:  result:='log_erase';
-    $7A:  result:='log_request_end';
-    $7B:  result:='gps_inject_data';
-    $7C:  result:='gps2_raw';
-    $7D:  result:='power_status';
-    $7E:  result:='serial_control';
-    $7F:  result:='gps_rtk';
-    $80:  result:='gps2_rtk';
-    $81:  result:='scaled_imu3';
-    $82:  result:='data_transmission_handshake';
-    $83:  result:='encapsulated_data';
-    $84:  result:='distance_sensor';
-    $85:  result:='terrain_request';
-    $86:  result:='terrain_data';
-    $87:  result:='terrain_check';
-    $88:  result:='terrain_report';
-    $89:  result:='scaled_pressure2';
-    $8A:  result:='att_pos_mocap';
-    $8B:  result:='set_actuator_control_target';
-    $8C:  result:='actuator_control_target';       {Länge 14}
-    $8D:  result:='altitude';                      {Länge 20}
-    $8E:  result:='resource_request';
-    $8F:  result:='scaled_pressure3';
-    $90:  result:='follow_target';
-    $92:  result:='control_system_state';
-    $93:  result:='battery_status';
-    $94:  result:='autopilot_version';             {Länge 34, 48, 4C}
-    149:  result:='landing_target';
-
-    162:  result:='fence_status';
-    192:  result:='mag_cal_report';
-
-    225:  result:='efi_status';
-
-{MESSAGE IDs 180 - 229: Space for custom messages in
- individual projectname_messages.xml files -->}
-(*  201:  result:='sens_power';                    {not know if used}
-    202:  result:='sens_MPTT';
-    203:  result:='aslctrl_data';
-    204:  result:='aslctrl_debug';
-    205:  result:='asluav_status';
-    206:  result:='ekf_ext';                       {Wind speed and such stuff}
-    207:  result:='asl_obctrl';
-    208:  result:='sens_atmos';                    {Atmospheric sensors}
-    209:  result:='sens_batmon';                   {Battery monitor}
-    210:  result:='fw_soaring_data';               {fixed wing...}
-    211:  result:='sensorpod_status';
-    212:  result:='sens_power_board';
-    213:  result:='gsm_link_status';               {LTE too}       *)
-
-    230:  result:='estimator_status';              {Länge 2A}
-    $E7:  result:='wind_cov';                      {Länge 20}
-    $E8:  result:='gps_input';
-    $E9:  result:='gps_rtcm_data';
-    $EA:  result:='high_latency';
-    $EB:  result:='high_latency2';
-    241:  result:='vibration';                     {Länge 14}
-    $F2:  result:='home_position';                 {Supported Msg Länge 28 oder 3C}
-    $F3:  result:='set_home_position';
-    $F4:  result:='message_interval';
-    $F5:  result:='extended_sys_state';            {Länge 02}
-    $F6:  result:='adsb_vehicle';
-    $F7:  result:='collision';
-    $F8:  result:='v2_extension';
-    $F9:  result:='memory_vect';
-    $FA:  result:='debug_vect';
-    $FB:  result:='named_value_float';
-    $FC:  result:='named_value_int';
-    $FD:  result:='statustext';                    {Länge variabel}
-    $FE:  result:='debug';
-    256:  result:='setup_signing';
-    $101: result:='button_change';
-    $102: result:='play_tune';
-    $103: result:='camera_information';
-    $104: result:='camera_settings';
-    $105: result:='storage_information';
-    $106: result:='camera_capture_status';
-    $107: result:='camera_image_captured';         {Länge FC}
-    $108: result:='flight_information';            {Supported Msg Länge 1B}
-    $109: result:='mount_orientation';             {Länge 20}
-    $10A: result:='logging_data';
-    $10B: result:='logging_data_acked';
-    $10C: result:='logging_ack';
-    $10D: result:='video_stream_information';
-    $10E: result:='video_stream_status';           {270 len 19}
-    $10F: result:='camera_fov_status';             {271 len 52}
-
-    275:  result:='camera_tracking_image_status';  {275 len 31}
-    276:  result:='camera_tracking_geo_status';    {276 len 49}
-
-    280:  result:='gimbal_manager_information';
-    281:  result:='gimbal_manager_status';
-    282:  result:='gimbal_manager_set_attitude';
-    283:  result:='gimbal_device_information';
-    284:  result:='gimbal_device_set_attitude';
-    285:  result:='gimbal_device_attitude_status';
-    286:  result:='autopilot_state_for_gimbal_device';
-    287:  result:='gimbal_manager_set_pitchyaw';
-    288:  result:='gimbal_manager_set_manual_control';
-    290:  result:='esc_info';
-    291:  result:='esc_status';
-
-    299:  result:='wifi_config_ap';
-    300:  result:='protocol_version';              {12C'h not supported anymore}
-
-    301:  result:='ais_vessel';
-
-    310:  result:='uavcan_node_status';
-    $137: result:='uavcan_node_info';
-    $140: result:='param_ext_request_read';
-    $141: result:='param_ext_request_list';
-    $142: result:='param_ext_value';               {Länge 95}
-    $143: result:='param_ext_set';
-    $144: result:='param_ext_ack';                 {Länge 91}
-    $14A: result:='obstacle_distance';             {Länge 9E}
-    $14B: result:='odometry';
-    $14C: result:='trajectory_representation_waypoints';
-    $14D: result:='trajectory_representation_bezier';
-
-    336:  result:='cellular_config';
-
-    339:  result:='raw_rpm';
-    340:  result:='UTM_global_position';           {154'h}
-    350:  result:='debug_float_array';
-    360:  result:='orbit_execution_status';
-
-    370:  result:='smart_battery_info';
-    373:  result:='generator_status';
-    375:  result:='actuator_output_status';
-    380:  result:='time_estimate_to_target';
-    385:  result:='tunnel';
-    390:  result:='onboard_computer_status';
-    395:  result:='component_information';
-    400:  result:='play_tune v2';
-    401:  result:='supported_tunes';
-
-    9000: result:='wheel_distance';                {2328'h}
-    9005: result:='winch_status';
-
-   12900: result:='open_drone_id_basic_id';        {3264'h}
-   12901: result:='open_drone_id_location';
-   12902: result:='open_drone_id_authentication';
-   12903: result:='open_drone_id_self_id';
-   12904: result:='open_drone_id_system';
-   12905: result:='open_drone_id_operator_id';
-   12915: result:='open_drone_id_message_pack';
-  end;
-end;
-
-{https://github.com/mavlink/c_library_v2/blob/master/common/mavlink_msg_position_target_global_int.h}
-function CoordFrameToStr(f: integer): string;      {for POSITION_TARGET_GLOBAL_INT}
-begin
-  result:='';
-  case f of
-    5:  result:='GLOBAL';
-    6:  result:='GLOBAL_RELATIVE_ALT';
-    11: result:='GLOBAL_TERRAIN_ALT';
-  end;
-end;
-
-(*  unused until now
-{https://github.com/YUNEEC/MavlinkLib/blob/master/message_definitions/ASLUAV.xml}
-function GSMlinkType(sv: byte): string;
-begin
-  result:='Link type unknown';
-  case sv of
-    0: result:='No service';
-    2: result:='2G (GSM/GRPS/EDGE) link';
-    3: result:='3G link (WCDMA/HSDPA/HSPA)';
-    4: result:='4G link (LTE)';
-  end;
-end;   *)
-
-{ENUMs see: https://github.com/mavlink/c_library_v2/blob/master/common/common.h}
-function MAVseverity(sv: byte): string;
-begin
-  result:='';
-  case sv of
-    0: result:=emcyID;      {System is unusable. This is a "panic" condition}
-    1: result:='ALERT';     {Action should be taken immediately. Indicates error
-                             in non-critical systems}
-    2: result:='CRITICAL';  {Action must be taken immediately. Indicates failure
-                             in a primary system}
-    3: result:='ERROR';     {Indicates an error in secondary/redundant systems}
-    4: result:='WARNING';   {Indicates about a possible future error if this
-                             is not resolved within a given timeframe. Example
-                             would be a low battery warning}
-    5: result:='NOTICE';    {An unusual event has occurred, though not an error
-                             condition. This should be investigated for the
-                             root cause.}
-    6: result:='INFO';      {Normal operational messages. Useful for logging.
-                             No action is required for these messages.}
-    7: result:='DEBUG';     {Useful non-operational messages that can assist in
-                             debugging. These should not occur during normal
-                             operation}
-  end;
-end;
-
-{https://developer.yuneec.com/documentation/125/Supported-mavlink-messages
- https://github.com/YUNEEC/MavlinkLib/blob/master/message_definitions/common.xml}
-function MAVcompID(cid: byte): string;             {MAV_Component_ID}
-begin
-  result:='';
-  case cid of
-    0: result:='ALL';
-    1: result:='AUTOPILOT 1';
-    25..86, 88..99: result:='USER '+IntToStr(cid-24);
-    87: result:='USER 63 (H520 - CGO-ET?)';
-    100..105: result:='CAMERA '+IntToStr(cid-99);
-    140..153: result:='SERVO '+IntToStr(cid-139);
-    154: result:='GIMBAL 1';
-    155: result:='LOG';
-    156: result:='ADSB';
-    157: result:='OSD';
-    158: result:='PERIPHERAL';
-    159: result:='QX1_GIMBAL';
-    160: result:='FLARM';
-    171..175: result:='GIMBAL '+IntToStr(cid-169);
-    180: result:='MAPPER';
-    190: result:='MISSIONPLANNER';
-    195: result:='PATHPLANNER';
-    200: result:='IMU';
-    201: result:='IMU 2';
-    202: result:='IMU 3';
-    220: result:='GPS';
-    221: result:='GPS 2';
-    240: result:='UDP BRIDGE';
-    241: result:='UART BRIDGE';
-    250: result:='SYSTEM CONTROL';
-  end;
-end;
-
-{https://github.com/mavlink/c_library_v2/blob/master/common/common.h
-
-1	MAV_SYS_STATUS_SENSOR_3D_GYRO	0x01 3D gyro
-2	MAV_SYS_STATUS_SENSOR_3D_ACCEL	0x02 3D accelerometer
-4	MAV_SYS_STATUS_SENSOR_3D_MAG	0x04 3D magnetometer
-8	MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE	0x08 absolute pressure
-16	MAV_SYS_STATUS_SENSOR_DIFFERENTIAL_PRESSURE	0x10 differential pressure
-32	MAV_SYS_STATUS_SENSOR_GPS	0x20 GPS
-64	MAV_SYS_STATUS_SENSOR_OPTICAL_FLOW	0x40 optical flow
-128	MAV_SYS_STATUS_SENSOR_VISION_POSITION	0x80 computer vision position
-256	MAV_SYS_STATUS_SENSOR_LASER_POSITION	0x100 laser based position
-512	MAV_SYS_STATUS_SENSOR_EXTERNAL_GROUND_TRUTH	0x200 external ground truth (Vicon or Leica)
-1024	MAV_SYS_STATUS_SENSOR_ANGULAR_RATE_CONTROL	0x400 3D angular rate control
-2048	MAV_SYS_STATUS_SENSOR_ATTITUDE_STABILIZATION	0x800 attitude stabilization
-4096	MAV_SYS_STATUS_SENSOR_YAW_POSITION	0x1000 yaw position
-8192	MAV_SYS_STATUS_SENSOR_Z_ALTITUDE_CONTROL	0x2000 z/altitude control
-16384	MAV_SYS_STATUS_SENSOR_XY_POSITION_CONTROL	0x4000 x/y position control
-32768	MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS	0x8000 motor outputs / control
-65536	MAV_SYS_STATUS_SENSOR_RC_RECEIVER	0x10000 rc receiver
-131072	MAV_SYS_STATUS_SENSOR_3D_GYRO2	0x20000 2nd 3D gyro
-262144	MAV_SYS_STATUS_SENSOR_3D_ACCEL2	0x40000 2nd 3D accelerometer
-524288	MAV_SYS_STATUS_SENSOR_3D_MAG2	0x80000 2nd 3D magnetometer
-1048576	MAV_SYS_STATUS_GEOFENCE	0x100000 geofence
-2097152	MAV_SYS_STATUS_AHRS	0x200000 AHRS subsystem health
-4194304	MAV_SYS_STATUS_TERRAIN	0x400000 Terrain subsystem health
-8388608	MAV_SYS_STATUS_REVERSE_MOTOR	0x800000 Motors are reversed
-16777216	MAV_SYS_STATUS_LOGGING	0x1000000 Logging
-33554432	MAV_SYS_STATUS_SENSOR_BATTERY	0x2000000 Battery
-67108864	MAV_SYS_STATUS_SENSOR_PROXIMITY	0x4000000 Proximity
-134217728	MAV_SYS_STATUS_SENSOR_SATCOM	0x8000000 Satellite Communication}
-
-function MSenStat(m: longword): string;            {uint32 MAV_SYS_STATUS_SENSOR}
-begin
-  result:='';
-  if m>0 then begin
-    if (m and 1)>0   then result:=result+'3D_GYRO ';
-    if (m and 2)>0   then result:=result+'3D_ACCEL ';
-    if (m and 4)>0   then result:=result+'3D_MAG ';
-    if (m and 8)>0   then result:=result+'ABSOLUTE_PRESSURE ';
-    if (m and 16)>0  then result:=result+'DIFFERENTIAL_PRESSURE ';
-    if (m and 32)>0  then result:=result+'GPS ';
-    if (m and 64)>0  then result:=result+'OPTICAL_FLOW ';
-    if (m and 128)>0 then result:=result+'VISION_POSITION ';
-    if (m and 256)>0 then result:=result+'LASER_POSITION ';
-    if (m and 512)>0 then result:=result+'EXTERNAL_GROUND_TRUTH ';
-    if (m and 1024)>0    then result:=result+'ANGULAR_RATE_CONTROL ';
-    if (m and 2048)>0    then result:=result+'ATTITUDE_STABILIZATION ';
-    if (m and 4096)>0    then result:=result+'YAW_POSITION ';
-    if (m and 8192)>0    then result:=result+'Z_ALTITUDE_CONTROL ';
-    if (m and 16384)>0   then result:=result+'XY_POSITION_CONTROL ';
-    if (m and 32768)>0   then result:=result+'MOTOR_OUTPUTS ';
-    if (m and 65536)>0   then result:=result+'RC_RECEIVER ';
-    if (m and 131072)>0  then result:=result+'3D_GYRO2 ';
-    if (m and 262144)>0  then result:=result+'3D_ACCEL2 ';
-    if (m and 524288)>0  then result:=result+'3D_MAG2 ';
-    if (m and 1048576)>0   then result:=result+'GEOFENCE ';
-    if (m and 2097152)>0   then result:=result+'AHRS ';
-    if (m and 4194304)>0   then result:=result+'TERRAIN ';
-    if (m and 8388608)>0   then result:=result+'REVERSE_MOTOR ';
-    if (m and 16777216)>0  then result:=result+'LOGGING ';
-    if (m and 33554432)>0  then result:=result+'BATTERY ';
-    if (m and 67108864)>0  then result:=result+'PROXIMITY ';
-    if (m and 134217728)>0 then result:=result+'SATCOM ';
-  end else result:='0';
-end;
-
-{https://mavlink.io/en/messages/common.html#GPS_FIX_TYPE (nicht aktuell!)
- besser hier: https://github.com/mavlink/c_library_v2/tree/master/common
- siehe heartbeat "Verdrehung"
-
-0	GPS_FIX_TYPE_NO_GPS	No GPS connected
-1	GPS_FIX_TYPE_NO_FIX	No position information, GPS is connected
-2	GPS_FIX_TYPE_2D_FIX	2D position
-3	GPS_FIX_TYPE_3D_FIX	3D position
-4	GPS_FIX_TYPE_DGPS	DGPS/SBAS aided 3D position
-5	GPS_FIX_TYPE_RTK_FLOAT	RTK float, 3D position
-6	GPS_FIX_TYPE_RTK_FIXED	RTK Fixed, 3D position
-7	GPS_FIX_TYPE_STATIC	Static fixed, typically used for base stations
-8	GPS_FIX_TYPE_PPP	PPP, 3D position.}
-
-function GPSfixType(const s:string): string;   {MAVlink GPS fix type to string}
-var w: integer;
-begin
-  result:=rsUnknown;
-  w:=StrToIntDef(s, 0);
-  case w of
-    0:	Result:='No GPS connected';
-    1:	Result:='No position information, GPS is connected';
-    2:	Result:='2D position';
-    3:	Result:='3D position';
-    4:	Result:='DGPS/SBAS aided 3D position';
-    5:	Result:='RTK float, 3D position';
-    6:	Result:='RTK fixed, 3D position';
-    7:	Result:='Static fixed, typically used for base stations';
-    8:	Result:='PPP, 3D position';
-  end;
 end;
 
 function FrameToStr(fr: integer): string;          {For H501, Col 1}
@@ -2591,88 +2157,6 @@ begin
   result:=result+StickPos(w);
 end;
 
-{https://mavlink.io/en/messages/common.html#MAV_LANDED_STATE
- (nicht aktuell!) besser hier: https://github.com/mavlink/c_library_v2/tree/master/common
-  siehe heartbeat "Verdrehung"
-  0	MAV_LANDED_STATE_UNDEFINED	MAV landed state is unknown
-  1	MAV_LANDED_STATE_ON_GROUND	MAV is landed (on ground)
-  2	MAV_LANDED_STATE_IN_AIR	MAV is in air
-  3	MAV_LANDED_STATE_TAKEOFF	MAV currently taking off
-  4	MAV_LANDED_STATE_LANDING	MAV currently landing  }
-
-function MLStoStr(const m: byte): string;          {MAV_LANDED_STATE}
-begin
-  case m of
-    1: result:='Landed (on ground)';
-    2: result:='In air';
-    3: result:='Currently taking off';
-    4: result:='Currently landing';
-  else
-    result:='MAV landed state undef';
-  end;
-end;
-
-{https://mavlink.io/en/messages/common.html#MAV_STATE
- (nicht aktuell!) besser hier: https://github.com/mavlink/c_library_v2/tree/master/common
- siehe heartbeat "Verdrehung"
-0	MAV_STATE_UNINIT	Uninitialized system, state is unknown.
-bit 0	MAV_STATE_BOOT	        System is booting up.
-bit 1	MAV_STATE_CALIBRATING	System is calibrating and not flight-ready.
-bit 2	MAV_STATE_STANDBY	System is grounded and on standby. It can be launched any time.
-bit 3	MAV_STATE_ACTIVE	System is active and might be already airborne. Motors are engaged.
-bit 4	MAV_STATE_CRITICAL	System is in a non-normal flight mode. It can however still navigate.
-bit 5	MAV_STATE_EMERGENCY	System is in a non-normal flight mode. It lost control over parts or over the whole airframe. It is in mayday and going down.
-bit 6	MAV_STATE_POWEROFF	System just initialized its power-down sequence, will shut down now.
-bit 7	MAV_STATE_FLIGHT_TERMINATION	System is terminating itself.}
-
-function MSTtoStr(const m: byte): string;   {Bitleiste MAV_STATE auswerten}
-begin
-  result:='MAV_STATE'+suff;
-  if m>0 then begin
-    if (m and 1)>0   then result:=result+'BOOT ';
-    if (m and 2)>0   then result:=result+'CALIBRATING ';
-    if (m and 4)>0   then result:=result+'STANDBY ';
-    if (m and 8)>0   then result:=result+'ACTIVE ';
-    if (m and 16)>0  then result:=result+'CRITICAL ';
-    if (m and 32)>0  then result:=result+emcyID+' ';
-    if (m and 64)>0  then result:=result+'POWEROFF ';
-    if (m and 128)>0 then result:=result+'FLIGHT_TERMINATION';
-  end else result:=result+rsUnknown;
-end;
-
-{https://mavlink.io/en/messages/common.html      MAV_MODE_FLAG
-(nicht aktuell!) besser hier: https://github.com/mavlink/c_library_v2/tree/master/common
- siehe heartbeat "Verdrehung"
-
- Flags:
- https://github.com/mavlink/c_library_v2/blob/master/common/common.h
-
-These flags encode the MAV mode. In Heartbeat base-mode +6
-Value	Field Name	Description
-128	MAV_MODE_FLAG_SAFETY_ARMED	0b10000000 MAV safety set to armed. Motors are enabled / running / can start. Ready to fly. Additional note: this flag is to be ignore when sent in the command MAV_CMD_DO_SET_MODE and MAV_CMD_COMPONENT_ARM_DISARM shall be used instead. The flag can still be used to report the armed state.
-64	MAV_MODE_FLAG_MANUAL_INPUT_ENABLED	0b01000000 remote control input is enabled.
-32	MAV_MODE_FLAG_HIL_ENABLED	0b00100000 hardware in the loop simulation. All motors / actuators are blocked, but internal software is full operational.
-16	MAV_MODE_FLAG_STABILIZE_ENABLED	0b00010000 system stabilizes electronically its attitude (and optionally position). It needs however further control inputs to move around.
-8	MAV_MODE_FLAG_GUIDED_ENABLED	0b00001000 guided mode enabled, system flies waypoints / mission items.
-4	MAV_MODE_FLAG_AUTO_ENABLED	0b00000100 autonomous mode enabled, system finds its own goal positions. Guided flag can be set or not, depends on the actual implementation.
-2	MAV_MODE_FLAG_TEST_ENABLED	0b00000010 system has a test mode enabled. This flag is intended for temporary system tests and should not be used for stable implementations.
-1	MAV_MODE_FLAG_CUSTOM_MODE_ENABLED	0b00000001 Reserved for future use.}
-
-function MMFtoStr(const m: byte): string;   {Bitleiste MAV_Mode_FLAG auswerten}
-begin
-  result:='MAV_MODE_FLAG'+suff;
-  if m>0 then begin
-    if (m and 1)>0   then result:=result+'CUSTOM_MODE_ENABLED ';
-    if (m and 2)>0   then result:=result+'TEST_ENABLED ';
-    if (m and 4)>0   then result:=result+'AUTO_ENABLED ';
-    if (m and 8)>0   then result:=result+'GUIDED_ENABLED ';
-    if (m and 16)>0  then result:=result+'STABILIZE_ENABLED ';
-    if (m and 32)>0  then result:=result+'HIL_ENABLED ';
-    if (m and 64)>0  then result:=result+'MANUAL_INPUT_ENABLED ';
-    if (m and 128)>0 then result:=result+'SAFETY_ARMED';
-  end else Result:=result+rsUnknown;
-end;
-
 function RandomFN(const fn: string; const vt, mode: integer): string; {Dateinamen ermitteln}
 var p: integer;                                    {Position zum zufälligen Ändern}
     z: char;
@@ -2709,7 +2193,7 @@ end;
 function KoToStr(const lanlon: double): string; inline;
                                                    {Koordinaten zu String}
 begin
-  result:=FloatToStrF(lanlon, ffFixed, 3, 8);
+  result:=FormatFloat(coordfl8, lanlon);
 end;
 
 function ChrKoor(ko: string): string; inline;      {Korrigiert Format der Koordinaten}
@@ -2776,7 +2260,7 @@ end;
 
 function BrTeilen(const s: string; const t, k: integer): string;
 begin
-  result:=FloatToStrF(StrToFloatN(trim(s))/t, ffFixed, 10, k);
+  result:=FormatFloat(coordfl8, StrToFloatN(trim(s)));
 end;
 
 function H920Amp(const w: double): double; inline; {Stromsensor H920}
@@ -3058,19 +2542,12 @@ end;
 
 function NichtLeer(const s: string): boolean; inline;
                     {Identifikation eines leeren Feldes oder Feld mit 0 Wert}
-var w: double;
+var w: string;
 begin
   result:=true;
-  if trim(s)='' then
-    result:=false
-  else begin
-    try
-      w:=StrToFloat(s);
-      if w=0 then
-        result:=false;
-    except
-    end;
-  end;
+  w:=trim(s);
+  if (w='') or (StrToFloatDef(w, 0)=0) then
+    result:=false;
 end;
 
 function DateTimeToUNIX(const dt: TDateTime):Integer; inline;
@@ -3082,7 +2559,7 @@ function NumSec(d: TDateTime): string; inline;     {Dauer in Anzahl Sekunden wan
 begin
   try
 //  result:=IntToStr(round(d*Secpd));
-    result:=FloatToStrF(d*Secpd, ffFixed, 12, 1);  {alternativ mit Kommastelle}
+    result:=FormatFloat(dzfl, d*Secpd);            {alternativ mit Kommastelle}
   except
     result:='';
   end;
@@ -3255,12 +2732,12 @@ var e: integer;
        3, 4, 6, 7, 8:
           begin
             t:=StrToFloatN(gridDetails.Cells[sp, zl])/10;
-            s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 1);
+            s:=HeaderHnt+FormatFloat(dzfl, t);
             s:=s+Lunit;
           end;
        9: begin                                    {maxSpeed}
             t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
-            s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 1);
+            s:=HeaderHnt+FormatFloat(dzfl, t);
             if btnClose.Tag=0 then
               s:=s+'m/s'
             else
@@ -3268,7 +2745,7 @@ var e: integer;
           end;
       10: begin                                    {Altitude}
             t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
-            s:=HeaderHnt+FloatToStrF(t, ffFixed, 4, 1);
+            s:=HeaderHnt+FormatFloat(dzfl, t);
             s:=s+Lunit;
           end;
       11: s:='IMU Status='+KorrSigned(gridDetails.Cells[sp, zl], 255);
@@ -3286,15 +2763,15 @@ var e: integer;
           end;
       15: begin                                    {roll}
             t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
-            s:=HeaderHnt+FloatToStrF(t, ffFixed, 4, 2);
+            s:=HeaderHnt+FormatFloat(ctfl, t);
           end;
       16: begin                                    {pitch}
             t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
-            s:=HeaderHnt+FloatToStrF(t, ffFixed, 4, 2);
+            s:=HeaderHnt+FormatFloat(ctfl, t);
           end;
       17: begin                                    {yaw}
             t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
-            s:=HeaderHnt+FloatToStrF(t, ffFixed, 4, 2);
+            s:=HeaderHnt+FormatFloat(ctfl, t);
           end;
       18: begin                                    {MotorStatus}
             e:=StrToIntDef(gridDetails.Cells[sp, zl], 0);
@@ -3312,12 +2789,12 @@ var e: integer;
        1: s:='Frames: '+FrameToStr(StrToInt(gridDetails.Cells[1, zl]));
        4: begin                                    {Elevation}
             t:=H501alt(StrToFloatN(gridDetails.Cells[sp, zl]));
-            s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 1);
+            s:=HeaderHnt+FormatFloat(dzfl, t);
             s:=s+Lunit;
           end;
        5: begin                                    {Distance}
             t:=H501dist(StrToFloatN(gridDetails.Cells[sp, zl]));
-            s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 1);
+            s:=HeaderHnt+FormatFloat(dzfl, t);
             s:=s+Lunit;
           end;
        6, 7, 8: s:=DefaultHnt+'°';
@@ -3325,11 +2802,11 @@ var e: integer;
        19:
           begin
             t:=H501velo(StrToFloatN(gridDetails.Cells[sp, zl]));   {Velocity}
-            s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 1)+'m/s = ';
+            s:=HeaderHnt+FormatFloat(dzfl, t)+'m/s = ';
             if rgSpeedUnit.ItemIndex=2 then
-              s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
+              s:=s+FormatFloat(dzfl, t*fmph)+'mph'
             else
-              s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
+              s:=s+FormatFloat(dzfl, t*fkmh)+'km/h';
           end;
     end;
   end;
@@ -3371,7 +2848,7 @@ var e: integer;
              except
                t:=0;
              end;
-             s:=FloatToStrF(t/fft, ffFixed, 4, 2)+'ft'
+             s:=FormatFloat(ctfl, t/fft)+'ft'
            end else
              s:=gridDetails.Cells[sp, zl]+'m';
          end;
@@ -3384,9 +2861,9 @@ var e: integer;
            end;
            s:=DefaultHnt+'m/s = ';
            if rgSpeedUnit.ItemIndex=2 then
-             s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
+             s:=s+FormatFloat(dzfl, t*fmph)+'mph'
            else
-             s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
+             s:=s+FormatFloat(dzfl, t*fkmh)+'km/h';
          end;
        9: s:=GPSfixType(gridDetails.Cells[sp, zl]);
       19: s:=fmodeToStr(StrToIntDef(gridDetails.Cells[sp, zl], 99)); {fMode}
@@ -3406,7 +2883,7 @@ var e: integer;
             except
               t:=0;
             end;
-            if t>0 then s:=FloatToStrF(H920Amp(t), ffFixed, 3, 1)+'A';
+            if t>0 then s:=FormatFloat(dzfl, H920Amp(t))+'A';
           end;
        4: begin                                    {Altitude}
             if rgSpeedUnit.ItemIndex=2 then begin
@@ -3415,7 +2892,7 @@ var e: integer;
               except
                 t:=0;
               end;
-              s:=HeaderHnt+FloatToStrF(t/fft, ffFixed, 4, 2)+'ft'
+              s:=HeaderHnt+FormatFloat(ctfl, t/fft)+'ft'
             end else
               s:=DefaultHnt+'m';
           end;
@@ -3425,11 +2902,11 @@ var e: integer;
             except
               t:=0;
             end;
-            s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 2)+'m/s = ';
+            s:=HeaderHnt+FormatFloat(ctfl, t)+'m/s = ';
             if rgSpeedUnit.ItemIndex=2 then
-              s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
+              s:=s+FormatFloat(dzfl, t*fmph)+'mph'
             else
-              s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
+              s:=s+FormatFloat(dzfl, t*fkmh)+'km/h';
           end;
        9: s:=GPSfixType(gridDetails.Cells[sp, zl]);
       11,12,13: s:=DefaultHnt+'°';                 {Pitch, roll, yaw}
@@ -3502,7 +2979,7 @@ var e: integer;
              except
                t:=0;
              end;
-             s:=s+FloatToStrF(t/fft, ffFixed, 4, 1)+'ft'
+             s:=s+FormatFloat(dzfl, t/fft)+'ft'
            end else
              s:=DefaultHnt+'m';
          end;
@@ -3513,11 +2990,11 @@ var e: integer;
            except
              t:=0;
            end;
-           s:=HeaderHnt+FloatToStrF(t, ffFixed, 3, 2)+'m/s = ';
+           s:=HeaderHnt+FormatFloat(ctfl, t)+'m/s = ';
            if rgSpeedUnit.ItemIndex=2 then
-             s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
+             s:=s+FormatFloat(dzfl, t*fmph)+'mph'
            else
-             s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
+             s:=s+FormatFloat(dzfl, t*fkmh)+'km/h';
          end;
       6: s:=DefaultHnt+'°';
     end;
@@ -3547,9 +3024,9 @@ var e: integer;
            end;
            s:=DefaultHnt+'m/s = ';
            if rgSpeedUnit.ItemIndex=2 then
-             s:=s+FloatToStrF(t*fmph, ffFixed, 3, 1)+'mph'
+             s:=s+FormatFloat(dzfl, t*fmph)+'mph'
            else
-             s:=s+FloatToStrF(t*fkmh, ffFixed, 3, 1)+'km/h';
+             s:=s+FormatFloat(dzfl, t*fkmh)+'km/h';
          end;
       8: s:=rsEmpty;                               {currently unused}
       11..13: s:=DefaultHnt+'rad';
@@ -3620,10 +3097,10 @@ function TForm1.vms(const d: TDateTime; const w: double): string; {Weg in m --> 
 begin
   try
     case rgSpeedUnit.ItemIndex of
-      1: result:=FloatToStrF(w/(d*Secpd)*fkmh, ffFixed, 3, 2); {in km/h}
-      2: result:=FloatToStrF(w/(d*Secpd)*fmph, ffFixed, 3, 2); {in mph}
+      1: result:=FormatFloat(ctfl, w/(d*Secpd)*fkmh);    {in km/h}
+      2: result:=FormatFloat(ctfl, w/(d*Secpd)*fmph);    {in mph}
       else
-        result:=FloatToStrF(w/(d*Secpd), ffFixed, 3, 2);       {in m/s, default}
+        result:=FormatFloat(ctfl, w/(d*Secpd));          {in m/s, default}
     end;
     result:=result+rgSpeedUnit.Items[rgSpeedUnit.ItemIndex];
   except
@@ -3681,7 +3158,7 @@ begin                                              {p=0 --> Breite Form1}
     Form2.Width:=pcMain.Width
   else
     Form2.Width:=p;
-  Form2.Left:=Form1.Left+pcMain.Left;        {linksbündig zu Diagrams anzeigen}
+  Form2.Left:=Form1.Left+pcMain.Left;              {linksbündig zu Diagrams anzeigen}
   Form2.Top:=Form1.Top-Form2.Height-20;            {20 Pixel von Fensterleiste Kopf zeigen}
   if Form2.Top<Screen.DesktopTop then
     Form2.Top:=Screen.DesktopTop;
@@ -3945,6 +3422,61 @@ begin
   end;
 end;
 
+function DoDownload: string;                       {Download new version}
+begin
+  if OpenURL(homepage+DownURL) then
+    result:=rsDownloading
+  else
+    result:=errDownloading;
+end;
+
+procedure TForm1.CheckVersion;                     {Call version file and check}
+var strm: TStream;
+    inlist: TStringList;
+    i: integer;
+    ct: string;
+begin
+  inlist:=TStringList.Create;
+  Screen.Cursor:=crHourGlass;
+  ct:='';
+  strm:=nil;
+  try
+    try
+      IpHttpDataProvider1.Reference(AppName);
+      if IpHttpDataProvider1.CheckURL(homepage+versfile, ct) then
+        strm:=IpHttpDataProvider1.DoGetStream(homepage+versfile);
+    except
+      on e: Exception do begin
+        AppLog.Lines.Add(e.Message);
+        exit;
+      end;
+    end;
+    if (strm<>nil) and (strm.Size>0) then
+      inlist.LoadFromStream(strm);
+    if inlist.count>0 then begin
+      Label8.Font.Color:=clPurple;
+      for i:=0 to inlist.count-1 do begin
+        if pos(appname, inlist[i])>0 then begin
+          ct:=inlist[i].Split([sep])[1];
+          if ct>=VersValue then begin
+            MessageDlg(rsLatestVersion+sLineBreak+sLineBreak+
+                       capForm1+sLineBreak+AppName+tab2+AppVersion,
+                       mtInformation,[mbOK],0);
+          end else
+            StatusBar1.Panels[5].Text:=DoDownload;
+          AppLog.Lines.Add(inlist[i]);
+          break;
+        end;
+      end;
+    end else
+      StatusBar1.Panels[5].Text:=DoDownload;
+    AppLog.Lines.Add(StatusBar1.Panels[5].Text);
+  finally
+    inlist.Free;
+    Screen.Cursor:=crDefault;
+  end;
+end;
+
 procedure TForm1.SelDirAct(const fn: string);      {Alles neu laden}
 var x:integer;
     fnum: string;                                  {file name flight num}
@@ -4065,7 +3597,7 @@ var dsbuf: array[0..264] of byte;
   end;
 
 begin
-  n3:=Label3.Tag;                        {Suchspalte umkopieren, wird verändert}
+  n3:=Label3.Tag;                                  {Suchspalte umkopieren, wird verändert}
   zhl:=0;
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   if FileSize(fn)>lenfix then begin
@@ -6318,23 +5850,23 @@ begin
         fln:=fln+1;                                {nächste Flugnummer}
         flt:=flt*24;                               {Dauer in Stunden}
         if rgSpeedUnit.ItemIndex=2 then begin      {Imperial}
-          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+csvsep);
-          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+csvsep);
-          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+csvsep);
-          olist.Add(rsGridCell8+csvsep+FloatToStrF(tasmaxg*fmph, ffFixed, 5, 1)+'mph'+csvsep);
+          olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmaxg/fft)+'ft'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FormatFloat(dzfl, emax/fft)+'ft'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FormatFloat(dzfl, strecke/fft)+'ft'+csvsep);
+          olist.Add(rsGridCell8+csvsep+FormatFloat(dzfl, tasmaxg*fmph)+'mph'+csvsep);
           if flt>0 then
             olist.Add(rsAvgSpeed+csvsep+
-            FloatToStrF(strecke/flt/fmile/1000, ffFixed, 5, 1)+'mph'+csvsep);
+            FormatFloat(dzfl, strecke/flt/fmile/1000)+'mph'+csvsep);
         end else begin                             {Metric}
-          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg, ffFixed, 5, 1)+'m'+csvsep);
-          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax, ffFixed, 5, 1)+'m'+csvsep);
-          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke, ffFixed, 5, 1)+'m'+csvsep);
-          olist.Add(rsGridCell8+csvsep+FloatToStrF(tasmaxg*fkmh, ffFixed, 5, 1)+'km/h'+csvsep);
+          olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmaxg)+'m'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FormatFloat(dzfl, emax)+'m'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FormatFloat(dzfl, strecke)+'m'+csvsep);
+          olist.Add(rsGridCell8+csvsep+FormatFloat(dzfl, tasmaxg*fkmh)+'km/h'+csvsep);
           if flt>0 then
             olist.Add(rsAvgSpeed+csvsep+
-            FloatToStrF(strecke/flt/1000, ffFixed, 5, 1)+'km/h'+csvsep);
+            FormatFloat(dzfl, strecke/flt/1000)+'km/h'+csvsep);
         end;
-        olist.Add(rsRest+csvsep+FloatToStrF(umin, ffFixed, 5, 1)+'V = ~'+
+        olist.Add(rsRest+csvsep+FormatFloat(dzfl, umin)+'V = ~'+
         IntToStr(round(VtoProz(v_type, umin)))+'%'+csvsep);
       end else begin                               {reduzierte Ausgabe}
         if n>3 then begin                          {Ausgabe für Flüge ohne GPS}
@@ -6357,13 +5889,13 @@ begin
           fln:=fln+1;
           gflt:=gflt+flt;
           if rgSpeedUnit.ItemIndex=2 then begin
-            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+csvsep);
-            olist.Add(rsGridCell8+csvsep+FloatToStrF(tasmax*fmph, ffFixed, 5, 1)+'mph'+csvsep)
+            olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmax/fft)+'ft'+csvsep);
+            olist.Add(rsGridCell8+csvsep+FormatFloat(dzfl, tasmax*fmph)+'mph'+csvsep)
           end else begin
-            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax, ffFixed, 5, 1)+'m'+csvsep);
-            olist.Add(rsGridCell8+csvsep+FloatToStrF(tasmax*fkmh, ffFixed, 5, 1)+'km/h'+csvsep);
+            olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmax)+'m'+csvsep);
+            olist.Add(rsGridCell8+csvsep+FormatFloat(dzfl, tasmax*fkmh)+'km/h'+csvsep);
           end;
-          olist.Add(rsRest+csvsep+FloatToStrF(umin, ffFixed, 5, 1)+'V = ~'+
+          olist.Add(rsRest+csvsep+FormatFloat(dzfl, umin)+'V = ~'+
           IntToStr(round(VtoProz(v_type, umin)))+'%'+csvsep);
         end;
       end;
@@ -6510,21 +6042,21 @@ begin
         flt:=flt*24;                               {Dauer in Stunden}
         fln:=fln+1;
         if rgSpeedUnit.ItemIndex=2 then begin      {Imperial}
-          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+csvsep);
-          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+csvsep);
-          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+csvsep);
-          olist.Add(rsGridCell8+csvsep+FloatToStrF(velomaxg*fmph, ffFixed, 5, 1)+'mph'+csvsep);
+          olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmaxg/fft)+'ft'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FormatFloat(dzfl, emax/fft)+'ft'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FormatFloat(dzfl, strecke/fft)+'ft'+csvsep);
+          olist.Add(rsGridCell8+csvsep+FormatFloat(dzfl, velomaxg*fmph)+'mph'+csvsep);
           if flt>0 then
             olist.Add(rsAvgSpeed+csvsep+
-            FloatToStrF(strecke/flt/fmile/1000, ffFixed, 5, 1)+'mph'+csvsep);
+            FormatFloat(dzfl, strecke/flt/fmile/1000)+'mph'+csvsep);
         end else begin                             {Metric}
-          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg, ffFixed, 5, 1)+'m'+csvsep);
-          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax, ffFixed, 5, 1)+'m'+csvsep);
-          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke, ffFixed, 5, 1)+'m'+csvsep);
-          olist.Add(rsGridCell8+csvsep+FloatToStrF(velomaxg*fkmh, ffFixed, 5, 1)+'km/h'+csvsep);
+          olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmaxg)+'m'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FormatFloat(dzfl, emax)+'m'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FormatFloat(dzfl, strecke)+'m'+csvsep);
+          olist.Add(rsGridCell8+csvsep+FormatFloat(dzfl, velomaxg*fkmh)+'km/h'+csvsep);
           if flt>0 then
             olist.Add(rsAvgSpeed+csvsep+
-            FloatToStrF(strecke/flt/1000, ffFixed, 5, 1)+'km/h'+csvsep);
+            FormatFloat(dzfl, strecke/flt/1000)+'km/h'+csvsep);
         end;
       end else begin                               {reduzierte Ausgabe}
         if n>3 then begin                          {Ausgabe für Flüge ohne GPS}
@@ -6544,11 +6076,11 @@ begin
           fln:=fln+1;
           gflt:=gflt+flt;
           if rgSpeedUnit.ItemIndex=2 then begin
-            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+csvsep);
-            olist.Add(rsGridCell8+csvsep+FloatToStrF(velomax*fmph, ffFixed, 5, 1)+'mph'+csvsep);
+            olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmax/fft)+'ft'+csvsep);
+            olist.Add(rsGridCell8+csvsep+FormatFloat(dzfl, velomax*fmph)+'mph'+csvsep);
           end else begin
-            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax, ffFixed, 5, 1)+'m'+csvsep);
-            olist.Add(rsGridCell8+csvsep+FloatToStrF(velomax*fkmh, ffFixed, 5, 1)+'km/h'+csvsep);
+            olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmax)+'m'+csvsep);
+            olist.Add(rsGridCell8+csvsep+FormatFloat(dzfl, velomax*fkmh)+'km/h'+csvsep);
           end;
         end;
       end;
@@ -6703,19 +6235,19 @@ begin
         flt:=flt*24;                               {Dauer in Stunden}
         fln:=fln+1;
         if rgSpeedUnit.ItemIndex=2 then begin
-          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg/fft, ffFixed, 5, 1)+'ft'+csvsep);
-          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft'+csvsep);
-          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft'+csvsep);
+          olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmaxg/fft)+'ft'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FormatFloat(dzfl, emax/fft)+'ft'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FormatFloat(dzfl, strecke/fft)+'ft'+csvsep);
           if flt>0 then
             olist.Add(rsAvgSpeed+csvsep+
-            FloatToStrF(strecke/flt/fmile/1000, ffFixed, 5, 1)+'mph'+csvsep);
+            FormatFloat(dzfl, strecke/flt/fmile/1000)+'mph'+csvsep);
         end else begin
-          olist.Add(rsGridCell5+csvsep+FloatToStrF(hmaxg, ffFixed, 5, 1)+'m'+csvsep);
-          olist.Add(rsGridCell6+csvsep+FloatToStrF(emax, ffFixed, 5, 1)+'m'+csvsep);
-          olist.Add(rsGridCell7+csvsep+FloatToStrF(strecke, ffFixed, 5, 1)+'m'+csvsep);
+          olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmaxg)+'m'+csvsep);
+          olist.Add(rsGridCell6+csvsep+FormatFloat(dzfl, emax)+'m'+csvsep);
+          olist.Add(rsGridCell7+csvsep+FormatFloat(dzfl, strecke)+'m'+csvsep);
           if flt>0 then
             olist.Add(rsAvgSpeed+csvsep+
-            FloatToStrF(strecke/flt/1000, ffFixed, 5, 1)+'km/h'+csvsep);
+            FormatFloat(dzfl, strecke/flt/1000)+'km/h'+csvsep);
         end;
 //        olist.Add(rsRest+csvsep+'~'+IntToStr(round(BrUmrech(umin)))+'%'+csvsep);
       end else begin                               {reduzierte Ausgabe}
@@ -6736,9 +6268,9 @@ begin
           fln:=fln+1;
           gflt:=gflt+flt;
           if rgSpeedUnit.ItemIndex=2 then begin
-            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax/fft, ffFixed, 5, 1)+'ft'+csvsep);
+            olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmax/fft)+'ft'+csvsep);
           end else begin
-            olist.Add(rsGridCell5+csvsep+FloatToStrF(hmax, ffFixed, 5, 1)+'m'+csvsep);
+            olist.Add(rsGridCell5+csvsep+FormatFloat(dzfl, hmax)+'m'+csvsep);
           end;
 //          olist.Add(rsRest+csvsep+'~'+IntToStr(round(BrUmrech(umin)))+'%'+csvsep);
         end;
@@ -7174,9 +6706,9 @@ var vlist, flist, outlist: TStringList;
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
       if rgSpeedUnit.ItemIndex=2 then begin
-        outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
+        outlist.Add(tabs(rsGFstr, suff, tabu)+FormatFloat(dzfl, gdist/fmile)+'mi');
       end else begin
-        outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
+        outlist.Add(tabs(rsGFstr, suff, tabu)+FormatFloat(dzfl, gdist)+'km');
       end;
     prtext:=wexdef;                                {speichern als Text}
   end;
@@ -7271,9 +6803,9 @@ var vlist, flist, outlist: TStringList;
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
       if rgSpeedUnit.ItemIndex=2 then begin
-        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
+        outlist.Add(rsGFstr+csvsep+FormatFloat(dzfl, gdist/fmile)+'mi');
       end else begin
-        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
+        outlist.Add(rsGFstr+csvsep+FormatFloat(dzfl, gdist)+'km');
       end;
     prtext:=csvdef;                                {speichern als CSV}
   end;
@@ -7336,11 +6868,11 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+' / '+rsGFstr+suff;
           if rgSpeedUnit.ItemIndex=2 then begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
-                       FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi';
+                       FormatFloat(dzfl, gdist/fmile)+'mi';
             AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end else begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
-                       FloatToStrF(gdist, ffFixed, 10, 1)+'km';
+                       FormatFloat(dzfl, gdist)+'km';
             AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end;
         end;
@@ -7403,9 +6935,9 @@ var vlist, flist, outlist: TStringList;
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
       if rgSpeedUnit.ItemIndex=2 then begin
-        outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
+        outlist.Add(tabs(rsGFstr, suff, tabu)+FormatFloat(dzfl, gdist/fmile)+'mi');
       end else begin
-        outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
+        outlist.Add(tabs(rsGFstr, suff, tabu)+FormatFloat(dzfl, gdist)+'km');
       end;
     prtext:=wexdef;                                {speichern als Text}
   end;
@@ -7479,9 +7011,9 @@ var vlist, flist, outlist: TStringList;
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
       if rgSpeedUnit.ItemIndex=2 then begin
-        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
+        outlist.Add(rsGFstr+csvsep+FormatFloat(dzfl, gdist/fmile)+'mi');
       end else begin
-        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
+        outlist.Add(rsGFstr+csvsep+FormatFloat(dzfl, gdist)+'km');
       end;
     prtext:=csvdef;                                {speichern als CSV}
   end;
@@ -7547,11 +7079,11 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+' / '+rsGFstr+suff;
           if rgSpeedUnit.ItemIndex=2 then begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
-                       FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi';
+                       FormatFloat(dzfl, gdist/fmile)+'mi';
             AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end else begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
-                       FloatToStrF(gdist, ffFixed, 10, 1)+'km';
+                       FormatFloat(dzfl, gdist)+'km';
             AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end;
         end;
@@ -7614,9 +7146,9 @@ var vlist, flist, outlist: TStringList;
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
       if rgSpeedUnit.ItemIndex=2 then begin
-        outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
+        outlist.Add(tabs(rsGFstr, suff, tabu)+FormatFloat(dzfl, gdist/fmile)+'mi');
       end else begin
-        outlist.Add(tabs(rsGFstr, suff, tabu)+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
+        outlist.Add(tabs(rsGFstr, suff, tabu)+FormatFloat(dzfl, gdist)+'km');
       end;
     prtext:=wexdef;                                {speichern als Text}
   end;
@@ -7690,9 +7222,9 @@ var vlist, flist, outlist: TStringList;
                   FormatDateTime(zzf, gftime)+'h');
     if gdist>0 then
       if rgSpeedUnit.ItemIndex=2 then begin
-        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi');
+        outlist.Add(rsGFstr+csvsep+FormatFloat(dzfl, gdist/fmile)+'mi');
       end else begin
-        outlist.Add(rsGFstr+csvsep+FloatToStrF(gdist, ffFixed, 10, 1)+'km');
+        outlist.Add(rsGFstr+csvsep+FormatFloat(dzfl, gdist)+'km');
       end;
     prtext:=csvdef;                                {speichern als CSV}
   end;
@@ -7754,11 +7286,11 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
           StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+' / '+rsGFstr+suff;
           if rgSpeedUnit.ItemIndex=2 then begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
-                       FloatToStrF(gdist/fmile, ffFixed, 10, 1)+'mi';
+                       FormatFloat(dzfl, gdist/fmile)+'mi';
             AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end else begin
             StatusBar1.Panels[5].Text:=StatusBar1.Panels[5].Text+
-                       FloatToStrF(gdist, ffFixed, 10, 1)+'km';
+                       FormatFloat(dzfl, gdist)+'km';
             AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           end;
         end;
@@ -7899,7 +7431,7 @@ procedure TForm1.speExpoChange(Sender: TObject);  {Set EV}
 begin
   if btnCGO3Time.Enabled then begin
     CGO3run('SET_EXPOSURE_VALUE&mode='+
-            FloatToStrf(speExpo.Value, ffFixed, 3, 1), 0);
+            FormatFloat(dzfl, speExpo.Value), 0);
     CGO3run('', 0);
   end;
 end;
@@ -8056,10 +7588,11 @@ procedure TForm1.btnDefaultProfileClick(Sender: TObject);   {Defaulteinstellung}
 begin                     {Reset Schnellanalyse für alle drei Histogramme}
   TimerDiashow.Enabled:=false;
   SetProfile(0);
-  cbxProfiles.ItemIndex:=0;                         {Profiles rücksetzen}
+  cbxProfiles.ItemIndex:=0;                        {Profiles rücksetzen}
 end;
 
 (*Begin Geotagging #############################################################
+
   Needed component: https://sourceforge.net/p/lazarus-ccr/svn/HEAD/tree/components/fpexif/
   EXIF tags:        https://exiftool.org/TagNames/EXIF.html
 
@@ -8073,7 +7606,7 @@ end;
     n := AInputStream.Read(header{%H-}, SizeOf(header));
     if n <> Sizeof(header) then
       Error(rsIncompleteJpegSegmentHeader);
- --------------------------------------------------------------------------------
+  --------------------------------------------------------------------------------
   // In some pictures the space between segments is filled with $00 (patch 11/2020)
     if header.Key = 0 then
       repeat                                //skip unnecessary $00
@@ -8083,20 +7616,34 @@ end;
         if n <> Sizeof(header) then
           Error(rsIncompleteJpegSegmentHeader);
       until header.Key <> 0;                // something else, hopefully a new segment
- --------------------------------------------------------------------------------
+  --------------------------------------------------------------------------------
     if header.Key <> $FF then
       Error(rsJpegSegmentMarkerExpected);
     header.Size := BEToN(header.Size);
  ....
+ 
+ ================================================================================
+    File fpeExifReadWrite: 2021-01-16 Skip TagType 0 from Yuneec cam CGO3
+
+    if ifdRec.DataType<>0 then
+
+    if not (ifdRec.DataType in [1..ord(High(TTagType))]) then begin
+      Error(Format(rsIncorrectTagType, [ifdRec.DataType, i, ifdRec.TagID, FImgInfo.Filename]));
+      exit;
+    end;
+
+    ....
+================================================================================
+
  *)
 
-function GetEXIFtime(RdData: TImgInfo): TDateTime;     {Get date/time from EXIF}
+function GetEXIFtime(RdData: TImgInfo): TDateTime; {Get date/time from EXIF}
 var TimeTag: TTag;
 begin
-  result:=0;                                           {Invalid date far in the past as default}
-  TimeTag:=RdData.ExifData.TagByName[exTime1];         {Try mostly used tag}
+  result:=0;                                       {Invalid date far in the past as default}
+  TimeTag:=RdData.ExifData.TagByName[exTime1];     {Try mostly used tag}
   if TimeTag=nil then
-    TimeTag:=RdData.ExifData.TagByName[exTime2];       {Try another tag}
+    TimeTag:=RdData.ExifData.TagByName[exTime2];   {Try another tag}
   if TimeTag=nil then
     TimeTag:=RdData.ExifData.TagByName[exTime3];
   if TimeTag is TDateTimeTag then
@@ -8106,9 +7653,9 @@ end;
 function ReadTag(RdData: TImgInfo; TagName, ErrorMsg: string): string;
 var TagToRead: TTag;
 begin
-  result:=ErrorMsg;                                    {Error message}
+  result:=ErrorMsg;                                {Error message}
   TagToRead:=RdData.ExifData.TagByName[TagName];
-  if TagToRead<>nil then                               {Check if tag is available}
+  if TagToRead<>nil then                           {Check if tag is available}
     result:=TagToRead.AsString;
 end;
 
@@ -8117,15 +7664,20 @@ var TagToRead: TTag;
 begin
   result:=0;
   TagToRead:=RdData.ExifData.TagByName[TagName];
-  if TagToRead<>nil then                               {Check if tag is available}
+  if TagToRead<>nil then                           {Check if tag is available}
     result:=TagToRead.AsFloat;
 end;
 
-procedure TForm1.btnScanPicClick(Sender: TObject); {Geotagging: Scan picture folder}
+procedure TForm1.btnScanPicClick(Sender: TObject); {Geotagging: Button Scan}
+begin
+  ScanPic;
+end;
+
+procedure TForm1.ScanPic;                          {Geotagging: Scan picture folder}
 var i, zhl: integer;
     filelist, inlist, splitlist: TStringlist;
     aImgInfo: TImgInfo;
-    picdat, tmin, tmax: TDateTime;
+    picdat, tmin, tmax, ttemp: TDateTime;
     lat, lon, alt: double;
     ref, cam: string;
 
@@ -8190,7 +7742,9 @@ begin
             end;
             if aImgInfo.HasEXIF then begin         {Read data from EXIF, check what is in}
               try
-                picdat:=GetEXIFtime(aImgInfo);
+                ttemp:=GetEXIFtime(aImgInfo);
+                if ttemp>0 then                    {EXIF time available, CGO has not}
+                  picdat:=ttemp;
                 cam:=trim(ReadTag(aImgInfo, exModel, ''));
                 if (cam<>'') and                   {Fill camera listing}
                    (cgpCamera.Items.IndexOf(cam)<0) then  {Not yet in list}
@@ -8208,8 +7762,8 @@ begin
                   ref:=uppercase(ReadTag(aImgInfo, exLatRef, exE));
                   if (ref[1]=exW) and (lon>0) then
                     lon:=-lon;                     {Correct lon for western hemisphere}
-                  gridEXIFPic.Cells[4, i+1]:=FormatFloat(coordfrm, lat)+exID;
-                  gridEXIFPic.Cells[5, i+1]:=FormatFloat(coordfrm, lon)+exID;
+                  gridEXIFPic.Cells[4, i+1]:=FormatFloat(coordfl6, lat)+exID;
+                  gridEXIFPic.Cells[5, i+1]:=FormatFloat(coordfl6, lon)+exID;
                   gridEXIFPic.Cells[6, i+1]:=FormatFloat(dzfl, alt)+exID;
                 end else                           {No valid coordinates found in EXIF}
                   FindPicData;                     {Find time stamp in telemetry}
@@ -8284,9 +7838,9 @@ begin
   end;
 end;
 
-procedure WriteTagAsFloat(var WrData: TImgInfo;        {EXIF data set}
-                          TagName: string;             {Tag name to write into}
-                          NewValue: double;            {New value}
+procedure WriteTagAsFloat(var WrData: TImgInfo;    {EXIF data set}
+                          TagName: string;         {Tag name to write into}
+                          NewValue: double;        {New value}
                           Overwrite: boolean=false);   {Name, value, allow}
 var WantedTag, InsertedTag: TTag;
 begin
@@ -8304,7 +7858,7 @@ function GetCoords(lats, lons: string; var la, lo: double;
                                        var lar, lor: string): boolean;
 begin
   lar:=exN;                                        {Default hemisphere}
-  lor:=exE;
+  lor:=exE;                                        {lar, lor are references}
   la:=StrToFloatN(lats);
   lo:=StrToFloatN(lons);
   if la<0 then begin
@@ -8446,17 +8000,38 @@ begin
   end;
 end;
 
+procedure TForm1.lblGitHubClick(Sender: TObject);      {Open GitHub repo}
+begin
+  if OpenURL(lblGitHub.Hint) then
+    lblGitHub.Font.Color:=clPurple;
+end;
+
+procedure TForm1.lblGitHubMouseEnter(Sender: TObject); {Anitated GitHub link}
+begin
+  lblGitHub.Font.Style:=lblGitHub.Font.Style+[fsBold];
+end;
+
+procedure TForm1.lblGitHubMouseLeave(Sender: TObject);
+begin
+  lblGitHub.Font.Style:=lblGitHub.Font.Style-[fsBold];
+end;
+
+procedure TForm1.mnDownloadClick(Sender: TObject);
+begin
+  CheckVersion;
+end;
+
 
 {Profiles sind von mir häufig benutzte Einstellungen für die Schnellanalyse.
  Sie sind hier hart codiert und vom Benutzer nicht editierbar.}
 
 procedure TForm1.cbxProfilesChange(Sender: TObject);
-begin                                              {Profile ausgewählt}
+begin                                              {Profile selected}
   if cbxProfiles.ItemIndex>0 then
     SetProfile(cbxProfiles.ItemIndex);
 end;
 
-procedure TForm1.SetProfile(idx: integer);         {Profile ausgewählt}
+procedure TForm1.SetProfile(idx: integer);         {Profile selected}
 
   procedure DefaultCl;
   begin
@@ -8809,7 +8384,8 @@ procedure TForm1.FormDblClick(Sender: TObject);    {AboutBox}
 begin
   if MessageDlg(capForm1+sLineBreak+AppName+tab2+AppVersion+
                 sLineBreak+sLineBreak+meinname+sLineBreak+homepage+sLineBreak+email,
-                mtInformation,[mbHelp, mbOK],0)=mrNone then OpenManual;
+                mtInformation,[mbHelp, mbOK],0)=mrNone then
+    OpenManual;
 end;
 
 procedure TForm1.FormDropFiles(Sender: TObject; const FileNames: array of String);
@@ -8843,12 +8419,15 @@ begin
        (v_type<>BrID) then                         {H501 ???}
       TimerDiashow.Enabled:=true;                  {Weiter}
   end;
+  if key=VK_ESCAPE then
+    Close;
 end;
 
 procedure TForm1.FormShow(Sender: TObject);        {All to do after load session properties}
 var i, bl: integer;
 begin
   ScanPicEnable;
+  lblSaturation.Caption:=capLabel4+tab2+IntToStr(tbrSaturation.Position);
   bl:=MAVmsg.Tag;
   if cbHighLight.Checked then                      {Switch on HighLighter}
     AppLog.Highlighter:=AppLogHighlighter;
@@ -8887,7 +8466,6 @@ end;
 procedure TForm1.Label7MouseEnter(Sender: TObject); {Link animieren}
 begin
   Label7.Font.Style:=Label7.Font.Style+[fsBold];
-  Label7.Cursor:=crHandPoint;
 end;
 
 procedure TForm1.Label7MouseLeave(Sender: TObject); {Link animieren}
@@ -8896,15 +8474,13 @@ begin
 end;
 
 procedure TForm1.Label8Click(Sender: TObject);     {Download update}
-begin                                              {Farbe ändern}
-  if OpenURL(homepage+DownURL) then
-    Label8.Font.Color:=clPurple;
+begin
+  CheckVersion;
 end;
 
 procedure TForm1.Label8MouseEnter(Sender: TObject); {Link animieren}
 begin
   Label8.Font.Style:=Label8.Font.Style+[fsBold];
-  Label8.Cursor:=crHandPoint;
 end;
 
 procedure TForm1.Label8MouseLeave(Sender: TObject); {Link animieren}
@@ -8969,7 +8545,6 @@ end;
 procedure TForm1.lblMAVcommonMouseEnter(Sender: TObject); {Link animation}
 begin
   lblMAVcommon.Font.Style:=Label7.Font.Style+[fsBold];
-  lblMAVcommon.Cursor:=crHandPoint;
 end;
 
 procedure TForm1.lblMAVcommonMouseLeave(Sender: TObject);
@@ -9304,7 +8879,7 @@ begin
 end;
 
 procedure TForm1.MAVmsgDblClick(Sender: TObject);  {All messages true by double click}
-var i: integer=0;                                    {or invert with Ctrl}
+var i: integer=0;                                  {or invert with Ctrl}
     shstate: TShiftState;
 begin
   shstate:=GetKeyShiftState;
@@ -9826,22 +9401,22 @@ begin
           gridOverview.Cells[3,z+1]:=FormatDateTime(zzf, ed);
           gridOverview.Cells[4,z+1]:=FormatDateTime('nn:ss', flt);     {Flugzeit}
           if rgSpeedUnit.ItemIndex=2 then begin
-            gridOverview.Cells[5,z+1]:=FloatToStrF(hmaxg/fft, ffFixed, 4, 1)+'ft';
-            gridOverview.Cells[6,z+1]:=FloatToStrF(emax/fft, ffFixed, 5, 1)+'ft';
-            gridOverview.Cells[7,z+1]:=FloatToStrF(strecke/fft, ffFixed, 5, 1)+'ft';
-            gridOverview.Cells[8,z+1]:=FloatToStrF(tasmaxg*fmph, ffFixed, 4, 1)+'mph'
+            gridOverview.Cells[5,z+1]:=FormatFloat(dzfl, hmaxg/fft)+'ft';
+            gridOverview.Cells[6,z+1]:=FormatFloat(dzfl, emax/fft)+'ft';
+            gridOverview.Cells[7,z+1]:=FormatFloat(dzfl, strecke/fft)+'ft';
+            gridOverview.Cells[8,z+1]:=FormatFloat(dzfl, tasmaxg*fmph)+'mph'
           end else begin
-            gridOverview.Cells[5,z+1]:=FloatToStrF(hmaxg, ffFixed, 4, 1)+'m';
-            gridOverview.Cells[6,z+1]:=FloatToStrF(emax, ffFixed, 5, 1)+'m';
-            gridOverview.Cells[7,z+1]:=FloatToStrF(strecke, ffFixed, 5, 1)+'m';
-            gridOverview.Cells[8,z+1]:=FloatToStrF(tasmaxg*fkmh, ffFixed, 4, 1)+'km/h';
+            gridOverview.Cells[5,z+1]:=FormatFloat(dzfl, hmaxg)+'m';
+            gridOverview.Cells[6,z+1]:=FormatFloat(dzfl, emax)+'m';
+            gridOverview.Cells[7,z+1]:=FormatFloat(dzfl, strecke)+'m';
+            gridOverview.Cells[8,z+1]:=FormatFloat(dzfl, tasmaxg*fkmh)+'km/h';
           end;
           if v_type=brID then begin
             gridOverview.Cells[9,z+1]:=IntToStr(round(umaxg))+'%';
             gridOverview.Cells[10,z+1]:=IntToStr(round(uming))+'%';
           end else begin
-            gridOverview.Cells[9,z+1]:=FloatToStrF(umaxg, ffFixed, 3, 1)+'V';
-            gridOverview.Cells[10,z+1]:=FloatToStrF(uming, ffFixed, 3, 1)+'V';
+            gridOverview.Cells[9,z+1]:=FormatFloat(dzfl, umaxg)+'V';
+            gridOverview.Cells[10,z+1]:=FormatFloat(dzfl, uming)+'V';
           end;
           if tasmaxg=0 then
             gridOverview.Cells[8,z+1]:='';
@@ -9856,19 +9431,19 @@ begin
             gridOverview.Cells[3,z+1]:=FormatDateTime(zzf, ed);
             gridOverview.Cells[4,z+1]:=FormatDateTime('nn:ss', flt);
             if rgSpeedUnit.ItemIndex=2 then begin
-              gridOverview.Cells[5,z+1]:=FloatToStrF(hmax/fft, ffFixed, 4, 1)+'ft';
-              gridOverview.Cells[8,z+1]:=FloatToStrF(tasmax*fmph, ffFixed, 4, 1)+'mph'
+              gridOverview.Cells[5,z+1]:=FormatFloat(dzfl, hmax/fft)+'ft';
+              gridOverview.Cells[8,z+1]:=FormatFloat(dzfl, tasmax*fmph)+'mph'
             end else begin
-              gridOverview.Cells[5,z+1]:=FloatToStrF(hmax, ffFixed, 4, 1)+'m';
-              gridOverview.Cells[8,z+1]:=FloatToStrF(tasmax*fkmh, ffFixed, 4, 1)+'km/h';
+              gridOverview.Cells[5,z+1]:=FormatFloat(dzfl, hmax)+'m';
+              gridOverview.Cells[8,z+1]:=FormatFloat(dzfl, tasmax*fkmh)+'km/h';
             end;
             if v_type=brID then begin
 //              gridOverview.Cells[8,z+1]:='';     {Breeze keine Speed}
               gridOverview.Cells[9,z+1]:=IntToStr(round(umax))+'%';
               gridOverview.Cells[10,z+1]:=IntToStr(round(umin))+'%';
             end else begin
-              gridOverview.Cells[9,z+1]:=FloatToStrF(umax, ffFixed, 3, 1)+'V';
-              gridOverview.Cells[10,z+1]:=FloatToStrF(umin, ffFixed, 3, 1)+'V';
+              gridOverview.Cells[9,z+1]:=FormatFloat(dzfl, umax)+'V';
+              gridOverview.Cells[10,z+1]:=FormatFloat(dzfl, umin)+'V';
             end;
             if tasmax=0 then
               gridOverview.Cells[8,z+1]:='';
@@ -9886,7 +9461,7 @@ begin
             if v_type=brID then
               gridOverview.Cells[9,z+1]:=IntToStr(round(umax))+'%'
             else
-              gridOverview.Cells[9,z+1]:=FloatToStrF(umax, ffFixed, 3, 1)+'V';
+              gridOverview.Cells[9,z+1]:=FormatFloat(dzfl, umax)+'V';
           end;
         end;
       gridOverview.Cells[1, gridOverview.RowCount-1]:=rsTurns+suff+
@@ -10000,7 +9575,7 @@ var inlist, splitlist: TStringList;
     else
       AnalyseYLegacy;                              {Rest der Yuneec Welt}
     end;
-    an:=an+rsGridCell6+tab1+FloatToStrF(emax, ffFixed, 5, 1)+'m, '+
+    an:=an+rsGridCell6+tab1+FormatFloat(dzfl, emax)+'m, '+
            rsSpeed+tab1+tab1+vms(dur, emax);
   end;
 
@@ -10020,8 +9595,8 @@ var inlist, splitlist: TStringList;
       if dist>emax then
         emax:=dist;
     end;
-    an:=an+rsGPSh+tab1+FloatToStrF(ha, ffFixed, 5, 1)+'m, '+
-           rsGridCell6+tab1+FloatToStrF(emax, ffFixed, 8, 1)+'m, '+
+    an:=an+rsGPSh+tab1+FormatFloat(dzfl, ha)+'m, '+
+           rsGridCell6+tab1+FormatFloat(dzfl, emax)+'m, '+
            rsSpeed+tab1+tab1+vms(dur, emax);
   end;
 
@@ -11550,24 +11125,37 @@ begin
   klist.Add(tab2+'<PolyStyle><color>7f00ff00</color></PolyStyle>'); {for Waypoints}
   klist.Add(tab2+'<IconStyle><Icon><href>'+aircrafticon+'</href></Icon></IconStyle>');
   klist.Add('</Style>');
-  klist.Add('<Style id="GrndStn">');           {Bewegungen Pilot}
+
+  klist.Add('<Style id="GrndStn">');               {Pilots track}
   klist.Add(tab2+'<LineStyle>');
-  klist.Add(tab4+'<color>FF000000</color>');    {Farbe der Linie, schwarz}
+  klist.Add(tab4+'<color>FF000000</color>');       {Color black for STxx positions}
   klist.Add(tab4+'<width>2</width>');
   klist.Add(tab2+'</LineStyle>');
   klist.Add('</Style>');
+
+ {Some definitions for placemarks, addressed by #ID}
   klist.Add('<Style id="starting">');
   klist.Add(tab2+'<IconStyle><Icon><href>'+starticon+'</href></Icon></IconStyle>');
   klist.Add('</Style>');
+
   klist.Add('<Style id="landing">');
   klist.Add(tab2+'<IconStyle><Icon><href>'+stopicon+'</href></Icon></IconStyle>');
   klist.Add('</Style>');
+
   klist.Add('<Style id="alert">');
   klist.Add(tab2+'<IconStyle><Icon><href>'+alerticon+'</href></Icon></IconStyle>');
   klist.Add('</Style>');
+
+  if cbMarker.Checked then begin                   {Only needed when Marker set to true}
+    klist.Add('<Style id="waypoint">');
+    klist.Add(tab2+'<IconStyle><Icon><href>'+wpicon+'</href></Icon></IconStyle>');
+    klist.Add('</Style>');
+  end;
+
   klist.Add('<Style id="info">');
   klist.Add(tab2+'<IconStyle><Icon><href>'+infoicon+'</href></Icon></IconStyle>');
   klist.Add('</Style>');
+
   klist.Add('<Style id="photo">');
   klist.Add(tab2+'<IconStyle><Icon><href>'+fotoicon+'</href></Icon></IconStyle>');
   klist.Add('</Style>');
@@ -11589,12 +11177,22 @@ var
   n: Integer=0;
   dn, skoor, stime, lkoor, ltime: string;
   ts, bg, dt: TDateTime;
-  absh: Double;
+  absh, lat, lon, dist: Double;
   lgcy: boolean;
 
 const
   fmdnil=300;                                      {not existent flight mode}
 
+  procedure Timemarker(const lat1, lon1: double);  {Add time marker to KML}
+  begin
+    dist:=dist+DeltaKoord(lat, lon, lat1, lon1);   {Distance to previous pos}
+    lat:=lat1;
+    lon:=lon1;
+    if dist>tbrDistWP.Position then begin          {Time marker}
+      placemark(placelist, '#waypoint', FormatDateTime('nn:ss', ts)+'s', lkoor, ltime);
+      dist:=0;                                     {Reset distance}
+    end;
+  end;
 
   procedure kmlLegacy;
   begin
@@ -11606,17 +11204,21 @@ const
               v_type, true) then begin
       bg:=ZeitToDT(splitlist[0], v_type);
       ts:=bg+nowUTC-now;                           {UTC Zeitstempel errechnen}
+
+      if cbMarker.Checked then
+        TimeMarker(StrToFloatN(splitlist[5]), StrToFloatN(splitlist[6]));
+
       fmd:=StrToIntDef(splitlist[gridDetails.Tag], fmdnil);
       ltime:=FormatDateTime(dzf, ts)+'T'+
              FormatDateTime(zzf+zzz, ts)+'Z';
       lkoor:=ChrKoor(splitlist[6])+tab1+
              ChrKoor(splitlist[5])+tab1+splitlist[4]; {lon + lat + alt}
-      if stime='' then begin             {Startpunkt merken}
+      if stime='' then begin                       {Startpunkt merken}
         stime:=ltime;
         if rgAltitudeType.ItemIndex=0 then
           absh:=GethFromST10(z, bg);
         skoor:=ChrKoor(splitlist[6])+sep+
-               ChrKoor(splitlist[5])+sep+dzfl;  {ohne Höhe}
+               ChrKoor(splitlist[5])+sep+dzfl;     {ohne Höhe}
       end;
       inc(n);
       outlist1.Add(ltime);                         {Zeitstempel}
@@ -11634,7 +11236,7 @@ const
           13, 14: placemark(placelist, '#info', 'RTH', lkoor, ltime);
         end;
       end;
-      lfmd:=fmd;                         {only in real flights}
+      lfmd:=fmd;                                   {only in real flights}
     end;
   end;
 
@@ -11646,6 +11248,10 @@ const
         (bg>0) then begin
 //    ts:=bg+nowUTC-now;                           {UTC Zeitstempel errechnen}
       ts:=bg;
+
+      if cbMarker.Checked then
+        TimeMarker(StrToFloatN(splitlist[9]), StrToFloatN(splitlist[10]));
+
       ltime:=FormatDateTime(dzf, ts)+'T'+
              FormatDateTime(zzf, ts)+'Z';
       lkoor:=ChrKoor(splitlist[10])+tab1+
@@ -11670,6 +11276,10 @@ const
         BrGPSfix(splitlist[20]) and
         (bg>0) then begin
       ts:=bg+nowUTC-now;                           {UTC Zeitstempel errechnen}
+
+      if cbMarker.Checked then
+        TimeMarker(BrCoordToFloat(splitlist[12]), BrCoordToFloat(splitlist[13]));
+
       ltime:=FormatDateTime(dzf, ts)+'T'+
              FormatDateTime(zzf, ts)+'Z';
       lkoor:=BrCoordFormat(splitlist[13])+tab1+
@@ -11694,6 +11304,10 @@ const
         NichtLeer(splitlist[3])) and
        (bg>0) then begin
       ts:=bg+nowUTC-now;                           {UTC Zeitstempel errechnen}
+
+      if cbMarker.Checked then
+        TimeMarker(StrToFloatN(splitlist[2]), StrToFloatN(splitlist[3]));
+
       ltime:=FormatDateTime(dzf, ts)+'T'+
              FormatDateTime(zzf, ts)+'Z';
       lkoor:=ChrKoor(splitlist[3])+tab1+           {lon + lat + alt}
@@ -11739,8 +11353,10 @@ begin
   h501ph:=0;                                       {photo}
   h501mk:=0;                                       {Marker}
   lfmd:=fmdnil;                                    {last flight mode, default: nil}
-  lgcy:=true;                                      {Additional checks}
   dt:=0;
+  dist:=0;
+  lat:=0;
+  lgcy:=true;                                      {Additional checks}
   splitlist.Delimiter:=sep;
   case v_type of
     brID: begin
@@ -11805,7 +11421,7 @@ begin
         if (absh<>0) and
            (rgAltitudeType.ItemIndex=0) then begin
           kmllist.Add(tab4+'<gx:altitudeOffset>'+
-                      FloatToStrF(absh, ffFixed, 5, 1)+
+                      FormatFloat(dzfl, absh)+
                       '</gx:altitudeOffset>');
           kmllist.Add(tab4+'<'+amtag+rgAltitudeType.Items[0]+'</'+amtag);
         end else begin
@@ -11996,7 +11612,7 @@ var
       end;
       try
         ch:=StrToFloatN(lalt)+absh;                {absolute Höhe}
-        lalt:=FloatToStrF(ch, ffFixed, 5, 2);
+        lalt:=FormatFloat(ctfl, ch);
       except                                       {lalt unverändert übernehmen}
       end;
       lalt:=GPXele+lalt+'</ele>';                  {alt}
@@ -12274,12 +11890,12 @@ begin
               if (NichtLeer(splitlist[5]) or NichtLeer(splitlist[6])) and  {GPS}
                  GetRFM(splitlist[gridDetails.Tag],
                         v_type, true) then begin
-                if (lat1=0) and (lon1=0) then begin    {Startpunkt festlegen}
+                if (lat1=0) and (lon1=0) then begin  {Startpunkt festlegen}
                   hgrd:=GethFromST10(z, bg);
                   dist:=0;
                   lon1:=lon2;
                   lat1:=lat2;
-                end else begin                      {Distanz zum Startpunkt berechnen}
+                end else begin                     {Distanz zum Startpunkt berechnen}
                   dist:=DeltaKoord(lat1, lon1, lat2, lon2);   {Entfernung zum Startpunkt}
                 end;
               end else begin
@@ -12289,9 +11905,9 @@ begin
                   lon1:=0;
                 end;
               end;
-              s:=FloatToStrF(dist, ffFixed, 12, 1)+sep+     {distance_from_start}
+              s:=FormatFloat(dzfl, dist)+sep+      {distance_from_start}
                  FormatDateTime(vzf+zzz, bg)+sep+
-                 FloatToStrF(StrToFloatN(splitlist[4])+hgrd, ffFixed, 12, 2); {altitude}
+                 FormatFloat(ctfl, StrToFloatN(splitlist[4])+hgrd); {altitude}
               splitlist[8]:=KorrBool(splitlist[8]);         {gps_used}
               splitlist[14]:=KorrSigned(splitlist[14],255); {Motorstatus}
               splitlist[15]:=KorrSigned(splitlist[15],255); {IMU status}
@@ -12368,7 +11984,7 @@ var
                      BrCoordFormat(splitlist[13])+sep+       {lon}
                      BrCoordFormat(splitlist[12])+sep+       {lat}
                      BrTeilen(splitlist[10], 100, 1)+sep+    {altitude}
-                     FloatToStrF(dist, ffFixed, 12, 1)+sep+  {distance_from_start}
+                     FormatFloat(dzfl, dist)+sep+            {distance_from_start}
                      s+sep+                                  {gps_update}
                      '0'+sep+                                {Speed}
                      BrTeilen(splitlist[17], 100, 2)+sep+    {Heading (yaw)}
@@ -12422,7 +12038,7 @@ var
                          ChrKoor(splitlist[6])+sep+              {lon}
                          ChrKoor(splitlist[5])+sep+              {lat}
                          splitlist[4]+sep+                       {altitude}
-                         FloatToStrF(dist, ffFixed, 12, 1)+sep+  {distance_from_start}
+                         FormatFloat(dzfl, dist)+sep+            {distance_from_start}
                          KorrBool(splitlist[8])+sep+             {gps_update}
                          splitlist[7]+sep+                       {Speed}
                          splitlist[12]+sep+                      {Heading (yaw)}
@@ -12835,7 +12451,7 @@ const mxw=1365;
            CellColorSetting(gridDetails, FramesToColor(e));
            exit;
          end;
-      4: begin                                     {Elevaton}
+      4: begin                                     {Elevation}
            try
              if rgSpeedUnit.ItemIndex=2 then
                h:=StrToFloatN(gridDetails.Cells[aCol, aRow])/fft  {in ft}
@@ -14355,10 +13971,11 @@ begin
   end else TimerDiashow.Enabled:=false;            {Ohne Daten nix anzeigen}
 end;
 
-procedure TForm1.tbrSaturationChange(Sender: TObject); {Saturation verstellt}
+procedure TForm1.tbrSaturationChange(Sender: TObject); {Saturation adjustment}
 begin
   EnSave;
   tbrSaturation.SelEnd:=tbrSaturation.Position;
+  lblSaturation.Caption:=capLabel4+tab2+IntToStr(tbrSaturation.Position);
 end;
 
 procedure TForm1.tbrDistWPChange(Sender: TObject); {Entfernung für Waypoits}
@@ -14368,7 +13985,8 @@ begin
   s:=IntToStr(tbrDistWP.Position)+'m';
   if rgSpeedUnit.ItemIndex=2 then s:=IntToStr(Round(tbrDistWP.Position/fft))+'ft';
   tbrDistWP.Hint:=s;
-  Label12.Caption:=capLabel12+tab2+s;
+  lblDistWP.Caption:=capLabel12+tab2+s;
+  btnConv.Enabled:=true;
 end;
 
 procedure TForm1.mnGoogleMapClick(Sender: TObject); {Zeige in GoogleMaps}
@@ -14917,17 +14535,17 @@ begin
         if rgSpeedUnit.ItemIndex=2 then begin
           wrt:=wrt/5280;
           gridOverview.Cells[7, gridOverview.RowCount-1]:=
-                              FloatToStrF(wrt, ffFixed, 6, 2)+'mi';
+                              FormatFloat(ctfl, wrt)+'mi';
           if gtm>0 then                            {avarage speed in mph}
             gridOverview.Cells[8, gridOverview.RowCount-1]:='Ø '+
-                              FloatToStrF(wrt/gtm, ffFixed, 6, 2)+'mph';
+                              FormatFloat(ctfl, wrt/gtm)+'mph';
         end else begin
           wrt:=wrt/1000;
           gridOverview.Cells[7, gridOverview.RowCount-1]:=
-                              FloatToStrF(wrt, ffFixed, 6, 2)+'km';
+                              FormatFloat(ctfl, wrt)+'km';
           if gtm>0 then                            {avarage speed in km/h}
             gridOverview.Cells[8, gridOverview.RowCount-1]:='Ø '+
-                              FloatToStrF(wrt/gtm, ffFixed, 6, 2)+'km/h';
+                              FormatFloat(ctfl, wrt/gtm)+'km/h';
         end;
         gridOverview.Cells[0,0]:=rsDateien+suff+IntToStr(n);
         StatusBar1.Panels[0].Text:=rsDateien+suff+IntToStr(n);
@@ -14963,6 +14581,11 @@ begin
   else
     AppLog.HighLighter:=nil;
   AppLog.Refresh;
+end;
+
+procedure TForm1.cbMarkerChange(Sender: TObject); {Time marker changed --> enable convertion}
+begin
+  btnConv.Enabled:=true;
 end;
 
 procedure TForm1.mnHexdumpClick(Sender: TObject);  {Tools Menu Hexdump}

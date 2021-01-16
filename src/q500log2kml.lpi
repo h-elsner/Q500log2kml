@@ -24,7 +24,7 @@
       <MajorVersionNr Value="4"/>
       <MinorVersionNr Value="5"/>
       <Language Value="0407"/>
-      <StringTable CompanyName="Helmut Elsner" LegalCopyright="(c) Helmut Elsner 2015-2020" ProductName="Yuneec FlightLog Analysis" ProductVersion="1.0"/>
+      <StringTable CompanyName="Helmut Elsner" LegalCopyright="(c) Helmut Elsner 2015-2021" ProductName="Yuneec FlightLog Analysis" ProductVersion="1.0"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -39,27 +39,30 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="6">
+    <RequiredPackages Count="7">
       <Item1>
-        <PackageName Value="fpexif_pkg"/>
+        <PackageName Value="TurboPowerIPro"/>
       </Item1>
       <Item2>
-        <PackageName Value="SynEdit"/>
+        <PackageName Value="fpexif_pkg"/>
       </Item2>
       <Item3>
-        <PackageName Value="LazControls"/>
+        <PackageName Value="SynEdit"/>
       </Item3>
       <Item4>
-        <PackageName Value="industrial"/>
+        <PackageName Value="LazControls"/>
       </Item4>
       <Item5>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="industrial"/>
       </Item5>
       <Item6>
-        <PackageName Value="LCL"/>
+        <PackageName Value="TAChartLazarusPkg"/>
       </Item6>
+      <Item7>
+        <PackageName Value="LCL"/>
+      </Item7>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="9">
       <Unit0>
         <Filename Value="q500log2kml.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -102,6 +105,10 @@
         <Filename Value="q5_common.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="mav_defs.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
