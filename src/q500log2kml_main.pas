@@ -7595,48 +7595,10 @@ end;
 (*Begin Geotagging #############################################################
 
   Needed component: https://sourceforge.net/p/lazarus-ccr/svn/HEAD/tree/components/fpexif/
-  EXIF tags:        https://exiftool.org/TagNames/EXIF.html
+                    plus fpEXIF patch for Yuneec from wp_XYZ in r7965 (2021-01-17)
+  See also: https://www.lazarusforum.de/viewtopic.php?f=18&t=13356
 
-  In some pictures the space between segments is filled with $00 --->
-  rsJpegSegmentMarkerExpected = 'Defective JPEG structure: Segment marker ($FF) expected.';
-
-  Patch in "fpemetadata.pas" procedure TImgInfo.MergeToJpegStream(AInputStream, AOutputStream: TStream);
-  ....
-  while AInputStream.Position < AInputStream.Size do begin
-    savedPos := AInputStream.Position;      // just for debugging
-    n := AInputStream.Read(header{%H-}, SizeOf(header));
-    if n <> Sizeof(header) then
-      Error(rsIncompleteJpegSegmentHeader);
-  --------------------------------------------------------------------------------
-  // In some pictures the space between segments is filled with $00 (patch 11/2020)
-    if header.Key = 0 then
-      repeat                                //skip unnecessary $00
-        inc(savedPos);
-        AInputStream.Position := savedPos;  // Read next byte
-        n := AInputStream.Read(header{%H-}, SizeOf(header));
-        if n <> Sizeof(header) then
-          Error(rsIncompleteJpegSegmentHeader);
-      until header.Key <> 0;                // something else, hopefully a new segment
-  --------------------------------------------------------------------------------
-    if header.Key <> $FF then
-      Error(rsJpegSegmentMarkerExpected);
-    header.Size := BEToN(header.Size);
- ....
- 
- ================================================================================
-    File fpeExifReadWrite: 2021-01-16 Skip TagType 0 from Yuneec cam CGO3
-
-    if ifdRec.DataType<>0 then
-
-    if not (ifdRec.DataType in [1..ord(High(TTagType))]) then begin
-      Error(Format(rsIncorrectTagType, [ifdRec.DataType, i, ifdRec.TagID, FImgInfo.Filename]));
-      exit;
-    end;
-
-    ....
-================================================================================
-
- *)
+  EXIF tags:        https://exiftool.org/TagNames/EXIF.html   *)
 
 function GetEXIFtime(RdData: TImgInfo): TDateTime; {Get date/time from EXIF}
 var TimeTag: TTag;

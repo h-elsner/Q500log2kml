@@ -27,12 +27,12 @@ object Form1: TForm1
     Height = 500
     Top = 96
     Width = 838
-    ActivePage = tabSettings
+    ActivePage = tabGeo
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 7
+    TabIndex = 6
     TabOrder = 1
     OnChange = pcMainChange
     Options = [nboKeyboardTabSwitch]
@@ -1705,8 +1705,8 @@ object Form1: TForm1
         TabOrder = 7
         ColWidths = (
           85
-          101
-          102
+          110
+          110
         )
       end
       object lblTimeOffset: TLabel
