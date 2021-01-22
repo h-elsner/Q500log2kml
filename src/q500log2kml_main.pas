@@ -233,7 +233,7 @@ uses
   TATools, indGnouMeter, AdvLed, Sensors, graphutil, fphttpclient, lazUTF8,
   SynEdit, SynHighlighterMulti, SynHighlighterAny, strutils, dateutils,
   lazsysutils, q5_common, Types, fpeMetaData, fpeTags,
-  fpeExifData, mav_defs, Iphttpbroker, IpHtml;
+  fpeExifData, exifstuff, mav_defs, Iphttpbroker, IpHtml;
 
 type
   TarrFW = array[0..7] of string;
@@ -546,6 +546,7 @@ type
     tbrSharpness: TTrackBar;
     TreeView1: TTreeView;
     XMLPropStorage1: TXMLPropStorage;
+
     procedure btnDefaultProfileClick(Sender: TObject);
     procedure btnScanPicClick(Sender: TObject);
     procedure btnScreenshotClick(Sender: TObject);
@@ -616,6 +617,8 @@ type
     procedure gridEXIFPicDblClick(Sender: TObject);
     procedure gridEXIFPicPrepareCanvas(sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
+    procedure gridTimeAreaMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
     procedure lblGitHubClick(Sender: TObject);
     procedure lblGitHubMouseEnter(Sender: TObject);
     procedure lblGitHubMouseLeave(Sender: TObject);
@@ -932,6 +935,7 @@ const
   lipomin=3.3;                                     {Minimum LiPo voltage}
   lipomax=4.2;
   minlines=10;                                     {Minimum number if lines that makes sense to deal with}
+  exID=' ';                                        {ID for values updated by in StringGrid}
 
 {http://docwiki.embarcadero.com/RADStudio/Seattle/de/Farben_in_der_VCL}
   osmURL='https://www.openstreetmap.org/';         {als Karte}
@@ -1017,29 +1021,6 @@ const
   csvanz=80;                                       {Anzahl Spalten bei PX4 CSV Datei}
   posChan=60;                                      {Startposition Spalten RC-Channels}
   deltayaw=15;                                     {Change of direction [°] for Waypoints}
-
-{Used EXIF tags}
-  exMake=  'Make';
-  exModel= 'Model';
-  exTime1= 'DateTimeOriginal';
-  exTime2= 'DateTime';
-  exTime3= 'DateTimeDigitized';
-  exUser=  'UserComment';
-
-  exLatRef='GPSLatitudeRef';                       {'N' = North; 'S' = South}
-  exLonRef='GPSLongitudeRef';                      {'E' = East; 'W' = West}
-  exLat=   'GPSLatitude';
-  exLon=   'GPSLongitude';
-  exAlt=   'GPSAltitude';
-  exAltRef='GPSAltitudeRef';                       {0 = Above Sea Level; 1 = Below Sea Level}
-  exID=' ';
-  exN='N';
-  exS='S';
-  exW='W';
-  exE='E';
-  exDwn='1';                                       {1 = Below Sea Level}
-  exUp='0';                                        {0 = Above Sea Level}
-
 
 var
   Form1: TForm1;
@@ -1161,7 +1142,7 @@ begin
   AppLog.Color:=AppLog.GetColorResolvingParent;
   AppLog.Font.Color:=(not ColorToRGB(AppLog.Color)) and $00FFFFFF;
   AppLog.RightEdgeColor:=AppLog.Color;             {Make it invisible}
-  Caption:=capForm1+tab2+AppVersion;                  {Name und Version}
+  Caption:=capForm1+tab2+AppVersion;               {Name und Version}
   Hint:=capForm1;
   btnClose.Caption:=capBitBtn1;
   btnClose.Hint:=hntBitBtn1;
@@ -1171,17 +1152,24 @@ begin
   btnDefaultProfile.Hint:=hntBitBtn12;
   btnScreenshot.Caption:=rsScreenshot;
   btnScreenshot.Hint:=hntBitBtn13;
+
 {$IFDEF DARWIN}                                    {MAC OS X}
   btnScreenshot.Visible:=false;                    {Button Screenshot}
   mnMainScreenshot.Visible:=false;                 {Main Menu Screenshot}
   mnSaveAsHist.Visible:=false;                     {PopUp Menu Höhenprofil; geht das nun?}
 {$ENDIF}
-{$IFDEF LINUX}                                     {Linux}
-  sbtnLogDir.Height:=29;                           {Needs larger Speed buttons}
-  sbtnLogDir.Width:=29;
-  sbtnScanDir.Height:=29;
-  sbtnScanDir.Width:=29;
+
+{$IFDEF LINUX}                                     {Ubuntu Linux}
+  sbtnLogDir.Height:=30;                           {Needs larger Speed buttons}
+  sbtnLogDir.Width:=sbtnLogDir.Height;
+  sbtnScanDir.Height:=sbtnLogDir.Height;
+  sbtnScanDir.Width:=sbtnLogDir.Height;
+  sbtnPicFolder.Height:=sbtnLogDir.Height;
+  sbtnPicFolder.Width:=sbtnLogDir.Height;
+  sbtnTelemetry.Height:=sbtnLogDir.Height;
+  sbtnTelemetry.Width:=sbtnLogDir.Height;
 {$ENDIF}
+
   btnCut.Caption:=capBitBtn14;                     {Ausschneiden / Cut}
   btnCut.Hint:=hntBitBtn14;
   btnCGO3Reset.Caption:=capBitBtn18;
@@ -7600,35 +7588,22 @@ end;
 
   EXIF tags:        https://exiftool.org/TagNames/EXIF.html   *)
 
-function GetEXIFtime(RdData: TImgInfo): TDateTime; {Get date/time from EXIF}
-var TimeTag: TTag;
+procedure TForm1.mnGeoGMapClick(Sender: TObject);  {Menu GeoTagging show in GoogleMaps}
+var lat, lon: string;
 begin
-  result:=0;                                       {Invalid date far in the past as default}
-  TimeTag:=RdData.ExifData.TagByName[exTime1];     {Try mostly used tag}
-  if TimeTag=nil then
-    TimeTag:=RdData.ExifData.TagByName[exTime2];   {Try another tag}
-  if TimeTag=nil then
-    TimeTag:=RdData.ExifData.TagByName[exTime3];
-  if TimeTag is TDateTimeTag then
-    result:=TDateTimeTag(TimeTag).AsDateTime;
+  lat:=gridEXIFPic.Cells[4, gridEXIFPic.Selection.Top];
+  lon:=gridEXIFPic.Cells[5, gridEXIFPic.Selection.Top];
+  if (lat<>'') and (lon<>'') then
+    OpenURL(URLGMap(lat, lon));
 end;
 
-function ReadTag(RdData: TImgInfo; TagName, ErrorMsg: string): string;
-var TagToRead: TTag;
+procedure TForm1.mnGeoOSMClick(Sender: TObject);   {Menu GeoTagging show in OSM}
+var lat, lon: string;
 begin
-  result:=ErrorMsg;                                {Error message}
-  TagToRead:=RdData.ExifData.TagByName[TagName];
-  if TagToRead<>nil then                           {Check if tag is available}
-    result:=TagToRead.AsString;
-end;
-
-function ReadFloat(RdData: TImgInfo; TagName: string): double;
-var TagToRead: TTag;
-begin
-  result:=0;
-  TagToRead:=RdData.ExifData.TagByName[TagName];
-  if TagToRead<>nil then                           {Check if tag is available}
-    result:=TagToRead.AsFloat;
+  lat:=gridEXIFPic.Cells[4, gridEXIFPic.Selection.Top];
+  lon:=gridEXIFPic.Cells[5, gridEXIFPic.Selection.Top];
+  if (lat<>'') and (lon<>'') then
+    OpenURL(URLosm(lat, lon));
 end;
 
 procedure TForm1.btnScanPicClick(Sender: TObject); {Geotagging: Button Scan}
@@ -7708,7 +7683,7 @@ begin
                 ttemp:=GetEXIFtime(aImgInfo);
                 if ttemp>0 then                    {EXIF time available, CGO has not}
                   picdat:=ttemp;
-                cam:=trim(ReadTag(aImgInfo, exModel, ''));
+                cam:=trim(ReadString(aImgInfo, exModel, ''));
                 if (cam<>'') and                   {Fill camera listing}
                    (cgpCamera.Items.IndexOf(cam)<0) then  {Not yet in list}
                   cgpCamera.Items.Add(cam);
@@ -7719,10 +7694,10 @@ begin
 
                 if (lat<>0) or (lon<>0) then begin {Valid coordinates found in EXIF}
                   alt:=ReadFloat(aImgInfo, exAlt);
-                  ref:=uppercase(ReadTag(aImgInfo, exLatRef, exN));
+                  ref:=uppercase(ReadString(aImgInfo, exLatRef, exN));
                   if (ref[1]=exS) and (lat>0) then
                     lat:=-lat;                     {Correct lat for southern hemisphere}
-                  ref:=uppercase(ReadTag(aImgInfo, exLatRef, exE));
+                  ref:=uppercase(ReadString(aImgInfo, exLatRef, exE));
                   if (ref[1]=exW) and (lon>0) then
                     lon:=-lon;                     {Correct lon for western hemisphere}
                   gridEXIFPic.Cells[4, i+1]:=FormatFloat(coordfl6, lat)+exID;
@@ -7786,92 +7761,39 @@ begin
   end;
 end;
 
-procedure WriteTagAsString(var WrData: TImgInfo;       {EXIF data set}
-                           TagName, NewValue: string;  {Tag name and new string}
-                           Overwrite: boolean=false);  {Name, value, allow}
-var WantedTag, InsertedTag: TTag;
-begin
-  WantedTag:=WrData.ExifData.TagByName[TagName];
-  if WantedTag=nil then begin                      {Check if tag is missing}
-    InsertedTag:=WrData.EXIFdata.AddTagByName(TagName);
-    InsertedTag.AsString:=NewValue;                {Insert the nw value}
-  end else begin                                   {If tag was already there}
-    if Overwrite then
-      WantedTag.AsString:=NewValue;                {Overwrite value if allowed}
-  end;
-end;
-
-procedure WriteTagAsFloat(var WrData: TImgInfo;    {EXIF data set}
-                          TagName: string;         {Tag name to write into}
-                          NewValue: double;        {New value}
-                          Overwrite: boolean=false);   {Name, value, allow}
-var WantedTag, InsertedTag: TTag;
-begin
-  WantedTag:=WrData.ExifData.TagByName[TagName];
-  if WantedTag=nil then begin                      {Check if tag is missing}
-    InsertedTag:=WrData.EXIFdata.AddTagByName(TagName);
-    InsertedTag.AsFloat:=NewValue;                 {Insert the nw value}
-  end else begin                                   {If tag was already there}
-    if Overwrite then
-      WantedTag.AsFloat:=NewValue;                 {Overwrite value if allowed}
-  end;
-end;
-
-function GetCoords(lats, lons: string; var la, lo: double;
-                                       var lar, lor: string): boolean;
-begin
-  lar:=exN;                                        {Default hemisphere}
-  lor:=exE;                                        {lar, lor are references}
-  la:=StrToFloatN(lats);
-  lo:=StrToFloatN(lons);
-  if la<0 then begin
-    lar:=exS;                                      {Southern hemisphere}
-    la:=abs(la);
-  end;
-  if lo<0 then begin
-    lor:=exW;                                      {Western hemisphere}
-    lo:=abs(lo);
-  end;
-  result:=(la<>0) or (lo<>0);                      {Valid coordinates}
-end;
-
 procedure TForm1.btnWritePicClick(Sender: TObject); {Geotagging: Write EXIF data}
 var i, zhl: integer;
-    fn, cam, latref, lonref: string;
+    fn, cam: string;
     lat, lon, alt: double;
+    bg: TDateTime;
     aImgInfo: TImgInfo;
     newtag: TTag;
 begin
   zhl:=0;
   if gridEXIFPic.RowCount>1 then begin             {If pictures available}
     for i:=1 to gridEXIFPic.RowCount-1 do begin
+      bg:=0;
       if gridEXIFPic.Cells[3, i]<>'' then begin    {ID to do something}
         fn:=IncludeTrailingPathDelimiter(cbxPicFolder.Text)+gridEXIFPic.Cells[0, i];
         cam:=gridEXIFPic.Cells[1, i];
-        alt:=StrToFloatN(gridEXIFPic.Cells[6, i]); {Altitude relative}
+        alt:=StrToFloatDef(gridEXIFPic.Cells[6, i], 0); {Altitude relative}
+        bg:=ScanDateTime(vzf, gridEXIFPic.Cells[2, i]);
         if cam<>'' then begin                      {Picture has already EXIF data}
           if CamInList(cam, cgpCamera) then begin
             if GetCoords(gridEXIFPic.Cells[4, i], gridEXIFPic.Cells[5, i],
-                         lat, lon, latref, lonref) then begin
+                         lat, lon) then begin
               aImgInfo:=TImgInfo.Create;
               try
                 aImgInfo.LoadFromFile(fn);
                 if aImgInfo.HasEXIF then begin     {Update EXIF}
                   try
-                    WriteTagAsFloat(aImgInfo, exLat, lat, true);
-                    WriteTagAsString(aImgInfo, exLatRef, latref, true);
-
-                    WriteTagAsFloat(aImgInfo, exLon, lon, true);
-                    WriteTagAsString(aImgInfo, exLonRef, lonref, true);
-
-                    if alt<0 then
-                      WriteTagAsString(aImgInfo, exAltRef, exDwn, false)
-                    else
-                      WriteTagAsString(aImgInfo, exAltRef, exUp, false);
-                    WriteTagAsFloat(aImgInfo, exAlt, abs(alt), true);
+                    WriteEXIFtime(aImgInfo, exTime1, bg, false);
+                    WriteEXIFtime(aImgInfo, exTime2, bg, false);
+                    WriteCoordinates(aImgInfo, lat, lon, true);
+                    WriteAltitude(aImgInfo, alt, true);
 
                     if cbBackupPic.Checked then    {Make backup file}
-                      CopyFile(fn, ChangeFileExt(fn, '.bak'), [cffOverWriteFile]);
+                      CopyFile(fn, ChangeFileExt(fn, '.bak'), [cffPreserveTime]);
                     aImgInfo.SaveToFile(fn);
                     gridEXIFPic.Cells[7, i]:=resUpd;
                     inc(zhl);
@@ -7890,35 +7812,16 @@ begin
           end;
         end else begin                             {Picture had no EXIF data}
           if GetCoords(gridEXIFPic.Cells[4, i], gridEXIFPic.Cells[5, i],
-                       lat, lon, latref, lonref) then begin
+                       lat, lon) then begin
             aImgInfo:=TImgInfo.Create;             {Create EXIF}
             try
               try
-                newtag:=aImgInfo.CreateExifData().AddTagByName(exMake);
-                newtag.AsString:=AppName;          {Fake manufacturer}
-                newtag:=aImgInfo.EXIFdata.AddTagByName(exModel);
-                newtag.AsString:=AppVersion;       {Fake camera type}
-
-                newtag:=aImgInfo.EXIFdata.AddTagByName(exLat);
-                newtag.AsFloat:=lat;
-                newtag:=aImgInfo.EXIFdata.AddTagByName(exLatRef);
-                newtag.AsString:=latref;
-
-                newtag:=aImgInfo.EXIFdata.AddTagByName(exLon);
-                newtag.AsFloat:=lon;
-                newtag:=aImgInfo.EXIFdata.AddTagByName(exLonRef);
-                newtag.AsString:=lonref;
-
-                newtag:=aImgInfo.EXIFdata.AddTagByName(exAltRef);
-                if alt<0 then
-                  newtag.AsString:=exDwn           {Below sea level}
-                else
-                  newtag.AsString:=exUp;           {Above sea level}
-                newtag:=aImgInfo.EXIFdata.AddTagByName(exAlt);
-                newtag.AsFloat:=abs(alt);
+                CreateMetadata(aImgInfo, AppName, AppVersion, bg, bg);
+                CreateCoordinates(aImgInfo, lat, lon);
+                CreateAltitude(aImgInfo, alt);
 
                 if cbBackupPic.Checked then
-                  CopyFile(fn, ChangeFileExt(fn, '.bak'), [cffOverWriteFile]);
+                  CopyFile(fn, ChangeFileExt(fn, '.bak'), [cffPreserveTime]);
                 aImgInfo.SaveToFile(fn);
                 gridEXIFPic.Cells[7, i]:=resNew;
                 inc(zhl);
@@ -7961,6 +7864,16 @@ begin
               CellColorSetting(gridEXIFPic, clMoneyGreen);
     end;
   end;
+end;
+
+procedure TForm1.gridTimeAreaMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+var sp, zl: integer;
+begin
+  gridTimeArea.MouseToCell(x, y, sp, zl);              {Zelle unter Maus finden}
+  if (sp>0) and (zl>0) then
+    gridTimeArea.Hint:=gridTimeArea.Cells[sp, zl]
+  else
+    gridTimeArea.Hint:='';
 end;
 
 procedure TForm1.lblGitHubClick(Sender: TObject);      {Open GitHub repo}
@@ -8283,24 +8196,6 @@ begin
   end;
 end;
 
-procedure TForm1.mnGeoGMapClick(Sender: TObject);  {Menu GeoTagging show in GoogleMaps}
-var lat, lon: string;
-begin
-  lat:=gridEXIFPic.Cells[4, gridEXIFPic.Selection.Top];
-  lon:=gridEXIFPic.Cells[5, gridEXIFPic.Selection.Top];
-  if (lat<>'') and (lon<>'') then
-    OpenURL(URLGMap(lat, lon));
-end;
-
-procedure TForm1.mnGeoOSMClick(Sender: TObject);  {Menu GeoTagging show in OSM}
-var lat, lon: string;
-begin
-  lat:=gridEXIFPic.Cells[4, gridEXIFPic.Selection.Top];
-  lon:=gridEXIFPic.Cells[5, gridEXIFPic.Selection.Top];
-  if (lat<>'') and (lon<>'') then
-    OpenURL(URLosm(lat, lon));
-end;
-
 procedure TForm1.mnReloadClick(Sender: TObject);   {Reload files}
 begin
   SelDirAct('');
@@ -8325,6 +8220,7 @@ begin
   if SelectDirectoryDialog1.Execute then begin
     cbxPicFolder.Text:=SelectDirectoryDialog1.FileName;
     Merkliste(cbxPicFolder, speItems.Value);
+    ScanPicEnable;
   end;
 end;
 
@@ -8334,6 +8230,7 @@ begin
   if OpenDialog1.Execute then begin
     cbxTelemetry.Text:=OpenDialog1.FileName;
     Merkliste(cbxTelemetry, speItems.Value);
+    ScanPicEnable;
   end;
 end;
 
@@ -13675,7 +13572,8 @@ end;
 
 procedure TForm1.gridDetailsSelection(Sender: TObject; aCol, aRow: Integer);
 begin
-  if aRow<>cbxSearch.Tag then GroupBox11.Tag:=0;   {andere Spalte-Suche zurücksetzen}
+  if aRow<>cbxSearch.Tag then
+    GroupBox11.Tag:=0;                             {andere Spalte-Suche zurücksetzen}
   cbxSearch.Tag:=aRow;
   cbxSearch.Enabled:=true;
 end;
@@ -13683,10 +13581,10 @@ end;
 {StringGrid Sortierung siehe
  http://wiki.lazarus.freepascal.org/Grids_Reference_Page#Sorting_Columns_or_Rows}
 procedure TForm1.gridOverviewCompareCells(Sender: TObject; ACol, ARow, BCol,
-  BRow: Integer; var Result: integer);      {bestimmt, wie Spalte sortiert wird}
+  BRow: Integer; var Result: integer);             {bestimmt, wie Spalte sortiert wird}
 var f1, f2: double;
 begin
-  if ACol>4 then begin                      {bereinigt als Float sortieren}
+  if ACol>4 then begin                             {bereinigt als Float sortieren}
     if TryStrToFloat(GetFNr(gridOverview.Cells[ACol,ARow]), f1) and
        TryStrToFloat(GetFNr(gridOverview.Cells[BCol,BRow]), f2)
     then result:=CompareValue(f1, f2);
