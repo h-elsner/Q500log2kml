@@ -98,7 +98,7 @@ History:
                  (only telemetry, no remote files)
 2016-05-23  V2.4 Check how frequent telemetry data were sent. Support
                  Typhoon H, H920.
-2016-07-18  V2.5 CCC Waypoints editor and conversation (editor later removed).
+2016-07-18  V2.5 CCC Waypoints editor and conversion (editor later removed).
 2016-09-05  V2.6 Improvements for Typhoon H.
 2016-10-01  V2.7 Support Log Files from Yuneec Breeze.
 2017-04-10  V2.8 KML export updated (Altitude modes). f_mode=32/33 added.
@@ -7676,6 +7676,7 @@ begin
                 Statusbar1.Panels[5].Text:=e.Message;
                 AppLog.Lines.Add(ExtractFileName(filelist[i])+suff+
                                  Statusbar1.Panels[5].Text);
+                break;
               end;
             end;
             if aImgInfo.HasEXIF then begin         {Read data from EXIF, check what is in}
