@@ -215,13 +215,16 @@ History:
 2020-11-13       MAV link messages reviewed. Missing messages added.
 2020-12-09  V4.7 GeoTagging for pictures taken at same time as the drone was flying.
 2021-01-12       Time marker in KML tracks
-2021-01-16       Query for latest version, GitHub link
+2021-01-16       Query for latest version, GitHub link.
+2021-02-02       Enable special evaluation by short key.
+                 Current special evaluation: Altitude values from TLOG
 
 *)
 
 unit q500log2kml_main;
 
 {$mode objfpc}{$H+}
+{$modeswitch DuplicateLocals}
 
 interface
 
@@ -232,8 +235,8 @@ uses
   Zipper, math, TAChartUtils, TAFuncSeries, Clipbrd, anzwerte, TACustomSeries,
   TATools, indGnouMeter, AdvLed, Sensors, graphutil, fphttpclient, lazUTF8,
   SynEdit, SynHighlighterMulti, SynHighlighterAny, strutils, dateutils,
-  lazsysutils, q5_common, Types, fpeMetaData, fpeTags,
-  fpeExifData, exifstuff, mav_defs, Iphttpbroker, IpHtml;
+  lazsysutils, q5_common, Types, fpeMetaData, fpeExifData, exifstuff,
+  mav_defs, Iphttpbroker, IpHtml;
 
 type
   TarrFW = array[0..7] of string;
@@ -614,6 +617,8 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure edSendCGO3KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edReceiveCGO3DblClick(Sender: TObject);
+    procedure gbDiverseKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState
+      );
     procedure gridEXIFPicDblClick(Sender: TObject);
     procedure gridEXIFPicPrepareCanvas(sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
@@ -870,7 +875,7 @@ type
     procedure CheckVersion;                        {Call version file and check}
 
 {Special analysis with (hidden) extra button "Special" on Settings > Common settings}
-//    procedure TLOGanalysis(fn: string);          {Special analysis}
+    procedure TLOGanalysis(fn: string);          {Special analysis}
 //    procedure AuswertungCSVdatei;                {Spezielle Auswertung für CSV-Datei}
   end;
 
@@ -2247,9 +2252,9 @@ begin
   result:=(e and 128)>0;                           {HWT bit}
 end;
 
-function BrTeilen(const s: string; const t, k: integer): string;
-begin
-  result:=FormatFloat(coordfl8, StrToFloatN(trim(s)));
+function BrTeilen(const s: string; const k: integer): string;
+begin                                              {k: number digits after decimal point}
+  result:=FloatToStrF(StrToFloatN(trim(s)), ffFixed, 8, k);
 end;
 
 function H920Amp(const w: double): double; inline; {Stromsensor H920}
@@ -7768,7 +7773,6 @@ var i, zhl: integer;
     lat, lon, alt: double;
     bg: TDateTime;
     aImgInfo: TImgInfo;
-    newtag: TTag;
 begin
   zhl:=0;
   if gridEXIFPic.RowCount>1 then begin             {If pictures available}
@@ -8106,6 +8110,14 @@ procedure TForm1.edReceiveCGO3DblClick(Sender: TObject);  {CGO3 Test Copy to Cli
 begin
   If edReceiveCGO3.Text>'' then
     ClipBoard.AsText:=edSendCGO3.Text+LineEnding+edReceiveCGO3.Text;
+end;
+
+procedure TForm1.gbDiverseKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);                             {Ctrl+S to enable special actions}
+begin
+  if (ssCtrl in Shift) and
+     (key=vk_S) then
+    btnSpecial.Visible:=true;
 end;
 
 procedure TForm1.gridEXIFPicDblClick(Sender: TObject);
@@ -11145,7 +11157,7 @@ const
              FormatDateTime(zzf, ts)+'Z';
       lkoor:=BrCoordFormat(splitlist[13])+tab1+
              BrCoordFormat(splitlist[12])+tab1+
-             BrTeilen(splitlist[10], 100, 1);      {lon + lat + alt}
+             BrTeilen(splitlist[10], 1);           {lon + lat + alt}
       if stime='' then begin                       {Startpunkt merken}
         stime:=ltime;
         skoor:=BrCoordFormat(splitlist[13])+sep+
@@ -11416,7 +11428,7 @@ var
                       FormatDateTime(zzf, ts)+'Z</time>';
       lkoor:=tab1+GPXlat+BrCoordFormat(splitlist[12])+GPXlon+
                         BrCoordFormat(splitlist[13])+'">';   {lat + lon}
-      lalt:=GPXele+BrTeilen(splitlist[10], 100, 1)+'</ele>'; {alt}
+      lalt:=GPXele+BrTeilen(splitlist[10], 1)+'</ele>';      {alt}
       if stime='' then begin                       {Startpunkt merken}
         stime:=ltime;
         skoor:=lkoor;
@@ -11844,13 +11856,13 @@ var
         dashlist.add(FormatDateTime(zzf+'.zz', bg)+sep+      {Time}
                      BrCoordFormat(splitlist[13])+sep+       {lon}
                      BrCoordFormat(splitlist[12])+sep+       {lat}
-                     BrTeilen(splitlist[10], 100, 1)+sep+    {altitude}
+                     BrTeilen(splitlist[10], 1)+sep+         {altitude}
                      FormatFloat(dzfl, dist)+sep+            {distance_from_start}
                      s+sep+                                  {gps_update}
                      '0'+sep+                                {Speed}
-                     BrTeilen(splitlist[17], 100, 2)+sep+    {Heading (yaw)}
-                     BrTeilen(splitlist[16], 100, 2)+sep+    {pitch}
-                     BrTeilen(splitlist[15], 100, 2)+sep+    {roll}
+                     BrTeilen(splitlist[17], 2)+sep+         {Heading (yaw)}
+                     BrTeilen(splitlist[16], 2)+sep+         {pitch}
+                     BrTeilen(splitlist[15], 2)+sep+         {roll}
                      splitlist[2]+sep+                       {f_mode}
                      '0'+sep+                                {RSSI}
                      BrKorrV(splitlist[21])+sep+             {Voltage in %}
@@ -14562,13 +14574,15 @@ end;
 procedure TForm1.btnSpecialClick(Sender: TObject);  {Spezielle Auswertung für CSV-Datei}
 begin
 //  AuswertungCSVdatei;
-//  if OpenDialog1.Execute then
-//    TLOGanalysis(OpenDialog1.FileName);
+  if OpenDialog1.Execute then
+    TLOGanalysis(OpenDialog1.FileName);
 end;
 
-(*
-{Sonderauswertung einer CSV-Datei : Hier ist der Rahmen dazu.}
 
+{Sonderauswertung einer CSV-Datei : Hier ist der Rahmen dazu.
+ Enable Button Special: Ctrl+S }
+
+(*
 procedure TForm1.AuswertungCSVdatei;               {Spezielle Auswertung für CSV-Datei}
 var i, j, zhl: integer;
     inlist, splitlist: TStringList;
@@ -14712,7 +14726,7 @@ begin
   end;
 end; *)
 
-(*
+
 
 {https://github.com/mavlink/c_library_v2/tree/master/common
 
@@ -14720,7 +14734,7 @@ end; *)
  Hier: Schreibe alle Höhenangaben aus 24, 33 und 141 in eine Tabelle
  Siehe function ShowSensorPlus}
 
-procedure TForm1.TLOGanalysis(fn: string);
+procedure TForm1.TLOGanalysis(fn: string);         {Check & compare altitudes}
 
 var dsbuf: array[0..YTHPcols] of byte;
     i, len, zhl: integer;
@@ -14931,7 +14945,7 @@ begin
       Screen.Cursor:=crDefault;
     end;
   end;
-end;        *)
+end;
 
 end.
 
