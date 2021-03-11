@@ -635,6 +635,7 @@ type
     procedure mnShowPicClick(Sender: TObject);
     procedure sbtnPicFolderClick(Sender: TObject);
     procedure sbtnTelemetryClick(Sender: TObject);
+    procedure speDataPointEditingDone(Sender: TObject);
     procedure speExpoChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -1848,7 +1849,7 @@ begin
       if (u and 8)=0 then
         result:=result+'Compass2 fail ';
       if (u and 16)=0 then
-        result:=result+'Sonar off ';
+        result:=result+'Sonar off ';               {OK, in FlightModeApp same check}
       if (u and 32)=0 then
         result:=result+'GPS off ';
       if (u and 64)=0 then
@@ -2164,7 +2165,7 @@ begin
       p:=UTF8length(fn)-8;                         {legacy Yuneec}
   end;
 
-  if length(fn)>p then begin
+  if fn.length>p then begin
     result:=fn;
     if mode=0 then
       repeat
@@ -2199,7 +2200,7 @@ begin
     co:=StrToFloatN(ko);
     if (abs(co)>181) then begin                    {Strange format in ST16S}
       s:='';
-      for i:=1 to length(ko) do begin
+      for i:=1 to ko.length do begin
         if ko[i] in ziff then
           s:=s+ko[i];
       end;
@@ -2236,8 +2237,8 @@ end;
 function BrCoordFormat(const c: string): string;   {Koordinaten Breeze formatieren}
 begin
   result:=c;
-  if length(c)>6 then
-    insert('.', result, length(c)-6);
+  if c.length>6 then
+    insert('.', result, c.length-6);
 end;
 
 function BrCoordToFloat(const c: string): double;  {Koordinaten Breeze in Float}
@@ -3118,7 +3119,7 @@ begin
   x:=0;
   p:=pos(GPXpar, s);
   if p>0 then begin                                {Parameter gefunden}
-    for x:=p+length(GPXpar) to length(s) do
+    for x:=p+GPXpar.length to s.length do
       if (s[x]='"') or
          (s[x]='<') or
          (s[x]='>') then
@@ -3442,6 +3443,10 @@ begin
     except
       on e: Exception do begin
         AppLog.Lines.Add(e.Message);
+        if pos('time', e.Message)>0 then
+          StatusBar1.Panels[5].Text:=errHomepage
+        else
+          StatusBar1.Panels[5].Text:=e.Message;
         exit;
       end;
     end;
@@ -5300,7 +5305,7 @@ begin
   f:=false;
   p:=pos(w, s);
   if p>0 then begin
-    for x:=p+length(w)-1 to length(s) do begin
+    for x:=p+w.length-1 to s.length do begin
       if s[x]=sep then
         break;                                     {bis zum Datenseperator (,)}
       if f then
@@ -5952,7 +5957,7 @@ begin
     if inlist.count>minlines then begin            {Überschrift und mind. 10 Zeilen}
       try
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
-        dtm:=GetDateFile(copy(ExtractFileName(fn),length(h5file)+1, 10)); {Date from file name}
+        dtm:=GetDateFile(copy(ExtractFileName(fn), h5file.length+1, 10)); {Date from file name}
         for x:=1 to inlist.count-1 do begin        {Daten einlesen}
           splitlist.DelimitedText:=inlist[x];
           if splitlist.Count>14 then begin         {Konsistenz checken}
@@ -7381,14 +7386,14 @@ begin
         s1:='';
         s2:=inlist[x];
         AppLog.Lines.Add(s2);
-        if length(s2)>3 then begin
-          for k:=1 to length(s2) do begin
+        if s2.length>3 then begin
+          for k:=1 to s2.length do begin
             if s2[k]<>':' then
               s1:=s1+s2[k]
             else
               break;
           end;
-          s2:=copy(s2, k+1, length(s2)-k);
+          s2:=copy(s2, k+1, s2.length-k);
           gridFirmware.Cells[0, x]:=s1;
           gridFirmware.Cells[1, x]:=s2;
         end;
@@ -7622,7 +7627,7 @@ var i, zhl: integer;
     aImgInfo: TImgInfo;
     picdat, tmin, tmax, ttemp: TDateTime;
     lat, lon, alt: double;
-    ref, cam: string;
+    cam: string;
 
   procedure FindPicData;                           {Find time stamp in telemetry}
   var pos: integer;
@@ -7695,17 +7700,11 @@ begin
                   cgpCamera.Items.Add(cam);
                 gridEXIFPic.Cells[1, i+1]:=cam;
 
-                lat:=ReadFloat(aImgInfo, exLat);   {Check if coordinates already in}
-                lon:=ReadFloat(aImgInfo, exLon);
+                lat:=aImgInfo.EXIFdata.GPSLatitude; {Check if coordinates already in}
+                lon:=aImgInfo.EXIFdata.GPSLongitude;
 
                 if (lat<>0) or (lon<>0) then begin {Valid coordinates found in EXIF}
-                  alt:=ReadFloat(aImgInfo, exAlt);
-                  ref:=uppercase(ReadString(aImgInfo, exLatRef, exN));
-                  if (ref[1]=exS) and (lat>0) then
-                    lat:=-lat;                     {Correct lat for southern hemisphere}
-                  ref:=uppercase(ReadString(aImgInfo, exLatRef, exE));
-                  if (ref[1]=exW) and (lon>0) then
-                    lon:=-lon;                     {Correct lon for western hemisphere}
+                  alt:=aImgInfo.EXIFdata.GPSAltitude;
                   gridEXIFPic.Cells[4, i+1]:=FormatFloat(coordfl6, lat)+exID;
                   gridEXIFPic.Cells[5, i+1]:=FormatFloat(coordfl6, lon)+exID;
                   gridEXIFPic.Cells[6, i+1]:=FormatFloat(dzfl, alt)+exID;
@@ -7822,8 +7821,9 @@ begin
             try
               try
                 CreateMetadata(aImgInfo, AppName, AppVersion, bg, bg);
-                CreateCoordinates(aImgInfo, lat, lon);
-                CreateAltitude(aImgInfo, alt);
+                aImgInfo.ExifData.GPSLatitude:=lat;  {With patch r7968 reference is set automatically}
+                aImgInfo.ExifData.GPSLongitude:=lon;
+                aImgInfo.ExifData.GPSAltitude:=alt;
 
                 if cbBackupPic.Checked then
                   CopyFile(fn, ChangeFileExt(fn, '.bak'), [cffPreserveTime]);
@@ -8245,6 +8245,11 @@ begin
     Merkliste(cbxTelemetry, speItems.Value);
     ScanPicEnable;
   end;
+end;
+
+procedure TForm1.speDataPointEditingDone(Sender: TObject);  {Change dataset number}
+begin
+  GoToZ(4);
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -9714,7 +9719,7 @@ begin
                 sstr:=splitlist[0];
               end;
               if (sstr=cbxSearch.Text) or          {kurz -> vollqualifiziert}
-                 (((length(sstr)>4) or (pos('.', sstr)>0)) and  {Punkt drin oder lang}
+                 (((sstr.length>4) or (pos('.', sstr)>0)) and  {Punkt drin oder lang}
                  (pos(cbxSearch.Text, sstr)>0)) then begin      {teilqualifiziert}
                 for i:=0 to splitlist.count-1 do   {selektierte Zeile}
                   gridDetails.Cells[i, p]:=splitlist[i];
@@ -9928,7 +9933,7 @@ begin
                 slat:=splitlist[0];
               end;
               if (slat=cbxSearch.Text) or             {kurz -> vollqualifiziert}
-                 (((length(slat)>4) or (pos('.', slat)>0)) and   {Punkt drin oder lang}
+                 (((slat.length>4) or (pos('.', slat)>0)) and   {Punkt drin oder lang}
                  (pos(cbxSearch.Text, slat)>0)) then begin       {teilqualifiziert}
                 for i:=0 to splitlist.count-1 do   {selektierte Zeile}
                   gridDetails.Cells[i, p]:=splitlist[i];
@@ -10084,7 +10089,7 @@ begin
                 slat:=splitlist[0];
               end;
               if (slat=cbxSearch.Text) or             {kurz -> vollqualifiziert}
-                 (((length(slat)>4) or (pos('.', slat)>0)) and   {Punkt drin oder lang}
+                 (((slat.length>4) or (pos('.', slat)>0)) and   {Punkt drin oder lang}
                  (pos(cbxSearch.Text, slat)>0)) then begin       {teilqualifiziert}
                 for i:=0 to splitlist.count-1 do   {selektierte Zeile}
                   gridDetails.Cells[i, x]:=splitlist[i];
@@ -14017,7 +14022,7 @@ begin
       cbxSearch.Tag:=x+1;
       s:=UpCase(trim(gridDetails.Cells[Label3.Tag, x]));
       if (s=cbxSearch.Text) or                     {kurz -> vollqualifiziert}
-         (((length(s)>4) or (pos('.', s)>0)) and   {Punkt drin oder lang}
+         (((s.length>4) or (pos('.', s)>0)) and    {Punkt drin oder lang}
          (pos(cbxSearch.Text, s)>0)) then begin    {teilqualifiziert}
         GroupBox11.Tag:=GroupBox11.Tag+1;          {gefunden pro Spalte merken}
         speDataPoint.Value:=x;                     {Datenpunkt anzeigen}
@@ -14140,8 +14145,10 @@ var grSel: TGridRect;
     z: integer=1;
 begin
   if gridDetails.RowCount>1 then begin
-    if speDataPoint.Value<gridDetails.RowCount then z:=speDataPoint.Value
-                                            else z:=gridDetails.RowCount-1;
+    if speDataPoint.Value<gridDetails.RowCount then
+      z:=speDataPoint.Value
+    else
+      z:=gridDetails.RowCount-1;
     gridDetails.Col:=1;
     gridDetails.Row:=z;
     if z>(a*2) then gridDetails.TopRow:=z-a        {Abstand zu oben}
@@ -14159,7 +14166,8 @@ end;
 
 procedure TForm1.mnGoToTabClick(Sender: TObject);  {zur Zeilennummer scrollen}
 begin
-  if lbFlights.Items.Count>0 then GoToZ(4);
+  if lbFlights.Items.Count>0 then
+    GoToZ(4);
 end;
 
 procedure TForm1.mnAnalyseTabClick(Sender: TObject);  {Datenanalyse im gridDetails}

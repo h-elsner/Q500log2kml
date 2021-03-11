@@ -17,6 +17,7 @@ begin
   Application.Title:='Yuneec FlightLog Auswertung';
   RequireDerivedFormResource := True;
   Application.Initialize;
+  
 {Splash screen vor Hauptprogramm anzeigen}
   Form4:=TForm4.Create(nil);
   Form4.Show;

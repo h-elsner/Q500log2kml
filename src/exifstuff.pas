@@ -1,7 +1,7 @@
 {Common EXIF definitions and routines
 
  Needed component: https://sourceforge.net/p/lazarus-ccr/svn/HEAD/tree/components/fpexif/
-                   plus fpEXIF patch for Yuneec from wp_XYZ in r7965 (2021-01-17)
+                   plus fpEXIF patch for Yuneec from wp_XYZ in r7968 (2021-01-30)
  See also: https://www.lazarusforum.de/viewtopic.php?f=18&t=13356
 
  EXIF tags:        https://exiftool.org/TagNames/EXIF.html }
@@ -30,24 +30,13 @@ const
   exSerial='SerialNumber';
   exCamTilt='CameraElevationAngle';
 
-  exLatRef='GPSLatitudeRef';                       {'N' = North; 'S' = South}
-  exLonRef='GPSLongitudeRef';                      {'E' = East; 'W' = West}
   exLat=   'GPSLatitude';
   exLon=   'GPSLongitude';
   exAlt=   'GPSAltitude';
-  exAltRef='GPSAltitudeRef';                       {0 = Above Sea Level; 1 = Below Sea Level}
   exSpeedRef='GPSSpeedRef';                        {'K' = km/h; 'M' = mph; 'N' = knots}
   exSpeed= 'GPSSpeed';
   exHeadingRef='GPSImgDirectionRef'; 	           {'M' = Magnetic North; 'T' = True North}
   exHeading='GPSImgDirectionRef';
-
-  exN='N';
-  exS='S';
-  exW='W';
-  exE='E';
-  exB='B';                                         {Below sea level}
-  exDwn='1';                                       {1 = Below Sea Level}
-  exUp='0';                                        {0 = Above Sea Level}
 
   myVersion='0220';                                {EXIF version if EXIF was newly created}
 
@@ -60,13 +49,10 @@ const
   function ReadFloatAsString(var RdData: TImgInfo;
                              TagName, OutFormat, ErrorMsg: string): string;
   function ReadCoordinates(var RdData: TImgInfo; var nlat, nlon: double): boolean;
-  function ReadAltitude(var RdData: TImgInfo): double;
 
   procedure CreateStringTag(var WrData: TImgInfo; id, NewValue: string);
   procedure CreateFloatTag(var WrData: TImgInfo; id: string; NewValue: double);
   procedure CreateTimeTag(var WrData: TImgInfo; id: string; tme: TDateTime);
-  procedure CreateAltitude(var WrData: TImgInfo; alt: double);
-  procedure CreateCoordinates(var WrData: TImgInfo; const nlat, nlon: double);
   procedure CreateMetadata(var WrData: TImgInfo;   {Create a new EXIF set}
                            nMaker, nModel: string;
                            tme1, tme2: TDateTime);
@@ -145,33 +131,18 @@ begin
 end;
 
 function ReadCoordinates(var RdData: TImgInfo; var nlat, nlon: double): boolean;
-var ref: string;
 begin
   result:=false;
-  nlat:=ReadFloat(RdData, exLat);
-  nlon:=ReadFloat(RdData, exLon);
-  if nlat>0 then begin                             {Default hemispere North / East}
-    ref:=UpCase(ReadString(RdData, exLatRef, exN));
-    if ref[1]=exS then                             {Southern hemisphere}
-      nlat:=-nlat;
-  end;
-  if nlon>0 then begin
-    ref:=UpCase(ReadString(RdData, exLonRef, exE));
-    if ref[1]=exW then
-      nlon:=-nlon;
+  try
+    nlat:=rdData.ExifData.GPSLatitude;
+    nlon:=rdData.ExifData.GPSLongitude;
+  except
+    on e: Exception do begin
+      nlat:=0;
+      nlon:=0;
+    end;
   end;
   result:=(nlat<>0) or (nLon<>0);                  {Valid coordinates}
-end;
-
-function ReadAltitude(var RdData: TImgInfo): double;
-var ref: string;
-begin
-  result:=ReadFloat(RdData, exAlt);                {Altitude}
-  if result>0 then begin
-    ref:=ReadString(RdData, exAltRef, exUp);
-    if UpCase(ref[1])=exB then                     {Below sea level}
-      result:=-result;
-  end;
 end;
 
 {Use Create tasks only if CreateMetaData was already done!}
@@ -197,40 +168,6 @@ begin
     if newtag is TDateTimeTag then                 {Write date/time to EXIF}
       TDateTimeTag(newtag).AsDateTime:=tme;
   end;
-end;
-
-procedure CreateAltitude(var WrData: TImgInfo; alt: double);
-var newtag: TTag;
-begin
-  newtag:=WrData.EXIFdata.AddTagByName(exAltRef);
-  if alt<0 then
-    newtag.AsString:=exDwn                         {Below sea level}
-  else
-    newtag.AsString:=exUp;                         {Above sea level}
-  newtag:=WrData.EXIFdata.AddTagByName(exAlt);
-  newtag.AsFloat:=abs(alt);                        {Altitude}
-end;
-
-procedure CreateCoordinates(var WrData: TImgInfo; const nlat, nlon: double);
-var nLatRef, nLonRef: string;                      {Lat/lon references}
-    la, lo: double;
-begin
-  nLatRef:=exN;
-  nLonRef:=exE;
-  la:=nlat;
-  lo:=nlon;
-  if la<0 then begin
-    nLatRef:=exS;                                  {Southern hemisphere}
-    la:=abs(la);
-  end;
-  if lo<0 then begin
-    nLonRef:=exW;                                  {Western hemisphere}
-    lo:=abs(lo);
-  end;
-  CreateFloatTag(WrData, exLat, la);
-  CreateStringTag(WrData, exLatRef, nLatRef);
-  CreateFloatTag(WrData, exLon, lo);
-  CreateStringTag(WrData, exLonRef, nLonRef);
 end;
 
 {Has to be done first}
@@ -280,35 +217,32 @@ end;
 procedure WriteAltitude(var WrData: TImgInfo;      {EXIF data set}
                         alt: double;               {Cover negative valueus for Altitude}
                         ov: boolean=false);        {overwrite}
+var WantedTag: TTag;
 begin
-  if alt<0 then
-    WriteTagAsString(wrData, exAltRef, exDwn, ov)  {Below sea level}
-  else
-    WriteTagAsString(wrData, exAltRef, exUp, ov);  {Above sea level}
-  WriteTagAsFloat(wrData, exAlt, abs(alt), ov);
+  if ov then begin
+    wrData.EXIFdata.GPSAltitude:=alt;
+  end else begin
+    WantedTag:=WrData.ExifData.TagByName[exAlt];
+    if WantedTag=nil then
+      wrData.EXIFdata.GPSAltitude:=alt;            {Will be automatically created}
+  end;
 end;
 
 procedure WriteCoordinates(var WrData: TImgInfo; const nlat, nlon: double;
                            ov: boolean=false);     {overwrite}
-var nLatRef, nLonRef: string;                      {Lat/lon references}
-    la, lo: double;
+var WantedTag: TTag;
 begin
-  nLatRef:=exN;
-  nLonRef:=exE;
-  la:=nlat;
-  lo:=nlon;
-  if la<0 then begin
-    nLatRef:=exS;                                  {Southern hemisphere}
-    la:=abs(la);
+  if ov then begin                                 {Overwrite}
+    wrData.EXIFdata.GPSLatitude:=nlat;
+    wrData.EXIFdata.GPSLongitude:=nlon;
+  end else begin                                   {Write only if missing}
+    WantedTag:=WrData.ExifData.TagByName[exLat];
+    if WantedTag=nil then
+      wrData.EXIFdata.GPSLatitude:=nlat;           {Will be automatically created}
+    WantedTag:=WrData.ExifData.TagByName[exLon];
+    if WantedTag=nil then
+      wrData.EXIFdata.GPSLongitude:=nlon;
   end;
-  if lo<0 then begin
-    nLonRef:=exW;                                  {Western hemisphere}
-    lo:=abs(lo);
-  end;
-  WriteTagAsFloat(WrData, exLat, la, ov);
-  WriteTagAsString(WrData, exLatRef, nLatRef, ov);
-  WriteTagAsFloat(WrData, exLon, lo, ov);
-  WriteTagAsString(WrData, exLonRef, nLonRef, ov);
 end;
 
 procedure WriteEXIFTime(var WrData: TImgInfo;      {EXIF data set}
@@ -334,7 +268,6 @@ end;
 
 function GetCoords(const lats, lons: string;       {Coordinates as strings}
                    var la, lo: double): boolean;   {to Coordinates as float}
-
 begin
   la:=StrToFloatDef(lats, 0);
   lo:=StrToFloatDef(lons, 0);

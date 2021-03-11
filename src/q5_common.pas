@@ -10,14 +10,12 @@ uses
 const
 {public constants}
   AppName=   'q500log2kml';
-  AppVersion='V4.7 01/2021';
-
-  homepage='http://192.168.1.15';
-//  homepage='http://h-elsner.mooo.com';             {My Homepage}
-  githublink='https://github.com/h-elsner/Q500log2kml';
-
-  VersValue='4.7.1';
+  AppVersion='V4.7 02/2021';
+  VersValue='4.7.4';
   VersFile='/v';
+
+  homepage='http://h-elsner.mooo.com';             {My Homepage}
+  githublink='https://github.com/h-elsner/Q500log2kml';
 
   defaultcol=5;                                    {muss kleiner als die Mindestmenge der Spalten sein}
   defVT=5;                                         {Default vehicle YTH, need 5 for Thunderbird}
@@ -132,7 +130,7 @@ var m: integer;
 
 begin
   result:=0;
-  if length(s)>0 then begin
+  if s.length>0 then begin
     m:=1;                                          {Multiplikator bei Expo}
     if pos('E', s)>0 then begin
       if pos('E7', s)>0 then begin
@@ -159,7 +157,7 @@ function CleanDN(const s: string): string;         {Ungültige Zeichen entfernen
 var i: integer;
 begin
   result:='';
-  for i:=1 to length(s) do
+  for i:=1 to s.length do
     if s[i]=' ' then
       result:=result+'_'
     else
@@ -171,7 +169,7 @@ function CleanNum(const s: string): string;        {Ziffern filtern}
 var i: integer;
 begin
   result:='';
-  for i:=1 to length(s) do
+  for i:=1 to s.length do
     if s[i] in ziff then
       result:=result+s[i];
 end;
@@ -200,8 +198,8 @@ var x: integer;
 begin
   result:='';
   s1:=trim(s);
-  if length(s1)>0 then
-    for x:=1 to length(s1) do
+  if s1.length>0 then
+    for x:=1 to s1.length do
       if (s1[x] in ziff) or
          (s1[x]='-') or
          (s1[x]=DefaultFormatSettings.DecimalSeparator) then

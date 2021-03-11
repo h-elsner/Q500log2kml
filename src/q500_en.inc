@@ -326,6 +326,7 @@ resourcestring                                     {english}
   rsDownloading='Download ZIP file...';
   errDownloading='Repository not available';
   capGitHub='GitHub repository';
+  errHomePage='Homepage not accessible, try later';
 
 {GeoTagging}
   hdrEXIFPic='File name,Camera,Date/time,Match at,Latitude,Longitude,Altitude relative,EXIF data';
