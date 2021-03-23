@@ -2255,7 +2255,7 @@ end;
 
 function BrTeilen(const s: string; const k: integer): string;
 begin                                              {k: number digits after decimal point}
-  result:=FloatToStrF(StrToFloatN(trim(s)), ffFixed, 8, k);
+  result:=FloatToStrF(StrToFloatN(trim(s))/100, ffFixed, 8, k);
 end;
 
 function H920Amp(const w: double): double; inline; {Stromsensor H920}
@@ -3161,7 +3161,11 @@ begin                                              {p=0 --> Breite Form1}
 end;
 
 {http://www.joerg-buchwitz.de/temp/googlemapssyntax.htm
- https://www.google.de/maps?q=48.235367,10.0922553&z=13&om=0 }
+ https://www.google.de/maps?q=48.235367,10.0922553&z=13&om=0
+
+Mit Beschriftung:
+https://www.google.de/maps/place/Weihers+17,+88161+Lindenberg/@47.6087465,9.9204697,17z
+}
 
 function URLGMap(lati, long: string): string;      {URL für Koordinate in Google Maps}
 begin
@@ -3621,7 +3625,7 @@ begin
     infn:=TMemoryStream.Create;
     try
       infn.LoadFromFile(fn);
-      AppLog.Lines.Add('');
+      AppLog.Lines.Add(LineEnding);
       AppLog.Lines.Add(fn);
       StatusBar1.Panels[5].Text:=rsWait;
 
@@ -4622,7 +4626,7 @@ begin
       infn.LoadFromFile(fn);
       StatusBar1.Panels[5].Text:=rsWait;
       StatusBar1.Update;
-      AppLog.Lines.Add('');
+      AppLog.Lines.Add(LineEnding);
       AppLog.Lines.Add(fn);
 
       if gx then begin                             {Eventuell KML oder GPX erzeugen}
@@ -4696,7 +4700,7 @@ begin
         if ismq then s:=vTypeToStr(MQid)+tab4;
         Chart1.Title.Text.Add(s+ExtractFileName(fn));
         if ele0<>0 then begin
-          AppLog.Lines.Add('');
+          AppLog.Lines.Add(LineEnding);
           AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                              URLGmap(FloatToStr(lat1),
                                      FloatToStr(lon1)));
@@ -4717,12 +4721,12 @@ begin
                              Format('%7.1f', [elemax/1000])+'m');
           AppLog.Lines .Add(Format('%-25s', ['Relative '+rsGridCell5+suff])+
                               Format('%7.1f', [(elemax-ele0)/1000])+'m');
-          AppLog.Lines.Add('');
+          AppLog.Lines.Add(LineEnding);
           AppLog.Lines .Add(Format('%-25s', [rsGridCell6+suff])+
                               Format('%7.1f', [distmax])+'m');
           AppLog.Lines .Add(Format('%-25s', [rsGridCell7+suff])+
                               Format('%7.1f', [distg])+'m');
-          AppLog.Lines.Add('');
+          AppLog.Lines.Add(LineEnding);
           if ucap>0 then begin
             AppLog.Lines.Add(Format('%-25s', [csvUcap+suff])+
                                Format('%7.0f', [ucap])+'mAh');
@@ -4734,9 +4738,9 @@ begin
           end;
         end;
         Chart1.Title.Visible:=true;                {Diagrammtitel anzeigen}
-        AppLog.Lines.Add('');
+        AppLog.Lines.Add(LineEnding);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsMAVLink+tab1+rsDS);
-        AppLog.Lines.Add('');
+        AppLog.Lines.Add(LineEnding);
         if (datlist.Count>2) and
            cbMAVasCSV.Checked then begin
            s:=csvTime+sep+csvRSSI+sep+csvVolt+sep+      {CSV Header generieren}
@@ -4816,7 +4820,7 @@ begin
       if msglist.Count>0 then begin
         AppLog.Lines.Add(fn);
         AppLog.Lines.Add(rsUsedMAV);
-        AppLog.Lines.Add('');
+        AppLog.Lines.Add(LineEnding);
         s:=csvMsgID+#9+csvMsgID+#9+'*'+#9+'MAVlink Message';
         AppLog.Lines.Add(s);
         s:=StringReplace(s, #9, sep, [rfReplaceAll]);
@@ -4834,7 +4838,7 @@ begin
           s:=StringReplace(s, #9, sep, [rfReplaceAll]);
 	  outlist.Add(s);
         end;
-        AppLog.Lines.Add('');
+        AppLog.Lines.Add(LineEnding);
       end;
     finally
       inf.Free;
@@ -5350,7 +5354,7 @@ begin
   with TFPHttpClient.Create(Nil) do try
     IOTimeout:=6000;                               {Timeout if cam disconnected}
     try
-      AppLog.Lines.Add('');                        {Leerzeile im Protokoll}
+      AppLog.Lines.Add(LineEnding);                        {Leerzeile im Protokoll}
       if CGO3cmd<>'' then begin                    {opt. Kommando ausführen}
         s:=Get(edCGOURL.Text+CGO3cgi+CGO3cmd);
         result:=StrToIntDef(GetCGOStr('rval', s), -1); {Returnwert überschreiben}
@@ -6598,7 +6602,7 @@ begin
     end;                                           {default file type Telemetry}
     StatusBar1.Panels[0].Text:=IntToStr(vlist.Count);  {Anzahl Verzeichnisse}
     StatusBar1.Panels[1].Text:=IntToStr(flist.Count);  {Anzahl Dateien}
-    AppLog.Lines.Add('');
+    AppLog.Lines.Add(LineEnding);
     AppLog.Lines.Add(rgErrType.Items[rgErrType.ItemIndex]);
     AppLog.Lines.Add(cbxScanDir.Text);
     AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDateien);
@@ -6676,14 +6680,14 @@ var vlist, flist, outlist: TStringList;
   var x: integer;
   begin
     outlist.Add(trenner+tab1+capNachweis+tab1+trenner);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     outlist.Add(tabs(rsFlightReport, suff, tabu)+cbxText.text);  {ggf. Seriennummer}
     outlist.Add(tabs(rsCreat+tab1, suff, tabu)+
                 FormatDateTime(mzf, now)+'h  '+tab1+rsBy+tab1+
                 AppName+tab2+AppVersion);
     if cbCleanHplus.Checked then
       outlist.Add(capCheckBox9);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     for x:=0 to vlist.count-1 do begin             {Textausgabe}
       flist.DelimitedText:=vlist[x];
       if flist[0]=rsFlightNr then begin            {neuer Datensatz}
@@ -6696,7 +6700,7 @@ var vlist, flist, outlist: TStringList;
         if flist[0]=rsGridCell3 then datpos:=0;
       end;
     end;
-    outlist.Add('');
+    outlist.Add(LineEnding);
     outlist.Add(trenner+trenner+trenner);
     if gfd=0 then                                  {ohne Tage}
       outlist.Add(tabs(rsGFtime, suff, tabu)+FormatDateTime(zzf, gftime)+'h')
@@ -6718,12 +6722,12 @@ var vlist, flist, outlist: TStringList;
       s: string;
   begin
     outlist.Add(capNachweis);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     s:=rsCreat+tab1+csvsep+FormatDateTime(mzf, now)+'h'+csvsep+
        tab1+rsBy+tab1+AppName+tab2+AppVersion;
     if cbCleanHplus.Checked then s:=s+csvsep+capCheckBox9;
     outlist.Add(s);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     csvlist[0]:=rsFlightNr;
     csvlist[1]:=rsVType;
     csvlist[2]:='GPS/Sim';
@@ -6794,7 +6798,7 @@ var vlist, flist, outlist: TStringList;
     for y:=low(csvlist)+1 to high(csvlist) do
       prtext:=prtext+csvsep+csvlist[y];
     outlist.Add(prtext);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     if gfd=0 then                                  {ohne Tage}
       outlist.Add(rsGFtime+csvsep+FormatDateTime(zzf, gftime)+'h')
     else                                           {mit Tagen}
@@ -6907,12 +6911,12 @@ var vlist, flist, outlist: TStringList;
   var x: integer;
   begin
     outlist.Add(trenner+tab1+capNachweis+tab1+trenner);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     outlist.Add(tabs(rsFlightReport, suff, tabu)+cbxText.text); {ggf. Seriennummer}
     outlist.Add(tabs(rsCreat+tab1, suff, tabu)+
                 FormatDateTime(mzf, now)+'h  '+tab1+rsBy+tab1+
                 AppName+tab2+AppVersion);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     for x:=0 to vlist.count-1 do begin             {Textausgabe}
       flist.DelimitedText:=vlist[x];
       if flist[0]=rsFlightNr then                  {neuer Datensatz}
@@ -6925,7 +6929,7 @@ var vlist, flist, outlist: TStringList;
         if flist[0]=rsGridCell3 then datpos:=0;
       end;
     end;
-    outlist.Add('');
+    outlist.Add(LineEnding);
     outlist.Add(trenner+trenner+trenner);
     if gfd=0 then                                  {ohne Tage}
       outlist.Add(tabs(rsGFtime, suff, tabu)+FormatDateTime(zzf, gftime)+'h')
@@ -6946,10 +6950,10 @@ var vlist, flist, outlist: TStringList;
       x, y: integer;
   begin
     outlist.Add(capNachweis);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     outlist.Add(rsCreat+tab1+csvsep+FormatDateTime(mzf, now)+'h'+csvsep+tab1+rsBy+tab1+
                 AppName+tab2+AppVersion);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     csvlist[0]:=rsFlightNr;
     csvlist[1]:=rsVType;
     csvlist[2]:='GPS';
@@ -7001,8 +7005,8 @@ var vlist, flist, outlist: TStringList;
     prtext:=csvlist[0];                            {letzten DS ausgeben}
     for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+csvsep+csvlist[y];
     outlist.Add(prtext);
-    outlist.Add('');
-    outlist.Add('');
+    outlist.Add(LineEnding);
+    outlist.Add(LineEnding);
     if gfd=0 then                                  {ohne Tage}
       outlist.Add(rsGFtime+csvsep+FormatDateTime(zzf, gftime)+'h')
     else                                           {mit Tagen}
@@ -7118,12 +7122,12 @@ var vlist, flist, outlist: TStringList;
   var x: integer;
   begin
     outlist.Add(trenner+tab1+capNachweis+tab1+trenner);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     outlist.Add(tabs(rsFlightReport, suff, tabu)+cbxText.text); {ggf. Seriennummer}
     outlist.Add(tabs(rsCreat+tab1, suff, tabu)+
                 FormatDateTime(mzf, now)+'h  '+tab1+rsBy+tab1+
                 AppName+tab2+AppVersion);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     for x:=0 to vlist.count-1 do begin             {Textausgabe}
       flist.DelimitedText:=vlist[x];
       if flist[0]=rsFlightNr then                  {neuer Datensatz}
@@ -7136,7 +7140,7 @@ var vlist, flist, outlist: TStringList;
         if flist[0]=rsGridCell3 then datpos:=0;
       end;
     end;
-    outlist.Add('');
+    outlist.Add(LineEnding);
     outlist.Add(trenner+trenner+trenner);
     if gfd=0 then                                  {ohne Tage}
       outlist.Add(tabs(rsGFtime, suff, tabu)+FormatDateTime(zzf, gftime)+'h')
@@ -7157,10 +7161,10 @@ var vlist, flist, outlist: TStringList;
       x, y: integer;
   begin
     outlist.Add(capNachweis);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     outlist.Add(rsCreat+tab1+csvsep+FormatDateTime(mzf, now)+'h'+csvsep+tab1+rsBy+tab1+
                 AppName+tab2+AppVersion);
-    outlist.Add('');
+    outlist.Add(LineEnding);
     csvlist[0]:=rsFlightNr;
     csvlist[1]:=rsVType;
     csvlist[2]:='GPS';
@@ -7212,8 +7216,8 @@ var vlist, flist, outlist: TStringList;
     prtext:=csvlist[0];                            {letzten DS ausgeben}
     for y:=low(csvlist)+1 to high(csvlist) do prtext:=prtext+csvsep+csvlist[y];
     outlist.Add(prtext);
-    outlist.Add('');
-    outlist.Add('');
+    outlist.Add(LineEnding);
+    outlist.Add(LineEnding);
     if gfd=0 then                                  {ohne Tage}
       outlist.Add(rsGFtime+csvsep+FormatDateTime(zzf, gftime)+'h')
     else                                           {mit Tagen}
@@ -7377,7 +7381,7 @@ begin
   try
     if FileExists(fn)then begin
       inlist.LoadFromFile(fn);
-      AppLog.Lines.Add('');
+      AppLog.Lines.Add(LineEnding);
       if pos(plfAndr, inlist[2])>0 then
         btnArchive.Tag:=1
       else
@@ -7416,7 +7420,7 @@ begin
     gridFirmware.Cells[0, 5]:=rsRealSense;
     az:=GetFW(FWarr);
     if az>2 then begin
-      AppLog.Lines.Add('');
+      AppLog.Lines.Add(LineEnding);
       for i:=0 to az do begin
         gridFirmware.Cells[1, i+1]:=FWarr[i];
         if FWarr[i]<>'' then
@@ -8194,9 +8198,9 @@ begin
                                  lbFlights.Items[lbFlights.ItemIndex]+suff+
                                  IntToStr(nf)+tab1+rsFilesDel;
       StatusBar1.Refresh;
-      AppLog.Lines.Add('');
+      AppLog.Lines.Add(LineEnding);
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
-      AppLog.Lines.Add('');
+      AppLog.Lines.Add(LineEnding);
       ResetCut;                                    {Reset cut timestamps}
       FreigabeCut(true);                           {Output to status is true}
       TimerDblClick.Enabled:=false;
@@ -8554,7 +8558,7 @@ procedure TForm1.AppLogTimeStamp(s: string);       {AppLogHighlighter einteilen}
 begin
   AppLog.Lines.Add(s);
   AppLog.Lines.Add(trenner+tab1+FormatDateTime(vzf+zzz, now)+tab1+trenner);
-  AppLog.Lines.Add('');
+  AppLog.Lines.Add(LineEnding);
 end;
 
 procedure TForm1.SetSensorEnv;    {Bedienoberfläche für Sensor Anzeige anpassen}
@@ -9820,7 +9824,7 @@ begin
     StatusBar1.Panels[5].Text:=fn;
     AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     AppLog.Lines.Add(StatusBar1.Panels[1].Text+' PX4 '+rsMAVlink+tab1+rsDS);
-    AppLog.Lines.Add('');
+    AppLog.Lines.Add(LineEnding);
   finally
     Label3.Tag:=n;
     FreeAndNil(inlist);
@@ -14502,14 +14506,14 @@ begin
   numblk:=fnsize div btnShowHex.Tag + 1;
   speBlockNum.Value:=1;
   speBlockNum.MaxValue:=numblk;
-  AppLog.Lines.Add('');
+  AppLog.Lines.Add(LineEnding);
   StatusBar1.Panels[0].Text:=IntToStr(fnsize);
   StatusBar1.Panels[1].Text:=IntToStr(numblk);
   StatusBar1.Panels[5].Text:=CapHexdump+suff+ExtractFileName(fn);
   AppLog.Lines.Add(StatusBar1.Panels[5].Text);
   AppLog.Lines.Add(rsFilesize+suff+StatusBar1.Panels[0].Text+
                      ' bytes = '+StatusBar1.Panels[1].Text+' blocks');
-  AppLog.Lines.Add('');
+  AppLog.Lines.Add(LineEnding);
 end;
 
 procedure TForm1.HexAusgabe(const fn: string);     {Display a binary file as hex print}
@@ -14564,7 +14568,7 @@ begin
         AppLog.Lines.Add(zeile);
         inc(zhl);
       until p1>bytesread;                          {all copied bytes read}
-      AppLog.Lines.Add('');
+      AppLog.Lines.Add(LineEnding);
       AppLog.TopLine:=AppLog.Lines.Count-zhl;
     AppLog.EndUpdate;
     if speBlockNum.Value=speBlockNum.MaxValue then {last block dumped, end file}
@@ -14710,7 +14714,7 @@ begin
                            URLGmap(slat, slon));   {Anzeige Start und Ende}
         AppLog.Lines.add(Format('%-10s', [capLabel13+suff])+
                            URLosm(slat, slon));
-        AppLog.Lines.add('');
+        AppLog.Lines.Add(LineEnding);
         AppLog.Lines.add(Format('%-10s', [capLabel14+suff])+
                            URLGmap(splitlist[5], splitlist[6]));
         AppLog.Lines.add(Format('%-10s', [capLabel14+suff])+
@@ -14914,7 +14918,7 @@ begin
     infn:=TMemoryStream.Create;
     try
       infn.LoadFromFile(fn);
-      AppLog.Lines.Add('');
+      AppLog.Lines.Add(LineEnding);
       AppLog.Lines.Add(fn);
       while infn.Position<(infn.Size-lenfixP) do begin {bis zum Ende der Datei}
         len:=0;                                    {Reset for error detection}
