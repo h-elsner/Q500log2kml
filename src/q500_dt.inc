@@ -238,7 +238,7 @@ resourcestring                                     {deutsch}
   rsAdresse='Adresse';
   rsMissInet='Keine Netzwerkverbindung';
   hntStatus1='Dekodierte Werte, Statusausgaben oder Fehlermeldungen';
-  rsRest='Rest LiPo';
+  rsRest='Rest Batt';
   rsPerCell='V pro Zelle';
   hntDauer='Summe der realen Flugzeiten';
   hntNumFlt='Anzahl realer Flüge';

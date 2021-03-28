@@ -27,12 +27,12 @@ object Form1: TForm1
     Height = 579
     Top = 96
     Width = 918
-    ActivePage = tabAppLog
+    ActivePage = tabDetails
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 8
+    TabIndex = 1
     TabOrder = 1
     OnChange = pcMainChange
     Options = [nboKeyboardTabSwitch]
@@ -80,7 +80,7 @@ object Form1: TForm1
       object gridDetails: TStringGrid
         Cursor = crHelp
         Left = 0
-        Height = 537
+        Height = 551
         Top = 0
         Width = 910
         Align = alClient

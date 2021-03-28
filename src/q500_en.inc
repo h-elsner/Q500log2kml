@@ -238,7 +238,7 @@ resourcestring                                     {english}
   rsAdresse='Address';
   rsMissInet='Missing network connection';
   hntStatus1='Decoded values, state changes or error indication';
-  rsRest='Remaining LiPo';
+  rsRest='Batt remain';
   rsPerCell='V per cell';
   hntDauer='Total duration of real flights';
   hntNumFlt='Number of real flights';

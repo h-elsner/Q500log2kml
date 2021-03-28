@@ -10,8 +10,8 @@ uses
 const
 {public constants}
   AppName=   'q500log2kml';
-  AppVersion='V4.7 02/2021';
-  VersValue='4.7.4';
+  AppVersion='V4.7 03/2021';
+  VersValue='4.7.5';
   VersFile='/v';
 
   homepage='http://h-elsner.mooo.com';             {My Homepage}
@@ -260,10 +260,20 @@ begin
   result:=r*180/pi;                                {rad to ° +/-180}
 end;
 
+function GetContrastTextColor(const BackColor: TColor): TColor;
+begin                                              {Textfaebe abh. vom Hintergrund}
+  if (Red(BackColor) * 0.25+
+      Green(BackColor) * 0.625+
+      Blue(BackColor) * 0.125) > 90 then
+    result := clBlack
+  else
+    result := clWhite;
+end;
+
 procedure CellColorSetting(aGrid: TStringGrid; Farbe: TColor); {Zellen einfärben}
 begin
   aGrid.Canvas.Brush.Color:=Farbe;
-  aGrid.Canvas.Font.Color:=clBlack;                {Text always black}
+  aGrid.Canvas.Font.Color:=GetContrastTextColor(Farbe);
 end;
 
 procedure BladeCol(aGrid: TStringGrid; fm: integer);
