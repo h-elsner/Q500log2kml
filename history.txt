@@ -138,8 +138,8 @@ History:
                  Delete a FlightLog function added.
 2020-11-13       MAV link messages reviewed. Missing messages added.
 2020-12-09  V4.7 GeoTagging for pictures taken at same time as the drone was flying.
-2020-12-09  V4.7 GeoTagging for pictures taken at same time as the drone was flying.
 2021-01-12       Time marker in KML tracks
 2021-01-16       Query for latest version, GitHub link
-2021-02-02       Enable special evaluation by short key Ctrl+S.
+2021-02-02       Enable special evaluation by short key.
                  Current special evaluation: Altitude values from TLOG
+2021-03-28       H Plus column current changed to Remaining LiPo
