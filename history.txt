@@ -142,4 +142,6 @@ History:
 2021-01-16       Query for latest version, GitHub link
 2021-02-02       Enable special evaluation by short key.
                  Current special evaluation: Altitude values from TLOG
-2021-03-28       H Plus column current changed to Remaining LiPo
+2021-03-28       H Plus column current changed to Remaining LiPo.
+2021-04-05  V4.8 Menu Tools: Split TLOG files at time resets.
+
