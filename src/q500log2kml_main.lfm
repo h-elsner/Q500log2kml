@@ -1,11 +1,11 @@
 object Form1: TForm1
   Left = 809
-  Height = 725
-  Top = 104
+  Height = 724
+  Top = 105
   Width = 1077
   AllowDropFiles = True
   Anchors = [akTop, akRight]
-  ClientHeight = 705
+  ClientHeight = 704
   ClientWidth = 1077
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
@@ -24,15 +24,15 @@ object Form1: TForm1
   LCLVersion = '2.0.12.0'
   object pcMain: TPageControl
     Left = 152
-    Height = 579
+    Height = 578
     Top = 96
     Width = 918
-    ActivePage = tabDetails
+    ActivePage = tabSettings
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 1
+    TabIndex = 7
     TabOrder = 1
     OnChange = pcMainChange
     Options = [nboKeyboardTabSwitch]
@@ -42,9 +42,9 @@ object Form1: TForm1
       ImageIndex = 0
       object gridOverview: TStringGrid
         Left = 0
-        Height = 472
+        Height = 551
         Top = 0
-        Width = 830
+        Width = 910
         Align = alClient
         Color = clDefault
         ColCount = 11
@@ -112,9 +112,9 @@ object Form1: TForm1
       ImageIndex = 2
       object Chart1: TChart
         Left = 0
-        Height = 472
+        Height = 551
         Top = 0
-        Width = 830
+        Width = 910
         AxisList = <        
           item
             Grid.Color = clGray
@@ -237,7 +237,7 @@ object Form1: TForm1
         Left = 0
         Height = 176
         Top = 0
-        Width = 830
+        Width = 910
         AxisList = <        
           item
             Grid.Color = clGray
@@ -318,8 +318,8 @@ object Form1: TForm1
       object Chart5: TChart
         Left = 0
         Height = 156
-        Top = 316
-        Width = 830
+        Top = 395
+        Width = 910
         AxisList = <        
           item
             Grid.Color = clGray
@@ -384,9 +384,9 @@ object Form1: TForm1
         end
         object cbSimu: TCheckBox
           Left = 8
-          Height = 22
+          Height = 19
           Top = 21
-          Width = 45
+          Width = 40
           Caption = 'Sim'
           TabOrder = 1
         end
@@ -511,9 +511,9 @@ object Form1: TForm1
           TabOrder = 2
           object cbVehicleType: TCheckBox
             Left = 8
-            Height = 22
+            Height = 19
             Top = 6
-            Width = 91
+            Width = 84
             Caption = 'Vehicle type'
             OnChange = cbVehicleTypeChange
             TabOrder = 0
@@ -547,7 +547,7 @@ object Form1: TForm1
       end
       object gridScanResult: TStringGrid
         Left = 376
-        Height = 427
+        Height = 456
         Top = 48
         Width = 440
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -1753,23 +1753,23 @@ object Form1: TForm1
       end
     end
     object tabSettings: TTabSheet
-      ClientHeight = 551
+      ClientHeight = 550
       ClientWidth = 910
       ImageIndex = 4
       object pcSettings3: TPageControl
         Left = 0
-        Height = 527
+        Height = 550
         Top = 0
-        Width = 912
-        ActivePage = tabCommon
+        Width = 910
+        ActivePage = tabData
         Align = alClient
         Images = TabImages
-        TabIndex = 2
+        TabIndex = 1
         TabOrder = 0
         Options = [nboKeyboardTabSwitch]
         object tabConvert: TTabSheet
-          ClientHeight = 499
-          ClientWidth = 904
+          ClientHeight = 523
+          ClientWidth = 902
           ImageIndex = 6
           object rgOutFormat: TRadioGroup
             Left = 8
@@ -1954,8 +1954,8 @@ object Form1: TForm1
           end
         end
         object tabData: TTabSheet
-          ClientHeight = 499
-          ClientWidth = 904
+          ClientHeight = 522
+          ClientWidth = 902
           ImageIndex = 7
           object GroupBox3: TGroupBox
             Left = 8
@@ -2013,12 +2013,12 @@ object Form1: TForm1
           end
           object GroupBox4: TGroupBox
             Left = 232
-            Height = 358
+            Height = 415
             Top = 24
             Width = 384
             Anchors = [akTop, akLeft, akBottom]
             Caption = 'sel'
-            ClientHeight = 338
+            ClientHeight = 395
             ClientWidth = 380
             TabOrder = 1
             object LabeledEdit1: TLabeledEdit
@@ -2066,7 +2066,7 @@ object Form1: TForm1
             end
             object TreeView1: TTreeView
               Left = 8
-              Height = 326
+              Height = 383
               Top = 8
               Width = 216
               Anchors = [akTop, akLeft, akBottom]
@@ -2230,7 +2230,7 @@ object Form1: TForm1
           object MAVmsg: TCheckGroup
             Tag = 65535
             Left = 624
-            Height = 304
+            Height = 336
             Top = 24
             Width = 216
             AutoFill = True
@@ -2243,7 +2243,7 @@ object Form1: TForm1
             ChildSizing.ShrinkVertical = crsScaleChilds
             ChildSizing.Layout = cclLeftToRightThenTopToBottom
             ChildSizing.ControlsPerLine = 1
-            ClientHeight = 284
+            ClientHeight = 316
             ClientWidth = 212
             Items.Strings = (
               'HEARTBEAT (0)'
@@ -2268,18 +2268,18 @@ object Form1: TForm1
             }
           end
           object cbMAVasCSV: TCheckBox
-            Left = 632
+            Left = 640
             Height = 19
-            Top = 336
+            Top = 376
             Width = 37
             Caption = 'csv'
             TabOrder = 5
           end
           object lblMAVcommon: TLabel
             Cursor = crHandPoint
-            Left = 632
+            Left = 640
             Height = 15
-            Top = 392
+            Top = 407
             Width = 147
             Caption = 'MAVlink C-library/common'
             Font.Color = clNavy
@@ -2290,11 +2290,22 @@ object Form1: TForm1
             OnMouseEnter = lblMAVcommonMouseEnter
             OnMouseLeave = lblMAVcommonMouseLeave
           end
+          object btnSplit: TBitBtn
+            Left = 117
+            Height = 30
+            Top = 392
+            Width = 107
+            Caption = 'splt'
+            Images = TabImages
+            ImageIndex = 47
+            OnClick = btnSplitClick
+            TabOrder = 6
+          end
         end
         object tabCommon: TTabSheet
           Caption = 'allg'
-          ClientHeight = 499
-          ClientWidth = 904
+          ClientHeight = 523
+          ClientWidth = 902
           ImageIndex = 8
           object rgTimeType: TRadioGroup
             Left = 8
@@ -2547,15 +2558,15 @@ object Form1: TForm1
             end
             object Label19: TLabel
               Left = 8
-              Height = 17
+              Height = 15
               Top = 6
-              Width = 22
+              Width = 21
               Caption = 'URL'
               ParentColor = False
             end
             object edCGOURL: TEdit
               Left = 9
-              Height = 27
+              Height = 23
               Top = 24
               Width = 176
               TabOrder = 1
@@ -2564,9 +2575,9 @@ object Form1: TForm1
             end
             object cbThunder: TCheckBox
               Left = 9
-              Height = 22
+              Height = 19
               Top = 64
-              Width = 84
+              Width = 77
               Caption = 'cbThunder'
               OnChange = cbThunderChange
               TabOrder = 2
@@ -2597,7 +2608,7 @@ object Form1: TForm1
             end
             object speItems: TSpinEdit
               Left = 9
-              Height = 27
+              Height = 23
               Top = 112
               Width = 56
               MaxValue = 50
@@ -2607,9 +2618,9 @@ object Form1: TForm1
             end
             object Label10: TLabel
               Left = 9
-              Height = 17
+              Height = 15
               Top = 94
-              Width = 32
+              Width = 29
               Caption = 'Items'
               ParentColor = False
             end
@@ -2675,15 +2686,15 @@ object Form1: TForm1
             end
             object cbCap: TCheckBox
               Left = 8
-              Height = 22
+              Height = 19
               Top = 128
-              Width = 59
+              Width = 54
               Caption = 'cbCap'
               TabOrder = 1
             end
             object speBaseLoad: TSpinEdit
               Left = 8
-              Height = 27
+              Height = 23
               Top = 88
               Width = 200
               MaxValue = 2000
@@ -2692,9 +2703,9 @@ object Form1: TForm1
             end
             object lblBaseLoad: TLabel
               Left = 8
-              Height = 17
+              Height = 15
               Top = 72
-              Width = 68
+              Width = 63
               Caption = 'lblBaseLoad'
               ParentColor = False
             end
@@ -2710,7 +2721,7 @@ object Form1: TForm1
             TabOrder = 4
             object speStk: TSpinEdit
               Left = 8
-              Height = 27
+              Height = 23
               Top = 16
               Width = 106
               OnEditingDone = speStkEditingDone
@@ -2718,7 +2729,7 @@ object Form1: TForm1
             end
             object speProz: TSpinEdit
               Left = 8
-              Height = 27
+              Height = 23
               Top = 48
               Width = 106
               MaxValue = 150
@@ -2730,17 +2741,17 @@ object Form1: TForm1
             end
             object Label11: TLabel
               Left = 128
-              Height = 17
+              Height = 15
               Top = 18
-              Width = 49
+              Width = 47
               Caption = 'Stick Pos'
               ParentColor = False
             end
             object Label17: TLabel
               Left = 128
-              Height = 17
+              Height = 15
               Top = 51
-              Width = 25
+              Width = 23
               Caption = 'proz'
               ParentColor = False
             end
@@ -2748,9 +2759,9 @@ object Form1: TForm1
           object lblGitHub: TLabel
             Cursor = crHandPoint
             Left = 464
-            Height = 17
+            Height = 15
             Top = 304
-            Width = 52
+            Width = 51
             Caption = 'lblGitHub'
             Font.Color = clNavy
             Font.Style = [fsUnderline]
@@ -2765,13 +2776,13 @@ object Form1: TForm1
     end
     object tabAppLog: TTabSheet
       Caption = 'AppLog'
-      ClientHeight = 551
+      ClientHeight = 550
       ClientWidth = 910
       ImageIndex = 11
       object btnSaveApplog: TBitBtn
         Left = 792
         Height = 34
-        Top = 504
+        Top = 503
         Width = 107
         Anchors = [akRight, akBottom]
         Caption = 'Sv'
@@ -2782,7 +2793,7 @@ object Form1: TForm1
       end
       inline AppLog: TSynEdit
         Left = 0
-        Height = 488
+        Height = 487
         Top = 0
         Width = 910
         Align = alTop
@@ -3287,7 +3298,7 @@ object Form1: TForm1
       object btnDelAppLog: TBitBtn
         Left = 8
         Height = 34
-        Top = 504
+        Top = 503
         Width = 107
         Anchors = [akLeft, akBottom]
         Caption = 'del'
@@ -3299,7 +3310,7 @@ object Form1: TForm1
       object cbReduced: TCheckBox
         Left = 128
         Height = 19
-        Top = 524
+        Top = 523
         Width = 79
         Anchors = [akLeft, akBottom]
         Caption = 'cbReduced'
@@ -3308,7 +3319,7 @@ object Form1: TForm1
       object speBlockNum: TSpinEdit
         Left = 272
         Height = 23
-        Top = 510
+        Top = 509
         Width = 71
         Anchors = [akLeft, akBottom]
         MaxValue = 100000
@@ -3319,7 +3330,7 @@ object Form1: TForm1
       object btnShowHex: TBitBtn
         Left = 360
         Height = 34
-        Top = 504
+        Top = 503
         Width = 107
         Anchors = [akLeft, akBottom]
         Caption = 'hex'
@@ -3331,7 +3342,7 @@ object Form1: TForm1
       object cbHighLight: TCheckBox
         Left = 128
         Height = 19
-        Top = 496
+        Top = 495
         Width = 86
         Anchors = [akLeft, akBottom]
         Caption = 'cbHighLight'
@@ -3343,7 +3354,7 @@ object Form1: TForm1
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
-    Top = 682
+    Top = 681
     Width = 1077
     Anchors = [akRight, akBottom]
     Panels = <    
@@ -3371,7 +3382,7 @@ object Form1: TForm1
   end
   object lbFlights: TListBox
     Left = 11
-    Height = 403
+    Height = 402
     Top = 272
     Width = 134
     Anchors = [akTop, akLeft, akBottom]
@@ -3841,6 +3852,11 @@ object Form1: TForm1
         ImageIndex = 12
         OnClick = mnCleanCSVClick
       end
+      object mnSplit: TMenuItem
+        Caption = 'mnSplit'
+        ImageIndex = 47
+        OnClick = mnSplitClick
+      end
       object mnMAVlist: TMenuItem
         Caption = 'MAV'
         ImageIndex = 15
@@ -3901,7 +3917,7 @@ object Form1: TForm1
     Left = 744
     Top = 160
     Bitmap = {
-      4C692F0000001000000010000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+      4C69300000001000000010000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFBFBFBFFF7F7F7FFF7F7F7FFFFFFFFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFDFDFBF00FFFFFFFFC0C0C0FFC0C0C0FFC0C0C0FF6060
       60FF606060FF606060FF303030FFBFBFBFFF3F3F3FFF606060FF606060FF6060
@@ -5405,7 +5421,39 @@ object Form1: TForm1
       F2FFFAF4F0FFDEE5D4FF2B8E29FFDEE5D4FFF8EFE9FFF7EDE8FFF7ECE6FFF7EC
       E6FF806D59FF000000000000000000000000BCA89AFF988270FF806D59FF806D
       59FF806D59FF806D59FF806D59FF806D59FF806D59FF806D59FF806D59FF806D
-      59FF806D59FF0000000000000000
+      59FF806D59FF0000000000000000FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00F4C095FFF0BA8BFFEAB27FFFE2A870FFFFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00F0B98BFFF0D4C9FFEECDC2FFD89C60FFFFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00E9B07DFFEDCBC0FFEAC3B8FFCE8D51FFFFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00E1A46DFFD7995FFFCD8C50FFC47E42FFFFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00B6B6B6FFB1B1B1FFFFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00BEBEBEFFBCBCBCFFB9B9
+      B9FFB4B4B4FFACACACFFA2A2A2FF999999FF8E8E8EFF828282FF777777FF6D6D
+      6DFF646464FFFFFFFF00FFFFFF00FFFFFF00FFFFFF00B8B8B8FFFFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF005D5D5DFFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF0063C170FF60BF6DFF5EBD6AFF5BBB68FFFFFF
+      FF00FFFFFF0054B55FFF4DB158FF47AA50FF3FA348FFFFFFFF00FFFFFF002C8F
+      30FF27882AFF238326FF228126FF5FBE6CFFACDAB1FFA9D9AFFF57B863FFFFFF
+      FF00FFFFFF004CB057FF8ECC96FF83C88CFF389C3FFFFFFFFF00FFFFFF002687
+      2AFF53AF5AFF51AE58FF217F24FF5CBB68FFA8D8AEFFA5D7ACFF54B55FFFFFFF
+      FF00FFFFFF0045A84EFF7FC688FF72C07CFF309436FFFFFFFF00FFFFFF002282
+      26FF50AD57FF4FAC55FF207D23FF58B864FF55B661FF53B45EFF50B25BFFFFFF
+      FF00FFFFFF003DA145FF369A3DFF309336FF2A8C2FFFFFFFFF00FFFFFF00217F
+      24FF207E24FF207D23FF207D23FFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00
     }
   end
   object PopupMenuProfile: TPopupMenu

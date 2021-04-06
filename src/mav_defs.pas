@@ -1,4 +1,4 @@
-unit mav_defs;                                     {Common definitions and variables}
+unit mav_defs;                                     {MAVlink definitions and variables}
 
 {$mode objfpc}{$H+}
 

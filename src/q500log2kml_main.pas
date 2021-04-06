@@ -217,8 +217,9 @@ History:
 2021-01-12       Time marker in KML tracks
 2021-01-16       Query for latest version, GitHub link.
 2021-02-02       Enable special evaluation by short key.
-                 Current special evaluation: Altitude values from TLOG
-2021-03-28       H Plus column current changed to Remaining LiPo
+                 Current special evaluation: Altitude values from TLOG.
+2021-03-28       H Plus column current changed to Remaining LiPo.
+2021-04-05  V4.8 Menu Tools: Split TLOG files at time resets.
 
 *)
 
@@ -237,7 +238,7 @@ uses
   TATools, indGnouMeter, AdvLed, Sensors, graphutil, fphttpclient, lazUTF8,
   SynEdit, SynHighlighterMulti, SynHighlighterAny, strutils, dateutils,
   lazsysutils, q5_common, Types, fpeMetaData, fpeExifData, exifstuff,
-  mav_defs, Iphttpbroker, IpHtml;
+  mav_defs, yun_defs, Iphttpbroker, IpHtml;
 
 type
   TarrFW = array[0..7] of string;
@@ -258,6 +259,7 @@ type
 
   TForm1 = class(TForm)
     AdvLed1: TAdvLed;
+    btnSplit: TBitBtn;
     btnScanPic: TBitBtn;
     btnWritePic: TBitBtn;
     btnClose: TBitBtn;
@@ -366,6 +368,7 @@ type
     DateTimeIntervalChartSource4: TDateTimeIntervalChartSource;
     edSendCGO3: TEdit;
     edReceiveCGO3: TEdit;
+    mnSplit: TMenuItem;
     mnDownload: TMenuItem;
     N1: TMenuItem;
     mnGeoGMap: TMenuItem;
@@ -556,6 +559,7 @@ type
     procedure btnScreenshotClick(Sender: TObject);
     procedure btnCutClick(Sender: TObject);        {Cut flight log}
     procedure btnCGO3StatusClick(Sender: TObject);
+    procedure btnSplitClick(Sender: TObject);
     procedure btnVideoStartClick(Sender: TObject);
     procedure btnVideoStopClick(Sender: TObject);
     procedure btnCGO3ResetClick(Sender: TObject);
@@ -634,6 +638,7 @@ type
     procedure mnGeoOSMClick(Sender: TObject);
     procedure mnReloadClick(Sender: TObject);
     procedure mnShowPicClick(Sender: TObject);
+    procedure mnSplitClick(Sender: TObject);
     procedure sbtnPicFolderClick(Sender: TObject);
     procedure sbtnTelemetryClick(Sender: TObject);
     procedure speDataPointEditingDone(Sender: TObject);
@@ -766,8 +771,10 @@ type
     procedure TreeView1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
 
-
   private
+    function VtoProz(const vt: integer; u: double): integer;
+    function ShowVoltageF(const w: double; vt: integer): string;
+    function ShowVoltage(const s: string; vt: integer): string;
     function CheckNumTurns(const dn: string): integer;
     procedure AnzeigeCSV(const mode: integer);
     procedure BrAnzeigeCSV(const mode: integer);
@@ -838,12 +845,8 @@ type
     function CheckVT(vt, fm: string): boolean;     {Vehicle Type prüfen für YTH Plus}
     function SpeedX(const sp: double): double;     {Geschwindigkeit umrechnen}
     function GetFlightLogDir(fn: string): string;  {FlightLog Verzeichnis finden}
-    function vTypeToStr(const v: integer): string; {vehicle type ausgeben}
     function ZeitToDT(const s: string; const vt: integer): TDateTime;
     function FindTP(wlist: TStringList; tp: TDateTime; const vt: integer): integer;
-    function PCGstatusToStr(const u: uint8): string; {pressure_compass_status}
-    function MotStatusToStr(const u: uint8): string; {Motor_status}
-    function SwitchToStr(const p: integer; const s: string): string;
     function CheckE7(const s: string): boolean;    {prüft einen string auf Fehler}
     function ShowSensorPlus(fn: string;            {Sensordatei vom YTH Plus}
                             z: integer;            {Index der Datei}
@@ -875,9 +878,10 @@ type
     procedure ScanPicEnable;                       {Enable picture scanning for geotagging}
     procedure ScanPic;                             {Geotagging: Scan picture folder}
     procedure CheckVersion;                        {Call version file and check}
+    procedure SplitSensorPlus;                     {Split PX4 Sensor file}
 
 {Special analysis with (hidden) extra button "Special" on Settings > Common settings}
-    procedure TLOGanalysis(fn: string);          {Special analysis}
+    procedure TLOGanalysis(fn: string);            {Special analysis}
 //    procedure AuswertungCSVdatei;                {Spezielle Auswertung für CSV-Datei}
   end;
 
@@ -889,58 +893,23 @@ const
   email   ='helmut.elsner@live.com';               {My e-mail address}
   lazURL  ='https://www.lazarus-ide.org/';         {Advertisement}
   lazForum='https://www.lazarusforum.de/app.php/portal';
-  mndir='FlightLog';
-  mndirp='Flight2Log';                             {YTH Plus}
-  dkpath='Telemetry';
-  kfile=dkpath+'_';
-  spath='RemoteGPS';
-  sfile=spath+'_';
-  fpath='Remote';
-  ffile=fpath+'_';
-  npath='Sensor';
-  mfile='yuneec_';                                 {Variante beim Mantis Q/bext}
-  nfile=npath+'_';
-  h5file='H501_';                                  {Dateinamen von flaretom Recoder}
+
   fix='Fix';
   wldcd='*';
-  fext='.csv';                                     {alle csv-Dateien}
-  bext='.log';                                     {Log files vom Breeze}
-  hext='.tlog';                                    {TLOG from H520}
-  sext='.bin';                                     {Sensor files}
-  wext='.txt';
-  skyext='.sky';
   us1='_1';
+  h5file='H501_';                                  {Dateinamen von flaretom Recoder}
   sextP=wldcd+wext;                                {Suche Sensor files YTH Plus}
   pngdef=us1+'.png';                               {Dateivorschläge}
   csvdef=us1+fext;
   wexdef=us1+wext;
-  plfAndr='ndroid';                                {Breeze Platform, all other is iOS}
-  idtrue='true';
   sep=',';                                         {Datenseperator im CSV file}
   kma=', ';                                        {Kommaausgabe}
-  bind=' - ';                                      {von/bis ID}
   anzsp=20;                                        {Mindestanzahl Spalten}
   lzbr=19;                                         {Länge Zeitstempel Breeze}
   lzyu=21;                                         {Länge Zeitstempel Yuneec}
   fw0=80;                                          {Breite linke Spalte Übersicht default}
   fw1=160;                                         {Breite linke Spalte Übersicht bei alter FW}
-  maxxh=7999;                                      {Höhe validieren --> testh(a)}
-  minnh=-1000;                                     {gefähliche Annahme, tritt aber bei YTH Plus als Fehler auf}
-  distmax=1000;                                    {Plasicheck: Koord dist in m}
-  brsnid='DroneSN';
-  lcol='gps_accH';                                 {letzte Spalte in Überschrift, wegen ST16-FW Fehler}
   hsw=2;                                           {Höhen-Schwellwert für Analyse in m}
-  Secpd=86400;                                     {Sekunden per Tag}
-  tsdelta1=6/864000;                               {Schwellwert für Zeitstempel in 1/10s, default 6=600ms}
-  tsdelta2=2/86400;                                {> 2sec Telemtrie verloren}
-  tsdelta3=5/86400;                                {5 sec für Breeze}
-  minflt=10/86400;                                 {Mindestflugzeit beim YTH Plus 10s}
-  rfm2=[0..7, 9..14, 18, 20..24, 26..29, 31..33];  {Real flight modes, Yuneec legacy}
-  rfm3=[8..14, 25];                                {Real flight modes Blade}
-  rfmT=[0, 1, 3, 13, 14, 20, 33];                  {Real flight modes Thunderbird}
-  rfmP=[4..7, 10, 12, 13, 17];                     {Real flight modes YTH Plus  ???}
-  lipomin=3.3;                                     {Minimum LiPo voltage}
-  lipomax=4.2;
   minlines=10;                                     {Minimum number if lines that makes sense to deal with}
   exID=' ';                                        {ID for values updated by in StringGrid}
 
@@ -963,8 +932,6 @@ const
            https://sites.google.com/site/gmapsdevelopment/
            http://kml4earth.appspot.com/icons.html  }
 
-  idxpage='INDEX_PAGE';
-  getshpn='GET_SHARPNESS';
 
   xmlvers='<?xml version="1.0" encoding="UTF-8"?>';  {ID XML/GPX header}
   kmlvers='<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">';
@@ -986,40 +953,16 @@ const
   tr='"'+suff;
   wpem='},';                                       {Waypoint Endemarke}
 
-  hwphwp ='"way_points';
-  hwpyaw ='"yaw';
-  hwproll='"roll';
-  hwpidx ='"pointerIndex';
-  hwpalt ='"altitude';
-  hwplon ='"longitude';
-  hwplat ='"latitude';
-  hwpptch='"pitch';
-  hwpgyam='"gimbalYam';
-  hwpgpit='"gimbalPitch';
-
-  minh=0.01;                                       {Höhengrenzen bei Übernahme}
-  maxh=300;
-  defh=10;                                         {default Höhe in m}
-  stkang=2184;                                     {switch tilt angle, 10%}
-  stkntrl=2048;                                    {neutral; 0%}
-  stkdown=683;                                     {-100%}
-  stkup  =3412;                                    {+100%}
-  stkmax=4095;                                     {+150%}
-  stkmin=0;                                        {-150%}
-  m45val=1433;                                     {Pan -40% TeamMode}
-  p50val=2730;                                     {+50%}
-  m50val=1365;                                     {-50%}
   spt=10;                                          {zusätzliche Spaltenbreite  für Telemetrie in pix}
   rrk='# ';                                        {RaceRender Kommentar}
   FWsz=18;                                         {Mindestgröße Datei für FW}
-  CGO3dir='100MEDIA/';
-  CGO3cgi='cgi-bin/cgi?CMD=';
+
   trenner='--------------------';
   trnrApplog='                  ';
-
   tabu=19;
   lblsize=35;                                      {LabelSize zum Ausrichten der Y-Achsen bei Schnellanalyse}
-                                                   {Sensordateien: }
+
+{Sensordateien: }
   dsID=$BC;                                        {ID für einen Datensatz}
   lenfix=8;                                        {Länge Fixpart}
   dsIDP=$FD;                                       {ID für einen PX Datensatz}
@@ -1125,16 +1068,6 @@ begin
   cutbidx:=-1;
 end;
 
-function StkToProz(const w: double): integer;      {Stick Position to percent}
-begin
-  result:=round(w/stkmax*300)-150;
-end;
-
-function ProzToStk(const w: double): integer;
-begin
-  result:=round(w*stkmax/300)+stkntrl;
-end;
-
 procedure TForm1.FormCreate(Sender: TObject);      {Anwendung initialisieren und starten}
 var i: integer;
 
@@ -1181,6 +1114,8 @@ begin
 
   btnCut.Caption:=capBitBtn14;                     {Ausschneiden / Cut}
   btnCut.Hint:=hntBitBtn14;
+  btnSplit.Caption:=capSplit1;                     {Menu: Split PX4 Sensor file at time resets}
+  btnSplit.Hint:=hntSplit;
   btnCGO3Reset.Caption:=capBitBtn18;
   btnCGO3Reset.Hint:=hntBitBtn18;
   btnCGO3Time.Caption:=capBitBtn23;
@@ -1243,6 +1178,8 @@ begin
   mnFlDel.Hint:=hntFlDel;
   mnReload.Caption:=capReload;
   mnReload.Hint:=hntReload;
+  mnSplit.Caption:=capSplit;                       {Menu: Split PX4 Sensor file at time resets}
+  mnSplit.Hint:=hntSplit;
   rgQuelle.Caption:=capRadioGroup1;
   rgQuelle.Hint:=hntRadioGroup1;
   rgQuelle.Items[0]:=dkpath;
@@ -1550,13 +1487,6 @@ begin
   FreigabeCut(false);                              {ohne Statusausgabe}
 end;
 
-function testh(const a: double): boolean; inline;  {Datensätze mit unsinniger Höhe ausblenden}
-begin
-  result:=true;
-  if (a<minnh) or                                  {tritt bei VTH Plus als Fehler auf}
-     (a>maxxh) then result:=false;
-end;
-
 function OpenManual: boolean;                      {Handbuch aufrufen}
 begin
   if not FileExists(GetExePath+manual) then
@@ -1586,28 +1516,6 @@ begin
   except
     result:=0;
   end;
-end;
-
-{File name part}
-function GetDateFile(s: string): TDateTime;        {Date from Filename H501}
-begin
-  try
-    result:=ScanDateTime(dzf, copy(s, 1, 10));
-  except
-    result:=trunc(now);
-  end;
-end;
-
-function ByteToBin(w: byte): string;               {Byte to Binary string}
-var x: integer;
-
-begin
-  SetLength(result, 8);
-  for x:=1 to 8 do begin
-    result[x]:=char(ord('0')+(w shr 7));
-    inc(w, w);
-  end;
-  insert(tab1, result, 5);
 end;
 
 {Finde einen Zeitstempel in den Dateien mit Datum/Zeit in der 1. Spalte}
@@ -1642,365 +1550,14 @@ begin
   end;
 end;
 
-function ChNoToStr(const p: integer): string;      {Bedeutung der Kanäle}
+{File name part}
+function GetDateFile(s: string): TDateTime;        {Date from Filename H501}
 begin
-  result:='';                                      {default: leer}
-  case p of
-     1: result:='J1 (thr)';
-     2: result:='J4 (roll/ail)';
-     3: result:='J3 (pitch/ele)';
-     4: result:='J2 (yaw/rud)';
-     5: result:=rsFModeSw;
-     7: result:=rsK2+' [°]';
-     8: result:=rsK1;
-     9: result:='Tilt mode';
-    10: result:='Pan mode';
-    11: result:=rsLandGear;
-    12: result:='B2 (Aux)';
+  try
+    result:=ScanDateTime(dzf, copy(s, 1, 10));
+  except
+    result:=trunc(now);
   end;
-end;
-
-function ChToStr(const s: string; const p: integer): string; {Channel CHxx umbenennen}
-begin
-  result:=s;                                       {Nehmen, wie es kommt - CHxx}
-  {wenn S leer ist, dann Channel wie in Channel settings in ST16:
-   Chxx, xx beginnend mit 1 statt 0, wie im FlightLog - Remote}
-  if s='' then
-    result:='Ch'+IntToStr(p);
-
-  case p of                                        {Liste der Channels zum Umbenennen}
-    1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12: result:=result+bind+ChNoToStr(p);
-    6: result:=result+' - A02';   {alle unbezeichneten, einstelligen Channels}
-    else
-      result:=result+' - A'+IntToStr(p-4);         {die restlichen unbezeichneten}
-  end;
-end;
-
-{see DroneTypeFactory.java
- https://www.rc-drohnen-forum.de/thread/10002}
-function TForm1.vTypeToStr(const v: integer): string; {vehicle type ausgeben}
-begin
-  result:='';
-  case v of
-    0: result:=rsInvalid;
-    1: result:='Yuneec H920';
-    2: result:='Yuneec Q500';
-    3: result:='Blade 350QX';
-    4: result:='Blade Chroma (380QX)';
-    5: result:='Yuneec Typhoon H';
-    6: result:='Yuneec H920+';                     {vermutlich nie genutzt}
-    brID: result:='Yuneec Breeze';                 {selbst bestimmte Typ-IDs}
-    MQid, MQcsvID: result:='Yuneec MantisQ';       {MantisQ erkannt}
-    H5id: result:='Yuneec H520';                   {tlog files from H520}
-    YTHPid: result:='Yuneec Typhoon H Plus';       {YTH Plus erkannt}
-    ThBid: result:=capThunder;                     {H480 Thunderbird}
-    H501ID: result:='Tom''s flight data recorder for Hubsan';  {flaretom Hubsan Recorder}
-  else
-    AppLog.Lines.Add('''Unknown Vehicle type '+IntToStr(v)+' found');
-  end;
-end;
-
-function Mode350(const f: integer): string;        {Blade 350 QX}
-begin
-  result:='';
-  case f of
-     3: result:=rsWaitRC;
-     4: result:=rsInitializing;
-     5: result:=rsMotorStarting;
-     8: result:=rsEmergency;
-     9: result:=fmRTH+tab1+rsLanding;
-    10: result:=fmAgility+GPSoff;
-    11: result:=fmStability;
-    12: result:=fmSmart;
-    13: result:=fmAgility;
-    14: result:=fmRTH+tab1+rsComing;
-    17: result:=rsMagCali+rsCali;
-    23: result:=rsBinding;
-    25: result:='AP mode';
-  end;
-end;
-
-function ModeYTHP(const f: integer): string;       {neu YTH Plus}
-begin
-  result:='';
-  case f of
-    4: result:=fmManual;                           {ic_drone_flying_mode_m}
-    5: result:=fmAngle;                            {ic_drone_flying_mode_a}
-    6: result:=fmSmart;                            {ic_drone_flying_mode_smart}
-    7: result:=fmSportMode;                        {ic_drone_flying_mode_sport}
-    8: result:='Flight mode 8';
-   10: result:='Flight mode 10';                   {IPS mode ?, no GPS ?}
-   12: result:=fmRTH+'12';
-   13: result:=fmRTH+'13';
-   17: result:='GPS lost';                         {Really ?}
-  end;
-end;
-
-function ModeLegacy(const f: integer): string;     {Q500, YTH and all other legacy}
-begin
-  result:='';
-  case f of
-     0: result:=fmStability;
-     1: result:='Blue flashing'+GPSoff;
-     2: result:='Blue'+GPSlost;
-     3: result:=fmAngle+' (Purple solid)';
-     4: result:=fmAngle+' (Purple flashing)'+GPSoff;
-     5: result:=fmAngle+' (Purple solid)'+GPSlost;
-     6: result:=fmSmart;
-     7: result:=fmSmart+GPSlost;
-     8: result:=rsMotorStarting;
-     9: result:='Temperature'+rsCali;
-    10: result:='Pressure'+rsCali;
-    11: result:='Accelerometer bias'+rsCali;
-    12: result:=rsEmergency;
-    13: result:=fmRTH+tab1+rsComing;
-    14: result:=fmRTH+tab1+rsLanding;
-    15: result:=rsBinding;
-    16: result:=rsInitializing;                    {Ready to start}
-    17: result:=rsWaitRC;
-    18: result:=rsMagCali+rsCali;
-    19: result:=rsUnknown;
-    20: result:=fmAgility;                         {Rate}
-    21: result:=fmSmart+' - Follow me';
-    22: result:=fmSmart+' - Follow me'+GPSlost;
-    23: result:=fmSmart+' - Camera tracking';
-    24: result:='Camera tracking'+GPSlost;
-    26: result:='Task Curve Cable Cam';
-    27: result:='Task Journey';
-    28: result:='Task Point of Interest';
-    29: result:='Task Orbit';
-    32: result:='IPS';                             {FMODE_ANGLE_MODE_IPS_ONLY:I = 0x20}
-    33: result:='Waypoints';
-  end;
-end;
-
-function ModeThB(const f: integer): string;        {Thunderbird}
-begin
-  result:='';
-  case f of                                        {Overwrite for Thunderbird}
-    0: result:=fmStabilized;
-    1: result:=fmAltitude+' or '+fmStabilized;     {??}
-    3: result:=fmPosition;
-    8: result:='GPS Aquiring';
-    13: result:=fmRTH;
-    16: result:='Ready';                           {Ready to start}
-    20: result:=fmRattitude;
-    33: result:=fmMission;
-  end;
-end;
-
-
-function fmodeToStr(const fm: integer): string;    {Flight Mode abh. vom Typ ausgeben}
-begin
-  case v_type of
-    3:      result:=Mode350(fm);
-    YTHPid: result:=ModeYTHP(fm);
-    ThBid:  result:=ModeThB(fm);
-  else
-    result:=ModeLegacy(fm);
-  end;
-end;
-
-function BRfmodeToStr(const f: integer): string;   {Flight Mode abh. vom Typ ausgeben}
-begin                                              {für Yuneec Breeze}
-  case f of
-     2: result:='Selfie';
-     3: result:='No task selected';
-     4: result:='Follow me';
-     5: result:='Jouney';
-     6: result:='Pilot';
-     7: result:='Orbit';
-     8: result:='RTH';
-     10: result:='Pilot'+GPSoff;
-    else result:='Mode '+IntToStr(f);
-  end;
-end;
-
-{from  DroneStatusParserUtil.java
-
-int imuInt = data[34];
-int imuModuleStatus = imuStatus & 1;
-int geomagneticModuleStatus = (imuStatus & 2) >> 1;
-int geomagneticDataStatus = (imuStatus & 4) >> 2;
-int infraredModuleStatus = (imuStatus & 8) >> 3;
-int infraredDataStatus = (imuStatus & 16) >> 4;
-int ipsModuleStatus = (imuStatus & 32) >> 5;
-int ipsDataStatus = (imuStatus & 64) >> 6;
-byte baroMagByte = data[35];
-
-}
-function IMUstatusToStr(const u: integer): string; {imu_status}
-begin
-  result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
-  case u of
-      1: result:='IMU';
-     33: result:='IMU+GPS';
-     65: result:='IMU+C-Compass';
-     97: result:='IMU+GPS+C-Compass';
-    101: result:='IMU+GPS+Compass+C-Compass';      {TH}
-    193: result:='IMU+C-GPS/Compass';
-    225: result:='IMU+GPS+C-GPS/Compass';          {Q500, TH}
-    229: result:=rsAllOK;                          {TH}
-    241: result:='IMU+GPS+Sonar+C-GPS/Compass on'; {TH}
-    245: result:=rsAllOK+'+Sonar';                 {TH}
-    231: result:='UAV-Pilot';                      {Simulator}
-    255: result:=rsAllSet;
-    else begin                                     {fehlende Bits interpretieren}
-      result:='';                                  {unbekannt, nichts ausgeben}
-      if (u and 1)=0 then
-        result:=result+'IMU fail ';
-      if (u and 2)=0 then
-        result:=result+'Baro fail ';
-      if (u and 4)=0 then
-        result:=result+'Compass fail ';
-      if (u and 8)=0 then
-        result:=result+'Compass2 fail ';
-      if (u and 16)=0 then
-        result:=result+'Sonar off ';               {OK, in FlightModeApp same check}
-      if (u and 32)=0 then
-        result:=result+'GPS off ';
-      if (u and 64)=0 then
-        result:=result+'C-Compass off ';
-      if (u and 128)=0 then
-        result:=result+'C-GPS off';
-    end;
-  end;
-end;
-
-function CGPSToStr(const u: integer): string;      {CGPS nur bei >H920 und <YTH}
-begin
-  result:='';
-  case u of    {die obersten 3 bits vom IMU Status}
-    0: result:='C-GPS/Compass off';
-    1: result:='C-GPS off';
-    2: result:='C-Compass off';
-    3: result:='C-GPS/Compass';
-  end;
-end;
-
-function BRIMUstatusToStr(const u: integer): string;  {imu_status breeze}
-begin
-  result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
-  case u of                                           {Rest ist unbekannt}
-    255: result:=rsAllOK;
-  end;
-end;
-
-function AutoTakeOffToStr(const u: integer): string;  {Breeze}
-begin
-  result:=IntToStr(u);
-  case u of
-     0: result:='On the ground';
-     1: result:='Take off';
-     2: result:='Flying';
-    16: result:='Self landing';
-    18: result:='Pilot landing';
-  end;
-end;
-
-{from  DroneStatusParserUtil.java
-int baroMagInt = data[35];
-int barometerModuleStatus = baroMagByte & 1;
-int gpsModuleStatus = (baroMagByte & 2) >> 1;
-
-Für PX4: telemetrie definitionen
-https://github.com/PX4/Firmware/blob/master/src/lib/rc/st24.h
-}
-function TForm1.PCGstatusToStr(const u: uint8): string; {pressure_compass_status}
-begin
-  result:='';
-  case u of
-    21: result:='Baro+Compass+GPS';
-    63: result:='Baro+Compass+GPS+RealSense';
-    81: result:='Baro+GPS+Sonar';
-    85: result:='Baro+Compass+GPS+Sonar';
-    117: result:='Baro+Compass+GPS+Sonar+RealSense';
-    245: result:=rsAllSet;                         {YTH + RS -- bit 7 unbekannt, IPS?}
-    else begin                                     {fehlende Bits interpretieren}
-      result:='';
-      if (u and 1)=0 then
-        result:=result+'Baro fail ';
-      if (u and 4)=0 then
-        result:=result+'Mag fail ';
-      if (u and 16)=0 then
-        result:=result+'GPS fail ';
-      if (v_type=5) or
-         (v_type=YTHPid) then begin                {nur Typhoon H oder H Plus}
-        if (u and 32)=0 then
-          result:=result+'RealSense error';
-        if (u and 64)=0 then
-          result:=result+'Sonar error';
-      end;
-    end;
-  end;
-  if result='' then
-    result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
-end;
-
-function TForm1.MotStatusToStr(const u: uint8): string; {Motor_status}
-begin
-  result:='';
-  case u of
-    15, 63, 255: result:=rsAllOK;
-    else begin
-      if (u and 1) =0 then
-        result:=result+'Motor 1 off ';
-      if (u and 2) =0 then
-        result:=result+'Motor 2 off ';
-      if (u and 4) =0 then
-        result:=result+'Motor 3 off ';
-      if (u and 8) =0 then
-        result:=result+'Motor 4 off ';
-
-      if (u and 64)<>1 then begin                  {Hexakopter}
-        if u<>255 then
-          AppLog.Lines.Add(IntToStr(u));
-        if (u and 16)=0 then
-          result:=result+'Motor 5 off ';
-        if (u and 32)=0 then
-          result:=result+'Motor 6 off';
-      end;
-    end;
-  end;
-end;
-
-{MAX_TIME_COMPASS_THRESHOLD = 3000
-
-from  DroneStatusParserUtil.java
-int voltage1stWarning = errorFlagByte & 1;
-int voltage2stWarning = (errorFlagByte & 2) >> 1;
-int motorErrorWarning = (errorFlagByte & 4) >> 2;
-int ultrasonicErrorWarning = (errorFlagByte & 8) >> 3;
-int mainboardTemperatureHighErrorWarning = (errorFlagByte & 16) >> 4;
-int calibrationErrorWarning = (errorFlagByte & 32) >> 5;
-int mainboardTemperatureLowErrorWarning = (errorFlagByte & 64) >> 6;
-int noFlyZoneErrorWarning = (errorFlagByte & 128) >> 7;
-}
-function eflagToStr(const s: string): string;      {Error Flags}
-var e: integer;
-
-begin
-  result:='';
-  e:=StrToIntDef(s, 1024);       {bit nicht belegt, result leer}
-  if e>0 then begin
-    if (e and 1) >0 then
-      result:=result+'Low Voltage Warning 1 ';
-    if (e and 2) >0 then
-      result:=result+'Low Voltage Warning 2 ';
-    if (e and 4) >0 then
-      result:=result+'Motor Failsafe Mode ';
-    if (e and 8) >0 then
-      result:=result+'Complete Motor ESC Failure ';  {Ultrasonic error warning?}
-    if (e and 16)>0 then
-      result:=result+'Temperature Warning ';       {temp high}
-    if (e and 32)>0 then
-      result:=result+'Compass Calibration Warning ';
-    if (e and 64)>0 then
-      result:=result+'Fly-away Checker Warning ';  {temp low}
-    if (e and 128)>0 then
-      result:=result+'Airport Warning (NFZ) ';
-  end else
-    result:=rsAllOK;
 end;
 
 function FrameToStr(fr: integer): string;          {For H501, Col 1}
@@ -2043,126 +1600,6 @@ begin
   end;
 end;
 
-function LandGearToStr(const s: string): string;   {Fahrwerkseinstellung}
-var stk: integer;
-
-begin
-  result:='';
-  stk:=trunc(StrToFloatN(s));
-  if stk=stkmin then
-    result:=rsLandGear+tab1+rsUp;
-  if (stk=1) or
-     (stk=stkmax) then
-    result:=rsLandGear+tab1+rsDown;
-end;
-
-{Flightmodes:
-stk   %      YTH    Thunderbird
--------------------------------
-4095 +150%    -         -
-3412 +100%   Smart  Altitude
-2730  +50%    -     Rattitude        p50val
-2048    0%   Angle  Position
-1365  -50%    -     Stabilized       m50val
- 683 -100%   RTH    RTH
-   0 -150%    -     RTH
-}
-function TForm1.SwitchToStr(const p: integer; const s: string): string;
-var stk: integer;
-
-begin
-  result:='';
-  stk:=trunc(StrToFloatN(s));
-  case p of
-    5: begin                                       {Flight mode switch}
-         case stk of                               {default}
-           stkup:   result:=fmSmart;
-           stkntrl: result:=fmAngle;
-           stkdown: result:=fmRTH;
-         end;
-         case v_type of                            {Overwrite}
-           ThBid: case stk of
-                    0..stkdown: result:=fmRTH;     {-150 .. -100%}
-                    m50val:  result:=fmStabilized; {-50%}
-                    stkntrl: result:=fmPosition;   {0%}
-                    p50val:  result:=fmRattitude;  {+50%}
-                    stkup:   result:=fmAltitude;   {+100%}
-                  else
-                    result:='Unknown flight mode for '+IntToStr(stk)+'%';
-                  end;
-           YTHPid: if stk=stkup then
-                     result:=fmSportSmartMode;
-         end;
-       end;
-    6: begin
-         case stk of                               {Default, YTH}
-           stkntrl: result:=rsNeutral;
-           stkmax:  result:=fmRTH;
-         end;
-         case v_type of                            {abhängig vom vehicle type}
-           1: case stk of                          {H920}
-                p50val: result:=rsNoGPS;
-                stkup:  result:=rsNeutral;
-              end;
-           2: if stk=stkup then                    {Q500}
-                result:=fmRTH;
-
-         end;
-       end;
-    9: begin                                       {S1 Gimbal Tilt mode}
-         if stk=stkup then
-           result:='Velocity mode';
-         if stk=stkang then
-           result:=fmAngle;
-         if stk=stkntrl  then
-           result:=rsNeutral;
-       end;
-   10: begin                                       {S2 Gimbal Pan mode}
-         if stk=stkup then
-           result:='Global mode';
-         if stk=stkntrl then
-           result:=rsNeutral;
-         if stk=m45val then
-           result:=rsTeam;
-         if stk=1502 then
-           result:='Controllable mode';
-         if stk=stkdown then
-           result:='Follow mode';
-       end;
-  end;
-end;
-
-function StickPos(const w: double): string;        {Stickposition in %}
-begin
-  result:='';
-  if round(w)=stkntrl then
-    result:=rsNeutral
-  else
-    result:=IntToStr(StkToProz(w))+'%';
-end;
-
-function StickToStr(const p: integer; const s: string): string;
-var w: double;
-
-begin
-  result:='';
-  try
-    w:=StrToFloat(s);
-  except
-    exit;
-  end;
-  case p of
-    1: if round(w)=0 then
-         result:='Motor on/off (B3)'
-       else
-         result:='J1 (thr)'+suff;
-    2: result:='J4 (roll)'+suff;
-    3: result:='J3 (pitch)'+suff;
-    4: result:='J2 (yaw)'+suff;
-  end;
-  result:=result+StickPos(w);
-end;
-
 function RandomFN(const fn: string; const vt, mode: integer): string; {Dateinamen ermitteln}
 var p: integer;                                    {Position zum zufälligen Ändern}
     z: char;
@@ -2195,248 +1632,6 @@ function TForm1.CheckE7(const s: string): boolean; inline;
 begin
   result:=(not cbCleanHplus.Checked) or            {Prüfung ggf. abschalten}
           (pos('E7', s)=0);                        {E7 darf in Telemetrie nicht vorkommen}
-end;
-
-function KoToStr(const lanlon: double): string; inline;
-                                                   {Koordinaten zu String}
-begin
-  result:=FormatFloat(coordfl8, lanlon);
-end;
-
-function ChrKoor(ko: string): string; inline;      {Korrigiert Format der Koordinaten}
-var co: double;
-    i: integer;
-    s: string;
-
-begin
-  try
-    co:=StrToFloatN(ko);
-    if (abs(co)>181) then begin                    {Strange format in ST16S}
-      s:='';
-      for i:=1 to ko.length do begin
-        if ko[i] in ziff then
-          s:=s+ko[i];
-      end;
-      if ko[1]='-' then
-        s:='-0.'+s
-      else
-        s:='0.'+s;
-      co:=StrToFloat(s);                           {-6558209.0 --> -0.6558209}
-    end;
-    result:=KoToStr(co);                           {umwandeln um führende 0 zu bekommen}
-  except
-    result:=ko;
-  end;
-end;
-
-function KorrBool(const s: string): string;        {true -> 1, Rest -> 0}
-begin
-  result:='0';
-  if LowerCase(trim(s))='true' then
-    result:='1';
-end;
-
-function KorrSigned(const s: string; const maske: byte): string; {String in unsigned String}
-var b: byte;                                       {Maske default: FF}
-
-begin
-  result:=s;
-  b:=StatusToByte(trim(s));
-  if b>0 then begin
-    if maske>0 then b:=(b and maske);
-    result:=IntToStr(b);
-  end;
-end;
-
-function BrCoordFormat(const c: string): string;   {Koordinaten Breeze formatieren}
-begin
-  result:=c;
-  if c.length>6 then
-    insert('.', result, c.length-6);
-end;
-
-function BrCoordToFloat(const c: string): double;  {Koordinaten Breeze in Float}
-begin
-  result:=StrToFloatN(BrCoordFormat(c));
-end;
-
-function BrGPSfix(const s: string): boolean;       {GPS Fix ID für Breeze}
-var e: integer;
-
-begin
-  e:=StrToIntDef(s, 0);
-  result:=(e and 128)>0;                           {HWT bit}
-end;
-
-function BrTeilen(const s: string; const k: integer): string;
-begin                                              {k: number digits after decimal point}
-  result:=FloatToStrF(StrToFloatN(trim(s))/100, ffFixed, 8, k);
-end;
-
-function H920Amp(const w: double): double; inline; {Stromsensor H920}
-begin
-  result:=w/10;                                    {uint8_t current; 0.1A resolution?}
-end;
-
-function TiltToGrad(const w: double): double; inline; {Umrechnung Werte in 0-90 Grad}
-begin
-  result:=-(w-683)*90/2729;
-end;
-
-{eventuell auch so: uint8_t voltage; 25.4V  voltage = 5 + 255*0.1 = 30.5V, min=5V}
-function BrUmrech(const w: double): double; inline; {Umrechnung unsicher}
-begin
-  result:=w/2.55;                                  {0..255}
-end;
-
-function BrKorrV(const v: string): string;         {Spannung in % beim Breeze}
-var w: double;
-
-begin
-  try
-    w:=StrToFloatN(trim(v));
-    result:=IntToStr(round(BrUmrech(w)));
-  except
-    result:=v;
-  end;
-end;
-
-{aus Yuneec Source code: LiPo Spannung in % Restkapazität}
-function VtoProzY(const vt: integer; const u: double): integer; {vehicle_type, Spannung in %}
-const s61=23.9;                                    {Schwellwerte 6S}
-      s62=21.7;
-      s63=21.3;
-      s64=21.1;
-
-      s41=14.9;                                    {Schwellwerte 4S}
-      s42=14.2;
-      s43=14.0;
-      s44=13.8;
-
-      s31=10.7;                                    {Schwellwerte 3S}
-      s32=10.5;
-      s33=10.3;
-
-      s21=7.2;                                     {Schwellwerte 2S   ???}
-      s22=7.0;
-      s23=6.8;
-
-var   m: double;                                   {Maximale Batteriespannung}
-
-begin
-  result:=0;                                       {default Unterspannung=0%}
-  case vt of
-    1, 6: begin                                    {H920}
-         m:=6*lipomax;                             {Maximale LiPo Spannung 6S}
-         if  u>=m then
-            result:=100;
-         if (u>=s61) and
-            (u< m)   then
-           result:=round((((u-s61)* 5)/(m-  s61))+95);
-         if (u> s62) and
-            (u< s61) then
-           result:=round((((u-s62)*75)/(s61-s62))+20);
-         if (u> s63) and
-            (u< s62) then
-           result:=round((((u-s63)* 5)/(s62-s63))+5);
-         if (u> s64) and
-            (u<=s63) then
-           result:=round( ((u-s64)* 5)/(s63-s64));
-       end;
-    5, YTHPid, ThBid: begin                        {YTH / YTH Plus / Thunderbird}
-         m:=4*lipomax;                             {4S}
-         if  u>=m then
-           result:=100;
-         if (u>=s41) and
-            (u< m)   then
-           result:=round((((u-s41)*50)/(m-  s41))+50);
-         if (u> s42) and
-            (u< s41) then
-           result:=round((((u-s42)*25)/(s41-s42))+25);
-         if (u> s43) and
-            (u< s42) then
-           result:=round((((u-s43)*20)/(s42-s43))+5);
-         if (u> s44) and
-            (u<=s43) then
-           result:=round( ((u-s44)* 5)/(s43-s44));
-       end;
-     H501ID: begin
-               m:=2*lipomax;                       {2S}
-               if  u>=m then
-                 result:=100;                      {100%}
-               if (u>=s21) and
-                  (u< m)   then
-                 result:=round((((u-s21)*75)/(m-s21))+25);
-               if (u> s22) and
-                  (u< s21) then
-                 result:=round((((u-s22)*20)/(s21-s22))+5);
-               if (u> s23) and
-                  (u<=s22) then
-                 result:=round( ((u-s23)* 5)/(s22-s23));
-             end;
-  else begin                                       {alle anderen 3S Kopter}
-     m:=3*lipomax;                                 {3S}
-     if  u>=m then
-       result:=100;                                {100%}
-     if (u>=s31) and
-        (u< m)   then
-       result:=round((((u-s31)*75)/(m-  s31))+25);
-     if (u> s32) and
-        (u< s31) then
-       result:=round((((u-s32)*20)/(s31-s32))+5);
-     if (u> s33) and
-        (u<=s32) then
-       result:=round( ((u-s33)* 5)/(s32-s33));
-    end;
-  end;
-end;
-
-{The relationship of voltage and capacity from RC-Groups:
- https://blog.ampow.com/lipo-voltage-chart/
- https://www.rcgroups.com/forums/showpost.php?p=29431951}
-
-function VtoProzRC(const vt: integer; u: double): integer;
-const
-  CapTab: array [0..20] of double = (
-    100,  95,   90,   85,   80,   75,   70,   65,   60,   55,   50,
-    45,   40,   35,   30,   25,   20,   15,   10,   5,    0);
-  S1Tab: array [0..20] of double = (
-    4.20, 4.15, 4.11, 4.08, 4.02, 3.98, 3.95, 3.91, 3.87, 3.85, 3.84,
-    3.82, 3.80, 3.79, 3.77, 3.75, 3.73, 3.71, 3.69, 3.61, 3.27);
-
-var
-  i: integer;                                      {index in arrays}
-  uz: double;                                      {Voltage down to 1S}
-
-begin
-  result:=100;
-  case vt of                                       {Check numbers of cells per vehicle type}
-    1, 6: uz:=u/6;                                 {6S H920}
-    5, YTHPid, ThBid, H5id: uz:=u/4;               {4S driven}
-    H501ID: uz:=u/2;                               {2S Hubsan}
-  else
-    uz:=u/3;                                       {3S all other}
-  end;
-  if uz<S1Tab[high(S1Tab)] then
-    result:=0                                      {all below 3.27 = 0%}
-  else
-    if uz<s1tab[0] then begin                      {all above 4.2V = 100%}
-      for i:=0 to high(CapTab) do begin            {find next threshold}
-        if uz>S1Tab[i] then
-          break;                                   {Voltage inbetween delta i-1 and i}
-      end;
-      result:=round(CapTab[i]+((CapTab[i-1]-CapTab[i])/
-                              ((S1Tab[i-1]-S1Tab[i])/(uz-S1Tab[i]))));
-    end;
-end;
-
-function VtoProz(const vt: integer; u: double): integer;
-begin                                              {Choose rule to convert V to %}
-  result:=0;
-  case Form1.rgVoltRule.ItemIndex of
-    0: result:=VtoProzY(vt, u);                    {Yuneec rule}
-    1: result:=VtoProzRC(vt, u);                   {RC-Groups}
-  end;
 end;
 
 procedure RSSIpToColor(aGrid: TStringGrid; r: integer);   {RSSI in Prozent einfärben}
@@ -2496,33 +1691,28 @@ begin
     result:=clVeryGood;
 end;
 
-function RadToStr(const s: string): string;        {Camera tilt slider}
-var w: double;
-
-begin
-  result:='';
-  try
-    w:=StrToFloat(s);
-  except
-    exit;
+function TForm1.VtoProz(const vt: integer; u: double): integer;
+begin                                              {Choose rule to convert V to %}
+  result:=0;
+  case rgVoltRule.ItemIndex of
+    0: result:=VtoProzY(vt, u);                    {Yuneec rule}
+    1: result:=VtoProzRC(vt, u);                   {RC-Groups}
   end;
-  result:='K1 (Camera tilt)'+suff+IntToStr(round(TiltToGrad(w)))+'°';
 end;
 
-function ShowVoltageF(const w: double; vt: integer): string;
+function TForm1.ShowVoltageF(const w: double; vt: integer): string;
 begin
   result:=rsRest+' ~'+IntToStr(VtoProz(vt, w))+    {Voltage in %}
           '%'+kma+VperCell(vt, w);                 {V per cell}
 end;
 
-function ShowVoltage(const s: string; vt: integer): string;
+function TForm1.ShowVoltage(const s: string; vt: integer): string;
 var v: double;
 
 begin
   v:=StrToFloat(s);
   result:=ShowVoltageF(v, vt);
 end;
-
 
 function GetNr(const s: string): string; {filtert Ziffern aus einem String für Dateiname}
 begin
@@ -2579,26 +1769,6 @@ begin
     result:=FormatFloat(dzfl, d*Secpd);            {alternativ mit Kommastelle}
   except
     result:='';
-  end;
-end;
-
-function brTransformW(const inx: integer; const w: double): double;
-   {inx: Index of column
-    w: Value to transform}
-begin
-  result:=w;                                       {default: in=out}
-  case inx of
-     3: result:=w/10;
-     4: result:=w/10;
-     6: result:=w/10;
-     7: result:=w/10;
-     8: result:=w/10;
-     9: result:=w/100;                             {maxSpeed}
-    10: result:=w/100;                             {altitude}
-    15: result:=w/100;                             {roll}
-    16: result:=w/100;                             {pitch}
-    17: result:=w/100;                             {yaw}
-    20: result:=round(w) and 31;                   {nsat}
   end;
 end;
 
@@ -2944,7 +2114,7 @@ var e: integer;
         if (sp=gridDetails.Tag-1) and
            (v_type>1) then begin                   {press_compass_status}
           e:=StatusToByte(gridDetails.Cells[sp, zl]);
-          s:=PCGstatusToStr(e);
+          s:=PCGstatusToStr(e, v_type);
         end;
         if (sp=gridDetails.Tag-2) and              {CGPS}
            (v_type=2) then begin                   {nur bei Q500 gefüllt}
@@ -2983,7 +2153,7 @@ var e: integer;
       1:       s:=StickToStr(sp, gridDetails.Cells[sp, zl]);
       2..4, 8: s:=StickToStr(sp, gridDetails.Cells[sp, zl]);
       7:    s:=RadToStr(gridDetails.Cells[sp, zl]);
-      5, 6, 9, 10: s:=SwitchToStr(sp, gridDetails.Cells[sp, zl]);
+      5, 6, 9, 10: s:=SwitchToStr(sp, v_type, gridDetails.Cells[sp, zl]);
       11:   s:=LandGearToStr(gridDetails.Cells[sp, zl]);
     end;
   end;
@@ -3569,7 +2739,7 @@ begin
       end;
     except
       StatusBar1.Panels[5].Text:=rsError;
-      AppLog.Lines.Add('''3806'+suff+StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add('''2758'+suff+StatusBar1.Panels[5].Text);
     end;
   end else
     btnArchive.Enabled:=false;                     {Archive Button ausblenden}
@@ -3692,7 +2862,7 @@ begin
               AusgabeSensor;                       {Kein Filter, alles ausgeben}
               StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
               StatusBar1.Panels[5].Text:=errSelection;
-              AppLog.Lines.Add('''3931'+suff+StatusBar1.Panels[5].Text);
+              AppLog.Lines.Add('''2881'+suff+StatusBar1.Panels[5].Text);
             end;
           end;
         except
@@ -3719,6 +2889,177 @@ begin
     end;
   end;
 end;
+
+procedure TForm1.OpenSensorPlus;                   {Sensordatei vom YTH Plus öffnen}
+var spdir: string;
+
+begin
+  spdir:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+npath;
+  OpenDialog1.Title:=capSensorPlus;
+  OpenDialog1.DefaultExt:=sextP;
+  if DirectoryExists(spdir) then
+    OpenDialog1.InitialDir:=spdir;                 {zu Sensor wechseln}
+  if OpenDialog1.Execute then begin
+    btnShowhex.Tag:=0;                             {Default: not used for Block --> Hex}
+    if Form2<>nil then
+      Form2.Close;              {zusätzliches Diagramm schließen beim Neuladen}
+    if ExtractFileExt(OpenDialog1.FileName)=fext then        {if a CSV file}
+      AnzeigePX4CSV(OpenDialog1.FileName)          {PX4 Sensor csv anzeigen}
+    else begin                                     {Sensor Datei auswerten}
+      ShowSensorPlus(OpenDialog1.FileName, 0, cbSensorKML.Checked, true, false, false);
+    end;
+  end;
+end;
+
+procedure TForm1.mnMAVlistClick(Sender: TObject);  {List MAV messages}
+var mlist: TStringList;
+
+begin
+  mlist:=TStringList.Create;
+  try
+    OpenDialog1.Title:=capSensorPlus;
+    if OpenDialog1.Execute then begin
+      btnShowhex.Tag:=0;                           {No file selected for Block --> Hex}
+      AusgabeMessages(OpenDialog1.Filename, mlist);
+      if mlist.Count>1 then begin
+        SaveDialog1.Title:=rsFileSave;
+        SaveDialog1.FileName:=ChangeFileExt(ExtractFileName(OpenDialog1.Filename), '')+
+                              '_MAVmsgList.csv';
+        if SaveDialog1.Execute then begin
+          mlist.SaveToFile(SaveDialog1.FileName);
+        end;
+        pcMain.ActivePage:=tabAppLog;              {Switch to AppLogHighlighter}
+        AppLog.TopLine:=AppLog.Lines.Count;
+      end;
+    end;
+  finally
+    mlist.Free;
+  end;
+end;
+
+procedure TForm1.SplitSensorPlus;                  {Split PX4 Sensor file}
+var infn, outfn: TMemoryStream;
+    b, len: byte;
+    zhl, e, fnno: integer;
+    tme, tme1: int64;
+    dsbuf: array[0..YTHPcols] of byte;
+
+  function GetIntFromBuf(const p, a: integer): uint64; {Position, number bytes}
+  var i: integer;
+
+  begin
+    result:=0;
+    for i:=0 to a-1 do begin
+      result:=result+dsbuf[lenfix+i+p]*(256**i);
+    end;
+  end;
+
+  procedure WriteNewFile(const dnr: integer);
+  var fn: string;
+
+  begin
+    fn:=ChangeFileExt(OpenDialog1.FileName, '')+'_'+IntToStr(dnr)+hext;
+    outfn.SaveToFile(fn);
+    outfn.Clear;
+    AppLog.Lines.Add(ExtractFileName(fn)+tab1+resNew);
+    AppLog.Lines.Add(LineEnding);
+    StatusBar1.Panels[0].Text:=IntToStr(zhl);
+    StatusBar1.Panels[1].Text:=IntToStr(dnr);
+  end;
+
+begin
+  OpenDialog1.Title:=capSensorPlus;
+  OpenDialog1.DefaultExt:=hext;
+  zhl:=0;
+  fnno:=0;
+  tme1:=0;                                         {Time stamp in ms}
+  tme:=0;
+  if OpenDialog1.Execute then begin
+    btnShowhex.Tag:=0;                             {Default: not used for Block --> Hex}
+    if Form2<>nil then
+      Form2.Close;                                 {Close additional Chart}
+    Screen.Cursor:=crHourGlass;
+    infn:=TMemoryStream.Create;
+    outfn:=TMemoryStream.Create;
+    try
+      pcMain.ActivePage:=tabAppLog;                {Show AppLog}
+      AppLog.Lines.Add(LineEnding);
+      infn.LoadFromFile(OpenDialog1.FileName);
+      AppLog.Lines.Add(OpenDialog1.FileName);
+
+      while infn.Position<(infn.Size-lenfixP) do begin {bis zum Ende der Datei}
+        len:=0;                                    {Reset for error detection}
+        try
+          repeat
+            b:=infn.ReadByte;
+          until (b=dsIDP) or (infn.Position>infn.Size-lenfixP);
+          inc(zhl);
+          len:=infn.ReadByte;                      {Length payload including CRC}
+          infn.ReadBuffer(dsbuf, len+lenfixP-2);   {Whole message, w/o $FD and len (-2)}
+
+          e:=GetIntFromBuf(-3, 3);                 {MsgID 3 byte as integer}
+          case e of                                {Messages with time stamps}
+            4, 24, 27, 105, 141:
+               tme:=GetIntFromBuf(0, 8) div 1000;  {in mysec}
+            30..33, 65, 83, 87, 259, 262, 265:
+               tme:=GetIntFromBuf(0, 4);           {in ms}
+          end;
+
+          if tme<(tme1-5000) then begin            {delta >5s back}
+            inc(fnno);
+//            AppLog.Lines.Add(inttostr(tme1)+' --> '+
+//                             inttostr(tme)+' in MAVmsg '+inttostr(e));
+            WriteNewFile(fnno);
+          end;
+
+          outfn.WriteByte(b);                      {Write MAVlink message}
+          outfn.WriteByte(len);
+          outfn.WriteBuffer(dsbuf, len+lenfixP-2);
+          tme1:=tme;
+
+        except
+          {Possibly new file?}
+        end;
+      end;
+
+      if fnno>0 then begin
+        inc(fnno);
+        WriteNewFile(fnno);
+        StatusBar1.Panels[5].Text:=IntToStr(fnno)+tab1+rsSplits;
+        AppLog.Lines.Add(StatusBar1.Panels[5].Text);
+      end else begin
+        StatusBar1.Panels[5].Text:=ExtractFileName(OpenDialog1.FileName)+
+                                   tab1+rsConsistent;
+        AppLog.Lines.Add(StatusBar1.Panels[5].Text);
+        StatusBar1.Panels[1].Text:='';
+      end;
+      StatusBar1.Panels[0].Text:=IntToStr(zhl);
+      AppLog.Lines.Add(LineEnding);
+    finally
+      infn.Free;
+      outfn.Free;
+      Screen.Cursor:=crDefault;
+    end;
+  end;
+end;
+
+procedure TForm1.mnSensorPX4Click(Sender: TObject); {Sensordatei vom YTH Plus}
+begin
+  OpenSensorPlus;
+end;
+
+{If TLOG files contains more than one flight the Boot time may reset.
+ Good to split those files in more than one for further analysis.}
+procedure TForm1.mnSplitClick(Sender: TObject);    {Menu: Split PX4 Sensor file}
+begin
+  SplitSensorPlus;
+end;
+
+procedure TForm1.btnSplitClick(Sender: TObject);   {Button: Split PX4 Sensor file}
+begin
+  SplitSensorPlus;
+end;
+
 
 {Neu bim YTH Plus/ oder Mantis Q (PX4):
  - Dateiendung *.txt
@@ -3776,7 +3117,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     s, homestr: string;                            {GPX Ausgabe, homepoint}
     tstr, skoor: String;
     ftm, bg, bgl, bglg: TDateTime;
-    ismq, isGPS: boolean;
+    ismq, isGPS, dzt: boolean;
     lat1, lon1: double;                            {erster gültiger Datenpunkt}
     lat2, lon2: double;                            {aktuelle Koordinaten}
     lat3, lon3: double;                            {vorherige Koordinaten}
@@ -3793,8 +3134,6 @@ var dsbuf: array[0..YTHPcols] of byte;
       for i:=lenfix+1 to len+lenfixP-2 do          {Fixpart Teil 2 + Payload}
       gridDetails.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2); {Payload in Hex}
     end;
-    if zhl=10 then
-      gridDetails.AutoSizeColumns;                 {as soon as possible}
   end;
 
   procedure SenCSVausgabe;                         {Ausgabe Werte aus Sensor}
@@ -3842,7 +3181,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     result:=wx;                                    {Typecast mittels absolute}
   end;
 
-  procedure TextOverview;
+  procedure TextOverview;                          {Text messages}
   var i: integer;
       st, tm: string;
 
@@ -3856,16 +3195,16 @@ var dsbuf: array[0..YTHPcols] of byte;
     end;
     AppLog.Lines.Add(st+tm);                       {Textmessage speichern}
     result:=true;
+    dzt:=true;                                     {Systemzeit nochmal anzeigen}
   end;
 
   procedure TextAusgabe;                           {Ausgabe als Text in Zeile zl}
   var i: integer;
       st, tm, ch: string;
       splitlist: TStringList;
-//      wx: uint64;
 
   begin
-    ch:=csvarr[posChan];                  {ursprünglichen Wert zwischenspeichern}
+    ch:=csvarr[posChan];                           {ursprünglichen Wert zwischenspeichern}
     st:=Format('%6d', [zhl])+tab2+
         FormatDateTime(zzf, bg)+tab2+
         MAVseverity(dsbuf[lenfix])+suff+'''';
@@ -3888,7 +3227,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     st:=st+tm;
     for i:=len+lenfixP-11 to len+lenfixP-2 do      {8 Byte Sig + 2 CRC}
       gridDetails.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
-//    wx:=GetIntFromBuf(len+lenfixP-12-lenfix, 8); {Aufsteigende Nummer hinten dran?}
+//    wx:=GetIntFromBuf(len+lenfixP-12-lenfix, 8); {Aufsteigende Nummer}
     if pos(emcyID, st)>0 then begin                {EMERGECY gefunden}
       topp[z, 6]:=topp[z, 6] or 256;
       result:=true;
@@ -3914,24 +3253,24 @@ var dsbuf: array[0..YTHPcols] of byte;
     csvarr[posChan]:=ch;
   end;
 
-  procedure AusgTrack;                           {KML oder GPX aus GPS data}
+  procedure AusgTrack;                             {KML oder GPX aus GPS data}
   var sinfo: string;
 
   begin
-    if gx and                                    {Ausgabe GPX oder KML}
-       (msl<>1) then begin                       {not Landed State}
-      if (bg+tsdelta2)<bglg then begin           {Delta > 2s backwards}
-        sinfo:=itagin+'time reset'+itagout;      {info about new flight}
+    if gx and                                      {Ausgabe GPX oder KML}
+       (msl<>1) then begin                         {not Landed State}
+      if (bg+tsdelta2)<bglg then begin             {Delta > 2s backwards}
+        sinfo:=itagin+'time reset'+itagout;        {info about new flight}
         maplist.Add(sinfo);
         outlist.Add(sinfo);
       end;
 
-      bglg:=bg;                                  {Last timestamp for GPS}
-      if rgOutFormat.ItemIndex=2 then begin      {GPX}
+      bglg:=bg;                                    {Last timestamp for GPS}
+      if rgOutFormat.ItemIndex=2 then begin        {GPX}
         skoor:=GPXlat+FloatToStr(lat2)+
                GPXlon+FloatToStr(lon2)+'"> ';
-        if s='' then begin                       {Startpunkt erkannt}
-          maplist.Add('<wpt '+skoor);            {Startpunkt}
+        if s='' then begin                         {Startpunkt erkannt}
+          maplist.Add('<wpt '+skoor);              {Startpunkt}
           maplist.Add(tab2+'<time>'+tstr+'</time>');
           maplist.Add(write_nme('Start'));
           maplist.Add(GPXet1);
@@ -3943,9 +3282,9 @@ var dsbuf: array[0..YTHPcols] of byte;
                 '</ele> <time>'+tstr+'</time></trkpt>';
         maplist.Add(s);
 
-      end else begin                             {KML/KMZ}
+      end else begin                               {KML/KMZ}
         skoor:=FloatToStr(lon2)+tab1+FloatToStr(lat2);
-        if s='' then begin                       {Startpunkt erkannt}
+        if s='' then begin                         {Startpunkt erkannt}
           placemark(maplist, '#starting', '',
                     StringReplace(skoor, tab1, sep, [rfReplaceAll]), tstr);
           maplist.Add('<'+pmtag);
@@ -4462,9 +3801,9 @@ var dsbuf: array[0..YTHPcols] of byte;
                          MSenStat(sst));           {MAV_SYS_STATUS_SENSOR}
     sst:=GetIntFromBuf(4, 4);                      {Sensor enabled}
     if (sst and 32)>0  then                        {GPS status}
-      csvarr[16]:='true'
+      csvarr[16]:=idtrue
     else
-      csvarr[16]:='false';
+      csvarr[16]:=idfalse;
     if not cbReduced.Checked then
       AppLog.Lines.Add(trnrApplog+'onboard_control_sensors_enabled'+suff+
                          MSenStat(sst));
@@ -4544,6 +3883,19 @@ var dsbuf: array[0..YTHPcols] of byte;
     SenCSVAusgabe;                                 {CSV Datensatz schreiben}
   end;
 
+  procedure Systemzeit;                            {[us] Timestamp (UNIX epoch time)}
+  var ts: TDateTime;
+  begin
+    StandardAusgabe;                               {Hex values in CSV table}
+    if (not cbReduced.Checked) or dzt then begin
+      ts:=UnixToDateTime(GetIntFromBuf(0, 8) div 1000000);        {us --> s}
+      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
+                       FormatDateTime(zzf, bg)+tab2+'UTC:  '+
+                       FormatDateTime(vzf, ts));
+      dzt:=false;
+    end;
+  end;
+
   procedure AusgabeSensor;                         {Datenausgabe abh. von MsgID}
   var i, e: integer;
 
@@ -4554,9 +3906,12 @@ var dsbuf: array[0..YTHPcols] of byte;
       if gridDetails.RowCount<(zhl+2) then
         gridDetails.RowCount:=gridDetails.RowCount+2000; {neue Zeilen}
       inc(zhl);                                    {Datensätze zählen}
-      case e of                               {Ausgabe bekannter Messages}
+      if zhl=20 then
+        gridDetails.AutoSizeColumns;               {As soon as possible and only once}
+      case e of                                    {Ausgabe bekannter Messages}
         0:   if MAVmsg.Checked[0] then Heartbeat;  {HEARTBEAT (0) ohne Zeitstempel}
         1:   if MAVmsg.Checked[1] then SensorStatus;   {MAV_SYS_STATUS (1)}
+        2:   Systemzeit;                           {SYSTEM_TIME (2) AppLog only}
         22:  if MAVmsg.Checked[2] then ParamValue; {PARAM_VALUE ($16)}
         24:  if MAVmsg.Checked[3] or
                 gx then GPSAusgabe;                {GPS_RAW_INT ($18)}
@@ -4616,6 +3971,7 @@ begin
   skoor:='';
   bg:=0;                                           {Zeitstempel allg}
   isGPS:=false;
+  dzt:=true;                                       {Systemtime mindestens einmal anzeigen}
   itemp:='';
   homestr:='';                                     {URL Homepoint, wenn vorhanden}
   ismq:=false;
@@ -5571,7 +4927,7 @@ begin
       end;
     except
       StatusBar1.Panels[5].Text:=rsTimeOut;
-      AppLog.Lines.Add('''5697'+suff+StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add('''4760'+suff+StatusBar1.Panels[5].Text);
       result:=-1;                                  {Fehler, Timeout}
       StopLightSensor1.State:=slRED;
     end;
@@ -5905,7 +5261,7 @@ begin
         tend:=ZeitToDT(splitlist[0], v_type);      {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
-        AppLog.Lines.Add('''6029'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''5094'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
 
@@ -6098,7 +5454,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS; {Ende Konsistenz checken}
-            AppLog.Lines.Add('''6222'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''5287'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Einlesen}
         flt:=flt+ed-bg1;
@@ -6106,7 +5462,7 @@ begin
         tend:=dtm+ZeitToDT(splitlist[0], H501ID);  {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
-        AppLog.Lines.Add('''6230'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''5295'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
 
@@ -6292,7 +5648,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS; {Ende Konsistenz checken}
-            AppLog.Lines.Add('''6417'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''5481'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Einlesen}
         flt:=flt+ed-bg1;
@@ -6300,7 +5656,7 @@ begin
         tend:=ZeitToDT(splitlist[0], brID);        {letzten Zeitstempel merken}
       except
         StatusBar1.Panels[5].Text:=fn+tab1+rsInvalid+tab1+rsDS;
-        AppLog.Lines.Add('''6425'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''5489'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
 
@@ -6986,7 +6342,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     end;
   end else begin
     StatusBar1.Panels[5].Text:=rsError;
-    AppLog.Lines.Add('''7093'+suff+StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add('''6175'+suff+StatusBar1.Panels[5].Text);
   end;
 end;
 
@@ -7197,7 +6553,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     end;
   end else begin
     StatusBar1.Panels[5].Text:=rsError;
-    AppLog.Lines.Add('''7304'+suff+StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add('''6387'+suff+StatusBar1.Panels[5].Text);
   end;
 end;
 
@@ -7404,7 +6760,7 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
     end;
   end else begin
     StatusBar1.Panels[5].Text:=rsError;
-    AppLog.Lines.Add('''7511'+suff+StatusBar1.Panels[5].Text);
+    AppLog.Lines.Add('''7593'+suff+StatusBar1.Panels[5].Text);
   end;
 end;
 
@@ -7995,7 +7351,6 @@ procedure TForm1.mnDownloadClick(Sender: TObject);
 begin
   CheckVersion;
 end;
-
 
 {Profiles sind von mir häufig benutzte Einstellungen für die Schnellanalyse.
  Sie sind hier hart codiert und vom Benutzer nicht editierbar.}
@@ -9099,7 +8454,7 @@ const bgid=999999;
         end;                                       {Ende realer Flug}
       end else begin
         StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-        AppLog.Lines.Add('''8757'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''8287'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
     flt:=flt+ed-bg1;
@@ -9182,7 +8537,7 @@ const bgid=999999;
         end;                                       {Ende realer Flug}
       end else begin
         StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-        AppLog.Lines.Add('''8840'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''8370'+suff+StatusBar1.Panels[5].Text);
       end;
     end;
     flt:=flt+ed-bg1;
@@ -9317,7 +8672,7 @@ const bgid=999999;
          tend:=ZeitToDT(splitlist[0], v_type);     {letzten Zeitstempel merken}
        end else begin
          StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;    {Ende Konsistenz checken}
-         AppLog.Lines.Add('''8975'+suff+StatusBar1.Panels[5].Text);
+         AppLog.Lines.Add('''8505'+suff+StatusBar1.Panels[5].Text);
        end;
      end;
    end;
@@ -9576,7 +8931,7 @@ var inlist, splitlist: TStringList;
   var i, k, w, max, min: integer;
   begin
     splitlist.DelimitedText:=inlist[0];            {Flightmode Schalter lesen}
-    an:=an+SwitchToStr(5, splitlist[5])+tab2;
+    an:=an+SwitchToStr(5, v_type, splitlist[5])+tab2;
     for i:=1 to 4 do begin                         {für jeden Stick}
       max:=0;
       min:=10000;
@@ -9823,7 +9178,7 @@ begin
           end else begin
             StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsEmpty+tab1+
                                        capLabel6+Format('%6d', [x]);
-            AppLog.Lines.Add('''9481'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9011'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
         gridDetails.Col:=CellFocus[rgQuelle.ItemIndex, 0]; {load cell focus}
@@ -9865,7 +9220,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [zhl]);
-        AppLog.Lines.Add('''9517'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9053'+suff+StatusBar1.Panels[5].Text);
       end;
       if pcMain.ActivePage=tabDetails then gridDetails.SetFocus;
     end else begin                                 {Datei leer}
@@ -10041,7 +9396,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-            AppLog.Lines.Add('''9687'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9229'+suff+StatusBar1.Panels[5].Text);
           end;
           if x=20 then
             gridDetails.AutoSizeColumns;           {only once}
@@ -10080,7 +9435,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        AppLog.Lines.Add('''9723'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9268'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
@@ -10203,7 +9558,7 @@ begin
             inc(p);
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-            AppLog.Lines.Add('''9843'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9391'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
 
@@ -10238,7 +9593,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        AppLog.Lines.Add('''9877'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9426'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
@@ -10337,7 +9692,7 @@ begin
 
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-            AppLog.Lines.Add('''9974'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9525'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
         if mode=1 then begin
@@ -10373,7 +9728,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        AppLog.Lines.Add('''10010'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9561'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
@@ -10617,7 +9972,7 @@ begin
             end;
           except
             StatusBar1.Panels[5].Text:=rsInvalid;
-            AppLog.Lines.Add('''10239'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+            AppLog.Lines.Add('''9805'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                                suff+StatusBar1.Panels[5].Text);
           end;
         end;
@@ -10644,7 +9999,7 @@ begin
             end;
           except
             StatusBar1.Panels[5].Text:=rsInvalid;
-            AppLog.Lines.Add('''10266'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+            AppLog.Lines.Add('''9832'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                                suff+StatusBar1.Panels[5].Text);
           end;
         end;
@@ -10698,7 +10053,7 @@ begin
           end;
         except
           StatusBar1.Panels[5].Text:=rsInvalid;
-          AppLog.Lines.Add('''10317'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
+          AppLog.Lines.Add('''9886'+capLabel6+Format('%6d', [x])+   {Datenpunkt ausgeben}
                              suff+StatusBar1.Panels[5].Text);
         end;
       end;
@@ -10784,7 +10139,7 @@ begin
         end;
       except
         StatusBar1.Panels[5].Text:=rsInvalid;
-        AppLog.Lines.Add('''10401'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+        AppLog.Lines.Add('''9972'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                            suff+StatusBar1.Panels[5].Text);
       end;
       if not gps then
@@ -10879,7 +10234,7 @@ begin
         end;
       except
         StatusBar1.Panels[5].Text:=rsInvalid;
-        AppLog.Lines.Add('''10492'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+        AppLog.Lines.Add('''10067'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                            suff+StatusBar1.Panels[5].Text);
       end;
       if not gps then
@@ -11093,7 +10448,7 @@ begin
       end;
     except
       StatusBar1.Panels[5].Text:=rsCheckSettings+capAnalyse;
-      AppLog.Lines.Add('''10703'+suff+StatusBar1.Panels[5].Text+tab1+rsDS);
+      AppLog.Lines.Add('''10281'+suff+StatusBar1.Panels[5].Text+tab1+rsDS);
     end;
   finally
     Chart3LineSeries1.EndUpdate;
@@ -11489,11 +10844,11 @@ begin
             if rgOutFormat.ItemIndex=1 then MacheKMZ(dn);
           except
             StatusBar1.Panels[5].Text:=dn+tab1+rsNotSaved;
-            AppLog.Lines.Add('''11052'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''10667'+suff+StatusBar1.Panels[5].Text);
           end;
         end;
       except
-        AppLog.Lines.Add('''11056'+suff+rsInvalid+tab1+rsDS);
+        AppLog.Lines.Add('''10681'+suff+rsInvalid+tab1+rsDS);
       end;
     end;
   finally
@@ -11709,7 +11064,7 @@ begin
             end;
           end else begin
             StatusBar1.Panels[5].Text:=rsInvalid;
-            AppLog.Lines.Add('''11269'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''10897'+suff+StatusBar1.Panels[5].Text);
           end;
         end;
 
@@ -11771,11 +11126,11 @@ begin
             AppLog.Lines.Add(StatusBar1.Panels[5].Text);
           except
             StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-            AppLog.Lines.Add('''11330'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''10960'+suff+StatusBar1.Panels[5].Text);
           end;
         end;
       except
-        AppLog.Lines.Add('''11334'+suff+rsInvalid+tab1+rsDS);
+        AppLog.Lines.Add('''10963'+suff+rsInvalid+tab1+rsDS);
       end;
     end;
   finally
@@ -11942,7 +11297,7 @@ begin
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         except
           StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-          AppLog.Lines.Add('''11496'+suff+StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add('''11130'+suff+StatusBar1.Panels[5].Text);
         end;
       end;
     except
@@ -12125,11 +11480,11 @@ begin
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         except
           StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-          AppLog.Lines.Add('''11679'+suff+StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add('''11313'+suff+StatusBar1.Panels[5].Text);
         end;
       end;
     except
-      AppLog.Lines.Add('''11683'+suff+rsInvalid);
+      AppLog.Lines.Add('''11317'+suff+rsInvalid);
     end;
   finally
     FreeAndNil(inlist);
@@ -12238,11 +11593,11 @@ begin
           AppLog.Lines.Add(StatusBar1.Panels[5].Text);
         except
           StatusBar1.Panels[5].Text:=rdn+tab1+rsNotSaved;
-          AppLog.Lines.Add('''11791'+suff+StatusBar1.Panels[5].Text);
+          AppLog.Lines.Add('''11426'+suff+StatusBar1.Panels[5].Text);
         end;
       end else begin
         StatusBar1.Panels[5].Text:=rsError;
-        AppLog.Lines.Add('''11795'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''11430'+suff+StatusBar1.Panels[5].Text);
       end;
       StatusBar1.Panels[5].Text:=IntToStr(np)+rsNumWP;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
@@ -13357,7 +12712,7 @@ var
             IMUstatusToStr(StatusToByte(ag.Value));
         if p=gridDetails.Tag-1 then                {press_compass_status}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
-            PCGstatusToStr(StatusToByte(ag.Value));
+            PCGstatusToStr(StatusToByte(ag.Value), v_type);
         if p=gridDetails.Tag then begin            {f_mode}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
             fmodeToStr(StrToInt(ag.Value));
@@ -13378,12 +12733,12 @@ var
       try
         if (p=5) then begin                        {Flight Mode switch}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
-            SwitchToStr(p, ag.Value);
+            SwitchToStr(p, v_type, ag.Value);
           vbd;
         end;
         if (p=6) or (p=9) or (p=10) then           {Rest}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
-            SwitchToStr(p, ag.Value);
+            SwitchToStr(p, v_type, ag.Value);
         if p=11 then                               {Landing gear}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
             LandGearToStr(ag.Value);
@@ -14060,32 +13415,6 @@ begin
   Chart1.CopyToClipboardBitmap;                    {Höhenprofil}
 end;
 
-procedure TForm1.mnMAVlistClick(Sender: TObject);  {List MAV messages}
-var mlist: TStringList;
-
-begin
-  mlist:=TStringList.Create;
-  try
-    OpenDialog1.Title:=capSensorPlus;
-    if OpenDialog1.Execute then begin
-      btnShowhex.Tag:=0;                           {No file selected for Block --> Hex}
-      AusgabeMessages(OpenDialog1.Filename, mlist);
-      if mlist.Count>1 then begin
-        SaveDialog1.Title:=rsFileSave;
-        SaveDialog1.FileName:=ChangeFileExt(ExtractFileName(OpenDialog1.Filename), '')+
-                              '_MAVmsgList.csv';
-        if SaveDialog1.Execute then begin
-          mlist.SaveToFile(SaveDialog1.FileName);
-        end;
-        pcMain.ActivePage:=tabAppLog;              {Switch to AppLogHighlighter}
-        AppLog.TopLine:=AppLog.Lines.Count;
-      end;
-    end;
-  finally
-    mlist.Free;
-  end;
-end;
-
 procedure TForm1.mnSaveAsHistClick(Sender: TObject); {PopUp Höhenprofil als Datei}
 begin
   SaveDialog1.Title:=rsHDiaSave;
@@ -14259,32 +13588,6 @@ begin
   TimerDiashow.Enabled:=false;
   SetProfile(8);
   cbxProfiles.ItemIndex:=0;
-end;
-
-procedure TForm1.OpenSensorPlus;                   {Sensordatei vom YTH Plus öffnen}
-var spdir: string;
-
-begin
-  spdir:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+npath;
-  OpenDialog1.Title:=capSensorPlus;
-  Opendialog1.DefaultExt:=sextP;
-  if DirectoryExists(spdir) then
-    OpenDialog1.InitialDir:=spdir;                 {zu Sensor wechseln}
-  if Opendialog1.Execute then begin
-    btnShowhex.Tag:=0;                             {Default: not used for Block --> Hex}
-    if Form2<>nil then
-      Form2.Close;              {zusätzliches Diagramm schließen beim Neuladen}
-    if ExtractFileExt(OpenDialog1.FileName)=fext then        {if a CSV file}
-      AnzeigePX4CSV(OpenDialog1.FileName)          {PX4 Sensor csv anzeigen}
-    else begin                                     {Sensor Datei auswerten}
-      ShowSensorPlus(OpenDialog1.FileName, 0, cbSensorKML.Checked, true, false, false);
-    end;
-  end;
-end;
-
-procedure TForm1.mnSensorPX4Click(Sender: TObject); {Sensordatei vom YTH Plus}
-begin
-  OpenSensorPlus;
 end;
 
 procedure TForm1.mnSlideshowClick(Sender: TObject); {Menu Diashow Profiles}
@@ -14609,7 +13912,7 @@ begin
     end;                                           {Ende Übersichtstabelle}
   except
     n:=0;                                          {nix gefunden}
-    AppLog.Lines.Add('''14110'+suff+'Valid files missing in CheckNumTurns');
+    AppLog.Lines.Add('''13797'+suff+'Valid files missing in CheckNumTurns');
   end;
   result:=n;                                       {Anzahl übergeben}
 end;
@@ -14857,7 +14160,7 @@ begin
           end else begin
             StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsEmpty+tab1+
                                        capLabel6+Format('%6d', [i]);
-            AppLog.Lines.Add('''14226'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''14045'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
 
@@ -14879,7 +14182,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [zhl]);
-        AppLog.Lines.Add('''14248'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''14067'+suff+StatusBar1.Panels[5].Text);
       end;
       pcMain.ActivePage:=tabDetails;
       gridDetails.SetFocus;

@@ -1,7 +1,7 @@
 {Common EXIF definitions and routines
 
  Needed component: https://sourceforge.net/p/lazarus-ccr/svn/HEAD/tree/components/fpexif/
-                   plus fpEXIF patch for Yuneec from wp_XYZ in r7968 (2021-01-30)
+                   plus fpEXIF patch for Yuneec + XMP from wp_XYZ in r7986 (2021-03-25)
  See also: https://www.lazarusforum.de/viewtopic.php?f=18&t=13356
 
  EXIF tags:        https://exiftool.org/TagNames/EXIF.html }

@@ -327,6 +327,11 @@ resourcestring                                     {deutsch}
   errDownloading='Repository nicht vorhanden';
   capGitHub='GitHub Repository';
   errHomePage='Homepage nicht erreichbar, versuche es später';
+  capSplit='PX4 Sensordatei splitten';
+  capSplit1='Split TLOG';
+  hntSplit='PX4 Sensordatei bei Zeitsprüngen aufteilen';
+  rsConsistent='konsistent - kein Split notwendig';
+  rsSplits='aufgeteilte Dateien angelegt';
 
 {GeoTagging}
   hdrEXIFPic='Dateiname,Kamera,Datum/Zeit,Treffer bei,Breitengrad,Längengrad,Relative Höhe,EXIF Daten';
@@ -351,7 +356,6 @@ resourcestring                                     {deutsch}
   errNoPictures='Keine JPG-Bilder im Verzeichnis';
   errNoTelemetryFile='Telemetriedatei existiert nicht';
   errNoUpdates='Keine EXIF Daten geschrieben';
-  resNew='Neu angelegt';
-  resUpd='Geändert';
-
+  resNew='neu angelegt';
+  resUpd='geändert';
 

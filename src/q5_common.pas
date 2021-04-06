@@ -10,7 +10,7 @@ uses
 const
 {public constants}
   AppName=   'q500log2kml';
-  AppVersion='V4.7 03/2021';
+  AppVersion='V4.8 04/2021';
   VersValue='4.7.5';
   VersFile='/v';
 
@@ -37,6 +37,8 @@ const
   sckey='&';
   suff=': ';                                       {Suffix zur Datenausgabe}
   emcyID='EMERGENCY';
+  idtrue='true';
+  idfalse='false';
 
   csvsep=';';
   spk=4;                                           {Korrekturwert Spaltenbreite}
@@ -80,6 +82,19 @@ const
   clErrFlag=$000080FF;                             {Orange}
   clPeaks=clYellow;
 
+  minh=0.01;                                       {Höhengrenzen bei Übernahme}
+  maxh=300;
+  defh=10;                                         {default Höhe in m}
+  maxxh=7999;                                      {Höhe validieren --> testh(a)}
+  minnh=-1000;                                     {gefähliche Annahme, tritt aber bei YTH Plus als Fehler auf}
+  distmax=1000;                                    {Plasicheck: Koord dist in m}
+  Secpd=86400;                                     {Sekunden per Tag}
+  tsdelta1=6/864000;                               {Schwellwert für Zeitstempel in 1/10s, default 6=600ms}
+  tsdelta2=2/86400;                                {> 2sec Telemtrie verloren}
+  tsdelta3=5/86400;                                {5 sec für Breeze}
+  minflt=10/86400;                                 {Mindestflugzeit beim YTH Plus 10s}
+
+
 var timestr: string;
     v_type: integer;
 
@@ -87,6 +102,7 @@ var timestr: string;
 {Public functions and procedures}
 
   function BoolToDouble(const s: string): double;  {zum Darstellen von Boolean}
+  function KorrBool(const s: string): string;      {true -> 1, Rest -> 0}
   function StatusToByte(const s: string): byte;    {wandelt negative Statusanzeigen um}
   function StrToFloatN(s: string): double; {kapselt StrToFloat, gibt bei Fehler 0 zurück}
   function CleanDN(const s: string): string;       {Ungültige Zeichen entfernen}
@@ -102,16 +118,24 @@ var timestr: string;
 
   procedure CellColorSetting(aGrid: TStringGrid; Farbe: TColor); {Zellen einfärben}
   procedure FMcolor(aGrid: TStringGrid; fm, vt: integer);  {Flight mode coloe r settings}
+  function testh(const a: double): boolean; inline;  {Datensätze mit unsinniger Höhe ausblenden}
 
 implementation
 
 function BoolToDouble(const s: string): double;    {zum Darstellen von Boolean}
 begin
   result:=0;
-  if LowerCase(trim(s))='false' then
+  if LowerCase(trim(s))=idfalse then
     result:=-1;
-  if LowerCase(trim(s))='true' then
+  if LowerCase(trim(s))=idtrue then
     result:=1;
+end;
+
+function KorrBool(const s: string): string;        {true -> 1, Rest -> 0}
+begin
+  result:='0';
+  if LowerCase(trim(s))=idtrue then
+    result:='1';
 end;
 
 function StatusToByte(const s: string): byte;      {wandelt negative Statusanzeigen um}
@@ -323,6 +347,13 @@ begin
     4..6:  LegacyCol(aGrid, fm);
     ThBid: ThunderCol(aGrid, fm);                  {Thunderbird}
   end;
+end;
+
+function testh(const a: double): boolean; inline;  {Datensätze mit unsinniger Höhe ausblenden}
+begin
+  result:=true;
+  if (a<minnh) or                                  {tritt bei VTH Plus als Fehler auf}
+     (a>maxxh) then result:=false;
 end;
 
 end.
