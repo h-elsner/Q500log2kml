@@ -1008,11 +1008,6 @@ begin                                              {DropDownListe füllen}
     ml.Items.Delete(MaxAnzahl);
 end;
 
-function GetExePath: string; {Gibt den Pfad zur exe-Datei mit Slash am Ende zurück}
-begin
-  result:=IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
-end;
-
 function TForm1.GetFlightLogDir(fn: string): string; {FlightLog Verzeichnis finden}
 var i, k: integer;
     splitlist: TStringList;
@@ -1241,7 +1236,7 @@ begin
   Label10.Caption:=capItems;
   Label10.Hint:=hntItems;
   speItems.Hint:=hntItems;
-  Label7.Hint:=GetExePath+manual;                  {default}
+  Label7.Hint:=Application.Location+manual;        {default}
   if not FileExists(Label7.Hint) then begin
     Label7.Hint:=homepage+hpmydat+manual;          {mit Internet überschreiben}
   end else begin
@@ -1489,10 +1484,10 @@ end;
 
 function OpenManual: boolean;                      {Handbuch aufrufen}
 begin
-  if not FileExists(GetExePath+manual) then
+  if not FileExists(Application.Location+manual) then
     result:=OpenURL(homepage+hpmydat+manual)
   else
-    result:=OpenDocument(GetExePath+manual);
+    result:=OpenDocument(Application.Location+manual);
 end;
 
 {Zeitstempel to TDateTime; Format abhängig vom Vehicle Type
@@ -2411,14 +2406,12 @@ end;
 
 procedure TForm1.mnCleanCSVClick(Sender: TObject); {5GHz Daten aus Telemetrie entfernen}
 var i: integer;
-    inlist, outlist, splitlist: TStringList;
+    inlist, outlist: TStringList;
+    spl: TStringArray;
 
 begin
   inlist:=TStringList.Create;
   outlist:=TStringList.Create;
-  splitlist:=TStringList.Create;
-  splitlist.Delimiter:=sep;
-  splitlist.StrictDelimiter:=True;
   Screen.Cursor:=crHourGlass;
   try
     OpenDialog1.Title:=capCleanCSV;
@@ -2433,8 +2426,8 @@ begin
         outlist.Clear;
         outlist.Add(inlist[0]);                    {Header}
         for i:=1 to inlist.Count-1 do begin
-          splitlist.DelimitedText:=inlist[i];
-          if splitlist[1]<>'0' then                {fsk_rssi<>0 idicated data from 2.4GHz}
+          spl:=inlist[i].Split(sep);
+          if trim(spl[1])<>'0' then                {fsk_rssi<>0 idicated data from 2.4GHz}
             outlist.Add(inlist[i]);
         end;
         if outlist.Count>1 then begin              {Save results}
@@ -2447,7 +2440,6 @@ begin
   finally
     inlist.Free;
     outlist.Free;
-    splitlist.Free;
     Screen.Cursor:=crDefault;
   end;
 end;
@@ -3201,7 +3193,7 @@ var dsbuf: array[0..YTHPcols] of byte;
   procedure TextAusgabe;                           {Ausgabe als Text in Zeile zl}
   var i: integer;
       st, tm, ch: string;
-      splitlist: TStringList;
+      spl: TStringArray;
 
   begin
     ch:=csvarr[posChan];                           {ursprünglichen Wert zwischenspeichern}
@@ -3238,15 +3230,10 @@ var dsbuf: array[0..YTHPcols] of byte;
       if pos(homeID, tm)>1 then begin              {Homepoint als Link}
         distg:=0;                                  {Entfernungswerte zurücksetzen}
         distmax:=0;
-        splitlist:=TStringList.Create;
-        try
-          tm:=StringReplace(tm, ',', '', [rfReplaceAll]);
-          splitlist.DelimitedText:=tm;
-          homestr:=Format('%-10s', [homeID])+
-                   URLGmap(splitlist[1], splitlist[2]);
-        finally
-          splitlist.Free;
-        end;
+        tm:=StringReplace(tm, ',', '', [rfReplaceAll]);
+        spl:=tm.Split(' ');
+        homestr:=Format('%-10s', [homeID])+
+                 URLGmap(spl[1], spl[2]);
       end;
       SenCSVAusgabe;
     end;
@@ -4542,19 +4529,19 @@ begin
 end;
 
 procedure TForm1.ScreenToBild(fn: string);         {Screenshot}
-var bld: TPortableNetworkGraphic;
-    ScreenDC: HDC;
+var
+    bld: TPortableNetworkGraphic;
+    bmp: TBitmap;
 
 begin
   bld:=TPortableNetworkGraphic.Create;             {create PNG-picture}
+  bmp:=GetFormImage;                               {Get screenshot}
   try
-    bld.Canvas.Clear; {sicherstellen, dass bld bereits vollständig erzeugt wurde}
-    ScreenDC:=Form1.Canvas.Handle;                 {whole application}
-    bld.LoadFromDevice(ScreenDC);
-//    ReleaseDC(0, ScreenDC);             {if released, second Screenshot failed}
+    bld.Assign(bmp);                               {Convert to PNG}
     bld.SaveToFile(fn);
   finally
-    FreeAndNil(bld);
+    bld.Free;
+    bmp.Free;
   end;
 end;
 
@@ -4643,22 +4630,15 @@ end;
 procedure TForm1.btnArchiveClick(Sender: TObject);    {Archivieren durch Umbenennen}
 var newdir: string;
     p: integer;
-    splitlist: TStringList;
+    spl: TStringArray;
     rpath: string;
 
 begin
   if cbxLogDir.Text<>'' then begin                 {nicht leer}
     cbxLogDir.Text:=ExcludeTrailingPathDelimiter(cbxLogDir.Text);
-    splitlist:=TStringList.Create;
-    try                                            {letzten Pfadnamen finden}
-      splitlist.Delimiter:=PathDelim;
-      splitlist.StrictDelimiter:=True;
-      splitlist.DelimitedText:=cbxLogDir.Text;     {dazu Pfad splitten}
-      newdir:=splitlist[splitlist.count-1];
-    finally
-      FreeAndNil(splitlist);
-    end;
-
+    newdir:=cbxLogDir.Text;
+    spl:=newdir.Split(PathDelim);                  {dazu Pfad splitten}
+    newdir:=spl[high(spl)];
     rpath:=mndir;                                  {default: FlightLog}
     if v_type=YTHPid then
       rpath:=mndirp;                               {nur für YTH Plus}
@@ -7073,7 +7053,7 @@ end;
 
 procedure TForm1.ScanPic;                          {Geotagging: Scan picture folder}
 var i, zhl: integer;
-    filelist, inlist, splitlist: TStringlist;
+    filelist, inlist: TStringlist;
     aImgInfo: TImgInfo;
     picdat, tmin, tmax, ttemp: TDateTime;
     lat, lon, alt: double;
@@ -7081,16 +7061,17 @@ var i, zhl: integer;
 
   procedure FindPicData;                           {Find time stamp in telemetry}
   var pos: integer;
+      spl: TStringArray;
   begin
     if inlist.Count>minlines then begin            {Check telemetry file}
       pos:=FindTP(inlist, picdat+(speTimeOffset.Value/24), 2);  {Time point like Q500}
       if pos>1 then begin                          {Found someting inside CSV file}
         gridEXIFPic.Cells[3, i+1]:=IntToStr(pos);  {ID for doing something}
         inc(zhl);
-        splitlist.DelimitedText:=inlist[pos];
-        gridEXIFPic.Cells[4, i+1]:=splitlist[5];
-        gridEXIFPic.Cells[5, i+1]:=splitlist[6];
-        gridEXIFPic.Cells[6, i+1]:=splitlist[4];
+        spl:=inlist[pos].Split(sep);
+        gridEXIFPic.Cells[4, i+1]:=spl[5];
+        gridEXIFPic.Cells[5, i+1]:=spl[6];
+        gridEXIFPic.Cells[6, i+1]:=spl[4];
       end;
     end else
       Statusbar1.Panels[5].Text:=errNoTelemetryFile;
@@ -7101,9 +7082,6 @@ begin
     Screen.Cursor:=crHourGlass;
     filelist:=TStringlist.Create;
     inlist:=TStringlist.Create;
-    splitlist:=TStringlist.Create;
-    splitlist.Delimiter:=sep;
-    splitlist.StrictDelimiter:=True;
     gridEXIFPic.RowCount:=1;                       {Empty picture list}
     cgpCamera.Items.Clear;                         {Empty camera list}
     aImgInfo:=TImgInfo.Create;
@@ -7194,7 +7172,6 @@ begin
     finally
       filelist.Free;
       inlist.Free;
-      splitlist.Free;
       aImgInfo.Free;
       Screen.Cursor:=crDefault;
     end;
@@ -8384,82 +8361,85 @@ const bgid=999999;
       StatusBar1.Panels[5].Text:=fn+nixda;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
-    vld:=(pos(brsnid, inlist[5])>0) and (pos(brfmode, inlist[8])>0);
-    StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
-    for x:=9 to inlist.count-1 do begin            {Daten einlesen}
-      splitlist.DelimitedText:=inlist[x];
-      if (splitlist.Count>anzsp) then begin        {Konsistenz checken (Breeze)}
-        h:=StrToFloatN(splitlist[10])/100;         {Altitude}
-        if testh(h) then begin
-          u:=BrUmrech(StrToFloatN(splitlist[21])); {Voltage}
-          if (u>umax) and
-             (u<110) then
-            umax:=u;
-          e:=StrToIntDef(trim(splitlist[19]), 0);  {Errorflag}
-          topp[z, 6]:=topp[z, 6] or e;             {ID für Zeile einfärben e-flags}
-          if (e and 1)>0 then
-            uw1:=true;
-          if (e and 2)>0 then
-            uw2:=true;
-          if (e and 4)>0 then                      {Motor failsave}
-            topp[z, 6]:=topp[z, 6] or 256;         {ID für Emergency}
-          if (trim(splitlist[14])<>'0') then begin {reale Flüge}
-            if not nflg then begin
-              if bg1<bgid then flt:=flt+ed-bg1;    {Rest noch aufaddieren}
-              bg1:=bgid;                           {bg zurücksetzen bei Lücken}
-            end;
-            inc(n);
-            nflg:=true;
-            ed:=ZeitToDT(splitlist[0], v_type);
-            if bg>ed then
-              bg:=ed;                              {Beginnzeit ohne GPS}
-            if bg1>ed then
-              bg1:=ed;                             {Teil-Beginnzeit ohne GPS}
-            if h>hmax then
-              hmax:=h;
-            if (u<umin) and
-                (u>0) then
-               umin:=u;
-            if NichtLeer(splitlist[12]) and
-               NichtLeer(splitlist[13]) then begin
-              inc(g);
-              if (slat='') then begin
-                slat:=splitlist[12];               {Homepoint speichern}
-                lat1:=BrCoordToFloat(slat);
-                lon1:=BrCoordToFloat(splitlist[13]);
-                lat3:=lat1;
-                lon3:=lon1;
+    if inlist.Count>9 then begin                     {Skip}
+      vld:=(pos(brsnid, inlist[5])>0) and            {Breeze DroneSN}
+           (pos(brfmode, inlist[8])>0);              {Header flightMode}
+      StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
+      for x:=9 to inlist.count-1 do begin            {Daten einlesen}
+        splitlist.DelimitedText:=inlist[x];
+        if (splitlist.Count>anzsp) then begin        {Konsistenz checken (Breeze)}
+          h:=StrToFloatN(splitlist[10])/100;         {Altitude}
+          if testh(h) then begin
+            u:=BrUmrech(StrToFloatN(splitlist[21])); {Voltage}
+            if (u>umax) and
+               (u<110) then
+              umax:=u;
+            e:=StrToIntDef(trim(splitlist[19]), 0);  {Errorflag}
+            topp[z, 6]:=topp[z, 6] or e;             {ID für Zeile einfärben e-flags}
+            if (e and 1)>0 then
+              uw1:=true;
+            if (e and 2)>0 then
+              uw2:=true;
+            if (e and 4)>0 then                      {Motor failsave}
+              topp[z, 6]:=topp[z, 6] or 256;         {ID für Emergency}
+            if (trim(splitlist[14])<>'0') then begin {reale Flüge}
+              if not nflg then begin
+                if bg1<bgid then flt:=flt+ed-bg1;    {Rest noch aufaddieren}
+                bg1:=bgid;                           {bg zurücksetzen bei Lücken}
               end;
-              if h>hmaxg then
-                hmaxg:=h;
-              if (u>umaxg) and
-                 (u<110) then
-                umaxg:=u;
-              if (u<uming) and
-                 (u>0) then
-                uming:=u;
-              if slat<>'' then begin               {Startpunkt mit GPS}
-                lat2:=BrCoordToFloat(splitlist[12]);
-                lon2:=BrCoordToFloat(splitlist[13]);
-                dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
-                if dist>emax then emax:=dist;
-                ddist:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
-                strecke:=strecke+ddist;            {Strecke aufaddieren}
-                lat3:=lat2;                        {letzten Punkt speichern}
-                lon3:=lon2;
-              end;
-            end;                                   {Ende mit GPS Daten}
-          end else
-            nflg:=false;
-        end;                                       {Ende realer Flug}
-      end else begin
-        StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
-        AppLog.Lines.Add('''8287'+suff+StatusBar1.Panels[5].Text);
+              inc(n);
+              nflg:=true;
+              ed:=ZeitToDT(splitlist[0], v_type);
+              if bg>ed then
+                bg:=ed;                              {Beginnzeit ohne GPS}
+              if bg1>ed then
+                bg1:=ed;                             {Teil-Beginnzeit ohne GPS}
+              if h>hmax then
+                hmax:=h;
+              if (u<umin) and
+                  (u>0) then
+                 umin:=u;
+              if NichtLeer(splitlist[12]) and
+                 NichtLeer(splitlist[13]) then begin
+                inc(g);
+                if (slat='') then begin
+                  slat:=splitlist[12];               {Homepoint speichern}
+                  lat1:=BrCoordToFloat(slat);
+                  lon1:=BrCoordToFloat(splitlist[13]);
+                  lat3:=lat1;
+                  lon3:=lon1;
+                end;
+                if h>hmaxg then
+                  hmaxg:=h;
+                if (u>umaxg) and
+                   (u<110) then
+                  umaxg:=u;
+                if (u<uming) and
+                   (u>0) then
+                  uming:=u;
+                if slat<>'' then begin               {Startpunkt mit GPS}
+                  lat2:=BrCoordToFloat(splitlist[12]);
+                  lon2:=BrCoordToFloat(splitlist[13]);
+                  dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
+                  if dist>emax then emax:=dist;
+                  ddist:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
+                  strecke:=strecke+ddist;            {Strecke aufaddieren}
+                  lat3:=lat2;                        {letzten Punkt speichern}
+                  lon3:=lon2;
+                end;
+              end;                                   {Ende mit GPS Daten}
+            end else
+              nflg:=false;
+          end;                                       {Ende realer Flug}
+        end else begin
+          StatusBar1.Panels[5].Text:=rsInvalid+tab1+rsDS;
+          AppLog.Lines.Add('''8287'+suff+StatusBar1.Panels[5].Text);
+        end;
       end;
+      flt:=flt+ed-bg1;
+      splitlist.DelimitedText:=inlist[inlist.count-1];
+      tend:=ZeitToDT(splitlist[0], v_type);          {letzten Zeitstempel merken}
     end;
-    flt:=flt+ed-bg1;
-    splitlist.DelimitedText:=inlist[inlist.count-1];
-    tend:=ZeitToDT(splitlist[0], v_type);          {letzten Zeitstempel merken}
   end;
 
   procedure WerteH501;
@@ -10528,7 +10508,7 @@ var
   inlist, kmllist, splitlist, outlist, outlist1, placelist: TStringList;
   x, bdt, fmd, lfmd: integer;
   h501vid, h501ph, h501mk: integer;
-  n: Integer=0;
+  n: integer=0;
   dn, skoor, stime, lkoor, ltime: string;
   ts, bg, dt: TDateTime;
   absh, lat, lon, dist: Double;
@@ -10622,12 +10602,12 @@ const
     end;
   end;
 
-  procedure kmlBreeze;
+  procedure kmlBreeze;                             {eine Datenzeile für Breeze}
   begin
     bg:=ZeitToDT(splitlist[0], v_type);
     if (NichtLeer(splitlist[12]) or NichtLeer(splitlist[13])) and
        (trim(splitlist[14])<>'0') and              {real flight mode}
-        BrGPSfix(splitlist[20]) and
+//        BrGPSfix(splitlist[20]) and              {GPS fix --- Remove?}
         (bg>0) then begin
       ts:=bg+nowUTC-now;                           {UTC Zeitstempel errechnen}
 
@@ -10645,8 +10625,8 @@ const
                BrCoordFormat(splitlist[12])+sep+dzfl;  {ohne Höhe}
       end;
       inc(n);
-      outlist1.Add(ltime);                         {Zeitstempel}
-      outlist.Add(lkoor);                          {Koordinaten}
+      outlist1.Add(ltime);                         {Zeitstempelliste}
+      outlist.Add(lkoor);                          {Koordinatenliste}
     end;
   end;
 
@@ -10841,7 +10821,8 @@ begin
             kmllist.SaveToFile(dn);
             StatusBar1.Panels[5].Text:=dn+tab1+rsSaved;
             AppLog.Lines.Add(StatusBar1.Panels[5].Text);
-            if rgOutFormat.ItemIndex=1 then MacheKMZ(dn);
+            if rgOutFormat.ItemIndex=1 then
+              MacheKMZ(dn);
           except
             StatusBar1.Panels[5].Text:=dn+tab1+rsNotSaved;
             AppLog.Lines.Add('''10667'+suff+StatusBar1.Panels[5].Text);
@@ -11148,7 +11129,8 @@ function TForm1.GethFromST10(const z: integer; const dt: TDateTime): double;
              {Höhe über ellipsoid WGS84 aus RemoteGPS_xxxx}
              {z: Index der Datei, dt: Zeitpunkt wo Höhe genommen werden soll}
 var
-  inlist, splitlist: TStringList;
+  inlist: TStringList;
+  spl: TStringArray;
   n: Integer=0;
   x: integer;
   hw, hx: double;
@@ -11157,19 +11139,16 @@ begin
   result:=0;
   hw:=0;
   inlist:=TStringList.Create;
-  splitlist:=TStringList.Create;
-  splitlist.Delimiter:=sep;
-  splitlist.StrictDelimiter:=True;
   try
     try
       inlist.LoadFromFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+
                           spath+PathDelim+sfile+lbFlights.Items[z]+fext);
       for x:=1 to inlist.count-1 do begin
-        splitlist.DelimitedText:=inlist[x];
-        if splitlist.Count>5 then begin
-          if ZeitToDT(splitlist[0], v_type)>dt then begin {Find time (take-off)}
-            hx:=StrToFloatN(splitlist[3]);
-            if (abs(hx)>0.1) and testh(hx) then begin     {check if valid value}
+        spl:=inlist[x].Split(sep);
+        if High(spl)>5 then begin
+          if ZeitToDT(spl[0], v_type)>dt then begin {Find time (take-off)}
+            hx:=StrToFloatN(spl[3]);
+            if (abs(hx)>0.1) and testh(hx) then begin  {check if valid value}
               hw:=hw+hx;
               inc(n);
             end;
@@ -11189,7 +11168,6 @@ begin
     if IsNan(result) then
       result:=0;
     FreeAndNil(inlist);
-    FreeAndNil(splitlist);
   end;
 end;
 
@@ -11753,8 +11731,13 @@ end;
 
 procedure TForm1.gridDetailsDblClick(Sender: TObject); {Hilfe zum Zelleninhalt}
 begin
-  StatusBar1.Panels[5].Text:=GetCellInfo(gridDetails.Col, gridDetails.Row);
-  AppLog.Lines.Add(StatusBar1.Panels[5].Text);     {in AppLogHighlighter aufnehmen}
+  if (gridDetails.Col=5) or (gridDetails.Col=6) then begin
+    OpenURL(URLGMap(gridDetails.Cells[5,gridDetails.Row],
+                    gridDetails.Cells[6,gridDetails.Row]));
+  end else begin
+    StatusBar1.Panels[5].Text:=GetCellInfo(gridDetails.Col, gridDetails.Row);
+    AppLog.Lines.Add(StatusBar1.Panels[5].Text);     {in AppLogHighlighter aufnehmen}
+  end;
 end;
 
 procedure TForm1.gridDetailsPrepareCanvas(sender: TObject; aCol, aRow: Integer;

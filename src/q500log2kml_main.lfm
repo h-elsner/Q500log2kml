@@ -27,22 +27,22 @@ object Form1: TForm1
     Height = 578
     Top = 96
     Width = 918
-    ActivePage = tabSettings
+    ActivePage = tabOverview
     Anchors = [akTop, akLeft, akRight, akBottom]
     Images = TabImages
     ParentShowHint = False
     ShowHint = True
-    TabIndex = 7
+    TabIndex = 0
     TabOrder = 1
     OnChange = pcMainChange
     Options = [nboKeyboardTabSwitch]
     object tabOverview: TTabSheet
-      ClientHeight = 551
+      ClientHeight = 550
       ClientWidth = 910
       ImageIndex = 0
       object gridOverview: TStringGrid
         Left = 0
-        Height = 551
+        Height = 550
         Top = 0
         Width = 910
         Align = alClient
@@ -74,13 +74,13 @@ object Form1: TForm1
       end
     end
     object tabDetails: TTabSheet
-      ClientHeight = 551
+      ClientHeight = 550
       ClientWidth = 910
       ImageIndex = 1
       object gridDetails: TStringGrid
         Cursor = crHelp
         Left = 0
-        Height = 551
+        Height = 550
         Top = 0
         Width = 910
         Align = alClient
@@ -107,12 +107,12 @@ object Form1: TForm1
       end
     end
     object tabHdia: TTabSheet
-      ClientHeight = 551
+      ClientHeight = 550
       ClientWidth = 910
       ImageIndex = 2
       object Chart1: TChart
         Left = 0
-        Height = 551
+        Height = 550
         Top = 0
         Width = 910
         AxisList = <        
