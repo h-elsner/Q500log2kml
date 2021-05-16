@@ -2,7 +2,7 @@
 {$I q500_dt.inc}
 {.$I q500_en.inc}
 
-resourcestring                                     {Länderneutral}
+resourcestring                                     {Länderneutrale strings}
 
   fmAltitude='Altitude mode';
   fmStabilized='Manual/Stabilized mode';

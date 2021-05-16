@@ -78,7 +78,7 @@ History:
 
 2015-12-10  V0.1 First try to read telemetry, GUI created, import and data
                  consistence check.
-2015-12-21  V1.0 KML or KMZ file creation, Elevation histogram
+2015-12-21  V1.0 KML or KMZ file creation, Elevation histogram added
 2015-12-23  V1.1 Voltage curve as underlay in Elevation histogram
 2015-12-25  V1.2 Distance to start place added, histograms improved
                  UAV Pilot Simulation: Indicated by voltage is gray
@@ -974,6 +974,7 @@ const
 
 var
   Form1: TForm1;
+  InitDone: boolean=false;                         {OnShow kann mehrfach aufgerufen werden}
   tend, tpos, cutb, cute: TDateTime;               {Ende-Zeit, Zeit-Position in Tabellen}
   cutbidx: integer;                                {Index to what file the timestamps belong}
   kpath: string;
@@ -2444,13 +2445,13 @@ begin
   end;
 end;
 
-
 function HTMLEnc(const s: string): string;         {Sonderzeichen escapen}
 begin
   result:=StringReplace(s, '&', '&amp;', [rfReplaceAll]);   {zuerst !}
   result:=StringReplace(result, '<', '&lt;',    [rfReplaceAll]);
   result:=StringReplace(result, '>', '&gt;',    [rfReplaceAll]);
   result:=StringReplace(result, '"', '&quot;',  [rfReplaceAll]);
+  result:=StringReplace(result, '''', '&apos;', [rfReplaceAll]);
   result:=StringReplace(result, 'Ä', '&Auml;',  [rfReplaceAll]);
   result:=StringReplace(result, 'Ö', '&Ouml;',  [rfReplaceAll]);
   result:=StringReplace(result, 'Ü', '&Uuml;',  [rfReplaceAll]);
@@ -2609,7 +2610,6 @@ begin
   result:=FindFirst(s+Mask, faAnyFile, SR);
   try
     while result=0 do begin                        {solange noch was gefunden wurde}
-      Application.ProcessMessages;
       list.Add(s+SR.Name);
       result:=FindNext(sr);
     end;
@@ -7714,41 +7714,53 @@ begin
       if key=vk_c then
         Chart1.CopyToClipboardBitmap;              {Höhenprofil ins Clipboard}
     end;
+
     if key=vk_ESCAPE then
       KursorAus;                                   {Fadenkreuz aus}
   end;
+
   if pcMain.ActivePage=tabAnalyze3 then begin      {Schellanalyse}
     if key=vk_ESCAPE then TimerDiashow.Enabled:=false;   {Diashow Profiles stoppen}
     if (key=vk_F5) and
        (v_type<>BrID) then                         {H501 ???}
       TimerDiashow.Enabled:=true;                  {Weiter}
   end;
+
   if key=VK_ESCAPE then
     Close;
 end;
 
 procedure TForm1.FormShow(Sender: TObject);        {All to do after load session properties}
-var i, bl: integer;
+var
+  i, bl: integer;
+
 begin
-  ScanPicEnable;
-  lblSaturation.Caption:=capLabel4+tab2+IntToStr(tbrSaturation.Position);
-  bl:=MAVmsg.Tag;
-  if cbHighLight.Checked then                      {Switch on HighLighter}
-    AppLog.Highlighter:=AppLogHighlighter;
-  for i:=MAVmsg.Items.count-1 downto 0 do begin    {Get back Item check settings from .Tag}
-    bl:=bl shr 1;
-    MAVmsg.Checked[i]:=(bl and 1)=1;
-  end;
-  if trim(ParamstrUTF8(1))<>'' then begin          {versuchen, Datei zu öffnen}
-    try
-      Application.BringToFront;
-      cbxLogDir.Text:=GetFlightLogDir(ParamstrUTF8(1));
-      SelDirAct(cbxLogDir.Text);
-    except
-      SelDirAct('');                               {Übergebenes Verzeichnis}
+  if not InitDone then begin                       {Verhindern, dass alles nochmal gemacht wird}
+    ScanPicEnable;
+    lblSaturation.Caption:=capLabel4+tab2+IntToStr(tbrSaturation.Position);
+    bl:=MAVmsg.Tag;
+
+    if cbHighLight.Checked then                    {Switch on HighLighter}
+      AppLog.Highlighter:=AppLogHighlighter;
+
+    for i:=MAVmsg.Items.count-1 downto 0 do begin  {Get back Item check settings from .Tag}
+      bl:=bl shr 1;
+      MAVmsg.Checked[i]:=(bl and 1)=1;
     end;
-  end else
-    SelDirAct('');                                 {Alles neu laden}
+
+    if trim(ParamstrUTF8(1))<>'' then begin        {versuchen, Datei zu öffnen}
+      try
+        Application.BringToFront;
+        cbxLogDir.Text:=GetFlightLogDir(ParamstrUTF8(1));
+        SelDirAct(cbxLogDir.Text);
+      except
+        SelDirAct('');                             {Übergebenes Verzeichnis}
+      end;
+    end else
+      SelDirAct('');                               {Alles neu laden}
+
+    InitDone:=true;
+  end;
 end;
 
 procedure TForm1.Image4Click(Sender: TObject);
@@ -12176,6 +12188,20 @@ const mxw=1365;
     end;
   end;
 
+(* Alignment of colums in TStringGrid
+var
+  tsc, tsr: TTextStyle;
+
+// Preparation, once for the whole grid
+    tsc:=csvGrid.Canvas.TextStyle;
+    tsc.Alignment:=taCenter;
+    tsr:=csvGrid.Canvas.TextStyle;
+    tsr.Alignment:=taRightJustify;
+
+// Usage, per cell depending on column (or cell)
+      csvGrid.Canvas.TextStyle:=tsc;  {centered}
+      csvGrid.Canvas.TextStyle:=tsr;  {right justify} *)
+
 begin                                              {Main part}
   if (aRow>0) and                                  {nicht in Überschrift malen}
      (aState=[]) then begin                        {nicht, wenn selected}
@@ -12183,7 +12209,7 @@ begin                                              {Main part}
       FarbenPX4csv;
     end else begin
       if (gridDetails.ColCount>=YTHPcols) or
-         (rgQuelle.ItemIndex=3) then begin      {Sensor}
+         (rgQuelle.ItemIndex=3) then begin         {Sensor}
         FarbenSensor;
       end else begin                               {Rest wie gehabt}
         FarbenLegacy;

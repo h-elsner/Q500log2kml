@@ -32,11 +32,11 @@ const
   rfmT=[0, 1, 3, 13, 14, 20, 33];                  {Real flight modes Thunderbird}
   rfmP=[4..7, 10, 12, 13, 17];                     {Real flight modes YTH Plus  ???}
 
-  stkang=2184;                                     {switch tilt angle, 10%}
+  stkang =2184;                                    {switch tilt angle, 10%}
   stkntrl=2048;                                    {neutral; 0%}
   stkdown=683;                                     {-100%}
   stkup  =3412;                                    {+100%}
-  stkmax=4095;                                     {+150%}
+  stkmax =4095;                                    {+150%}
   stkmin=0;                                        {-150%}
   m45val=1433;                                     {Pan -40% TeamMode}
   p50val=2730;                                     {+50%}
