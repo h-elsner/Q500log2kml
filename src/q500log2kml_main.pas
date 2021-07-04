@@ -72,155 +72,6 @@ Frank Kieselbach
 info@kieselbach.de
 www.kieselbach.de
 
-================================================================================
-
-History:
-
-2015-12-10  V0.1 First try to read telemetry, GUI created, import and data
-                 consistence check.
-2015-12-21  V1.0 KML or KMZ file creation, Elevation histogram added
-2015-12-23  V1.1 Voltage curve as underlay in Elevation histogram
-2015-12-25  V1.2 Distance to start place added, histograms improved
-                 UAV Pilot Simulation: Indicated by voltage is gray
-2015-12-29  V1.3 TabSheet 'Setting' added, menus added
-2016-01-01  V1.4 First basic analysis functions added, link Manual added
-2016-01-17  V1.5 Colored cells for better visibility of errors flags
-2016-01-23  V1.6 Menu item 'Go to error flags' and 'Go to table' added
-2016-02-05  V1.7 Update for Blade 350QX
-2016-02-10  V1.8 Open Street Map added
-2016-02-15  V1.9 Detailed tables and histograms for values in columns added
-
-2016-03-02  V2.0 Update Flight Modes, Vehicle Types, Archive suffix changeable
-2016-03-24  V2.1 Histogram distance at Lon/Lat,
-                 IMU_status explanations updated (Pressure init supposed)
-2016-04-10  V2.2 GPX format
-2016-05-04  V2.3 Cursor at histograms added, Support ST10 firmware
-                 (only telemetry, no remote files)
-2016-05-23  V2.4 Check how frequent telemetry data were sent. Support
-                 Typhoon H, H920.
-2016-07-18  V2.5 CCC Waypoints editor and conversion (editor later removed).
-2016-09-05  V2.6 Improvements for Typhoon H.
-2016-10-01  V2.7 Support Log Files from Yuneec Breeze.
-2017-04-10  V2.8 KML export updated (Altitude modes). f_mode=32/33 added.
-                 Output format for RaceRender, Screenshot,
-                 Quick analysis and cut files added.
-2017-05-01  V2.9 Main Menu added, source code cleaned, Directory selection
-                 with ComboBox that holds last used directories.
-
-2017-05-18  V3.0 Control for CGO3 as test system.
-2017-06-15  V3.1 Overview improved, flight record added. Track of RemoteGPS
-                 coordinates in KML/KMZ added (black line).
-2017-07-02  V3.2 Search in 'Display files' table added. Reverse GeoCoding.
-                 Flight record for Breeze. Improvement of tables:
-                 Hint per cell at mouse hold over.
-2017-11-26  V3.3 Improvement of hints, i.e. Channels.
-                 CCC Waypoints editor removed. Only conversion of
-                 Telemetrie to  CCC Waypoints remains. BugFix battery capacity
-                 in Flight record and VehicleType for 350QX.
-2018-01-16  V3.4 Time list for Error flags, Save chart as picture changed
-                 for MAC OS X.
-                 Filter in data table added (F4) with the same functionality
-                 as search (F3). Shortcut Ctrl+n to cut files added.
-2018-04-16  V3.5 Menu icon added. Jump to data set by double click on
-                 time information (i.e. f_mode). Animated KML/KMZ files.
-                 Flexible assignment of columns for quick analysis in settings,
-                 drag&drop added.
-                 Profiles and popup menu for quick analysis added.
-                 Several optimizations and bug fixes.
-2018-05-15  V3.6 Flight record moved to tab sheet Scan.
-                 Scan: Recursive search in a whole directory.
-                       a) Flight record
-                       b) Search for known errors or special cases in FlightLogs
-                 Display Sensor files (without interpretation).
-2018-06-21  V3.7 Basic functions for Typhoon H Plus.
-                 Clean up of data telemetry records for YTH Plus added.
-                 YTH Plus Sensor loaded as single file in main menu.
-2018-07-02       Profiles as "slideshow" (3s).
-2018-07-05       Sort table overview by click on column header.
-                 Bugfix for Breeze: Support 'strange' coordinates in
-                 Breeze telemetry.
-2018-07-19       Sensor YTH Plus updated. Message ID and text messages
-                 decoded.
-                 Bug fix für menu item "Go to datapoint".
-2018-07-24  V3.8 AppLogHighlighter added, Text messages from Sensor files listed there.
-                 MAV-Link Message IDs updated, Severity added to text messages.
-2018-08-15       Typhoon H Plus Smart Mode and Manual Mode added.
-2018-08-27	 Updates for Sensor files.
-2018-09-14       SHARPNESS for CGO3+ updated, TeamMode at Gimbal Pan Mode.
-2018-09-28	 Coordinates from GPS_RAW_INT in AppLogHighlighter, Message names in Sensor
-                 file display for Typhoon H Plus.
-2018-10-02  V3.9 Mantis Q Support, H Plus sensor files renamed to PX4 sensor files
-                 in menu. System health information from PX4 sensor files added
-                 to AppLogHighlighter.
-2018-10-24       Identification of Mantis Q flylog files improved. Flight path
-                 from PX4 sensor files as KML/KMZ or GPX file.
-2018-10-28	 Show sensor files faster.
-2018-10-29       Reverse geocoding removed, Bugfix: Mantis Q identification,
-                 Check only Heartbeat from AUTOPILOT1
-
-2018-11-03  V4.0 H520 *.tlog files support added similar to Mantis Q.
-                 Batch conversion, button 'Convert' to KML/KMZ or GPX files
-                 works now also for Mantis Q and H520.
-                 Quick analysis filled: Voltage, current and SW-load.
-                 Elevation histogram filled: Relative elevation and distance to first
-                 coordinate.
-2018-11-20       Vertical lines in KML/KMZ can be switched on (Extrude). Flight
-                 times for Typhoon H Plus improved (Overview and Flight records).
-2018-12-07       Added envelope to Elevation histogram.
-2018-12-22       Crosshair Tool recreated and streamlined.
-2019-01-09  V4.1 PX Sensor data export to CSV file.
-                 Some more MAV messages decoded.
-2019-01-15       Self-defined CSV format changed - more flexible.
-                 RF channels added.
-                 Show self-defined PX4 Sensor CSV format.
-                 Some important H520 MAV messages added.
-2019-01-26       Optimization auto size columns.
-2019-02-28       Time since system boot instead of default time format
-                 as context hint at telemetry for H Plus.
-2019-03-05       Keep default behaviour in selected cells of a table.
-2019-03-27       Time label at cursor in additional chart.
-2019-04-07       Colors in Elevation chart for PX4 logs.
-2019-04-10       Wording updated. Text message added to CSV file.
-2019-04-16       MAV Message PARAM_VALUE added.
-2019-08-16       Manual Link updated.
-2019-09-04  V4.2 Option LiPo remaining capacity added.
-2019-11-12       Scan for 'EMERGENCY' in PX4 sensor files
-2019-12-10       Update für ST24/H920 alte Firmware (Telemetry ohne Header)
-2019-12-31       Setting for Thunderbird (H480 with PX4 firmware)
-2020-01-30       Throttle in % added to CSV Header and cell info
-2020-02-28  V4.3 Tom's Hubsan Log Recorder added. MAVlink messages
-                 selectable for data reduction in PX4 CSV format.
-                 Remaining battery capacity now according RC Groups table for
-                 voltage vs. capacity.
-2020-03-09       Additional placemarks in KML. Colors for Hubsan frames updated.
-2020-03-11       Visualize RC gaps in telemetry by double click to additional chart.
-2020-04-02       Current unit for H920 updated.
-2020-04-25  V4.4 GLOBAL_POSITION_INT and BATTERY_STATUS added.
-2020-05-11       Updates for H480 Thunderbird.
-2020-05-29       Used capacity for PX4 sensor files instead of SW load.
-2020-07-07       Remarks in KML files from PX4 Sensor files
-2020-07-30  V4.5 Added Text messages overview for PX4 sensor files
-2020-08-21       Clean up KML files from PX4 sensor files
-2020-09-20       Message POSITION_TARGET_GLOBAL_INT added (only for AppLogHighlighter)
-2020-09-21       Message ALTITUDE (141) added. Tools: List of used MAVlink messages.
-2020-09-30       Tools - Hexdump added. Bugfix Motorstatus hexacopter (223).
-2020-10-25       Correct strange Coordinates format from ST16S in RemoteGPS*.csv.
-2020-10-30  V4.6 Update for Windows High Contrast (own colors removed).
-                 AppLog highlighter switchable. Some Colors updated.
-                 Open the last (newest) item in the list instead of the first (oldest).
-                 Model list window removed. Model drop down list handling improved.
-2020-11-01       Context menu for FlightLog list added.
-                 Removed double click to refresh, menu item instead.
-                 Delete a FlightLog function added.
-2020-11-13       MAV link messages reviewed. Missing messages added.
-2020-12-09  V4.7 GeoTagging for pictures taken at same time as the drone was flying.
-2021-01-12       Time marker in KML tracks
-2021-01-16       Query for latest version, GitHub link.
-2021-02-02       Enable special evaluation by short key.
-                 Current special evaluation: Altitude values from TLOG.
-2021-03-28       H Plus column current changed to Remaining LiPo.
-2021-04-05  V4.8 Menu Tools: Split TLOG files at time resets.
-
 *)
 
 unit q500log2kml_main;
@@ -259,34 +110,59 @@ type
 
   TForm1 = class(TForm)
     AdvLed1: TAdvLed;
-    btnSplit: TBitBtn;
-    btnScanPic: TBitBtn;
-    btnWritePic: TBitBtn;
-    btnClose: TBitBtn;
-    btnDefaultProfile: TBitBtn;
-    btnScreenshot: TBitBtn;
-    btnCut: TBitBtn;                               {Cut something from flight log}
-    btnCGO3Status: TBitBtn;
-    btnSpecial: TButton;
-    btnVideoStart: TBitBtn;
-    btnVideoStop: TBitBtn;
-    btnCGO3Reset: TBitBtn;
-    btnWiFiSpeedUp: TBitBtn;
-    btnConv: TBitBtn;
-    btnWiFiSpeedReset: TBitBtn;
+    AppLog: TSynEdit;
     btnAudio: TBitBtn;
-    btnFoto: TBitBtn;
+    btnCGO3Reset: TBitBtn;
+    btnCGO3Status: TBitBtn;
     btnCGO3Time: TBitBtn;
-    btnFormatSD: TBitBtn;
-    btnFlugBuch: TBitBtn;
-    btnScanErr: TBitBtn;
-    btnSaveApplog: TBitBtn;
+    btnClose: TBitBtn;
+    btnCut: TBitBtn;
+    btnDefaultProfile: TBitBtn;
     btnDelAppLog: TBitBtn;
+    btnFlugBuch: TBitBtn;
+    btnFormatSD: TBitBtn;
+    btnFoto: TBitBtn;
+    btnSaveApplog: TBitBtn;
+    btnScanErr: TBitBtn;
+    btnScanPic: TBitBtn;
+    btnScreenshot: TBitBtn;
+    btnConv: TBitBtn;
     btnArchive: TBitBtn;
     btnShowHex: TBitBtn;
+    btnSpecial: TButton;
+    btnSplit: TBitBtn;
+    btnVideoStart: TBitBtn;
+    btnVideoStop: TBitBtn;
+    btnWiFiSpeedReset: TBitBtn;
+    btnWiFiSpeedUp: TBitBtn;
+    btnWritePic: TBitBtn;
+    cbBackupPic: TCheckBox;
     cbCap: TCheckBox;
+    cbCleanHplus: TCheckBox;
+    cbDashw: TCheckBox;
+    cbExpoAuto: TCheckBox;
+    cbExtrude: TCheckBox;
+    cbFileList: TCheckBox;
     cbHighLight: TCheckBox;
+    cbMarker: TCheckBox;
+    cbMAVasCSV: TCheckBox;
+    cbPilot: TCheckBox;
+    cbReduced: TCheckBox;
+    cbRTSP: TCheckBox;
+    cbSensorKML: TCheckBox;
+    cbSimu: TCheckBox;
     cbThunder: TCheckBox;
+    cbVehicleType: TCheckBox;
+    cbxCGO3Color: TComboBox;
+    cbxCGO3ISO: TComboBox;
+    cbxCGO3Shutter: TComboBox;
+    cbxCGO3Video: TComboBox;
+    cbxCGO3WB: TComboBox;
+    cbxPicFolder: TComboBox;
+    cbxProfiles: TComboBox;
+    cbxScanDir: TComboBox;
+    cbxTelemetry: TComboBox;
+    cgpCamera: TCheckGroup;
     Chart1: TChart;
     Chart1BarSeries1: TBarSeries;
     Chart1BarSeries2: TBarSeries;
@@ -315,59 +191,76 @@ type
     ChartToolset2DataPointCrosshairTool1: TDataPointCrosshairTool;
     ChartToolset2PanDragTool1: TPanDragTool;
     ChartToolset2ZoomMouseWheelTool1: TZoomMouseWheelTool;
-    cbVehicleType: TCheckBox;
-    cbSensorKML: TCheckBox;
-    cbExtrude: TCheckBox;
-    cbReduced: TCheckBox;
-    cbRTSP: TCheckBox;
-    cbDashw: TCheckBox;
-    cbFileList: TCheckBox;
-    cbExpoAuto: TCheckBox;
-    cbSimu: TCheckBox;
-    cbPilot: TCheckBox;
-    cbMAVasCSV: TCheckBox;
-    cbCleanHplus: TCheckBox;
-    cbBackupPic: TCheckBox;
-    cbxPicFolder: TComboBox;
-    cbxTelemetry: TComboBox;
-    cgpCamera: TCheckGroup;
-    cbMarker: TCheckBox;
-    edCGOURL: TEdit;
-    gbBatt: TGroupBox;
-    IpHttpDataProvider1: TIpHttpDataProvider;
-    Label11: TLabel;
-    Label17: TLabel;
-    gbStkProz: TGroupBox;
-    Image4: TImage;
-    Label10: TLabel;
-    Label19: TLabel;
-    lblGitHub: TLabel;
-    lblTelemetry: TLabel;
-    lblTimeOffset: TLabel;
-    lblPicFolder: TLabel;
-    lblBaseLoad: TLabel;
-    lblMAVcommon: TLabel;
-    MAVmsg: TCheckGroup;
     ColorButton1: TColorButton;
     ColorButton2: TColorButton;
     ColorButton3: TColorButton;
     ColorButton4: TColorButton;
+    edCGOURL: TEdit;
+    edReceiveCGO3: TEdit;
+    edSendCGO3: TEdit;
+    gbBatt: TGroupBox;
+    gbCGO3Status: TGroupBox;
+    gbDiverse: TGroupBox;
+    gbStkProz: TGroupBox;
+    gbVideoRecord: TGroupBox;
+    gbVideoSettings: TGroupBox;
+    gridCGO3: TStringGrid;
+    gridDetails: TStringGrid;
+    gridEXIFPic: TStringGrid;
+    gridFirmware: TStringGrid;
+    gridOverview: TStringGrid;
+    gridScanResult: TStringGrid;
+    gridTimeArea: TStringGrid;
+    GroupBox10: TGroupBox;
+    GroupBox12: TGroupBox;
+    GroupBox2: TGroupBox;
+    GroupBox3: TGroupBox;
+    GroupBox4: TGroupBox;
+    GroupBox6: TGroupBox;
+    GroupBox9: TGroupBox;
+    Image1: TImage;
+    Image2: TImage;
+    Image3: TImage;
+    Image4: TImage;
+    indGnouMeterSDused: TindGnouMeter;
+    IpHttpDataProvider1: TIpHttpDataProvider;
     cbxText: TComboBox;                            {Drone ID - Hint}
-    cbxProfiles: TComboBox;                        {Schnellanalyse Profiles}
     cbxLogDir: TComboBox;                          {FlightLog Directory}
-    cbxCGO3Video: TComboBox;                       {CGO3 Video}
-    cbxCGO3Color: TComboBox;                       {CGO3 Farbeinstellung}
-    cbxCGO3WB: TComboBox;                          {CGO3 Weißabgleich}
-    cbxCGO3ISO: TComboBox;                         {CGO3 ISO}
-    cbxCGO3Shutter: TComboBox;                     {CGO3 Shutter}
-    cbxScanDir: TComboBox;
     cbxSearch: TComboBox;                          {Find input}
     DateTimeIntervalChartSource1: TDateTimeIntervalChartSource;
     DateTimeIntervalChartSource2: TDateTimeIntervalChartSource;
     DateTimeIntervalChartSource3: TDateTimeIntervalChartSource;
     DateTimeIntervalChartSource4: TDateTimeIntervalChartSource;
-    edSendCGO3: TEdit;
-    edReceiveCGO3: TEdit;
+    Label1: TLabel;
+    Label10: TLabel;
+    Label11: TLabel;
+    Label13: TLabel;
+    Label14: TLabel;
+    Label15: TLabel;
+    Label16: TLabel;
+    Label17: TLabel;
+    Label18: TLabel;
+    Label19: TLabel;
+    Label20: TLabel;
+    Label21: TLabel;
+    Label22: TLabel;
+    Label23: TLabel;
+    Label24: TLabel;
+    Label25: TLabel;
+    Label5: TLabel;
+    Label9: TLabel;
+    LabeledEdit1: TLabeledEdit;
+    LabeledEdit2: TLabeledEdit;
+    LabeledEdit3: TLabeledEdit;
+    lblBaseLoad: TLabel;
+    lblDistWP: TLabel;
+    lblGitHub: TLabel;
+    lblMAVcommon: TLabel;
+    lblPicFolder: TLabel;
+    lblSaturation: TLabel;
+    lblTelemetry: TLabel;
+    lblTimeOffset: TLabel;
+    MAVmsg: TCheckGroup;
     mnSplit: TMenuItem;
     mnDownload: TMenuItem;
     N1: TMenuItem;
@@ -376,75 +269,62 @@ type
     mnShowPic: TMenuItem;
     mnReload: TMenuItem;
     mnFlDel: TMenuItem;
+    Panel1: TPanel;
+    pcMain: TPageControl;
+    pcSettings3: TPageControl;
     PopupMenuGeo: TPopupMenu;
     PopUpMenuFlights: TPopupMenu;
-    rgBlockSize: TRadioGroup;
-    sbtnPicFolder: TSpeedButton;
-    sbtnTelemetry: TSpeedButton;
-    speExpo: TFloatSpinEdit;
-    gbDiverse: TGroupBox;
-    GroupBox10: TGroupBox;
     GroupBox11: TGroupBox;
-    GroupBox12: TGroupBox;
-    GroupBox2: TGroupBox;
-    GroupBox3: TGroupBox;
-    GroupBox4: TGroupBox;
-    gbCGO3Status: TGroupBox;
-    GroupBox6: TGroupBox;
-    gbVideoRecord: TGroupBox;
-    gbVideoSettings: TGroupBox;
-    GroupBox9: TGroupBox;
-    Image1: TImage;
-    Image2: TImage;
-    Image3: TImage;
-    Label9: TLabel;
     mnHexdump: TMenuItem;
     mnMAVlist: TMenuItem;
     mnSlideshow: TMenuItem;
     mnTR2: TMenuItem;
     mnCleanCSV: TMenuItem;
+    AppLogHighlighter: TSynAnySyn;
     ProgressBarScan: TProgressBar;
-    rgVehicleType: TRadioGroup;
+    rgAltitudeType: TRadioGroup;
+    rgBlockSize: TRadioGroup;
     rgCSVtext: TRadioGroup;
     rgErrType: TRadioGroup;
+    rgOutFormat: TRadioGroup;
+    rgPicFormat: TRadioGroup;
+    rgSpeedUnit: TRadioGroup;
+    rgTimeType: TRadioGroup;
+    rgVehicleType: TRadioGroup;
+    rgVideoFoto: TRadioGroup;
     rgVoltRule: TRadioGroup;
+    sbtnPicFolder: TSpeedButton;
     sbtnScanDir: TSpeedButton;
+    sbtnSendCGO3: TSpeedButton;
+    sbtnTelemetry: TSpeedButton;
+    speAnalyze: TSpinEdit;
     speBaseLoad: TSpinEdit;
     speBlockNum: TSpinEdit;
-    gridScanResult: TStringGrid;
-    AppLogHighlighter: TSynAnySyn;
-    AppLog: TSynEdit;
+    SpeedButton1: TSpeedButton;
+    SpeedButton2: TSpeedButton;
+    SpeedButton3: TSpeedButton;
+    speExpo: TFloatSpinEdit;
     speItems: TSpinEdit;
-    speStk: TSpinEdit;
+    speLinePath: TSpinEdit;
     speProz: TSpinEdit;
-    gridEXIFPic: TStringGrid;
+    speStk: TSpinEdit;
     speTimeOffset: TSpinEdit;
-    gridTimeArea: TStringGrid;
+    StopLightSensor1: TStopLightSensor;
+    tabAnalyze3: TTabSheet;
+    tabAppLog: TTabSheet;
+    tabCGO3: TTabSheet;
+    tabCommon: TTabSheet;
+    tabConvert: TTabSheet;
+    tabData: TTabSheet;
+    tabDetails: TTabSheet;
+    tabGeo: TTabSheet;
+    tabHdia: TTabSheet;
     TabImages: TImageList;
-    indGnouMeterSDused: TindGnouMeter;
-    Label1: TLabel;
-    lblDistWP: TLabel;
-    Label13: TLabel;
-    Label14: TLabel;
-    Label15: TLabel;
-    Label16: TLabel;
-    Label18: TLabel;
     Label2: TLabel;
-    Label20: TLabel;
-    Label21: TLabel;
-    Label22: TLabel;
-    Label23: TLabel;
-    Label24: TLabel;
-    Label25: TLabel;
     Label3: TLabel;
-    lblSaturation: TLabel;
-    Label5: TLabel;
     Label6: TLabel;
     Label7: TLabel;
     Label8: TLabel;
-    LabeledEdit1: TLabeledEdit;
-    LabeledEdit2: TLabeledEdit;
-    LabeledEdit3: TLabeledEdit;
     lbFlights: TListBox;
     MainMenu1: TMainMenu;
     mnGoogleMap: TMenuItem;
@@ -504,53 +384,25 @@ type
     mnGoTable: TMenuItem;
     mnOSM: TMenuItem;
     OpenDialog1: TOpenDialog;
-    pcMain: TPageControl;
-    pcSettings3: TPageControl;
     PopupMenuTab: TPopupMenu;
     PopupMenuHist: TPopupMenu;
     PopupMenuProfile: TPopupMenu;                  {Popup Menü Schellanalyse}
     rgQuelle: TRadioGroup;
-    rgOutFormat: TRadioGroup;
-    rgSpeedUnit: TRadioGroup;
-    rgTimeType: TRadioGroup;
-    rgAltitudeType: TRadioGroup;
-    rgVideoFoto: TRadioGroup;
-    rgPicFormat: TRadioGroup;
     SaveDialog1: TSaveDialog;
     SelectDirectoryDialog1: TSelectDirectoryDialog;
-    SpeedButton1: TSpeedButton;
-    SpeedButton2: TSpeedButton;
-    SpeedButton3: TSpeedButton;
     sbtnLogDir: TSpeedButton;
-    sbtnSendCGO3: TSpeedButton;
-    speLinePath: TSpinEdit;
-    speAnalyze: TSpinEdit;
     speDataPoint: TSpinEdit;
     StaticText1: TStaticText;
     StatusBar1: TStatusBar;
-    StopLightSensor1: TStopLightSensor;
-    gridDetails: TStringGrid;
-    gridOverview: TStringGrid;
-    gridCGO3: TStringGrid;
-    gridFirmware: TStringGrid;
-    tabOverview: TTabSheet;                        {Übersicht}
-    tabData: TTabSheet;                            {Settings Analyse}
-    tabCGO3: TTabSheet;                            {CGO3}
-    tabCommon: TTabSheet;                          {Settings Sonstige}
-    tabHdia: TTabSheet;                            {Höhendiagramm}
-    tabDetails: TTabSheet;                         {Datentabelle}
-    tabSettings: TTabSheet;                        {Settings}
+    tabOverview: TTabSheet;
     tabScan: TTabSheet;
-    tabAppLog: TTabSheet;
-    tabAnalyze3: TTabSheet;                        {Schnellanalyse}
-    tabConvert: TTabSheet;                         {Settings Konvert}
-    tabGeo: TTabSheet;
+    tabSettings: TTabSheet;
+    tbrDistWP: TTrackBar;
+    tbrSaturation: TTrackBar;
+    tbrSharpness: TTrackBar;
     Timer1: TTimer;                                {CGO3 Statusabfrage}
     TimerDblClick: TTimer;
     TimerDiashow: TTimer;
-    tbrSaturation: TTrackBar;
-    tbrDistWP: TTrackBar;
-    tbrSharpness: TTrackBar;
     TreeView1: TTreeView;
     XMLPropStorage1: TXMLPropStorage;
 
@@ -4531,17 +4383,19 @@ end;
 procedure TForm1.ScreenToBild(fn: string);         {Screenshot}
 var
     bld: TPortableNetworkGraphic;
-    bmp: TBitmap;
+    ScreenDC: HDC;
 
 begin
   bld:=TPortableNetworkGraphic.Create;             {create PNG-picture}
-  bmp:=GetFormImage;                               {Get screenshot}
+//  bmp:=GetFormImage;                             {No more working with Windows}
   try
-    bld.Assign(bmp);                               {Convert to PNG}
+    ScreenDC := GetDC(Panel1.Handle);
+//    ScreenDC := GetDC(Handle);
+    bld.LoadFromDevice(ScreenDC);                  {Get screenshot xyz.Handle}
+    ReleaseDC(0, ScreenDC);
     bld.SaveToFile(fn);
   finally
     bld.Free;
-    bmp.Free;
   end;
 end;
 
@@ -13339,16 +13193,17 @@ begin
                      StrToInt(copy(timestr,4,2)),
                      StrToInt(copy(timestr,7,2)), 0);
     except
-      tp:=0;
       cbxSearch.Text:=timestr;                     {andere Werte in Spalte suchen}
+      timestr:='';
+      tp:=0;
       TabSuchen;
     end;
     timestr:='';                                   {Aktion zurücksetzen}
-    Form2.MenuItem3.Enabled:=false;
-    if (tp>0) and (gridDetails.RowCount>10) then begin {nur wenn es sich lohnt}
-      for i:=1 to gridDetails.RowCount-1 do begin      {Zeitstempel suchen}
+    Form2.mnGoTo.Enabled:=false;
+    if (tp>0) and (gridDetails.RowCount>10) then begin   {nur wenn es sich lohnt}
+      for i:=1 to gridDetails.RowCount-1 do begin   {Zeitstempel suchen}
         if frac(ZeitToDT(gridDetails.Cells[0, i], v_type))>=tp then begin
-          speDataPoint.Value:=i;                   {gefunden und springen}
+          speDataPoint.Value:=i;                    {gefunden und springen}
           GoToZ(1);
           break;
         end;

@@ -12,7 +12,7 @@ object Form2: TForm2
   PopupMenu = PopupMenu1
   Position = poDefaultPosOnly
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.10.0'
+  LCLVersion = '2.0.12.0'
   object StringGrid1: TStringGrid
     Left = 8
     Height = 235
@@ -123,7 +123,7 @@ object Form2: TForm2
   object PopupMenu1: TPopupMenu
     Images = Form1.TabImages
     Left = 328
-    Top = 114
+    Top = 112
     object MenuItem2: TMenuItem
       Caption = 'B'
       ImageIndex = 30
@@ -134,10 +134,13 @@ object Form2: TForm2
       ImageIndex = 33
       OnClick = MenuItem1Click
     end
-    object MenuItem3: TMenuItem
+    object MenuItem4: TMenuItem
+      Caption = '-'
+    end
+    object mnGoTo: TMenuItem
       Caption = 'J'
       ImageIndex = 34
-      OnClick = MenuItem3Click
+      OnClick = mnGoToClick
     end
   end
   object SaveDialog1: TSaveDialog

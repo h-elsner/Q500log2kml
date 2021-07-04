@@ -82,6 +82,7 @@ const
   function CGPSToStr(const u: integer): string;    {CGPS nur bei >H920 und <YTH}
   function BRIMUstatusToStr(const u: integer): string; {imu_status breeze}
   function AutoTakeOffToStr(const u: integer): string; {Breeze}
+  function GetPropNum: integer;                    {Number props (4, 6) from vehicle type}
   function MotStatusToStr(const u: uint8): string; {Motor_status}
   function PCGstatusToStr(const u, vt: uint8): string; {pressure_compass_status}
   function eflagToStr(const s: string): string;    {Error Flags}
@@ -413,7 +414,7 @@ begin
       if (u and 16)=0 then
         result:=result+'GPS fail ';
       if (vt=5) or
-         (vt=YTHPid) then begin                {nur Typhoon H oder H Plus}
+         (vt=YTHPid) then begin                    {nur Typhoon H oder H Plus}
         if (u and 32)=0 then
           result:=result+'RealSense error';
         if (u and 64)=0 then
@@ -425,11 +426,26 @@ begin
     result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
 end;
 
-function MotStatusToStr(const u: uint8): string; {Motor_status}
+function GetPropNum: integer;                      {Number props (4, 6) from vehicle type}
+begin
+  case v_type of
+    2..4, BrID, MQid, MQcsvID, H501ID: result:=4;
+  else
+    result:=6;
+  end;
+end;
+
+function MotStatusToStr(const u: uint8): string;   {Motor_status}
+var
+  p: integer;                                      {Number props (4, 6)}
+
 begin
   result:='';
+  p:=GetPropNum;
   case u of
-    15, 63, 255: result:=rsAllOK;
+    15: if p=4 then
+             result:=rsAllOK;
+    63, 255: result:=rsAllOK;
     else begin
       if (u and 1) =0 then
         result:=result+'Motor 1 off ';
@@ -440,7 +456,7 @@ begin
       if (u and 8) =0 then
         result:=result+'Motor 4 off ';
 
-      if (u and 64)<>1 then begin                  {Hexakopter}
+      if p=6 then begin                            {Hexakopter}
         if (u and 16)=0 then
           result:=result+'Motor 5 off ';
         if (u and 32)=0 then

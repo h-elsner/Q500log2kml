@@ -25,7 +25,8 @@ type
     edTime: TEdit;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
-    MenuItem3: TMenuItem;
+    mnGoTo: TMenuItem;
+    MenuItem4: TMenuItem;
     PopupMenu1: TPopupMenu;
     SaveDialog1: TSaveDialog;
     StringGrid1: TStringGrid;
@@ -38,7 +39,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
-    procedure MenuItem3Click(Sender: TObject);
+    procedure mnGoToClick(Sender: TObject);
     procedure StringGrid1CompareCells(Sender: TObject; ACol, ARow, BCol,
                                       BRow: Integer; var Result: integer);
     procedure StringGrid1DblClick(Sender: TObject);
@@ -50,14 +51,11 @@ type
                                        aState: TGridDrawState);
 
   private
-    {private declarations}
     procedure DataToMain;
 
   public
-    {public declarations}
-//    var st: string;
-
     procedure MoveVCursor(x: double; p: integer);  {Time and label position}
+
   end;
 
 {$I language.inc}
@@ -87,8 +85,8 @@ end;
 
 procedure TForm2.btnOKform2Click(Sender: TObject);
 begin
-  Close;
   timestr:='';
+  Close;
 end;
 
 procedure TForm2.Chart1DblClick(Sender: TObject);  {Datapoint ID toggle}
@@ -109,15 +107,14 @@ procedure TForm2.FormCreate(Sender: TObject);
 begin
   MenuItem1.Caption:=rsCopy;
   MenuItem2.Caption:=rsFileSave;
-  MenuItem3.Caption:=capGoToVal;
-  MenuItem3.Enabled:=false;
-  {$IFDEF LINUX}                                     {Linux}
+  mnGoTo.Caption:=capGoToVal;
+  mnGoTo.Enabled:=false;
+ {$IFDEF LINUX}                                     {Linux}
     Chart1LineSeries1.LinePen.Color:=clNavy;
   {$ENDIF}
   Chart1ConstantLine1.Active:=false;
   StringGrid1.Tag:=0;
   edTime.Color:=clOrange;                          {Moving label}
-  timestr:='';
 end;
 
 procedure TForm2.FormResize(Sender: TObject);      {StringGrid Spalten anpassen}
@@ -147,7 +144,7 @@ procedure TForm2.FormShow(Sender: TObject);        {Doppelklick ID rücksetzen}
 begin
   StringGrid1.Tag:=0;
   timestr:='';
-  MenuItem3.Enabled:=false;
+  mnGoTo.Enabled:=false;
   edTime.Visible:=false;
 end;
 
@@ -173,9 +170,9 @@ begin
   end;
 end;
 
-procedure TForm2.MenuItem3Click(Sender: TObject);  {per Menü Daten übergeben}
+procedure TForm2.mnGoToClick(Sender: TObject); {per Menü Daten übergeben}
 begin
-  DataToMain;
+  DataToMain;                                  {per Doppelklick Daten übergeben}
 end;
 
 procedure TForm2.StringGrid1CompareCells(Sender: TObject; ACol, ARow, BCol,
@@ -203,7 +200,7 @@ begin
     if (StringGrid1.ColCount>4) then
       timestr:=StringGrid1.Cells[3, StringGrid1.Tag]
     else
-      timestr:=StringGrid1.Cells[0, StringGrid1.Tag]
+      timestr:=StringGrid1.Cells[0, StringGrid1.Tag];
   end;
 end;
 
@@ -229,7 +226,7 @@ begin
     Row:=0;
     StringGrid1.MouseToCell(x, y, Col, Row);
     StringGrid1.Tag:=Row;                      {Zeilennummer in Tag}
-    MenuItem3.Enabled:=(Row>0);
+    mnGoTo.Enabled:=(Row>0);
   end;
 end;
 
