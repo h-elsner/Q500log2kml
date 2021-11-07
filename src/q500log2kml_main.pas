@@ -71,7 +71,6 @@ Dank für Unterstützung und Erstellung der Mac OS X - Version an:
 Frank Kieselbach
 info@kieselbach.de
 www.kieselbach.de
-
 *)
 
 unit q500log2kml_main;
@@ -1586,7 +1585,6 @@ begin
   case v_type of
     brID: result:=ExtractFileDir(s)+PathDelim+     {im gleichen Verzeichnis}
                   '#'+GetNr(ExtractFileName(s))+ex;
-
   else                                             {Yuneec legacy}
     result:=ExtractFileDir(s)+
             GetNr(ExtractFileName(s))+ex;          {im übergeordnedten Dir}
@@ -1655,7 +1653,7 @@ begin
          15: result:=round(w) and 255;             {imustatus}
          16: result:=round(w) and 255;             {sensor status}
        end;
-//  1: case inx of                                 {RemoteGPS}
+//  1: case inx of                                 {RemoteGPS, vorerst nix}
     2: case inx of                                 {Remote}
          7: result:=TiltToGrad(w);                 {CH6 Kamera neigen}
        end;
@@ -1906,6 +1904,10 @@ var e: integer;
              s:=s+FormatFloat(dzfl, t*fkmh)+'km/h';
          end;
        9: s:=GPSfixType(gridDetails.Cells[sp, zl]);
+      14: begin                                    {MotorStatus}
+            e:=StatusToByte(gridDetails.Cells[sp, zl]);
+            s:=MotStatusToStr(e);
+          end;
       19: s:=fmodeToStr(StrToIntDef(gridDetails.Cells[sp, zl], 99)); {fMode}
       21: s:=vtypeToStr(YTHPid);                   {fix eingestellt}
     end;
@@ -13879,12 +13881,10 @@ begin
 
         zeile:=zeile+tab2;
         for i:=1 to numbyte do begin               {ASCII part of the line}
-          case rwert[p2] of
-            32..126, 128, 166, 167, 169, 177..179, 181, 188..190, 215, 247: zch:=Chr(rwert[p2]);
-            196, 214, 220, 223, 228, 246, 252: zch:=Chr(rwert[p2]); {Umlaute}
+          if rwert[p2] in valchars then
+            zch:=chr(rwert[p2])
           else
             zch:='.';                              {not a character}
-          end;
           if p2<=bytesread then
             zeile:=Zeile+zch;
           inc(p2);

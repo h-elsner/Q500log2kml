@@ -181,7 +181,7 @@ const
 
   InvalidChars: set of char=['\', '/', ':', '*', '?', '"', '<', '>', '|', '&'];
   ziff=['0'..'9'];                                 {gültige Ziffern}
-  tab1=' ';                                        {ein Leerzeichen}
+  valchars=[32..126, 128, 166, 167, 169, 177..179, 181, 188..190, 215, 247, 196, 214, 220, 223, 228, 246, 252];tab1=' ';                                        {ein Leerzeichen}
   tab2='  ';
   tab4='    ';
   tab6='      ';

@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 799
+  Left = 888
   Height = 678
-  Top = 111
+  Top = 116
   Width = 1001
   AllowDropFiles = True
   Anchors = [akTop, akRight]
@@ -286,12 +286,12 @@ object Form1: TForm1
       Height = 530
       Top = 1
       Width = 840
-      ActivePage = tabAppLog
+      ActivePage = tabGeo
       Align = alClient
       Images = TabImages
       ParentShowHint = False
       ShowHint = True
-      TabIndex = 8
+      TabIndex = 6
       TabOrder = 0
       OnChange = pcMainChange
       Options = [nboKeyboardTabSwitch]
@@ -333,20 +333,20 @@ object Form1: TForm1
         end
       end
       object tabDetails: TTabSheet
-        ClientHeight = 548
-        ClientWidth = 908
+        ClientHeight = 502
+        ClientWidth = 832
         ImageIndex = 1
         object gridDetails: TStringGrid
           Cursor = crHelp
           Left = 0
-          Height = 548
+          Height = 502
           Top = 0
-          Width = 908
+          Width = 832
           Align = alClient
           Color = clDefault
           ColCount = 2
           FixedCols = 0
-          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goColSizing, goColSpanning, goRelaxedRowSelect, goDblClickAutoSize, goSmoothScroll, goHeaderHotTracking, goHeaderPushedLook]
+          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goColSizing, goThumbTracking, goColSpanning, goRelaxedRowSelect, goDblClickAutoSize, goSmoothScroll, goHeaderHotTracking, goHeaderPushedLook]
           PopupMenu = PopupMenuTab
           RowCount = 14
           TabOrder = 0
@@ -366,14 +366,14 @@ object Form1: TForm1
         end
       end
       object tabHdia: TTabSheet
-        ClientHeight = 548
-        ClientWidth = 908
+        ClientHeight = 502
+        ClientWidth = 832
         ImageIndex = 2
         object Chart1: TChart
           Left = 0
-          Height = 548
+          Height = 502
           Top = 0
-          Width = 908
+          Width = 832
           AxisList = <          
             item
               Grid.Color = clGray
@@ -487,8 +487,8 @@ object Form1: TForm1
         end
       end
       object tabAnalyze3: TTabSheet
-        ClientHeight = 548
-        ClientWidth = 908
+        ClientHeight = 502
+        ClientWidth = 832
         ImageIndex = 3
         OnResize = tabAnalyze3Resize
         PopupMenu = PopupMenuProfile
@@ -496,7 +496,7 @@ object Form1: TForm1
           Left = 0
           Height = 176
           Top = 0
-          Width = 908
+          Width = 832
           AxisList = <          
             item
               Grid.Color = clGray
@@ -538,7 +538,7 @@ object Form1: TForm1
           Left = 0
           Height = 168
           Top = 184
-          Width = 833
+          Width = 757
           AxisList = <          
             item
               Grid.Color = clGray
@@ -577,8 +577,8 @@ object Form1: TForm1
         object Chart5: TChart
           Left = 0
           Height = 156
-          Top = 392
-          Width = 908
+          Top = 346
+          Width = 832
           AxisList = <          
             item
               Grid.Color = clGray
