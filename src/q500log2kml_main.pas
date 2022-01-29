@@ -56,8 +56,8 @@ btnArchive.Tag:   Plattform for Breeze: 1: Android, 0: iOS
 gridDetails.Tag:  Spaltennummer, wo f_mode steht.
 StringGrid2.Tag:  Merker für zuletzt benutztes Tabsheet, gesetzt beim Umschalten
 pcMain.Tag: Indikator, ob Form2 angezeigt wurde (0 .. nein, >0 .. ja)
-v_type:           Vehicle Type as Integer (default = 5, YTH Plus = 10,
-                                           Breeze = 90 = brID)
+v_type:           Vehicle Type as Byte (default = 5, YTH Plus = 10,
+                                        Breeze = 90 = brID)
 Label3.Tag:       Spalte für Suche/Filter in Tabelle merken.
 StatusBar1.Tag:   Legt fest, ob StatusPanel 3 und 4 (Zeiten) mit ins
                   Clipboard kopiert wird (>0: ja).
@@ -660,8 +660,8 @@ type
     procedure EnSave;                              {Speichern erlauben}
     procedure Analyse;
     procedure GoToZ(a: integer);                   {Gehe zur Zeilennummer mit Abstand}
-    procedure ZhLWerte(p: integer);                {Werte zählen}
-    procedure DiaWerte(p: integer);                {Werte als Diagramm}
+    procedure ZhLWerte(p: byte);                   {Werte zählen}
+    procedure DiaWerte(p: byte);                   {Werte als Diagramm}
     function GethFromST10(const z: integer; const dt: TDateTime): double; {Höhe aus RemoteGPS_xxxx}
     function vms(const d: TDateTime; const w: double): string;
     procedure SelDirSet;
@@ -696,8 +696,8 @@ type
     function CheckVT(vt, fm: string): boolean;     {Vehicle Type prüfen für YTH Plus}
     function SpeedX(const sp: double): double;     {Geschwindigkeit umrechnen}
     function GetFlightLogDir(fn: string): string;  {FlightLog Verzeichnis finden}
-    function ZeitToDT(const s: string; const vt: integer): TDateTime;
-    function FindTP(wlist: TStringList; tp: TDateTime; const vt: integer): integer;
+    function ZeitToDT(const s: string; const vt: byte): TDateTime;
+    function FindTP(wlist: TStringList; tp: TDateTime; const vt: byte): integer;
     function CheckE7(const s: string): boolean;    {prüft einen string auf Fehler}
     function ShowSensorPlus(fn: string;            {Sensordatei vom YTH Plus}
                             z: integer;            {Index der Datei}
@@ -1346,7 +1346,7 @@ end;
  legacy Yuneec: 20151206 11:32:57:234
  Mantis Q CSV:  2019-02-28 17:53:44.401
  Breeze:        2015-12-06 11:32:57               }
-function TForm1.ZeitToDT(const s: string; const vt: integer): TDateTime;
+function TForm1.ZeitToDT(const s: string; const vt: byte): TDateTime;
 begin
   try
     case vt of
@@ -1368,7 +1368,7 @@ end;
 {Finde einen Zeitstempel in den Dateien mit Datum/Zeit in der 1. Spalte}
 function TForm1.FindTP(wlist: TStringList;         {Data list as strings}
                        tp: TDateTime;              {Time looking for}
-                       const vt: integer): integer;   {Vehicle type}
+                       const vt: byte): integer;   {Vehicle type}
 var k, pos, len: integer;
     s: string;
 
@@ -12074,7 +12074,7 @@ begin                                              {Main part}
   end;
 end;
 
-procedure TForm1.DiaWerte(p: integer);   {Anzeige Diagramm Werte für Spalte p}
+procedure TForm1.DiaWerte(p: byte);                {Anzeige Diagramm Werte für Spalte p}
 var x: integer;
     w, lat1, lon1, alt1, rssi_alt: double;
     bg: TDateTime;
@@ -12483,7 +12483,7 @@ begin
   end;                                             {Ende p>0}
 end;
 
-procedure TForm1.ZhlWerte(p: integer);             {Anzeige Statistik Werte}
+procedure TForm1.ZhlWerte(p: byte);                {Anzeige Statistik Werte}
 type
   sdat=Record
     Value: string;
@@ -12496,7 +12496,7 @@ const
       dagf='nn:ss';                                {Dauerausgabeformat}
 
 var
-  a: Array of sdat;                        {schneller mit dyn. Array by Corpsman}
+  a: Array of sdat;                                {schneller mit dyn. Array by Corpsman}
   i, j: integer;
   b: boolean;                                      {kein neuer Wert}
   s:    string;                                    {neuer Wert, alter Wert}

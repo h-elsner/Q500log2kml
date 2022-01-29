@@ -247,7 +247,7 @@ const
 
 
 var timestr: string;
-    v_type: integer;
+    v_type: byte;
 
 {Public functions and procedures}
 

@@ -69,27 +69,27 @@ const
 {Public functions and procedures}
   function StkToProz(const w: double): integer;    {Stick Position to percent}
   function ProzToStk(const w: double): integer;
-  function ChNoToStr(const p: integer): string;    {Bedeutung der Kanäle}
-  function ChToStr(const s: string; const p: integer): string; {Channel CHxx umbenennen}
-  function vTypeToStr(const v: integer): string;   {vehicle type ausgeben}
-  function Mode350(const f: integer): string;      {Blade 350 QX}
-  function ModeYTHP(const f: integer): string;     {neu YTH Plus}
-  function ModeLegacy(const f: integer): string;   {Q500, YTH and all other legacy}
-  function ModeThB(const f: integer): string;      {Thunderbird}
-  function fmodeToStr(const fm: integer): string;  {Flight Mode abh. vom Typ ausgeben}
-  function BRfmodeToStr(const f: integer): string; {Flight Mode abh. vom Typ ausgeben}
-  function IMUstatusToStr(const u: integer): string;   {imu_status}
-  function CGPSToStr(const u: integer): string;    {CGPS nur bei >H920 und <YTH}
-  function BRIMUstatusToStr(const u: integer): string; {imu_status breeze}
-  function AutoTakeOffToStr(const u: integer): string; {Breeze}
-  function GetPropNum: integer;                    {Number props (4, 6) from vehicle type}
-  function MotStatusToStr(const u: uint8): string; {Motor_status}
-  function PCGstatusToStr(const u, vt: uint8): string; {pressure_compass_status}
+  function ChNoToStr(const p: byte): string;       {Bedeutung der Kanäle}
+  function ChToStr(const s: string; const p: byte): string; {Channel CHxx umbenennen}
+  function vTypeToStr(const v: byte): string;      {vehicle type ausgeben}
+  function Mode350(const f: byte): string;         {Blade 350 QX}
+  function ModeYTHP(const f: byte): string;        {neu YTH Plus}
+  function ModeLegacy(const f: byte): string;      {Q500, YTH and all other legacy}
+  function ModeThB(const f: byte): string;         {Thunderbird}
+  function fmodeToStr(const fm: byte): string;     {Flight Mode abh. vom Typ ausgeben}
+  function BRfmodeToStr(const f: byte): string;    {Flight Mode abh. vom Typ ausgeben}
+  function IMUstatusToStr(const u: uint8): string; {imu_status}
+  function CGPSToStr(const u: uint8): string;      {CGPS nur bei >H920 und <YTH}
+  function BRIMUstatusToStr(const u: byte): string; {imu_status breeze}
+  function AutoTakeOffToStr(const u: byte): string; {Breeze}
+  function GetPropNum: byte;                       {Number props (4, 6) from vehicle type}
+  function MotStatusToStr(const u: byte): string;  {Motor_status}
+  function PCGstatusToStr(const u, vt: byte): string; {pressure_compass_status}
   function eflagToStr(const s: string): string;    {Error Flags}
   function LandGearToStr(const s: string): string; {Fahrwerkseinstellung}
-  function SwitchToStr(const p, vt: integer; const s: string): string;
+  function SwitchToStr(const p, vt: byte; const s: string): string;
   function StickPos(const w: double): string;      {Stickposition in %}
-  function StickToStr(const p: integer; const s: string): string;
+  function StickToStr(const p: byte; const s: string): string;
   function KoToStr(const lanlon: double): string; inline;
                                                    {Koordinaten zu String}
   function ChrKoor(ko: string): string; inline;    {Korrigiert Format der Koordinaten}
@@ -102,9 +102,9 @@ const
   function TiltToGrad(const w: double): double; inline; {Umrechnung Werte in 0-90 Grad}
   function BrUmrech(const w: double): double; inline;   {Umrechnung unsicher}
   function BrKorrV(const v: string): string;       {Spannung in % beim Breeze}
-  function VtoProzY(const vt: integer; const u: double): integer; {vehicle_type, Spannung in %}
-  function VtoProzRC(const vt: integer; u: double): integer;
-  function brTransformW(const inx: integer; const w: double): double;
+  function VtoProzY(const vt: byte; const u: double): integer; {vehicle_type, Spannung in %}
+  function VtoProzRC(const vt: byte; u: double): integer;
+  function brTransformW(const inx: byte; const w: double): double;
   function RadToStr(const s: string): string;      {Camera tilt slider}
 
 {$I language.inc}
@@ -133,7 +133,7 @@ begin
   insert(tab1, result, 5);
 end;
 
-function ChNoToStr(const p: integer): string;      {Bedeutung der Kanäle}
+function ChNoToStr(const p: byte): string;         {Bedeutung der Kanäle}
 begin
   result:='';                                      {default: leer}
   case p of
@@ -151,7 +151,7 @@ begin
   end;
 end;
 
-function ChToStr(const s: string; const p: integer): string; {Channel CHxx umbenennen}
+function ChToStr(const s: string; const p: byte): string; {Channel CHxx umbenennen}
 begin
   result:=s;                                       {Nehmen, wie es kommt - CHxx}
   {wenn S leer ist, dann Channel wie in Channel settings in ST16:
@@ -169,7 +169,7 @@ end;
 
 {see DroneTypeFactory.java
  https://www.rc-drohnen-forum.de/thread/10002}
-function vTypeToStr(const v: integer): string; {vehicle type ausgeben}
+function vTypeToStr(const v: byte): string;        {vehicle type ausgeben}
 begin
   result:='';
   case v of
@@ -180,7 +180,9 @@ begin
     4: result:='Blade Chroma (380QX)';
     5: result:='Yuneec Typhoon H';
     6: result:='Yuneec H920+';                     {vermutlich nie genutzt}
-    brID: result:='Yuneec Breeze';                 {selbst bestimmte Typ-IDs}
+	20..29: result:='SR24 car';
+	30..39: result:='SR24 boat';
+    brID: result:='Yuneec Breeze';                 {selbst bestimmte Typ-IDs, 10..14, 90, 91}
     MQid, MQcsvID: result:='Yuneec MantisQ';       {MantisQ erkannt}
     H5id: result:='Yuneec H520';                   {tlog files from H520}
     YTHPid: result:='Yuneec Typhoon H Plus';       {YTH Plus erkannt}
@@ -189,7 +191,7 @@ begin
   end;
 end;
 
-function Mode350(const f: integer): string;        {Blade 350 QX}
+function Mode350(const f: byte): string;           {Blade 350 QX}
 begin
   result:='';
   case f of
@@ -209,7 +211,7 @@ begin
   end;
 end;
 
-function ModeYTHP(const f: integer): string;       {neu YTH Plus}
+function ModeYTHP(const f: byte): string;          {neu YTH Plus}
 begin
   result:='';
   case f of
@@ -225,7 +227,7 @@ begin
   end;
 end;
 
-function ModeLegacy(const f: integer): string;     {Q500, YTH and all other legacy}
+function ModeLegacy(const f: byte): string;        {Q500, YTH and all other legacy}
 begin
   result:='';
   case f of
@@ -263,7 +265,7 @@ begin
   end;
 end;
 
-function ModeThB(const f: integer): string;        {Thunderbird}
+function ModeThB(const f: byte): string;           {Thunderbird}
 begin
   result:='';
   case f of                                        {Overwrite for Thunderbird}
@@ -279,7 +281,7 @@ begin
 end;
 
 
-function fmodeToStr(const fm: integer): string;    {Flight Mode abh. vom Typ ausgeben}
+function fmodeToStr(const fm: byte): string;       {Flight Mode abh. vom Typ ausgeben}
 begin
   case v_type of
     3:      result:=Mode350(fm);
@@ -290,7 +292,7 @@ begin
   end;
 end;
 
-function BRfmodeToStr(const f: integer): string;   {Flight Mode abh. vom Typ ausgeben}
+function BRfmodeToStr(const f: byte): string;      {Flight Mode abh. vom Typ ausgeben}
 begin                                              {für Yuneec Breeze}
   case f of
      2: result:='Selfie';
@@ -318,13 +320,14 @@ int ipsDataStatus = (imuStatus & 64) >> 6;
 byte baroMagByte = data[35];
 
 }
-function IMUstatusToStr(const u: integer): string; {imu_status}
+function IMUstatusToStr(const u: byte): string;   {imu_status}
 begin
   result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
   case u of
       1: result:='IMU';
      33: result:='IMU+GPS';
      65: result:='IMU+C-Compass';
+     96: result:='GPS+C-Compass+IMU missing';
      97: result:='IMU+GPS+C-Compass';
     101: result:='IMU+GPS+Compass+C-Compass';      {TH}
     193: result:='IMU+C-GPS/Compass';
@@ -356,7 +359,7 @@ begin
   end;
 end;
 
-function CGPSToStr(const u: integer): string;      {CGPS nur bei >H920 und <YTH}
+function CGPSToStr(const u: byte): string;         {CGPS nur bei >H920 und <YTH}
 begin
   result:='';
   case u of    {die obersten 3 bits vom IMU Status}
@@ -367,15 +370,15 @@ begin
   end;
 end;
 
-function BRIMUstatusToStr(const u: integer): string;  {imu_status breeze}
+function BRIMUstatusToStr(const u: byte): string;  {imu_status breeze}
 begin
   result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
-  case u of                                           {Rest ist unbekannt}
+  case u of                                        {Rest ist unbekannt}
     255: result:=rsAllOK;
   end;
 end;
 
-function AutoTakeOffToStr(const u: integer): string;  {Breeze}
+function AutoTakeOffToStr(const u: byte): string;  {Breeze}
 begin
   result:=IntToStr(u);
   case u of
@@ -395,7 +398,7 @@ int gpsModuleStatus = (baroMagByte & 2) >> 1;
 Für PX4: telemetrie definitionen
 https://github.com/PX4/Firmware/blob/master/src/lib/rc/st24.h
 }
-function PCGstatusToStr(const u, vt: uint8): string; {pressure_compass_status}
+function PCGstatusToStr(const u, vt: byte): string; {pressure_compass_status}
 begin
   result:='';
   case u of
@@ -426,7 +429,7 @@ begin
     result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
 end;
 
-function GetPropNum: integer;                      {Number props (4, 6) from vehicle type}
+function GetPropNum: byte;                         {Number props (4, 6) from vehicle type}
 begin
   case v_type of
     2..4, BrID, MQid, MQcsvID, H501ID: result:=4;
@@ -435,7 +438,7 @@ begin
   end;
 end;
 
-function MotStatusToStr(const u: uint8): string;   {Motor_status}
+function MotStatusToStr(const u: byte): string;    {Motor_status}
 var
   p: integer;                                      {Number props (4, 6)}
 
@@ -478,6 +481,14 @@ int mainboardTemperatureHighErrorWarning = (errorFlagByte & 16) >> 4;
 int calibrationErrorWarning = (errorFlagByte & 32) >> 5;
 int mainboardTemperatureLowErrorWarning = (errorFlagByte & 64) >> 6;
 int noFlyZoneErrorWarning = (errorFlagByte & 128) >> 7;
+
+
+private float LEVEL1_WARNING = 14.2f;
+private float LEVEL2_WARNING = 14.0f;
+private float MAX_VOLTAGE = 15.4f;
+private float MID_VOLTAGE = 14.9f;
+private int droneType = 5;
+private String droneTypeName = FModeData.VEHICLE_TYPE_480_NAME;
 }
 function eflagToStr(const s: string): string;      {Error Flags}
 var e: integer;
@@ -519,7 +530,7 @@ begin
     result:=rsLandGear+tab1+rsDown;
 end;
 
-function SwitchToStr(const p, vt: integer; const s: string): string;
+function SwitchToStr(const p, vt: byte; const s: string): string;
 var stk: integer;
 
 begin
@@ -605,7 +616,7 @@ begin
     result:=IntToStr(StkToProz(w))+'%';
 end;
 
-function StickToStr(const p: integer; const s: string): string;
+function StickToStr(const p: byte; const s: string): string;
 var w: double;
 
 begin
@@ -698,7 +709,7 @@ end;
 
 function H920Amp(const w: double): double; inline; {Stromsensor H920}
 begin
-  result:=w/10;                                    {uint8_t current; 0.1A resolution?}
+  result:=w/2;                                    {uint8_t current; 0.5A resolution?; see st24.h}
 end;
 
 function TiltToGrad(const w: double): double; inline; {Umrechnung Werte in 0-90 Grad}
@@ -726,7 +737,7 @@ begin
 end;
 
 {aus Yuneec Source code: LiPo Spannung in % Restkapazität}
-function VtoProzY(const vt: integer; const u: double): integer; {vehicle_type, Spannung in %}
+function VtoProzY(const vt: byte; const u: double): integer; {vehicle_type, Spannung in %}
 const s61=23.9;                                    {Schwellwerte 6S}
       s62=21.7;
       s63=21.3;
@@ -819,7 +830,7 @@ end;
  https://blog.ampow.com/lipo-voltage-chart/
  https://www.rcgroups.com/forums/showpost.php?p=29431951}
 
-function VtoProzRC(const vt: integer; u: double): integer;
+function VtoProzRC(const vt: byte; u: double): integer;
 const
   CapTab: array [0..20] of double = (
     100,  95,   90,   85,   80,   75,   70,   65,   60,   55,   50,
@@ -854,7 +865,7 @@ begin
     end;
 end;
 
-function brTransformW(const inx: integer; const w: double): double;
+function brTransformW(const inx: byte; const w: double): double;
    {inx: Index of column
     w: Value to transform}
 begin
