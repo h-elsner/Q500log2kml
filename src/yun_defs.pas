@@ -709,7 +709,7 @@ end;
 
 function H920Amp(const w: double): double; inline; {Stromsensor H920}
 begin
-  result:=w/2;                                    {uint8_t current; 0.5A resolution?; see st24.h}
+  result:=w/2;                                     {uint8_t current; 0.5A resolution?; see st24.h}
 end;
 
 function TiltToGrad(const w: double): double; inline; {Umrechnung Werte in 0-90 Grad}

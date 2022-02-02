@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="11"/>
+    <Version Value="12"/>
     <PathDelim Value="\"/>
     <General>
+      <Flags>
+        <CompatibilityMode Value="True"/>
+      </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <MainUnit Value="0"/>
       <Title Value="Yuneec FlightLog Auswertung"/>
       <Scaled Value="True"/>
       <ResourceType Value="res"/>
@@ -25,7 +27,7 @@
       <MinorVersionNr Value="8"/>
       <RevisionNr Value="1"/>
       <Language Value="0407"/>
-      <StringTable CompanyName="Helmut Elsner" LegalCopyright="(c) Helmut Elsner 2015-2021" ProductName="Yuneec FlightLog Analysis" ProductVersion="1.0"/>
+      <StringTable CompanyName="Helmut Elsner" LegalCopyright="(c) Helmut Elsner 2015-2022" ProductName="Yuneec FlightLog Analysis" ProductVersion="1.0"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -136,6 +138,7 @@
     <Linking>
       <Debugging>
         <GenerateDebugInfo Value="False"/>
+        <DebugInfoType Value="dsDwarf2Set"/>
         <StripSymbols Value="True"/>
       </Debugging>
       <LinkSmart Value="True"/>

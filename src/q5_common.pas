@@ -145,7 +145,7 @@
 2021-03-28       H Plus column current changed to Remaining LiPo.
 2021-04-05  V4.8 Menu Tools: Split TLOG files at time resets.
 2021-07-04       Screenshot only from TabControl (the most intresting part).
-
+2022-01-30       Indication for WiFi connection added to fsk_rssi chart.
 }
 
 
@@ -161,8 +161,8 @@ uses
 const
 {public constants}
   AppName=   'q500log2kml';
-  AppVersion='V4.8 07/2021';
-  VersValue='4.8.1';
+  AppVersion='V4.8 01/2022';
+  VersValue='4.8.2';
   VersFile='/v';
 
   homepage='http://h-elsner.mooo.com';             {My Homepage}
@@ -319,11 +319,7 @@ begin
         s:=StringReplace(s, 'E9','',[rfReplaceAll, rfIgnoreCase]);
       end;
     end;
-    try
-      result:=StrToFloat(s)*m;
-    except
-      result:=BoolToDouble(s);
-    end;
+    result:=StrToFloatDef(s, 0)*m;
   end;
 end;
 
@@ -384,13 +380,7 @@ end;
 
 function GetFVal(const s: string): double;         {get a float from a string}
 begin
-  try
-    result:=StrToFloat( GetFNr(s));
-  except
-    result:=0;
-  end;
-  if result=nan then
-    result:=0;
+  result:=StrToFloatDef(GetFNr(s), 0);
 end;
 
 function tabs(const prefix, suffix: string; const t: integer): string;  {Tabulator + suff}

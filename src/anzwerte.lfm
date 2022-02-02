@@ -12,7 +12,7 @@ object Form2: TForm2
   PopupMenu = PopupMenu1
   Position = poDefaultPosOnly
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.12.0'
+  LCLVersion = '2.3.0.0'
   object StringGrid1: TStringGrid
     Left = 8
     Height = 235
@@ -57,8 +57,6 @@ object Form2: TForm2
     Width = 657
     AxisList = <    
       item
-        Grid.Color = clDefault
-        TickColor = clDefault
         Marks.LabelBrush.Style = bsClear
         Minors = <>
         Title.Clipped = False
@@ -68,7 +66,6 @@ object Form2: TForm2
       end    
       item
         Grid.Color = clGray
-        TickColor = clDefault
         Alignment = calBottom
         Marks.Format = '%2:s'
         Marks.LabelBrush.Style = bsClear
@@ -90,15 +87,24 @@ object Form2: TForm2
     OnMouseUp = Chart1MouseUp
     object Chart1LineSeries1: TLineSeries
       LinePen.Color = clHotLight
-      Pointer.HorizSize = 2
+      Pointer.HorizSize = 1
       Pointer.Pen.Color = clRed
       Pointer.Style = psVertBar
-      Pointer.VertSize = 3
+      Pointer.VertSize = 1
     end
     object Chart1ConstantLine1: TConstantLine
       Active = False
       LineStyle = lsVertical
       Pen.Color = clRed
+    end
+    object Chart1LineSeries2: TLineSeries
+      LineType = ltNone
+      Pointer.HorizSize = 1
+      Pointer.Pen.Color = clOlive
+      Pointer.Style = psVertBar
+      Pointer.VertSize = 1
+      Pointer.Visible = True
+      ShowPoints = True
     end
   end
   object edTime: TEdit

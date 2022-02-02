@@ -18,6 +18,7 @@ type
     Chart1: TChart;
     Chart1ConstantLine1: TConstantLine;
     Chart1LineSeries1: TLineSeries;
+    Chart1LineSeries2: TLineSeries;
     ChartToolset1: TChartToolset;
     ChartToolset1PanDragTool1: TPanDragTool;
     ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool;
@@ -170,27 +171,27 @@ begin
   end;
 end;
 
-procedure TForm2.mnGoToClick(Sender: TObject); {per Menü Daten übergeben}
+procedure TForm2.mnGoToClick(Sender: TObject);     {per Menü Daten übergeben}
 begin
-  DataToMain;                                  {per Doppelklick Daten übergeben}
+  DataToMain;                                      {per Doppelklick Daten übergeben}
 end;
 
 procedure TForm2.StringGrid1CompareCells(Sender: TObject; ACol, ARow, BCol,
   BRow: Integer; var Result: integer);
 begin
   try
-    if (ACol=0) or (ACol=1) then begin         {Sortieren für Zahlen}
+    if (ACol=0) or (ACol=1) then begin             {Sortieren für Zahlen}
       Result:=StrToInt(StringGrid1.Cells[ACol, ARow])-
               StrToInt(StringGrid1.Cells[BCol, BRow]);
     end else
       result:=CompareText(StringGrid1.Cells[ACol,ARow],
-              StringGrid1.Cells[BCol,BRow]);   {als String sortieren}
+              StringGrid1.Cells[BCol,BRow]);       {als String sortieren}
   except
     result:=CompareText(StringGrid1.Cells[ACol,ARow],
-            StringGrid1.Cells[BCol,BRow]);     {als String sortieren}
+            StringGrid1.Cells[BCol,BRow]);         {als String sortieren}
   end;
   if StringGrid1.SortOrder=soDescending then
-    Result:=-Result;                           {Sortierrichtung}
+    Result:=-Result;                               {Sortierrichtung}
 end;
 
 procedure TForm2.DataToMain;       {Daten in timestr an Hauptformular übergeben}
@@ -206,11 +207,11 @@ end;
 
 procedure TForm2.StringGrid1DblClick(Sender: TObject);  {Zeitstempel auslesen}
 begin
-  DataToMain;                                  {per Doppelklick Daten übergeben}
+  DataToMain;                                      {per Doppelklick Daten übergeben}
 end;
 
 procedure TForm2.StringGrid1KeyUp(Sender: TObject; var Key: Word;
-  Shift: TShiftState);                         {Werte kopieren}
+  Shift: TShiftState);                             {Werte kopieren}
 begin
   if (key=vk_c) and
      (ssCtrl in Shift) then
@@ -258,7 +259,7 @@ begin
     end;
     if pos(fmode, StringGrid1.Cells[0, 0])>0 then begin  {Flight Mode}
       e:=StrToIntDef(StringGrid1.Cells[0, aRow], 0); {f_mode as integer}
-      FMcolor(StringGrid1, e, v_type);
+//      FMcolor(StringGrid1, e, v_type);
     end
   end;
 end;

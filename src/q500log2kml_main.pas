@@ -175,6 +175,7 @@ type
     Chart1LineSeries2: TLineSeries;
     Chart3: TChart;
     Chart3LineSeries1: TLineSeries;
+    Chart3LineSeries2: TLineSeries;
     Chart4: TChart;
     Chart4LineSeries1: TLineSeries;
     Chart5: TChart;
@@ -624,8 +625,8 @@ type
 
   private
     function VtoProz(const vt: integer; u: double): integer;
-    function ShowVoltageF(const w: double; vt: integer): string;
-    function ShowVoltage(const s: string; vt: integer): string;
+    function ShowVoltageF(const w: double; vt: byte): string;
+    function ShowVoltage(const s: string; vt: byte): string;
     function CheckNumTurns(const dn: string): integer;
     procedure AnzeigeCSV(const mode: integer);
     procedure BrAnzeigeCSV(const mode: integer);
@@ -1547,17 +1548,17 @@ begin                                              {Choose rule to convert V to 
   end;
 end;
 
-function TForm1.ShowVoltageF(const w: double; vt: integer): string;
+function TForm1.ShowVoltageF(const w: double; vt: byte): string;
 begin
   result:=rsRest+' ~'+IntToStr(VtoProz(vt, w))+    {Voltage in %}
           '%'+kma+VperCell(vt, w);                 {V per cell}
 end;
 
-function TForm1.ShowVoltage(const s: string; vt: integer): string;
+function TForm1.ShowVoltage(const s: string; vt: byte): string;
 var v: double;
 
 begin
-  v:=StrToFloat(s);
+  v:=StrToFloatDef(s, 0);
   result:=ShowVoltageF(v, vt);
 end;
 
@@ -3829,6 +3830,7 @@ begin
       Chart1ConstantLine2.Position:=0;
       Chart1ConstantLine2.Active:=false;
       Chart3LineSeries1.Clear;
+      Chart3LineSeries2.Clear;
       Chart4LineSeries1.Clear;
       Chart5LineSeries1.Clear;
       Chart3.ZoomFull;
@@ -6738,6 +6740,7 @@ begin
     Chart1.ZoomFull;
 end;
 
+{Reset zoom by mouseclick and Ctrl key of middle mouse key for all 3 charts}
 procedure TForm1.Chart3MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
@@ -10121,20 +10124,26 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
            p:=splitlist.IndexOf(lab.Text);         {find index of column}
 
            if p>0 then begin
-             for x:=1 to inlist0.count-1 do begin  {Werte einlesen}
+             for x:=1 to inlist0.count-1 do begin
                splitlist.DelimitedText:=inlist0[x];
                if CheckVT(splitlist[gridDetails.Tag+2],
                           splitlist[gridDetails.Tag]) then begin
                  w:=TransformW(0, p, StrToFloatN(splitlist[p]));
-                 if (p<>4) or
-                    ((p=4) and testh(w)) then begin
+                 if (p=1) and (w=0) then begin         {fsk_rssi ist Null}
                    bg:=ZeitToDT(splitlist[0], v_type);
-                   hist.AddXY(bg, w);
+                   Chart3LineSeries2.AddXY(bg, -1);
+                 end else begin                        {Alle anderenWerte einlesen}
+                   if (p<>4) or
+                      ((p=4) and testh(w)) then begin
+                     bg:=ZeitToDT(splitlist[0], v_type);
+                     hist.AddXY(bg, w);
+                   end;
                  end;
                end;
              end;
            end;
          end;   {Fehler im Hauptteil der Procedur werfen mit Fehlerausgabe}
+
       1: try                                       {RemoteGPS, kann fehlen}
            splitlist.DelimitedText:=inlist1[0];    {Column header}
            p:=splitlist.IndexOf(lab.Text);         {find index of column}
@@ -10146,9 +10155,10 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
                hist.AddXY(bg, w);
              end;
            end;
-      except
-        {fehlende Datei RemoteGPS ist kein Fehler, muss aber abgefangen werden}
-      end;
+         except
+           {fehlende Datei RemoteGPS ist kein Fehler, muss aber abgefangen werden}
+         end;
+
       2: try                                       {Remote, kann fehlen}
            splitlist.DelimitedText:=inlist2[0];    {Column header}
            p:=splitlist.IndexOf(lab.Text);         {find index of column}
@@ -10255,9 +10265,11 @@ begin
     splitlist.Delimiter:=csvsep;
   splitlist.StrictDelimiter:=True;
   Chart3LineSeries1.Clear;
+  Chart3LineSeries2.Clear;
   Chart4LineSeries1.Clear;
   Chart5LineSeries1.Clear;
   Chart3LineSeries1.BeginUpdate;
+  Chart3LineSeries2.BeginUpdate;
   Chart4LineSeries1.BeginUpdate;
   Chart5LineSeries1.BeginUpdate;
   Chart3.ZoomFull;
@@ -10300,6 +10312,7 @@ begin
     end;
   finally
     Chart3LineSeries1.EndUpdate;
+    Chart3LineSeries2.EndUpdate;
     Chart4LineSeries1.EndUpdate;
     Chart5LineSeries1.EndUpdate;
     FreeAndNil(inlist0);
@@ -12076,9 +12089,10 @@ end;
 
 procedure TForm1.DiaWerte(p: byte);                {Anzeige Diagramm Werte für Spalte p}
 var x: integer;
-    w, lat1, lon1, alt1, rssi_alt: double;
+    w, lat1, lon1, alt1: double;
     bg: TDateTime;
     s: string;
+    vp, zp: boolean;                               {Valid data point, zero datapoint RSSI}
 
 {Die Y-Achsenbezeichnung für die Diagramme entsprechend der Spalten anpassen}
   procedure PrepH501;                              {H501 vorbereiten}
@@ -12295,14 +12309,14 @@ var x: integer;
     case rgQuelle.ItemIndex of                     {Selected file}
       0: begin                                     {Telemetry}
             case p of                              {Liste der Spalten für Dia}
-              1: if w=0 then                       {Suppress zero values from WiFi}
-                   w:=rssi_alt                     {Hold the old value do not jump to 0}
-                 else
-                   rssi_alt:=w;                    {Save valid RSSI values}
+              1: if w=0 then begin                 {Suppress zero values from WiFi}
+                   zp:=true;                       {Dont show zero for RSSI (WiFi) but indicate}
+                   vp:=false;
+                 end;
               3: if v_type=1 then
                    w:=H920Amp(w);                  {Stromsensor bei H920}
               4: if not testh(w) then
-                   w:=0;                           {Korrektur unplausibler Höhe}
+                   vp:=false;                      {Korrektur unplausibler Höhe}
               5, 6: begin
                       if x>1 then begin            {1. Zeile ignorieren}
                         if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
@@ -12334,10 +12348,12 @@ var x: integer;
                    end;
               5: w:=SpeedX(w/100);                 {Maßeinheit Speed unklar, cm/s}
             end;
-            if (p=3) and (not testh(w)) then w:=0; {Korrektur unplausibler Werte (Höhe)}
+            if (p=3) and (not testh(w)) then
+              vp:=false; {Korrektur unplausibler Werte (Höhe)}
          end;
       2: begin                                     {Remote}
-           if p=7 then w:=TiltToGrad(StrToFloatN(gridDetails.Cells[p, x]));
+           if p=7 then
+             w:=TiltToGrad(StrToFloatN(gridDetails.Cells[p, x]));
          end;
     end;
   end;
@@ -12385,7 +12401,8 @@ var x: integer;
                    end;
               5: w:=SpeedX(w/100);                 {Possibly cm/s}
             end;
-            if (p=3) and (not testh(w)) then w:=0; {Korrektur unplausibler Werte (Höhe)}
+            if (p=3) and (not testh(w)) then
+              vp:=false;                           {Nix anzeigen bei unplausiblen Werten (Höhe)}
          end;
       2: begin                                     {Remote}
            if p=7 then w:=TiltToGrad(StrToFloatN(gridDetails.Cells[p, x]));
@@ -12421,7 +12438,6 @@ begin
     DoForm2Show(0);
     pcMain.Tag:=1;
     w:=0;
-    rssi_alt:=0;
     lat1:=0;
     lon1:=0;
     alt1:=0;
@@ -12446,11 +12462,13 @@ begin
     Form2.Chart1.AxisList[0].LabelSize:=lblsize;   {y-Achse ausrichten}
     Form2.Chart1.Visible:=true;
     Form2.Chart1LineSeries1.Clear;
-//    Form2.Chart1LineSeries1.DisableRedrawing;
+    Form2.Chart1LineSeries2.Clear;
     Form2.Chart1LineSeries1.Pointer.Visible:=false;
     Form2.Chart1.ZoomFull;
-    Form2.Chart1.Tag:=rgQuelle.ItemIndex;          {Tell that it Telemetry or whatever}
+    Form2.Chart1.Tag:=rgQuelle.ItemIndex;          {Tell what type of values}
     for x:=2 to gridDetails.RowCount-1 do begin    {skip first line}
+      vp:=true;                                    {Default: Datapoint is valid}
+      zp:=false;                                   {Not a RSSI zero point (WiFi)}
       if gridDetails.Cells[p, x]<>'' then begin    {skip empty cells}
         if (v_type=ThBid) and                      {only for Thunderbird}
            (p=4) and
@@ -12473,13 +12491,15 @@ begin
           w:=0;
         end;
         try
-          Form2.Chart1LineSeries1.AddXY(bg, w);
+          if vp then
+            Form2.Chart1LineSeries1.AddXY(bg, w);
+          if zp then
+            Form2.Chart1LineSeries2.AddXY(bg, -1); {Indication for existing WiFi connection from CGOx}
         except
           Form2.Close;
         end;
       end;
     end;
-//    Form2.Chart1LineSeries1.EnableRedrawing;
   end;                                             {Ende p>0}
 end;
 
@@ -13064,10 +13084,11 @@ begin
                ShowVoltageF(GetFVal(gridOverview.Cells[sp, zl]), v_type);
       else
         gridOverview.Hint:=gridOverview.Cells[sp, 0]+'='+
-                          gridOverview.Cells[sp, zl];     {Default hint}
+                           gridOverview.Cells[sp, zl];     {Default hint}
       end;
     end;
-  end else gridOverview.Hint:=gridOverview.Cells[sp, zl];  {Header}
+  end else
+    gridOverview.Hint:=gridOverview.Cells[sp, zl];  {Header}
 end;
 
 procedure TForm1.gridOverviewMouseUp(Sender: TObject; Button: TMouseButton;
