@@ -1,29 +1,8 @@
 resourcestring                                     {deutsch}
 
-  manual='Q500log2kml.pdf';
-{$IFDEF LINUX}
-  DownURL='/downloads/q500log2kml.tar.gz';
-{$ELSE}
-  {$IFDEF DARWIN}
-    DownURL='/downloads/q500log2kml_MAC-Deutsch.zip';  {MAC OS X}
-  {$ELSE}
-    DownURL='/downloads/q500log2kml.zip';
-  {$ENDIF}
-{$ENDIF}
   gmapURL='https://maps.google.de/maps';
-  DefaultStatus='Wähle das ganze FlightLog Verzeichnis aus';
-  nixda=' nicht vorhanden';
-  rsGridCell1='Datum';
   rsGridCell2='von';
   rsGridCell3='bis';
-  rsDauer='Dauer';
-  rsGridCell5='Gipfelhöhe';
-  rsGridCell6='Entfernung';
-  rsGridCell7='Strecke';
-  rsGridCell8='Höchstgeschw.';
-  rsGridCell9='Umax';
-  rsGridCell10='Umin';
-  rsHDcell0='Datum/Zeit';
 
   rsSave='Speichern';
   rsInvalid='ungültige Daten';
@@ -42,10 +21,7 @@ resourcestring                                     {deutsch}
   rsTurns=' Flüge';
   rsRG1Item0='Kopter';
   rsPC1Tab1='Übersicht';
-  rsPC1Tab2='Höhenprofil';
-  rsPC1Tab3='Datei sichten';
-  rsPC1Tab4='Einstellungen';
-  capForm1='FlightLog Auswertung für Yuneec Kopter';
+  capForm1='Steuerung CGO3 und Geotagging';
   capLabel2='FlightLog:';
   capLabel3='Kopter-ID:';
   capLabel13='Beginn';
@@ -59,18 +35,10 @@ resourcestring                                     {deutsch}
   capBitBtn3='&Archiv';
   hntBitBtn3='FlightLog umbenennen zum Archivieren';
   hntListBox1='Wähle Flugnummer aus/Doppelklick zum Neuladen';
-  hntColorBtn1='Farbe des Flugpfads auswählen';
-  capRadioGroup1='Quelle';
-  hntRadiogroup1='Datenquelle wählen';
   capRadioGroup2='Format';
   hntRadiogroup2='Ausgabeformat beim Konvertieren';
-  capTabSheet9='Konvertierung';
-  capGroupBox2='Flugpfad in KML/KMZ';
   capTabSheet12='Diverse Einstellungen';
   capColorButton1='Farbe';
-  hntTrackBar1='Sättigungsgrad der Linie';
-  capLabel1='Stärke des Flugpfads';
-  hntLabel1='Liniendicke des Flugpfads einstellen';
   capLabel4='Sättigung';
   rsNoArch='Nichts da zum Archivieren';
   capCrossHairOn ='Kursor ein';
@@ -160,7 +128,53 @@ resourcestring                                     {deutsch}
   capOpen='Arbeitsverzeichnis öffnen...';
   capHelp='&Hilfe';
   capInfo='Über Q500log2kml';
+  rsTimeout='Timeout! Keine WLAN Verbindung zur CGO3';
+  rsCGO3URL='CGO3 Standard URL';
+  hntCGO3URL='CGO3 URL mit abschließenden Schrägstrich eingeben';
+  hntStatus='CGO3 initialisieren und Statusabfrage';
+  hntWLAN='WLAN Verbindung zur CGO3 muss eingerichtet und aktviert sein. Default Passwort: 1234567890';
+  hntGnou='Belegter Speicher auf der SD-Karte in der CGO3';
+  capGnou='SD-Card belegt';
+  hntStringGrid3='Statusausgabe CGO3';
+  rsVideo='Video Auflösung';
+  rsSharpness='JPG Schärfe';
+  hntSharpness='Schärfe für JPG Bilder einstellen';
+  rsWLANSpeed='WLAN Übertragungsrate';
+  rsKStatus='Kamera Status';
+  rsRecTime='Aufnahmezeit';
+  hntCheckBox2='RTSP live stream anzeigen';
+  capCheckBox4='Dateiliste anzeigen';
+  hntCheckBox4='Dateiliste von der SD-Karte in der CGO3 im Browser öffnen.';
+  hntBitBtn16='Videoaufnahme starten';
+  hntBitBtn17='Videoaufnahme stoppen';
+  capBitBtn19='WLAN schneller';
+  hntBitBtn19='Hohe WLAN Geschwindigkeit setzen (56 MBit auto)';
+  capBitBtn20='WLAN Standard';
+  hntBitBtn20='Standard WLAN Geschwindigkeit setzen (6MBit), empfohlen';
+  capBitBtn22='Foto';
+  hntBitBtn22='Foto aufnehmen';
+  hntRec='Kamera Aufnahmestatus';
+  errNoPossbl='Ungültiger Befehl';
+  hntSpeed6='Sende Testbefehl zur CGO3';
+  hntEdit3='Pures CGO3 Kommando eingeben, Beispiel: SET_AUDIO_SW&mode=0';
+  hntEdit4='Rückgabewert von der CGO3';
+  rsCGOstat='Status CGO3';
+  capGroupBox7='Video aufnehmen';
+  capGroupBox9='Test';
+  hntTabSheet11='CGO3 Steuerung und Testumgebung';
   rsMode='Modus';
+  capBitBtn23='Zeit setzen';
+  hntBitBtn23='Zeit in der Kamera auf aktuelle Zeit setzen';
+  rsFarbFormat='Farbeinstellung';
+  rsShutter='Verschlußzeit';
+  rsExpo='Belichtung';
+  rsWB='Weißabgleich';
+  capBitBtn18='Reset';
+  hntBitBtn18='Kamera zurücksetzen auf Standardeinstellungen';
+  capBitBtn24='Format SD';
+  hntBitBtn24='SD-Karte formatieren. Alle Dateien werden gelöscht!';
+  rsISO='Lichtempfindlichkeit (ISO)';
+  rsVdo='Video';
   capGroupBox10='Flugnachweis erstellen';
   hntGroupBox10='Durchsucht einen ganzen Verzeichnisbaum nach Telemetriedaten und erstellt ein Protokoll';
   capNachweis='Flugnachweis';
@@ -287,5 +301,30 @@ resourcestring                                     {deutsch}
   hntSplit='PX4 Sensordatei bei Zeitsprüngen aufteilen';
   rsConsistent='konsistent - kein Split notwendig';
   rsSplits='aufgeteilte Dateien angelegt';
+
+{GeoTagging}
+  hdrEXIFPic='Dateiname,Kamera,Datum/Zeit,Treffer bei,Breitengrad,Längengrad,Relative Höhe,EXIF Daten';
+  capShowPic='Zeige Bild';
+  capPicFolder='Bilder';
+  hntPicFolder='Verzeichnis mit Bildern zum Durchsuchen auswählen';
+  capTelemetry='Telemetrie';
+  hntTelemetry='Telemetriedatei mit Referenz-Koordinaten auswählen';
+  capScanPic='Bilder prüfen';
+  hntScanPic='Bilder durchsuchen und auflisten';
+  capWritePic='EXIF schreiben';
+  hntWritePic='Gefundene Daten in die EXIF Daten des entsprechenden Bildes schreiben';
+  capBackupPic='Backup';
+  hntBackupPic='Originalbilder behalten';
+  capTimeOffset='Zeitkorrektur';
+  hntTimeOffset='Eventuell notwendige Zeitverschiebung zwischen Bildern und Telemetrie einstellen';
+  capCams='Kameras';
+  hntCams='Filterliste für Kameras';
+  capSelPicFolder='Bilderverzeichnis auswählen...';
+  capTelemetryFile='Telemetriedatei auswählen...';
+  errNoPicFolder='Bilderverzeichnis existiert nicht';
+  errNoPictures='Keine JPG-Bilder im Verzeichnis';
+  errNoTelemetryFile='Telemetriedatei existiert nicht';
+  errNoUpdates='Keine EXIF Daten geschrieben';
   resNew='neu angelegt';
+  resUpd='geändert';
 

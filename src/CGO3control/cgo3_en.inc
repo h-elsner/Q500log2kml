@@ -1,29 +1,9 @@
 resourcestring                                     {english}
 
-  manual='Q500log2kml_en.pdf';
-  {$IFDEF LINUX}
-    DownURL='/downloads/q500log2kml_en.tar.gz';
-  {$ELSE}
-    {$IFDEF DARWIN}
-      DownURL='/downloads/q500log2kml_MAC-english.zip';  {MAC OS X}
-    {$ELSE}
-      DownURL='/downloads/q500log2kml_en.zip';
-    {$ENDIF}
-  {$ENDIF}
   gmapURL='https://maps.google.com/maps';
   DefaultStatus='Select path to the whole FlightLog directory';
-  nixda=' not found';
-  rsGridCell1='Date';
   rsGridCell2='from';
   rsGridCell3='to';
-  rsDauer='Duration';
-  rsGridCell5='Ceiling';
-  rsGridCell6='Distance';
-  rsGridCell7='Length of trip';
-  rsGridCell8='Top speed';
-  rsGridCell9='Umax';
-  rsGridCell10='Umin';
-  rsHDcell0='Date/time';
 
   rsSave='Save';
   rsInvalid='invalid data';
@@ -31,7 +11,6 @@ resourcestring                                     {english}
   rsNotRename='Rename not possible. Another application uses the directory or missing access rights';
   rsFLDir='Yuneec FlightLog directory';
   rsEmpty='is empty';
-  rsHProfil='Elevation histogram from ';
   rsToGMaps='Show at GoogleMaps';
   rsToOSM='Show at OpenStreetMap';
   rsHDiaSave='Save as picture...';
@@ -45,7 +24,7 @@ resourcestring                                     {english}
   rsPC1Tab2='Elevation histogram';
   rsPC1Tab3='Display files';
   rsPC1Tab4='Settings';
-  capForm1='FlightLog evaluation for Yuneec drones';
+  capForm1='CGO3 control and geotagging';
   capLabel2='FlightLog:';
   capLabel3='Drone-ID:';
   capLabel13='Begin';
@@ -60,26 +39,11 @@ resourcestring                                     {english}
   hntBitBtn3='Rename FlightLog directory in order to archive it';
   hntListBox1='Select track number/Doubleclick to renew list';
   hntColorBtn1='Select color of the flight track';
-  capRadioGroup1='Source';
-  hntRadiogroup1='Select data source';
   capRadioGroup2='Format';
   hntRadiogroup2='Output file format for convert';
   capTabSheet9='Data conversion';
-  capGroupBox2='Flight track in KML/KMZ';
-  capTabSheet12='Other settings';
-  capColorButton1='Color';
-  hntTrackBar1='Opacity of the flight track';
-  capLabel1='Width flight track';
-  hntLabel1='Set width of the flight track';
   capLabel4='Opacity';
   rsNoArch='Nothing there to archive';
-  capCrossHairOn ='Cursor on';
-  capCrossHairOff='Cursor off';
-  hntCrossHair='Cursor for data analysis';
-  capGoToZNr='Go to data point';
-  capGoToVal='Go to value';
-  capTabSheet10='Data analysis';
-  capLabel5='Number data points for analysis';
   capLabel6='Dataset:';
   hntSpinEdit3='Start data point for analysis area';
   rsDescend='descend';
@@ -160,7 +124,53 @@ resourcestring                                     {english}
   capOpen='Open working directory...';
   capHelp='&Help';
   capInfo='About Q500log2kml';
+  rsTimeout='Timeout! No WLAN connection to CGO3';
+  rsCGO3URL='CGO3 default URL';
+  hntCGO3URL='Enter CGO3 URL with trailing slash';
+  hntStatus='CGO3 initializing and status query';
+  hntWLAN='WLAN connection to CGO3 must be setted up and activated. Default password: 1234567890';
+  hntGnou='Used memory space on SD-card in CGO3';
+  capGnou='SD-Card used';
+  hntStringGrid3='Query result CGO3';
+  rsVideo='Video resolution';
+  rsSharpness='JPG Sharpness';
+  hntSharpness='Set sharpness for JPG pictures';
+  rsWLANSpeed='WLAN speed';
+  rsKStatus='Camera state';
+  rsRecTime='Record time';
+  hntCheckBox2='Show RTSP live stream';
+  capCheckBox4='File list';
+  hntCheckBox4='Show file list of SD card in CGO3 in browser';
+  hntBitBtn16='Start video recording';
+  hntBitBtn17='Stop video recording';
+  capBitBtn19='Speed up';
+  hntBitBtn19='Increase WLAN speed (56 MBit auto)';
+  capBitBtn20='Reset speed';
+  hntBitBtn20='Set WLAN speed to default (6MBit), recommended';
+  capBitBtn22='Photo';
+  hntBitBtn22='Take a photo';
+  hntRec='Record state camera';
+  errNoPossbl='Invalid command';
+  hntSpeed6='Send test command to CGO3';
+  hntEdit3='Enter test command body, example: SET_AUDIO_SW&mode=0';
+  hntEdit4='Test result sent from CGO3';
+  rsCGOstat='Status CGO3';
+  capGroupBox7='Record video';
+  capGroupBox9='Test';
+  hntTabSheet11='CGO3 control and testing';
   rsMode='Mode';
+  capBitBtn23='Set time';
+  hntBitBtn23='Set the time in camera to now';
+  rsFarbFormat='Color mode';
+  rsShutter='Shutter time';
+  rsExpo='Exposure';
+  rsWB='White balance';
+  capBitBtn18='Reset cam';
+  hntBitBtn18='Reset camera to default values';
+  capBitBtn24='Format SD';
+  hntBitBtn24='Format SD-card. All files will be deleted!';
+  rsISO='Sensitivity (ISO)';
+  rsVdo='Video';
   capGroupBox10='Make flight record';
   hntGroupBox10='Scans a whole directory for telemetry files and creates flight record';
   capNachweis='Flight record';
@@ -287,5 +297,30 @@ resourcestring                                     {english}
   hntSplit='Split PX4 Sensor file at boot time resets';
   rsConsistent='consistent - no split needed';
   rsSplits='splitted files created';
+
+{GeoTagging}
+  hdrEXIFPic='File name,Camera,Date/time,Match at,Latitude,Longitude,Altitude relative,EXIF data';
+  capShowPic='Show picture';
+  capPicFolder='Pictures';
+  hntPicFolder='Select folder with JPG pictures to update';
+  capTelemetry='Telemetry';
+  hntTelemetry='Select telemetry file with reference data';
+  capScanPic='Find pictures';
+  hntScanPic='Find and list pictures';
+  capWritePic='Write EXIF';
+  hntWritePic='Write related data to EXIF meta data of the picture';
+  capBackupPic='Backup';
+  hntBackupPic='Keep original picture files';
+  capTimeOffset='ZTime offset';
+  hntTimeOffset='Set possibly needed time shift between picture time stamp and telemetry times';
+  capCams='Cameras';
+  hntCams='Filter list of cameras';
+  capSelPicFolder='Select picture folder...';
+  capTelemetryFile='Select telemetry file...';
+  errNoPicFolder='Picture folder does not exist';
+  errNoPictures='No valid picture files in folder';
+  errNoTelemetryFile='Telemetry file does not exist';
+  errNoUpdates='EXIF data not written';
   resNew='created';
+  resUpd='updated';
 

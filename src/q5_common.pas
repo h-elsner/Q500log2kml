@@ -146,6 +146,7 @@
 2021-04-05  V4.8 Menu Tools: Split TLOG files at time resets.
 2021-07-04       Screenshot only from TabControl (the most intresting part).
 2022-01-30       Indication for WiFi connection added to fsk_rssi chart.
+2022-02-05       CGO3 control and Geotagging removed - independent extra tool
 }
 
 
@@ -161,8 +162,8 @@ uses
 const
 {public constants}
   AppName=   'q500log2kml';
-  AppVersion='V4.8 01/2022';
-  VersValue='4.8.2';
+  AppVersion='V4.8 03/2022';
+  VersValue='4.8.4';
   VersFile='/v';
 
   homepage='http://h-elsner.mooo.com';             {My Homepage}

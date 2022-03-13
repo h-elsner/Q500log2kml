@@ -60,11 +60,6 @@ const
   lipomin=3.3;                                     {Minimum LiPo voltage}
   lipomax=4.2;
 
-  idxpage='INDEX_PAGE';
-  getshpn='GET_SHARPNESS';
-  CGO3dir='100MEDIA/';
-  CGO3cgi='cgi-bin/cgi?CMD=';
-
 
 {Public functions and procedures}
   function StkToProz(const w: double): integer;    {Stick Position to percent}
