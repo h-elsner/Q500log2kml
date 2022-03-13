@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<CONFIG>
-  <TApplication>
-    <Form1 Form1_Width="1113" Form1_Height="595" edCGOURL_Text="http://192.168.42.1/" speExpo_Value="0" cbRTSP_Checked="0" cbxCGO3WB_Text="Weißabgleich" cbxCGO3ISO_Text="Lichtempfindlichkeit (ISO)" pcMain_TabIndex="1" Form1_WindowState="wsNormal" cbxCGO3Color_Text="Farbeinstellung" cbxCGO3Video_Text="Video Auflösung" cbxPicFolder_Text="D:\temp\E20Tvx_Radiometric" cbxTelemetry_Text="D:\Flight_Log_data\_Eigene\Q500\FlightLog2014-01-05_110506\Telemetry\Telemetry_00008.csv" cbExpoAuto_Checked="0" cbFileList_Checked="0" cbBackupPic_Checked="1" cbxCGO3Shutter_Text="Verschlußzeit" cbxCGO3WB_ItemIndex="-1" speTimeOffset_Value="0" cbxCGO3ISO_ItemIndex="-1" rgPicFormat_ItemIndex="1" rgVideoFoto_ItemIndex="0" tbrSharpness_Position="6" cbxCGO3Color_ItemIndex="-1" cbxCGO3Video_ItemIndex="-1" cbxPicFolder_ItemIndex="0" cbxTelemetry_ItemIndex="0" cbxCGO3Shutter_ItemIndex="-1" SelectDirectoryDialog1_FileName="D:\temp\E20Tvx_Radiometric" SelectDirectoryDialog1_InitialDir="D:\temp\">
-      <cbxPicFolder_Items Count="4" Item0="D:\temp\E20Tvx_Radiometric" Item1="D:\Bilder\Anton\Ungarn 2016" Item2="D:\temp" Item3="D:\temp\YuneecImageTool_abc\Install_doc"/>
-      <cbxTelemetry_Items Count="1" Item0="D:\Flight_Log_data\_Eigene\Q500\FlightLog2014-01-05_110506\Telemetry\Telemetry_00008.csv"/>
-    </Form1>
-  </TApplication>
-</CONFIG>
