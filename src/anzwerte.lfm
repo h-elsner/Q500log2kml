@@ -12,7 +12,7 @@ object Form2: TForm2
   PopupMenu = PopupMenu1
   Position = poDefaultPosOnly
   ShowInTaskBar = stNever
-  LCLVersion = '2.3.0.0'
+  LCLVersion = '2.2.0.4'
   object StringGrid1: TStringGrid
     Left = 8
     Height = 235
@@ -109,8 +109,8 @@ object Form2: TForm2
   end
   object edTime: TEdit
     Left = 8
-    Height = 15
-    Top = 256
+    Height = 19
+    Top = 252
     Width = 64
     Alignment = taCenter
     Anchors = [akLeft, akBottom]

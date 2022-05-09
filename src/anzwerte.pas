@@ -71,7 +71,9 @@ implementation
 { TForm2 }
 
 procedure TForm2.MoveVCursor(x: double; p: integer);  {Move vertical cursor}
-var lft: integer;
+var
+  lft: integer;
+
 begin
   Chart1ConstantLine1.Position:=x;                 {Red cursor}
   edTime.Text:=FormatDateTime(zzf, x);
@@ -82,6 +84,7 @@ begin
   if lft+edTime.Width+btnOKform2.Width>Chart1.Width then
     lft:=Chart1.Width-edTime.Width-btnOKform2.Width;
   edTime.Left:=lft;
+  Application.ProcessMessages;
 end;
 
 procedure TForm2.btnOKform2Click(Sender: TObject);
@@ -139,6 +142,7 @@ begin
          end;
     end;
   end;
+  Application.ProcessMessages;
 end;
 
 procedure TForm2.FormShow(Sender: TObject);        {Doppelklick ID rücksetzen}

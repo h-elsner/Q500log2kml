@@ -2,9 +2,9 @@
           {                                                        }
           {     Auswertung FlightLog Daten von Yuneec Koptern      }
           {                                                        }
-          {       Copyright (c) 2015-2020    Helmut Elsner         }
+          {       Copyright (c) 2015-2022    Helmut Elsner         }
           {                                                        }
-          {       Compiler: FPC 3.0.4   /    Lazarus 2.0.8         }
+          {       Compiler: FPC 3.2.2   /    Lazarus 2.2.0         }
           {                                                        }
           { Pascal programmers tend to plan ahead, they think      }
           { before they type. We type a lot because of Pascal      }
@@ -71,6 +71,12 @@ Dank für Unterstützung und Erstellung der Mac OS X - Version an:
 Frank Kieselbach
 info@kieselbach.de
 www.kieselbach.de
+
+ToDo: Liniendiagramm entspechend FlghtMode einfärben
+
+https://forum.lazarus.freepascal.org/index.php?topic=40024.0
+https://www.lazarusforum.de/viewtopic.php?f=18&t=14258
+
 *)
 
 unit q500log2kml_main;
@@ -256,8 +262,8 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Label6: TLabel;
-    Label7: TLabel;
-    Label8: TLabel;
+    lblManual: TLabel;
+    lblUpdate: TLabel;
     lbFlights: TListBox;
     MainMenu1: TMainMenu;
     mnGoogleMap: TMenuItem;
@@ -399,12 +405,12 @@ type
     procedure FormShow(Sender: TObject);
     procedure Image4Click(Sender: TObject);
     procedure lblMAVcommonClick(Sender: TObject);
-    procedure Label7Click(Sender: TObject);
-    procedure Label7MouseEnter(Sender: TObject);
-    procedure Label7MouseLeave(Sender: TObject);
-    procedure Label8Click(Sender: TObject);
-    procedure Label8MouseEnter(Sender: TObject);
-    procedure Label8MouseLeave(Sender: TObject);
+    procedure lblManualClick(Sender: TObject);
+    procedure lblManualMouseEnter(Sender: TObject);
+    procedure lblManualMouseLeave(Sender: TObject);
+    procedure lblUpdateClick(Sender: TObject);
+    procedure lblUpdateMouseEnter(Sender: TObject);
+    procedure lblUpdateMouseLeave(Sender: TObject);
     procedure LabeledEdit1DragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure LabeledEdit1DragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);
@@ -637,7 +643,7 @@ const
   pngdef=us1+'.png';                               {Dateivorschläge}
   csvdef=us1+fext;
   wexdef=us1+wext;
-  sep=',';                                         {Datenseperator im CSV file}
+  sep=',';                                         {Datenseparator im CSV file}
   kma=', ';                                        {Kommaausgabe}
   anzsp=20;                                        {Mindestanzahl Spalten}
   lzbr=19;                                         {Länge Zeitstempel Breeze}
@@ -734,7 +740,6 @@ implementation
 
 {$R *.lfm}
                                                    {TForm1: Hauptfenster}
-
 procedure Merkliste(ml: TComboBox; maxAnzahl: integer);
 begin                                              {DropDownListe füllen}
   if (ml.Text<>'') and
@@ -939,8 +944,8 @@ begin
   lblSaturation.Hint:=hntTrackBar1;
   Label5.Caption:=capLabel5;
   Label6.Caption:=capLabel6;
-  Label7.Caption:=capLabel7;
-  Label8.Caption:=capLabel8;
+  lblManual.Caption:=capLabel7;
+  lblUpdate.Caption:=capLabel8;
   lblDistWP.Caption:=capLabel12;
   lblDistWP.Hint:=hntTrackBar2;
   Label13.Caption:=capLabel13;
@@ -952,15 +957,15 @@ begin
   Label10.Caption:=capItems;
   Label10.Hint:=hntItems;
   speItems.Hint:=hntItems;
-  Label7.Hint:=Application.Location+manual;        {default}
-  if not FileExists(Label7.Hint) then begin
-    Label7.Hint:=homepage+hpmydat+manual;          {mit Internet überschreiben}
+  lblManual.Hint:=Application.Location+manual;        {default}
+  if not FileExists(lblManual.Hint) then begin
+    lblManual.Hint:=homepage+hpmydat+manual;          {mit Internet überschreiben}
   end else begin
   {$IFDEF DARWIN}
-    Label7.Hint:=manual;                           {für MAC OS X überschreiben}
+    lblManual.Hint:=manual;                           {für MAC OS X überschreiben}
   {$ENDIF}
   end;
-  Label8.Hint:=homepage+downURL;
+  lblUpdate.Hint:=homepage+downURL;
   lblMAVcommon.Hint:=MAVurl;
   StaticText1.Caption:='';
   cbxScanDir.Hint:=capSelProt;
@@ -2037,6 +2042,7 @@ begin
   try
     OpenDialog1.Title:=capCleanCSV;
     OpenDialog1.InitialDir:=cbxLogDir.Text;
+    Application.ProcessMessages;
     if OpenDialog1.Execute then begin
       btnShowhex.Tag:=0;                           {No file selected for Block --> Hex}
       inlist.LoadFromFile(OpenDialog1.FileName);   {Load telemetry file}
@@ -2255,6 +2261,7 @@ var strm: TStream;
 begin
   inlist:=TStringList.Create;
   Screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   ct:='';
   strm:=nil;
   try
@@ -2277,7 +2284,7 @@ begin
       inlist.LoadFromStream(strm);
 
     if inlist.count>0 then begin
-      Label8.Font.Color:=clPurple;
+      lblUpdate.Font.Color:=clPurple;
       for i:=0 to inlist.count-1 do begin
         if pos(appname, inlist[i])>0 then begin
           ct:=inlist[i].Split([sep])[1];
@@ -2296,6 +2303,8 @@ begin
     AppLog.Lines.Add(StatusBar1.Panels[5].Text);
   finally
     inlist.Free;
+    if strm<>nil then
+      strm.free;
     Screen.Cursor:=crDefault;
   end;
 end;
@@ -2305,6 +2314,7 @@ var x:integer;
     fnum: string;                                  {file name flight num}
 
 begin
+  Application.ProcessMessages;
   if (cbxLogDir.Text>'') and DirectoryExists(cbxLogDir.Text) then begin
     TimerDblClick.Enabled:=false;
     if Form2<>nil then
@@ -2424,7 +2434,9 @@ begin
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   if FileSize(fn)>lenfix then begin
     Screen.Cursor:=crHourGlass;
+    Application.ProcessMessages;
     cbxSearch.Text:=UpCase(trim(cbxSearch.Text));
+    Application.ProcessMessages;
 
     gridDetails.BeginUpdate;
     gridDetails.RowCount:=1;
@@ -2591,6 +2603,7 @@ begin
     if Form2<>nil then
       Form2.Close;                                 {Close additional Chart}
     Screen.Cursor:=crHourGlass;
+    Application.ProcessMessages;
     infn:=TMemoryStream.Create;
     outfn:=TMemoryStream.Create;
     try
@@ -2688,7 +2701,7 @@ https://github.com/mavlink/c_library_v2/tree/master/common
  tlog Datei beim H520.
 
   For Docu:
-- Copy flightlogs to your PC in a seperate directory.
+- Copy flightlogs to your PC in a separate directory.
 - Open a directory where alle the flightlog files are located.
   Files should look like this "Sensor_2018_MM_dd_hh_mm_ss.txt"
   (Sensor_+Date_Time.txt). It's not really a text file but a binary.
@@ -3588,6 +3601,7 @@ begin
     csvarr[i]:='';
   if FileSize(fn)>lenfixP then begin
     Screen.Cursor:=crHourGlass;
+    Application.ProcessMessages;
     HDiaInit;                                      {Höhendiagramm initalisieren}
     if tb then begin
       KursorAus;
@@ -3816,6 +3830,7 @@ begin
   zhl:=0;
   if FileSize(fn)>lenfixP then begin
     Screen.Cursor:=crHourGlass;
+    Application.ProcessMessages;
     FillChar(dsbuf, length(dsbuf), 0);             {Datenbuffer löschen}
     msglist:=TStringList.Create;
     msglist.Sorted:=true;
@@ -5236,6 +5251,7 @@ begin
   splitlist.StrictDelimiter:=True;
   vlist.Add(IncludeTrailingPathDelimiter(cbxScanDir.Text));
   Screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   try
     CreateDirList(cbxScanDir.Text, vlist);
     case rgErrType.ItemIndex of
@@ -5494,6 +5510,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
     MerkListe(cbxScanDir, speItems.Value);
     Screen.Cursor:=crHourGlass;
+    Application.ProcessMessages;
     vlist:=TStringList.Create;
     flist:=TStringList.Create;
     outlist:=TStringList.Create;
@@ -5705,6 +5722,7 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
     MerkListe(cbxScanDir, speItems.Value);
     Screen.Cursor:=crHourGlass;
+    Application.ProcessMessages;
     vlist:=TStringList.Create;
     flist:=TStringList.Create;
     outlist:=TStringList.Create;
@@ -5912,6 +5930,7 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
     cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
     MerkListe(cbxScanDir, speItems.Value);
     Screen.Cursor:=crHourGlass;
+    Application.ProcessMessages;
     vlist:=TStringList.Create;
     flist:=TStringList.Create;
     outlist:=TStringList.Create;
@@ -6641,35 +6660,35 @@ begin
   OpenURL(MAVurl);
 end;
 
-procedure TForm1.Label7Click(Sender: TObject);     {Hilfe aufrufen}
+procedure TForm1.lblManualClick(Sender: TObject);     {Hilfe aufrufen}
 begin
   if OpenManual then
-    Label7.Font.Color:=clPurple;
+    lblManual.Font.Color:=clPurple;
 end;
 
-procedure TForm1.Label7MouseEnter(Sender: TObject); {Link animieren}
+procedure TForm1.lblManualMouseEnter(Sender: TObject); {Link animieren}
 begin
-  Label7.Font.Style:=Label7.Font.Style+[fsBold];
+  lblManual.Font.Style:=lblManual.Font.Style+[fsBold];
 end;
 
-procedure TForm1.Label7MouseLeave(Sender: TObject); {Link animieren}
+procedure TForm1.lblManualMouseLeave(Sender: TObject); {Link animieren}
 begin
-  Label7.Font.Style:=Label7.Font.Style-[fsBold];
+  lblManual.Font.Style:=lblManual.Font.Style-[fsBold];
 end;
 
-procedure TForm1.Label8Click(Sender: TObject);     {Download update}
+procedure TForm1.lblUpdateClick(Sender: TObject);     {Download update}
 begin
   CheckVersion;
 end;
 
-procedure TForm1.Label8MouseEnter(Sender: TObject); {Link animieren}
+procedure TForm1.lblUpdateMouseEnter(Sender: TObject); {Link animieren}
 begin
-  Label8.Font.Style:=Label8.Font.Style+[fsBold];
+  lblUpdate.Font.Style:=lblUpdate.Font.Style+[fsBold];
 end;
 
-procedure TForm1.Label8MouseLeave(Sender: TObject); {Link animieren}
+procedure TForm1.lblUpdateMouseLeave(Sender: TObject); {Link animieren}
 begin
-  Label8.Font.Style:=Label8.Font.Style-[fsBold];
+  lblUpdate.Font.Style:=lblUpdate.Font.Style-[fsBold];
 end;
 
 procedure TForm1.GetDDdata(lab: TLabeledEdit); {Wert für Schnellanalyse übergeben}
@@ -6728,12 +6747,12 @@ end;
 
 procedure TForm1.lblMAVcommonMouseEnter(Sender: TObject); {Link animation}
 begin
-  lblMAVcommon.Font.Style:=Label7.Font.Style+[fsBold];
+  lblMAVcommon.Font.Style:=lblManual.Font.Style+[fsBold];
 end;
 
 procedure TForm1.lblMAVcommonMouseLeave(Sender: TObject);
 begin
-  lblMAVcommon.Font.Style:=Label7.Font.Style-[fsBold];
+  lblMAVcommon.Font.Style:=lblManual.Font.Style-[fsBold];
 end;
 
 Procedure TForm1.LoadTree;                         {TreeView für Spalten}
@@ -7542,6 +7561,7 @@ begin
      (v_type=MQid) then
     exit;                                          {nichts tun bei Anzeige PX4}
   screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=sep;
@@ -7822,6 +7842,7 @@ begin                                              {Datenanalyse ausgewählter B
     splitlist.Delimiter:=sep;
     splitlist.StrictDelimiter:=True;
     Screen.Cursor:=crHourGlass;
+    Application.ProcessMessages;
     an:='';
     try
       n:=speDataPoint.Value+speAnalyze.Value+1;
@@ -7906,6 +7927,7 @@ begin
   n:=Label3.Tag;                        {zwischenspeichern, wird sonst zerstört}
   tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des gridDetails überschrieben}
   screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   gridDetails.ColCount:=0;                         {alles löschen}
   gridDetails.RowCount:=14;
@@ -8103,6 +8125,7 @@ var n, i: integer;
 begin
   n:=Label3.Tag;                                   {zwischenspeichern, wird sonst zerstört}
   Screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   SetSensorEnv;
   mnGoogleMap.Enabled:=true;                       {GoogleMaps Link}
   mnOSM.Enabled:=true;                             {OSM Link}
@@ -8150,6 +8173,7 @@ begin
   btnClose.Tag:=0;                       {Annahme Breeze Telemetrie in Meter}
   tpos1:=tpos;  {letzte Pos merken, wird beim Neuzeichnen des gridDetails überschrieben}
   screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   for i:=0 to gridDetails.ColCount-1 do
     gridDetails.Cols[i].Clear;
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
@@ -8353,6 +8377,7 @@ begin
   for i:=0 to gridDetails.ColCount-1 do
     gridDetails.Cols[i].Clear;
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  Application.ProcessMessages;
   gridDetails.RowCount:=1;
   gridDetails.ColCount:=0;                         {alles löschen}
   slat:='';
@@ -8488,6 +8513,7 @@ begin
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   gridDetails.RowCount:=1;
   gridDetails.ColCount:=0;                         {alles löschen}
+  Application.ProcessMessages;
   slat:='';
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
@@ -8772,6 +8798,7 @@ var x: integer;
 begin
   screen.Cursor:=crHourGlass;
   rgQuelle.ItemIndex:=0;                        {Umschalten auf Telemetrie}
+  Application.ProcessMessages;
   AnzeigeCSV(0);                     {dazu passende Tabelle laden für Analyse}
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
@@ -8936,6 +8963,7 @@ var x: integer;
 
 begin
   screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   rgQuelle.ItemIndex:=0;                        {Umschalten auf Telemetrie}
   BrAnzeigeCSV(0);                   {dazu passende Tabelle laden für Analyse}
   inlist:=TStringList.Create;
@@ -9027,6 +9055,7 @@ var x: integer;
 
 begin
   screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   rgQuelle.ItemIndex:=0;                        {Umschalten auf Telemetrie}
   H501AnzeigeCSV(0);                   {dazu passende Tabelle laden für Analyse}
   inlist:=TStringList.Create;
@@ -9266,6 +9295,7 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
 begin
   GroupBox4.Tag:=1;                                {Anzeige gelaufen}
   screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   inlist0:=TStringList.Create;
   inlist1:=TStringList.Create;
   inlist2:=TStringList.Create;
@@ -9571,6 +9601,7 @@ const
 
 begin
   Screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   inlist:=TStringList.Create;
   outlist:=TStringList.Create;
   outlist1:=TStringList.Create;
@@ -9883,6 +9914,7 @@ begin
   if FileExists(rdn) then
     exit;                                          {Do nothing if file already exists}
   Screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   inlist:=TStringList.Create;
   outlist:=TStringList.Create;
   kmllist:=TStringList.Create;
@@ -10082,6 +10114,7 @@ begin
   if FileExists(rdn) then             {Do nothing if target file already exists}
     exit;
   Screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   inlist:=TStringList.Create;
   dashlist:=TStringList.Create;
   splitlist:=TStringList.Create;
@@ -10308,6 +10341,7 @@ begin
   if FileExists(rdn) then
     exit;
   Screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   inlist:=TStringList.Create;
   dashlist:=TStringList.Create;
   splitlist:=TStringList.Create;
@@ -10376,6 +10410,7 @@ var inlist, splitlist: TStringList;
 
 begin
   Screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;
   splitlist.Delimiter:=sep;
@@ -11255,6 +11290,8 @@ var x: integer;
                       gridDetails.Cells[gridDetails.Tag, x]) then begin
               w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
               case p of                            {Liste der Spalten für Dia}
+                2: if w<=5 then                    {Suppress initial values}
+                     vp:=false;
                 5, 6: begin
                         if x>1 then begin          {1. Zeile ignorieren}
                           if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
@@ -11271,7 +11308,8 @@ var x: integer;
                       end;
                 7, 24, 25: w:=SpeedX(w);
               end;
-              if (p=4) and (not testh(w)) then w:=0; {Korrektur unplausibler Höhe}
+              if (p=4) and (not testh(w)) then
+                w:=0;                              {Korrektur unplausibler Höhe}
            end;                                    {Ende Blödsinn ausblenden}
          end;
       1: begin                                     {RemoteGPS}
@@ -11289,7 +11327,8 @@ var x: integer;
                    end;
               6: w:=SpeedX(w/100);                 {Maßeinheit Speed unklar, cm/s ?}
             end;
-            if (p=3) and (not testh(w)) then w:=0; {Korrektur unplausibler Werte (Höhe)}
+            if (p=3) and (not testh(w)) then
+              w:=0;                                {Korrektur unplausibler Werte (Höhe)}
          end;
       2: begin                                     {Remote: nur Angle}
            w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
@@ -11580,7 +11619,7 @@ var
 
     procedure ZhlYLegacy;
     begin
-      if rgQuelle.ItemIndex=0 then
+      if rgQuelle.ItemIndex=0 then                 {Telemetry}
       try
         if p=8 then begin                          {GPS used}
           vbd;
@@ -11611,7 +11650,7 @@ var
       except
         AppLog.Lines.Add(rsError+' during count of values at Telemetry');
       end;
-      if rgQuelle.ItemIndex=2 then
+      if rgQuelle.ItemIndex=2 then                 {Remote}
       try
         if (p=5) then begin                        {Flight Mode switch}
           Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
@@ -11677,7 +11716,7 @@ var
     Form2.StringGrid1.Cells[5, 0]:=rsDauer;        {Dauer}
   end;
 
-  procedure CountValues;                           {Sechs Spalten}
+  procedure CountValues;                           {Zählerspalte versorgen}
   begin
     a[high(a)].Ende:=ZeitToDT(gridDetails.Cells[0, i], v_type);
     if s<>a[high(a)].Value then begin
@@ -11718,23 +11757,30 @@ begin
         YTHPid: begin      {YTH Plus}
                   case rgQuelle.ItemIndex of
                     0: begin                       {Telemetry}
-                        if p=gridDetails.Tag then six:=true;     {f_mode}
-                        if p=8 then six:=true;     {GPS used}
+                        if p=gridDetails.Tag then
+                          six:=true;               {f_mode}
+                        if p=8 then
+                          six:=true;               {GPS used}
                        end;
                     2: begin                       {Remote}
-                         if p=5 then six:=true;    {CH4 Mode Switch}
+                         if p=5 then
+                           six:=true;              {CH4 Mode Switch}
                        end;
                   end;
                 end;
         else begin                                 {Rest Yuneec}
             case rgQuelle.ItemIndex of
               0: begin                             {Telemetry}
-                   if p=gridDetails.Tag+3 then six:=true;  {Error flag}
-                   if p=gridDetails.Tag then six:=true;    {f_mode}
-                   if p=8 then six:=true;                  {GPS used}
+                   if p=gridDetails.Tag+3 then
+                     six:=true;                    {Error flag}
+                   if p=gridDetails.Tag then
+                     six:=true;                    {f_mode}
+                   if p=8 then
+                     six:=true;                    {GPS used}
                  end;
               2: begin                             {Remote}
-                   if p=5 then six:=true;          {CH4 Mode Switch}
+                   if p=5 then
+                     six:=true;                    {CH4 Mode Switch}
                  end;
             end;
           end;
@@ -11787,7 +11833,7 @@ begin
     end;
   end else
   case v_type of
-    brID: begin                   {Liste der kommentierten Statistiken, Breeze}
+    brID: begin                                    {Liste der kommentierten Statistiken, Breeze}
             case p of                              {muss zu Formatwandlung passen}
               11, 18: DreiSpalten;
               2, 14, 19: SechsSpalten;
@@ -11795,34 +11841,50 @@ begin
           end;
 //  H501ID: if p=1 then SechsSpalten;              {with times}
 
-  H501ID: if p=1 then DreiSpalten;
+  H501ID: if p=1 then
+            DreiSpalten;
 
   YTHPid: begin                                    {YTH Plus}
             case rgQuelle.ItemIndex of
               0: begin                             {Telemetry}
-                   if p=gridDetails.Tag+2 then DreiSpalten; {Vehicle Type mit Erklärungen}
-                   if p=8 then SechsSpalten;                {GPS used mit Zeittabelle}
-                   if p=gridDetails.Tag then SechsSpalten;  {fMode}
+                   if p=gridDetails.Tag+2 then
+                     DreiSpalten;                  {Vehicle Type mit Erklärungen}
+                   if p=8 then
+                     SechsSpalten;                 {GPS used mit Zeittabelle}
+                   if p=gridDetails.Tag then
+                     SechsSpalten;                 {fMode}
                  end;
               2: begin                             {Remote}
-                   if p=5 then SechsSpalten;       {Flight mode switch}
+                   if (p=6) or (p=9) or (p=10) or (p=11) then
+                     DreiSpalten;
+                   if p=5 then
+                     SechsSpalten;                 {Flight mode switch}
                  end;
             end;
           end;
   else begin                                       {Legacy Yuneec}
     case rgQuelle.ItemIndex of
       0: begin                                     {Telemetry}
-           if p=8 then SechsSpalten;               {GPS used}
-           if p=gridDetails.Tag then SechsSpalten; {f_mode}
-           if p=gridDetails.Tag+3 then SechsSpalten; {Errorflags}
-           if p=14 then DreiSpalten;               {Motor Status}
-           if p=15 then DreiSpalten;               {IMU Status}
-           if p=gridDetails.Tag-1 then DreiSpalten;  {PressCompasStatus}
-           if p=gridDetails.Tag+2 then DreiSpalten;  {Vehicle Type mit Erklärungen}
+           if p=8 then
+             SechsSpalten;                         {GPS used}
+           if p=gridDetails.Tag then
+             SechsSpalten;                         {f_mode}
+           if p=gridDetails.Tag+3 then
+             SechsSpalten;                         {Errorflags}
+           if p=14 then
+             DreiSpalten;                          {Motor Status}
+           if p=15 then
+             DreiSpalten;                          {IMU Status}
+           if p=gridDetails.Tag-1 then
+             DreiSpalten;                          {PressCompasStatus}
+           if p=gridDetails.Tag+2 then
+             DreiSpalten;                          {Vehicle Type mit Erklärungen}
          end;
       2: begin                                     {Remote}
-           if (p=6) or (p=9) or (p=10) or (p=11) then DreiSpalten;
-           if p=5 then SechsSpalten;
+           if (p=6) or (p=9) or (p=10) or (p=11) then
+             DreiSpalten;
+           if p=5 then
+             SechsSpalten;
          end;
       end;
     end;
@@ -11866,11 +11928,16 @@ begin
              8, 9, 14..20: ZhlWerte(Index);
              1..7, 10..13: DiaWerte(Index);
              else begin                            {variable Spalten}
-               if index=gridDetails.Tag+2 then ZhlWerte(Index);
-               if index=gridDetails.Tag+3 then ZhlWerte(Index);
-               if index=gridDetails.Tag+4 then DiaWerte(Index);
-               if index=gridDetails.Tag+5 then DiaWerte(Index);  {YTH Plus vSpeed}
-               if index=gridDetails.Tag+6 then DiaWerte(Index);  {YTH Plus hSpeed}
+               if index=gridDetails.Tag+2 then
+                 ZhlWerte(Index);
+               if index=gridDetails.Tag+3 then
+                 ZhlWerte(Index);
+               if index=gridDetails.Tag+4 then
+                 DiaWerte(Index);
+               if index=gridDetails.Tag+5 then
+                 DiaWerte(Index);                  {YTH Plus vSpeed}
+               if index=gridDetails.Tag+6 then
+                 DiaWerte(Index);                  {YTH Plus hSpeed}
              end;
            end;
          end;
@@ -12933,6 +13000,7 @@ var i, j, zhl: integer;
     wrt, wrtv, ddist, tdiff, rslt1, rslt2: double;
 begin
   screen.Cursor:=crHourGlass;
+  Application.ProcessMessages;
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   gridDetails.ColCount:=0;                         {alles löschen}
   gridDetails.RowCount:=14;
@@ -13247,6 +13315,7 @@ begin
     csvarr[i]:='';
   if FileSize(fn)>lenfixP then begin
     Screen.Cursor:=crHourGlass;
+    Application.ProcessMessages;
     FillChar(dsbuf, length(dsbuf), 0);             {Datenbuffer löschen}
     csvlist:=TStringList.Create;                   {Ausgabedatei für csv-Daten}
     infn:=TMemoryStream.Create;
