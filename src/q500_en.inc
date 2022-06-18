@@ -28,7 +28,7 @@ resourcestring                                     {english}
   rsSave='Save';
   rsInvalid='invalid data';
   rsNoBild='Picture not allowed by system';
-  rsNotRename='Rename not possible. Another application uses the directory or missing access rights';
+  rsNotRename='Rename not possible. Another application uses the directory, write protection or missing access rights';
   rsFLDir='Yuneec FlightLog directory';
   rsEmpty='is empty';
   rsHProfil='Elevation histogram from ';

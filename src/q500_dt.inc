@@ -28,7 +28,7 @@ resourcestring                                     {deutsch}
   rsSave='Speichern';
   rsInvalid='ungültige Daten';
   rsNoBild='System lässt Bild nicht zu';
-  rsNotRename='Umbenennen nicht möglich. Ein anderes Programm verwendet das Verzeichnis oder keine Rechte';
+  rsNotRename='Umbenennen nicht möglich. Ein anderes Programm verwendet das Verzeichnis, Schreibschutz oder keine Rechte';
   rsFLDir='FlightLog Verzeichnis';
   rsEmpty='ist leer';
   rsHProfil='Höhenprofil aus ';
