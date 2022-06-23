@@ -497,21 +497,26 @@ bit 3	MAV_STATE_ACTIVE	System is active and might be already airborne. Motors ar
 bit 4	MAV_STATE_CRITICAL	System is in a non-normal flight mode. It can however still navigate.
 bit 5	MAV_STATE_EMERGENCY	System is in a non-normal flight mode. It lost control over parts or over the whole airframe. It is in mayday and going down.
 bit 6	MAV_STATE_POWEROFF	System just initialized its power-down sequence, will shut down now.
-bit 7	MAV_STATE_FLIGHT_TERMINATION	System is terminating itself.}
+bit 7	MAV_STATE_FLIGHT_TERMINATION	System is terminating itself.
+
+H Plus: MAVstate = 0 wird während Compass Calibration ausgegeben, sollte 2 sein}
 
 function MSTtoStr(const m: byte): string;          {Bitleiste MAV_STATE auswerten}
 begin
   result:='MAV_STATE'+suff;
-  if m>0 then begin
-    if (m and 1)>0   then result:=result+'BOOT ';
-    if (m and 2)>0   then result:=result+'CALIBRATING ';
-    if (m and 4)>0   then result:=result+'STANDBY ';
-    if (m and 8)>0   then result:=result+'ACTIVE ';
-    if (m and 16)>0  then result:=result+'CRITICAL ';
-    if (m and 32)>0  then result:=result+emcyID+' ';
-    if (m and 64)>0  then result:=result+'POWEROFF ';
-    if (m and 128)>0 then result:=result+'FLIGHT_TERMINATION';
-  end else result:=result+rsUnknown;
+  case m of
+    0: result:=result+'UNINIT';
+    1: result:=result+'BOOT';
+    2: result:=result+'CALIBRATING';
+    3: result:=result+'STANDBY';
+    4: result:=result+'ACTIVE';
+    5: result:=result+'CRITICAL';
+    6: result:=result+emcyID;
+    7: result:=result+'POWEROFF';
+    8: result:=result+'FLIGHT_TERMINATION';
+ else
+    result:=result+rsUnknown;
+ end;
 end;
 
 {https://mavlink.io/en/messages/common.html      MAV_MODE_FLAG
