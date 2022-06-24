@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 888
+  Left = 907
   Height = 678
-  Top = 116
+  Top = 167
   Width = 1001
   AllowDropFiles = True
   Anchors = [akTop, akRight]
@@ -282,12 +282,12 @@ object Form1: TForm1
       Height = 526
       Top = 1
       Width = 840
-      ActivePage = tabDetails
+      ActivePage = tabScan
       Align = alClient
       Images = TabImages
       ParentShowHint = False
       ShowHint = True
-      TabIndex = 1
+      TabIndex = 4
       TabOrder = 0
       OnChange = pcMainChange
       Options = [nboKeyboardTabSwitch]
@@ -797,7 +797,7 @@ object Form1: TForm1
               ChildSizing.ShrinkVertical = crsScaleChilds
               ChildSizing.Layout = cclLeftToRightThenTopToBottom
               ChildSizing.ControlsPerLine = 1
-              ClientHeight = 151
+              ClientHeight = 166
               ClientWidth = 105
               ItemIndex = 1
               Items.Strings = (

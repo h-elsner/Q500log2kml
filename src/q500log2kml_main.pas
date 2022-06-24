@@ -595,9 +595,10 @@ type
     function FindTP(wlist: TStringList; tp: TDateTime; const vt: byte): integer;
     function CheckE7(const s: string): boolean;    {prüft einen string auf Fehler}
     function ShowSensorPlus(fn: string;            {Sensordatei vom YTH Plus}
-                            z: integer;            {Index der Datei}
-                            gx, tb, ov10,          {True bei emergency}
-                            ov11: boolean): boolean;   {True bei Text-Overview}
+                                   fnz: integer;   {file number, index of file}
+                                   gx, tb,         {gx: Track for kml, tb: fill table gridDetails}
+                                   ov10,           {Overview PX4 Emergency}
+                                   ov11: boolean): boolean; {PX4 Overview Text}
     procedure AusgabeMessages(const fn: string;
                      var outlist: TStringList);    {Datenausgabe MsgID sortiert}
     procedure ShowSensorH(const fn: string; mode: integer); {Sensor File YTH}
@@ -2198,41 +2199,13 @@ begin
   end;
 end;
 
-{****************************************************************************
-  CreateDirList: legt eine Liste aller Unterverzeichnisse an. Dabei wird
-                 rekursiv gesucht, das heißt ein Unterverzeichnis wird wieder
-                 auf weitere Unterverzeichnisse untersucht, bis keins mehr
-                 gefunden wird.                    Result: Fehlercode
- ****************************************************************************}
-
-function CreateDirList(Path: string; var DirList: TStringList): Integer;
-var SR: TSearchRec;
-
-begin
-  path:=IncludeTrailingPathDelimiter(path);
-  Result:=FindFirst(Path+wldcd, faDirectory, SR);
-  try
-    while Result=0 do begin
-      if ((SR.Attr and faDirectory)=faDirectory) and       {nur Verzeichnisse}
-         (SR.Name<>'.') and
-         (SR.Name<>'..') then begin  {die nicht}
-        DirList.Add(Path+SR.Name);
-        CreateDirList(Path+SR.Name,DirList);  {rekursiver Aufruf, um auch die
-                                              Unterverzeichnisse zu durchsuchen}
-      end;
-      Result:=FindNext(SR);                        {Fehlercode übergeben}
-    end;
-  finally
-    FindClose(SR);
-  end;
-end;
-
 function SuchFile(path: string; const Mask: string; list: TStringList): integer;
 var SR: TSearchRec;
     s: string;
 
 begin
-  s:=IncludeTrailingPathDelimiter(path);
+  FindAllFiles(list, path, mask, false);
+(*  s:=IncludeTrailingPathDelimiter(path);
   result:=FindFirst(s+Mask, faAnyFile, SR);
   try
     while result=0 do begin                        {solange noch was gefunden wurde}
@@ -2241,7 +2214,7 @@ begin
     end;
   finally
     FindClose(sr);
-  end;
+  end;     *)
 end;
 
 function DoDownload: string;                       {Download new version}
@@ -2726,10 +2699,10 @@ https://github.com/mavlink/c_library_v2/tree/master/common
  }
 
 function TForm1.ShowSensorPlus(fn: string;         {Sensordatei vom YTH Plus}
-                               z: integer;
-                               gx, tb,
-                               ov10,               {Overview Emergency}
-                               ov11: boolean): boolean; {Overview Text}
+                               fnz: integer;       {file number}
+                               gx, tb,             {gx: Track for kml, tb: fill table gridDetails}
+                               ov10,               {Overview PX4 Emergency}
+                               ov11: boolean): boolean; {PX4 Overview Text}
 const
     homeID='home: ';                               {ID Homeposition bei Textmessages}
 
@@ -2806,7 +2779,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     result:=wx;                                    {Typecast mittels absolute}
   end;
 
-  procedure TextOverview;                          {Text messages}
+  procedure TextOverview;                          {PX4 Text messages overview}
   var i: integer;
       st, tm: string;
 
@@ -2819,7 +2792,7 @@ var dsbuf: array[0..YTHPcols] of byte;
         tm:=tm+Char(dsbuf[i-1]);                   {Textmessage zusammenstellen}
     end;
     AppLog.Lines.Add(st+tm);                       {Textmessage speichern}
-    result:=true;
+    result:=true;                                  {Something found in PX4 overview (here all text messages)}
     dzt:=true;                                     {Systemzeit nochmal anzeigen}
   end;
 
@@ -2833,32 +2806,38 @@ var dsbuf: array[0..YTHPcols] of byte;
     st:=Format('%6d', [zhl])+tab2+
         FormatDateTime(zzf, bg)+tab2+
         MAVseverity(dsbuf[lenfix])+suff+'''';
-    gridDetails.Cells[lenfix+2, zhl]:=IntToStr(dsbuf[lenfix]); {Severity dezimal}
     tm:='';
+    if tb then
+       gridDetails.Cells[lenfix+2, zhl]:=IntToStr(dsbuf[lenfix]); {Severity dezimal}
     for i:=lenfix+2 to len+lenfixP-12 do begin     {Fixpart Teil 2 + Payload}
       if dsbuf[i-1]>9 then begin
-        gridDetails.Cells[i+1, zhl]:=Char(dsbuf[i-1]); {Rest Payload als Text}
+        if tb then
+          gridDetails.Cells[i+1, zhl]:=Char(dsbuf[i-1]); {Rest Payload als Text}
         tm:=tm+Char(dsbuf[i-1]);                   {Textmessage zusammenstellen}
       end else
-        gridDetails.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
+        if tb then
+          gridDetails.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
                                                    {nicht druckbare Zeichen als Hex};
     end;
     if gx then begin
       maplist.Add(itagin+tm+itagout);
       outlist.Add(itagin+tm+itagout);
     end;
-
     csvarr[posChan]:='"'+tm+'"';
     st:=st+tm;
     for i:=len+lenfixP-11 to len+lenfixP-2 do      {8 Byte Sig + 2 CRC}
-      gridDetails.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
+      if tb then
+        gridDetails.Cells[i+1, zhl]:=IntToHex(dsbuf[i-1], 2);
 //    wx:=GetIntFromBuf(len+lenfixP-12-lenfix, 8); {Aufsteigende Nummer}
-    if pos(emcyID, st)>0 then begin                {EMERGECY gefunden}
-      topp[z, 6]:=topp[z, 6] or 256;
-      result:=true;
+
+    if pos(emcyID, st)>0 then begin                {EMERGECY found in text message}
+      topp[fnz, 6]:=topp[fnz, 6] or 256;
+      result:=true;                                {Something found in PX4 overview}
+      if ov10 then
+        AppLog.Lines.Add(st+'''');                 {Textmessage in AppLog speichern}
     end;
 
-    if not ov10 then begin
+    if not ov10 then begin                         {no output in case of PX4 emergency search}
       AppLog.Lines.Add(st+'''');                   {Textmessage speichern}
       if pos(homeID, tm)>1 then begin              {Homepoint als Link}
         distg:=0;                                  {Entfernungswerte zurücksetzen}
@@ -3111,36 +3090,46 @@ var dsbuf: array[0..YTHPcols] of byte;
   begin
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
-      if dsbuf[lenfix+7]<>hbt then begin           {ID 1. Heartbeat}
-        if (hbt=0) and                             {nur beim 1. Mal}
-           (dsbuf[lenfix+4]=2) and                 {Quadkopter}
-           (dsbuf[lenfix+5]=12) then begin         {PX4}
-          ismq:=true;
-          if not cbReduced.Checked then
-            AppLog.Lines.Add(''''+Format('%17s', [''])+rsVType+suff+
-                               VtypeToStr(MQid));  {4 Rotor = Mantis Q}
+      if ov10 then begin                           {PX4 Emergency Overview}
+        if (dsbuf[lenfix+7]=5) or (dsbuf[lenfix+7]=6) then begin   {Critical or emcy}
+          AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
+                           FormatDateTime(zzf, bg)+tab2+
+                           MSTtoStr(dsbuf[lenfix+7]));
+          topp[fnz, 6]:=topp[fnz, 6] or 256;
+          result:=true;                            {Something found in PX4 overview}
         end;
-        if not cbReduced.Checked then
-          AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                             FormatDateTime(zzf, bg)+tab2+
-                             MSTtoStr(dsbuf[lenfix+7]));
-        hbt:=dsbuf[lenfix+7];                      {letzten Wert merken}
-        cm:=GetIntFromBuf(0, 4);                   {custom mode}
+      end else begin
+        if dsbuf[lenfix+7]<>hbt then begin         {ID 1. Heartbeat}
+          if (hbt=0) and                           {nur beim 1. Mal}
+             (dsbuf[lenfix+4]=2) and               {Quadkopter}
+             (dsbuf[lenfix+5]=12) then begin       {PX4}
+            ismq:=true;
+            if not cbReduced.Checked then
+              AppLog.Lines.Add(''''+Format('%17s', [''])+rsVType+suff+
+                                 VtypeToStr(MQid)); {4 Rotor = Mantis Q}
+          end;
+          if not cbReduced.Checked then
+            AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
+                               FormatDateTime(zzf, bg)+tab2+
+                               MSTtoStr(dsbuf[lenfix+7]));
+          hbt:=dsbuf[lenfix+7];                    {letzten Wert merken}
+          cm:=GetIntFromBuf(0, 4);                 {custom mode}
 
-{https://github.com/Dronecode/DronecodeSDK/blob/23b76bcd208ce12159e9bd089451ff7c04e284ab/core/px4_custom_mode.h#L50-L59}
+  {https://github.com/Dronecode/DronecodeSDK/blob/23b76bcd208ce12159e9bd089451ff7c04e284ab/core/px4_custom_mode.h#L50-L59}
 
-        csvarr[17]:=IntToHex(cm, 2);
-        csvarr[18]:=IntToHex(hbt, 2);              {MAV state}
-        csvarr[19]:=IntToHex(dsbuf[lenfix+6], 2);  {MAV mode flag}
+          csvarr[17]:=IntToHex(cm, 2);
+          csvarr[18]:=IntToHex(hbt, 2);            {MAV state}
+          csvarr[19]:=IntToHex(dsbuf[lenfix+6], 2); {MAV mode flag}
+        end;
+        if dsbuf[lenfix+6]<>mmf then begin         {nur ausgeben, wenn sich etwas ändert}
+          if not cbReduced.Checked then
+            AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
+                               FormatDateTime(zzf, bg)+tab2+
+                               MMFtoStr(dsbuf[lenfix+6]));
+          mmf:=dsbuf[lenfix+6];                    {letzten Wert merken}
+        end;
+        SenCSVAusgabe;                             {CSV Datensatz schreiben}
       end;
-      if dsbuf[lenfix+6]<>mmf then begin           {nur ausgeben, wenn sich etwas ändert}
-        if not cbReduced.Checked then
-          AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                             FormatDateTime(zzf, bg)+tab2+
-                             MMFtoStr(dsbuf[lenfix+6]));
-        mmf:=dsbuf[lenfix+6];                      {letzten Wert merken}
-      end;
-      SenCSVAusgabe;                               {CSV Datensatz schreiben}
     end;
   end;
 
@@ -3557,13 +3546,18 @@ var dsbuf: array[0..YTHPcols] of byte;
       gridDetails.Cells[lenfix+1, zhl]:=IntToStr(len); {Payload Länge eintragen}
       gridDetails.Cells[lenfix, zhl]:=MsgIDtoStr(e);   {Message Name}
     end else begin
-      if ov10 then begin
-        if e=253 then TextAusgabe;
-      end else
-        if e=24 then GPSAusgabe;
-      if ov11 then begin                           {Overview text messages}
+      if ov10 then begin                           {Search PX4 Emergency}
         case e of
-          30, 65:  bg:=GetIntFromBuf(0, 4)/(Secpd*1000); {Zeitstempel}
+          0: Heartbeat;                            {Set result if Mavstate = critical or emergency}
+          30, 65: bg:=GetIntFromBuf(0, 4)/(Secpd*1000); {Zeitstempel speichern}
+          253: TextAusgabe;                        {Looking for severity EMERGENCY}
+        end;
+      end;
+      if gx and (e=24) then
+        GPSAusgabe;                                {GPS raw_int for track w/o table}
+      if ov11 then begin                           {Overview PX4 text messages}
+        case e of
+          30, 65: bg:=GetIntFromBuf(0, 4)/(Secpd*1000); {Zeitstempel}
           87:  PositionTargetGlobal;               {POSITION_TARGET_GLOBAL_INT 87 ($57)}
           253: TextOverview;
         end;
@@ -3572,7 +3566,7 @@ var dsbuf: array[0..YTHPcols] of byte;
   end;
 
 begin
-  mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
+  mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blockieren}
   zhl:=0;
   msl:=0;                                          {MAV landed_state undef}
   hbt:=0;                                          {MAV state uninit/unknown}
@@ -3595,7 +3589,7 @@ begin
   itemp:='';
   homestr:='';                                     {URL Homepoint, wenn vorhanden}
   ismq:=false;
-  topp[z, 5]:=0;                                   {Pointer für Suche Null setzen}
+  topp[fnz, 5]:=0;                                 {Pointer für Suche Null setzen}
   result:=false;
   for i:=0 to csvanz do
     csvarr[i]:='';
@@ -5012,8 +5006,10 @@ var vlist, flist, inlist, splitlist: TStringList;
       cbxSearch.Text:=vstr;                        {Suche vordefinieren}
       for k:=1 to inlist.Count-1 do begin          {Nach Fehlern suchen}
         splitlist.DelimitedText:=inlist[k];
-        if splitlist.Count<=gridDetails.Tag then exit; {invalid data sets}
-        if trim(splitlist[gridDetails.Tag])=vstr then inc(num);
+        if splitlist.Count<=gridDetails.Tag then
+          exit;                                    {invalid data sets}
+        if trim(splitlist[gridDetails.Tag])=vstr then
+          inc(num);
         if num>2 then begin
           result:=true;
           break;
@@ -5235,7 +5231,11 @@ var vlist, flist, inlist, splitlist: TStringList;
   end;
 
 begin
+  if trim(cbxScanDir.Text)='' then
+    exit;
   btnScanErr.Tag:=0;                               {Info Mode used}
+    setlength(topp, 1);
+  btnShowhex.Tag:=0;
   gridScanResult.RowCount:=1;                      {Tabelle löschen}
   gridScanResult.Cells[1, 0]:=capProb+bind+rsFLDir;   {Überschrift}
   ProgressBarScan.Position:=0;
@@ -5243,17 +5243,18 @@ begin
   zhl:=0;                                          {Trefferzähler}
   gridDetails.Tag:=19;                     {default Position bei neuer FW ST10+}
   cbxSearch.Text:=trim(StringReplace(cbxSearch.Text, sep, '.', []));
+  cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
   flist:=TStringList.Create;
   vlist:=TStringList.Create;
   inlist:=TStringList.Create;
   splitlist:=TStringList.Create;                   {CSV zerlegen}
   splitlist.Delimiter:=sep;
   splitlist.StrictDelimiter:=True;
-  vlist.Add(IncludeTrailingPathDelimiter(cbxScanDir.Text));
   Screen.Cursor:=crHourGlass;
   Application.ProcessMessages;
   try
-    CreateDirList(cbxScanDir.Text, vlist);
+    FindAllDirectories(vlist, IncludeTrailingPathDelimiter(cbxScanDir.Text));
+    vlist.Add(IncludeTrailingPathDelimiter(cbxScanDir.Text));
     case rgErrType.ItemIndex of
       5, 6: begin
               rgQuelle.ItemIndex:=2;               {File type: Remote}
@@ -5278,10 +5279,10 @@ begin
               end;
             end;
       10, 11: for i:=0 to vlist.Count-1 do begin   {PX4 Sensor Dateien}
-            SuchFile(vlist[i], wldcd+hext, flist);         {H520}
-            Suchfile(vlist[i], nfile+wldcd+wext, flist);   {H Plus}
-            Suchfile(vlist[i], mfile+wldcd+bext, flist);   {Mantis Q}
-          end;
+                SuchFile(vlist[i], wldcd+hext, flist);         {H520}
+                Suchfile(vlist[i], nfile+wldcd+wext, flist);   {H Plus}
+                Suchfile(vlist[i], mfile+wldcd+bext, flist);   {Mantis Q}
+              end;
       else begin                                   {default action}
         for i:=0 to vlist.Count-1 do SuchFile(vlist[i], kfile+wldcd+fext, flist);
       end;
@@ -5294,6 +5295,7 @@ begin
     AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDateien);
     gridScanResult.BeginUpdate;
     if flist.Count>0 then begin                    {Dateien vorhanden}
+      flist.Sort;
       ProgressBarScan.Max:=flist.Count;
       for i:=0 to flist.Count-1 do begin
         case rgErrType.ItemIndex of
@@ -5313,6 +5315,7 @@ begin
                 Ausgabe;
         end;
         ProgressBarScan.Position:=i;
+        Application.ProcessMessages;
       end;
     end;
     gridScanResult.Cells[0, 0]:=rsNum+' ('+IntToStr(zhl)+')';  {Überschrift}
@@ -5519,8 +5522,8 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     gdist:=0;                                      {gesamt Strecke, nur bei GPS}
     datpos:=0;
     try
+      FindAllDirectories(vlist, IncludeTrailingPathDelimiter(cbxScanDir.Text));
       vlist.Add(IncludeTrailingPathDelimiter(cbxScanDir.Text));
-      CreateDirList(cbxScanDir.Text, vlist);
       for x:=0 to vlist.Count-1 do
         SuchFile(vlist[x], kfile+wldcd+fext, flist);
       if flist.Count>1 then begin                  {genug Dateien?}
@@ -5731,8 +5734,8 @@ begin            {ganzes Verzeichnis durchsuchen nach Telemetry_*.csv}
     gdist:=0;                                      {gesamt Strecke, nur bei GPS}
     datpos:=0;
     try
+      FindAllDirectories(vlist, IncludeTrailingPathDelimiter(cbxScanDir.Text));
       vlist.Add(IncludeTrailingPathDelimiter(cbxScanDir.Text));
-      CreateDirList(cbxScanDir.Text, vlist);
       for x:=0 to vlist.Count-1 do
         SuchFile(vlist[x], wldcd+bext, flist);
       if flist.Count>1 then begin                  {genug Dateien?}
@@ -5939,8 +5942,8 @@ begin            {ganzes Verzeichnis durchsuchen nach H501_*.csv}
     gdist:=0;                                      {gesamt Strecke, nur bei GPS}
     datpos:=0;
     try
+      FindAllDirectories(vlist, IncludeTrailingPathDelimiter(cbxScanDir.Text));
       vlist.Add(IncludeTrailingPathDelimiter(cbxScanDir.Text));
-      CreateDirList(cbxScanDir.Text, vlist);
       for x:=0 to vlist.Count-1 do
         SuchFile(vlist[x], h5file+wldcd+fext, flist);
       StatusBar1.Panels[1].Text:=IntToStr(flist.Count); {Anzahl H501 files}
@@ -10417,6 +10420,7 @@ begin
   splitlist.StrictDelimiter:=True;
   SetLength(ahwp, 0);                              {Array rücksetzen}
   np:=0;
+  diralt:=0;
   try
     inlist.LoadFromFile(fn);                       {Telemetriefile laden}
     if inlist.Count>50 then begin
@@ -12208,7 +12212,7 @@ begin
       if (rgErrType.ItemIndex=10) or
          (rgErrType.ItemIndex=11) then begin
         fn:=gridScanResult.Cells[1, gridScanResult.Tag];
-        ShowSensorPlus(fn, 0, false, true, false, false);
+        ShowSensorPlus(fn, 0, cbSensorKML.Checked, true, false, false);
         pcMain.ActivePage:=tabAppLog;              {Springe zum AppLogHighlighter}
       end else
       if (rgErrType.ItemIndex<8) or                {Sensor Dateien}
