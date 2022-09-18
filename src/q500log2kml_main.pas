@@ -175,6 +175,7 @@ type
     ColorButton2: TColorButton;
     ColorButton3: TColorButton;
     ColorButton4: TColorButton;
+    cbxLogDir: TComboBox;
     gbBatt: TGroupBox;
     gbDiverse: TGroupBox;
     gbStkProz: TGroupBox;
@@ -191,7 +192,6 @@ type
     Image4: TImage;
     IpHttpDataProvider1: TIpHttpDataProvider;
     cbxText: TComboBox;                            {Drone ID - Hint}
-    cbxLogDir: TComboBox;                          {FlightLog Directory}
     cbxSearch: TComboBox;                          {Find input}
     DateTimeIntervalChartSource1: TDateTimeIntervalChartSource;
     DateTimeIntervalChartSource2: TDateTimeIntervalChartSource;
@@ -750,6 +750,13 @@ begin                                              {DropDownListe füllen}
     ml.Items.Delete(MaxAnzahl);
 end;
 
+procedure SizeSpeedBtn(var btn: TSpeedbutton; cbx: TComboBox);  {Anpassen Speedbuttons an Darstellung in verschiedenen Betrienssystemen}
+begin
+  btn.Height:=cbx.Height;
+  btn.Width:=btn.Height;                           {Default: Button quadratisch}
+  btn.Top:=cbx.Top;
+end;
+
 function TForm1.GetFlightLogDir(fn: string): string; {FlightLog Verzeichnis finden}
 var i, k: integer;
     splitlist: TStringList;
@@ -838,12 +845,8 @@ begin
   mnSaveAsHist.Visible:=false;                     {PopUp Menu Höhenprofil; geht das nun?}
 {$ENDIF}
 
-{$IFDEF LINUX}                                     {Ubuntu Linux}
-  sbtnLogDir.Height:=30;                           {Needs larger Speed buttons}
-  sbtnLogDir.Width:=sbtnLogDir.Height;
-  sbtnScanDir.Height:=sbtnLogDir.Height;
-  sbtnScanDir.Width:=sbtnLogDir.Height;
-{$ENDIF}
+  SizeSpeedBtn(sbtnLogDir, cbxLogDir);             {Anpassen Speedbuttons an Darstellung in verschiedenen Betrienssystemen}
+  SizeSpeedBtn(sbtnScanDir, cbxScanDir);
 
   btnCut.Caption:=capBitBtn14;                     {Ausschneiden / Cut}
   btnCut.Hint:=hntBitBtn14;
@@ -853,7 +856,8 @@ begin
   lbFlights.Hint:=hntListBox1;
   ColorButton1.Hint:=hntColorBtn1;
   StatusBar1.Panels[5].Text:=DefaultStatus;
-  cbxLogDir.Hint:=DefaultStatus;
+  cbxLogDir.TextHint:=DefaultStatus;
+  cbxLogDir.Text:=DefaultStatus;
   sbtnLogDir.Hint:=DefaultStatus;
   sbtnScanDir.Hint:=capSelProt;                    {Protokollverzeichnis}
   mnGoogleMap.Caption:=rsToGMaps;
@@ -2200,9 +2204,6 @@ begin
 end;
 
 function SuchFile(path: string; const Mask: string; list: TStringList): integer;
-var SR: TSearchRec;
-    s: string;
-
 begin
   FindAllFiles(list, path, mask, false);
 (*  s:=IncludeTrailingPathDelimiter(path);
@@ -9152,7 +9153,9 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
     w: double;
 
   procedure MakeSAH(lab: TLabeledEdit; hist: TLineSeries; cht: TChart);
-  var x, p: integer;
+  var
+    x, p: integer;
+
   begin
     case lab.Tag of
       0: begin                                     {Telemetry}
@@ -9170,7 +9173,10 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
                splitlist.DelimitedText:=inlist0[x];
                if CheckVT(splitlist[gridDetails.Tag+2],
                           splitlist[gridDetails.Tag]) then begin
-                 w:=TransformW(0, p, StrToFloatN(splitlist[p]));
+                 if p=8 then
+                   w:=BoolToDouble(splitlist[8])
+                 else
+                   w:=TransformW(0, p, StrToFloatN(splitlist[p]));
                  if (p=1) and (w=0) then begin         {fsk_rssi ist Null}
                    bg:=ZeitToDT(splitlist[0], v_type);
                    Chart3LineSeries2.AddXY(bg, -1);

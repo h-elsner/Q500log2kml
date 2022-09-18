@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 907
+  Left = 1771
   Height = 678
-  Top = 167
+  Top = 178
   Width = 1001
   AllowDropFiles = True
   Anchors = [akTop, akRight]
@@ -228,25 +228,13 @@ object Form1: TForm1
     ImageIndex = 21
     OnClick = sbtnLogDirClick
   end
-  object cbxLogDir: TComboBox
-    Left = 152
-    Height = 27
-    Top = 6
-    Width = 428
-    Anchors = [akTop, akLeft, akRight]
-    ItemHeight = 0
-    OnChange = cbxLogDirChange
-    OnDblClick = cbxLogDirDblClick
-    OnMouseUp = cbxLogDirMouseUp
-    TabOrder = 9
-  end
   object StaticText1: TStaticText
     Left = 16
     Height = 17
     Top = 38
     Width = 344
     Caption = 'StaticText1'
-    TabOrder = 10
+    TabOrder = 9
   end
   object GroupBox11: TGroupBox
     Left = 11
@@ -256,7 +244,7 @@ object Form1: TForm1
     Caption = 'Find'
     ClientHeight = 29
     ClientWidth = 139
-    TabOrder = 11
+    TabOrder = 10
     object cbxSearch: TComboBox
       Left = 0
       Height = 27
@@ -276,7 +264,7 @@ object Form1: TForm1
     Anchors = [akTop, akLeft, akRight, akBottom]
     ClientHeight = 528
     ClientWidth = 842
-    TabOrder = 12
+    TabOrder = 11
     object pcMain: TPageControl
       Left = 1
       Height = 526
@@ -2398,6 +2386,15 @@ object Form1: TForm1
         end
       end
     end
+  end
+  object cbxLogDir: TComboBox
+    Left = 152
+    Height = 27
+    Top = 6
+    Width = 428
+    Anchors = [akTop, akLeft, akRight]
+    ItemHeight = 0
+    TabOrder = 12
   end
   object XMLPropStorage1: TXMLPropStorage
     StoredValues = <>
