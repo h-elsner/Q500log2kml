@@ -114,6 +114,8 @@ type
 
   TForm1 = class(TForm)
     AppLog: TSynEdit;
+    btnDeleteLn: TBitBtn;
+    btnCombineLogs: TBitBtn;
     btnClose: TBitBtn;
     btnCut: TBitBtn;
     btnDefaultProfile: TBitBtn;
@@ -148,7 +150,7 @@ type
     Chart1BarSeries3: TBarSeries;
     Chart1BarSeries4: TBarSeries;
     Chart1BarSeries5: TBarSeries;
-    Chart1BarSeries7: TBarSeries;
+    Chart1BarSeries6: TBarSeries;
     Chart1ConstantLine1: TConstantLine;
     Chart1ConstantLine2: TConstantLine;
     Chart1LineSeries1: TLineSeries;
@@ -176,6 +178,7 @@ type
     ColorButton3: TColorButton;
     ColorButton4: TColorButton;
     cbxLogDir: TComboBox;
+    edDeleteLn: TEdit;
     gbBatt: TGroupBox;
     gbDiverse: TGroupBox;
     gbStkProz: TGroupBox;
@@ -200,11 +203,11 @@ type
     Label1: TLabel;
     Label10: TLabel;
     Label11: TLabel;
-    Label13: TLabel;
-    Label14: TLabel;
-    Label15: TLabel;
+    lblBegin: TLabel;
+    lblEnde: TLabel;
+    lblDuration: TLabel;
     Label17: TLabel;
-    Label5: TLabel;
+    lblNumPoints: TLabel;
     Label9: TLabel;
     LabeledEdit1: TLabeledEdit;
     LabeledEdit2: TLabeledEdit;
@@ -241,7 +244,7 @@ type
     rgVehicleType: TRadioGroup;
     rgVoltRule: TRadioGroup;
     sbtnScanDir: TSpeedButton;
-    speAnalyze: TSpinEdit;
+    speNumPoints: TSpinEdit;
     speBaseLoad: TSpinEdit;
     speBlockNum: TSpinEdit;
     SpeedButton1: TSpeedButton;
@@ -343,7 +346,9 @@ type
     TreeView1: TTreeView;
     XMLPropStorage1: TXMLPropStorage;
 
+    procedure btnCombineLogsClick(Sender: TObject);
     procedure btnDefaultProfileClick(Sender: TObject);
+    procedure btnDeleteLnClick(Sender: TObject);
     procedure btnScreenshotClick(Sender: TObject);
     procedure btnCutClick(Sender: TObject);        {Cut flight log}
     procedure btnSplitClick(Sender: TObject);
@@ -359,6 +364,8 @@ type
     procedure cbHighLightChange(Sender: TObject);
     procedure cbMarkerChange(Sender: TObject);
     procedure cbThunderChange(Sender: TObject);
+    procedure cbxLogDirChange(Sender: TObject);
+    procedure cbxLogDirSelect(Sender: TObject);
     procedure cbxTextMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Chart1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -378,7 +385,6 @@ type
     procedure ColorButton1Click(Sender: TObject);
     procedure cbxProfilesChange(Sender: TObject);
     procedure cbxProfilesDblClick(Sender: TObject);
-    procedure cbxLogDirChange(Sender: TObject);
     procedure cbxLogDirDblClick(Sender: TObject);
     procedure cbxLogDirMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -387,8 +393,8 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure cbxSearchMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure gbDiverseKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState
-      );
+    procedure FormActivate(Sender: TObject);
+    procedure gbDiverseKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure lblGitHubClick(Sender: TObject);
     procedure lblGitHubMouseEnter(Sender: TObject);
     procedure lblGitHubMouseLeave(Sender: TObject);
@@ -396,6 +402,7 @@ type
     procedure mnFlDelClick(Sender: TObject);
     procedure mnReloadClick(Sender: TObject);
     procedure mnSplitClick(Sender: TObject);
+    procedure pcSettings3Change(Sender: TObject);
     procedure speDataPointEditingDone(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -528,6 +535,7 @@ type
     procedure H501AnzeigeCSV(const mode: integer); {H501 Dateien als Tabelle anzeigen}
     procedure MQAnzeigeCSV(const mode: integer);   {Mantis Q CSV Format anzeigen}
     procedure HDiagramm(fn: string);
+    procedure HDiaColor;                           {Colors for Bar series depending on vehicle type}
     procedure BrHDiagramm(fn: string);
     procedure H501HDiagramm(fn: string);           {Höhenprofil H501 anzeigen}
     procedure Anzeige;
@@ -624,6 +632,8 @@ type
 
 {Special analysis with (hidden) extra button "Special" on Settings > Common settings}
     procedure TLOGanalysis(fn: string);            {Special analysis}
+    procedure EnableMultiselect;                   {Multiselect flight list to combine files}
+    procedure CombineLogs;                         {Combine some legacy Yuneec Flightlog to one log files set}
 //    procedure AuswertungCSVdatei;                {Spezielle Auswertung für CSV-Datei}
   end;
 
@@ -853,7 +863,9 @@ begin
   btnSplit.Caption:=capSplit1;                     {Menu: Split PX4 Sensor file at time resets}
   btnSplit.Hint:=hntSplit;
   btnFlugBuch.Caption:=capNachweis;                {Flugprotokoll}
-  lbFlights.Hint:=hntListBox1;
+  btnCombineLogs.Caption:=capCombineLogs;
+  btnCombineLogs.Hint:=hntCombineLogs;
+   lbFlights.Hint:=hntListBox1;
   ColorButton1.Hint:=hntColorBtn1;
   StatusBar1.Panels[5].Text:=DefaultStatus;
   cbxLogDir.TextHint:=DefaultStatus;
@@ -947,18 +959,18 @@ begin
   Label2.Caption:=capLabel2;
   Label3.Caption:=capLabel3;
   lblSaturation.Hint:=hntTrackBar1;
-  Label5.Caption:=capLabel5;
+  lblNumPoints.Caption:=capLabel5;
   Label6.Caption:=capLabel6;
   lblManual.Caption:=capLabel7;
   lblUpdate.Caption:=capLabel8;
   lblDistWP.Caption:=capLabel12;
   lblDistWP.Hint:=hntTrackBar2;
-  Label13.Caption:=capLabel13;
-  Label13.Hint:=capLabel13;
-  Label14.Caption:=capLabel14;
-  Label14.Hint:=capLabel14;
-  Label15.Caption:=rsDauer;
-  Label15.Hint:=rsDauer;
+  lblBegin.Caption:=capLabel13;
+  lblBegin.Hint:=capLabel13;
+  lblEnde.Caption:=capLabel14;
+  lblEnde.Hint:=capLabel14;
+  lblDuration.Caption:=rsDauer;
+  lblDuration.Hint:=rsDauer;
   Label10.Caption:=capItems;
   Label10.Hint:=hntItems;
   speItems.Hint:=hntItems;
@@ -1084,7 +1096,10 @@ begin
   Chart1BarSeries3.SeriesColor:=clRTH;             {für RTH}
   Chart1BarSeries4.SeriesColor:=clEmergency;       {Emergency}
   Chart1BarSeries5.SeriesColor:=clNoGPS;           {Ohne GPS Orange}
-  Chart1BarSeries7.SeriesColor:=clSport;           {Sports Mode, Stability}
+  Chart1BarSeries6.SeriesColor:=clSport;           {Sports Mode, Stability}
+  btnDeleteLn.Caption:=capDeleteLn;
+  btnDeleteLn.Hint:=hntDeleteLn;
+  edDeleteLn.Hint:=hntDeleteEd;
 
 {GeoTagging}
 
@@ -1108,6 +1123,17 @@ begin
   MAVmsgDefault;                                   {default: all MAV messages selected}
   MAVmsg.Hint:=hntMAVmsg;
   FreigabeCut(false);                              {ohne Statusausgabe}
+end;
+
+procedure TForm1.FormActivate(Sender: TObject);    {Action after initializing}
+begin
+  EnableMultiselect;
+end;
+
+procedure TForm1.EnableMultiselect;                {Multiselect flight list to combine files}
+begin
+  lbFlights.MultiSelect:=(pcMain.ActivePage=tabSettings) and
+                         (pcSettings3.ActivePage=tabData);
 end;
 
 function OpenManual: boolean;                      {Handbuch aufrufen}
@@ -1233,8 +1259,8 @@ begin
     brID:   p:=UTF8length(fn)-4;                   {Breeze}
        4:   p:=UTF8length(fn)-7;                   {Chroma}
     H501ID: p:=UTF8length(fn)-6;                   {flaretom file name format}
-    else
-      p:=UTF8length(fn)-8;                         {legacy Yuneec}
+  else
+    p:=UTF8length(fn)-8;                           {legacy Yuneec}
   end;
 
   if fn.length>p then begin
@@ -1786,35 +1812,68 @@ var e: integer;
 
   procedure TabHintRemoteGPS;                      {RemoteGPS aus ST10/16}
   begin
-    case sp of
-      0: Zeitstempel;
-      1, 2: s:=HeaderHnt+ChrKoor(gridDetails.Cells[sp, zl]);   {lat, lon}
-      3: begin                                     {Altitude}
-        s:=HeaderHnt;
-        if rgSpeedUnit.ItemIndex=2 then begin
+    if v_type=YTHPid then begin
+      case sp of
+        0: Zeitstempel;
+        1, 2: s:=HeaderHnt+ChrKoor(gridDetails.Cells[sp, zl]);   {lat, lon}
+        3: begin                                     {Altitude}
+          s:=HeaderHnt;
+          if rgSpeedUnit.ItemIndex=2 then begin
+               try
+                 t:=StrToFloatN(gridDetails.Cells[sp, zl]);
+               except
+                 t:=0;
+               end;
+               s:=s+FormatFloat(dzfl, t/fft)+'ft'
+             end else
+               s:=DefaultHnt+'m';
+           end;
+        5: s:=DefaultHnt+'dm';
+        6: begin                                     {Speed in cm/s}
              try
-               t:=StrToFloatN(gridDetails.Cells[sp, zl]);
+               t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
              except
                t:=0;
              end;
-             s:=s+FormatFloat(dzfl, t/fft)+'ft'
-           end else
-             s:=DefaultHnt+'m';
-         end;
-      4: s:=DefaultHnt+'cm';
-      5: begin                                     {Speed in cm/s}
-           try
-             t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
-           except
-             t:=0;
+             s:=HeaderHnt+FormatFloat(ctfl, t)+'m/s = ';
+             if rgSpeedUnit.ItemIndex=2 then
+               s:=s+FormatFloat(dzfl, t*fmph)+'mph'
+             else
+               s:=s+FormatFloat(dzfl, t*fkmh)+'km/h';
            end;
-           s:=HeaderHnt+FormatFloat(ctfl, t)+'m/s = ';
-           if rgSpeedUnit.ItemIndex=2 then
-             s:=s+FormatFloat(dzfl, t*fmph)+'mph'
-           else
-             s:=s+FormatFloat(dzfl, t*fkmh)+'km/h';
-         end;
-      6: s:=DefaultHnt+'°';
+        7: s:=DefaultHnt+'°';
+      end;
+    end else begin
+      case sp of
+        0: Zeitstempel;
+        1, 2: s:=HeaderHnt+ChrKoor(gridDetails.Cells[sp, zl]);   {lat, lon}
+        3: begin                                     {Altitude}
+          s:=HeaderHnt;
+          if rgSpeedUnit.ItemIndex=2 then begin
+               try
+                 t:=StrToFloatN(gridDetails.Cells[sp, zl]);
+               except
+                 t:=0;
+               end;
+               s:=s+FormatFloat(dzfl, t/fft)+'ft'
+             end else
+               s:=DefaultHnt+'m';
+           end;
+        4: s:=DefaultHnt+'cm';
+        5: begin                                     {Speed in cm/s}
+             try
+               t:=StrToFloatN(gridDetails.Cells[sp, zl])/100;
+             except
+               t:=0;
+             end;
+             s:=HeaderHnt+FormatFloat(ctfl, t)+'m/s = ';
+             if rgSpeedUnit.ItemIndex=2 then
+               s:=s+FormatFloat(dzfl, t*fmph)+'mph'
+             else
+               s:=s+FormatFloat(dzfl, t*fkmh)+'km/h';
+           end;
+        6: s:=DefaultHnt+'°';
+      end;
     end;
   end;
 
@@ -2053,7 +2112,7 @@ begin
       inlist.LoadFromFile(OpenDialog1.FileName);   {Load telemetry file}
       StatusBar1.Panels[0].Text:=IntToStr(inlist.Count-1);
       if inlist.Count>minlines then begin
-        inlist.SaveToFile(ChangeFileExt(OpenDialog1.FileName, '.bak'));
+        inlist.SaveToFile(ChangeFileExt(OpenDialog1.FileName, bakext));
 
         outlist.Clear;
         outlist.Add(inlist[0]);                    {Header}
@@ -2205,6 +2264,7 @@ end;
 
 function SuchFile(path: string; const Mask: string; list: TStringList): integer;
 begin
+  result:=0;
   FindAllFiles(list, path, mask, false);
 (*  s:=IncludeTrailingPathDelimiter(path);
   result:=FindFirst(s+Mask, faAnyFile, SR);
@@ -2262,7 +2322,8 @@ begin
       for i:=0 to inlist.count-1 do begin
         if pos(appname, inlist[i])>0 then begin
           ct:=inlist[i].Split([sep])[1];
-          if ct>=VersValue then begin
+          ct:=CleanNum(ct);
+          if VersValue>=StrToIntDef(ct, 0) then begin      {Current version vs label in internet}
             MessageDlg(rsLatestVersion+sLineBreak+sLineBreak+
                        capForm1+sLineBreak+AppName+tab2+AppVersion,
                        mtInformation,[mbOK],0);
@@ -2418,9 +2479,9 @@ begin
     gridDetails.Cells[0, 0]:='SeqNo';
     gridDetails.Cells[1, 0]:='SysID';
     gridDetails.Cells[2, 0]:='CompID';
-    gridDetails.Cells[3, 0]:='TargetID';
-    gridDetails.Cells[4, 0]:='TgtSubID';
-    gridDetails.Cells[5, 0]:=csvMsgID;
+    gridDetails.Cells[3, 0]:=csvMsgID;
+    gridDetails.Cells[4, 0]:='TargetID?';
+    gridDetails.Cells[5, 0]:='TgtSubID?';
     gridDetails.Cells[lenfix-2, 0]:='lenPL';       {Länge Payload Header}
     for i:=1 to gridDetails.ColCount-lenfix+1 do   {Payload Byte Nummern}
       gridDetails.Cells[i+lenfix-2, 0]:='PL'+IntToStr(i);
@@ -2654,11 +2715,87 @@ begin
   SplitSensorPlus;
 end;
 
+procedure TForm1.pcSettings3Change(Sender: TObject);
+begin
+  EnableMultiSelect;
+end;
+
 procedure TForm1.btnSplitClick(Sender: TObject);   {Button: Split PX4 Sensor file}
 begin
   SplitSensorPlus;
 end;
 
+procedure TForm1.CombineLogs;                      {Combine some legacy Yuneec Flightlog to one log file set}
+var
+  z, zhl, numlines: integer;
+  csvlist, inlist: TStringList;
+  dname: string;
+  fis: boolean;                                    {Says if there was a file in the section}
+
+  procedure ForOneSection(fn: string);             {Same for one selected Telemetry, Remote or RemoteGPS}
+  var
+    i, k: integer;
+    fnx: string;
+  begin
+    for i:=0 to lbFlights.Items.Count-1 do begin
+      if lbFlights.Selected[i] then begin          {Load all selected files}
+        fnx:=fn+lbFlights.Items[i]+fext;           {Complete filename with flight number}
+        if FileExists(fnx) then begin
+          inlist.LoadFromFile(fnx);
+          if fis then begin                        {A valid file already found before}
+            for k:=1 to inlist.Count-1 do          {Add without header}
+              csvlist.Add(inlist[k]);
+          end else begin
+            csvlist.Assign(inlist);                {First file with header}
+          end;
+          fis:=true;
+          inc(zhl);                                {Count number of used files}
+        end;
+      end;
+    end;
+    if fis then begin
+      fnx:=RandomFN(fnx, 0, z);
+      csvlist.SaveToFile(fnx);
+      numlines:=numlines+csvlist.Count;            {Add number of lines loaded}
+      StatusBar1.Panels[5].Text:=fnx;
+      StatusBar1.Panels[0].Text:=IntToStr(zhl);
+      StatusBar1.Panels[1].Text:=IntToStr(numlines);
+    end;
+    fis:=false;
+    csvlist.Clear;
+  end;
+
+begin
+  z:=random(8)+1;
+  fis:=false;
+  zhl:=0;
+  numlines:=0;
+  if lbFlights.SelCount>1 then begin               {Only if more than one flight was selected}
+    csvlist:=TStringList.Create;
+    inlist:=TStringList.Create;
+    Screen.Cursor:=crHourGlass;
+    try
+      dname:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+kfile;           {Telemetry}
+      ForOneSection(dname);
+      dname:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+spath+PathDelim+sfile; {RemoteGPS}
+      ForOneSection(dname);
+      dname:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+fpath+PathDelim+ffile; {Remote}
+      ForOneSection(dname);
+    finally
+      Screen.Cursor:=crDefault;
+      csvlist.Free;
+      inlist.Free;
+    end;
+    if zhl>3 then
+      SelDirAct('');
+  end else
+    StatusBar1.Panels[5].Text:=errSelect;
+end;
+
+procedure TForm1.btnCombineLogsClick(Sender: TObject); {Combine some legacy Yuneec Flightlog to one log files set}
+begin
+  CombineLogs;
+end;
 
 {Neu bim YTH Plus/ oder Mantis Q (PX4):
  - Dateiendung *.txt
@@ -2976,7 +3113,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       if tb then begin                             {Höhendiagramm füllen}
         case msl of
           2: Chart1BarSeries1.AddXY(bg, alta);     {fuchsia like Angle}
-          3: Chart1BarSeries7.AddXY(bg, alta);     {blue}
+          3: Chart1BarSeries6.AddXY(bg, alta);     {blue}
           4: Chart1BarSeries3.AddXY(bg, alta);     {red}
         else
           Chart1BarSeries2.AddXY(bg, alta);        {relative Höhe zum ersten Wert}
@@ -3275,7 +3412,7 @@ var dsbuf: array[0..YTHPcols] of byte;
         if tb then begin                           {Höhendiagramm füllen}
           case msl of
             2: Chart1BarSeries1.AddXY(bg, (altr)/1000);   {fuchsia like Angle}
-            3: Chart1BarSeries7.AddXY(bg, (altr)/1000);   {blue}
+            3: Chart1BarSeries6.AddXY(bg, (altr)/1000);   {blue}
             4: Chart1BarSeries3.AddXY(bg, (altr)/1000);   {red}
           else
             Chart1BarSeries2.AddXY(bg, (altr)/1000); {relative Höhe zum ersten Wert}
@@ -4165,19 +4302,25 @@ end;
 procedure TForm1.ScreenToBild(fn: string);         {Screenshot}
 var
     bld: TPortableNetworkGraphic;
+    bmp: TBitMap;
     ScreenDC: HDC;
 
 begin
   bld:=TPortableNetworkGraphic.Create;             {create PNG-picture}
-//  bmp:=GetFormImage;                             {No more working with Windows}
   try
-    ScreenDC := GetDC(Panel1.Handle);
-//    ScreenDC := GetDC(Handle);
+  {$IFDEF LINUX}
+    bmp:=GetFormImage;                             {No more working with Windows}
+    bld.Assign(bmp);
+  {$ELSE}
+//    ScreenDC := GetDC(Panel1.Handle);
+    ScreenDC := GetDC(Handle);
     bld.LoadFromDevice(ScreenDC);                  {Get screenshot xyz.Handle}
     ReleaseDC(0, ScreenDC);
+  {$ENDIF}
     bld.SaveToFile(fn);
   finally
     bld.Free;
+    bmp.Free;
   end;
 end;
 
@@ -4306,6 +4449,16 @@ begin
     rgAltitudeType.ItemIndex:=0;                   {Set to 'Absolute'}
   end else
     rgAltitudeType.ItemIndex:=cbThunder.Tag;       {restore setting}
+end;
+
+procedure TForm1.cbxLogDirChange(Sender: TObject);
+begin
+  SelDirAct('');                                   {Alles neu laden}
+end;
+
+procedure TForm1.cbxLogDirSelect(Sender: TObject);
+begin
+  SelDirAct('');                                   {Alles neu laden}
 end;
 
 procedure TForm1.cbxTextMouseUp(Sender: TObject; Button: TMouseButton;
@@ -6190,7 +6343,7 @@ begin
     if (idx>1) and                                 {im gültigen Bereich}
        (idx<gridDetails.RowCount) then
       speDataPoint.Value:=idx;                     {Datenindex übernehmen}
-    abst:=speDataPoint.Value+speAnalyze.Value;     {Ende des Intervalls}
+    abst:=speDataPoint.Value+speNumPoints.Value;     {Ende des Intervalls}
 
     try                                            {Versuchen, zweiten Kursor zu setzen}
       Chart1ConstantLine1.Position:=Chart1LineSeries1.XValue[abst];
@@ -6242,6 +6395,61 @@ begin                     {Reset Schnellanalyse für alle drei Histogramme}
   TimerDiashow.Enabled:=false;
   SetProfile(0);
   cbxProfiles.ItemIndex:=0;                        {Profiles rücksetzen}
+end;
+
+procedure TForm1.btnDeleteLnClick(Sender: TObject);
+var
+  zhl: integer;
+  dlist, outlist: TStringList;
+  fn: string;
+
+  procedure CleanLn(fn1: string);
+  var
+    i: integer;
+
+  begin
+    dlist.LoadFromFile(fn1);
+    outlist.Clear;
+    outlist.Add(dlist[0]);
+    for i:=1 to dlist.Count-1 do begin
+      if pos(edDeleteLn.Text, dlist[i])=1 then begin
+        inc(zhl);
+      end else begin
+        outlist.Add(dlist[i]);
+      end;
+    end;
+    if outlist.Count>1 then begin
+      outlist.SaveToFile(fn1);
+      dlist.SaveToFile(ChangeFileExt(fn1, bakext));
+    end;
+  end;
+
+begin
+  zhl:=0;
+  OpenDialog1.Title:=capDeleteLn;
+  OpenDialog1.InitialDir:=cbxLogDir.Text;
+  if edDeleteLn.text<>'' then begin
+    if OpenDialog1.Execute then begin
+      dlist:=TStringList.Create;
+      outlist:=TStringList.Create;
+      try
+        CleanLn(OpenDialog1.FileName);
+{Try the other flightlog files if legacy Yuneec telemetry file was selected as first file}
+        if pos(dkpath+PathDelim+kfile, OpenDialog1.FileName)>1 then begin
+          fn:=ReplaceText(OpenDialog1.FileName, dkpath+PathDelim+kfile, fpath+PathDelim+ffile);
+          if FileExists(fn) then
+            CleanLn(fn);
+          fn:=ReplaceText(OpenDialog1.FileName, dkpath+PathDelim+kfile, spath+PathDelim+sfile);
+          if FileExists(fn) then
+            CleanLn(fn);
+        end;
+        StatusBar1.Panels[0].Text:=IntToStr(zhl);
+      finally
+        dlist.Free;
+        outlist.Free;
+      end;
+    end;
+  end;
 end;
 
 procedure TForm1.lblGitHubClick(Sender: TObject);      {Open GitHub repo}
@@ -6451,11 +6659,6 @@ begin
   Anzeige;
 end;
 
-procedure TForm1.cbxLogDirChange(Sender: TObject); {Pfad aufrufen und auswerten}
-begin
-  SelDirAct('');                                   {Alles neu laden}
-end;
-
 procedure TForm1.cbxLogDirDblClick(Sender: TObject);
 begin                                              {Verzeichnis öffnen}
   OpenDocument(IncludeTrailingPathDelimiter(cbxLogDir.Text));
@@ -6597,8 +6800,8 @@ begin
     if ssCtrl in Shift then begin
       if ChartToolset2DataPointCrosshairTool1.Enabled then begin
         case key of               {Analyse erweitern/einschränken mit +  oder -}
-          107, 187: speAnalyze.Value:=speAnalyze.Value+1; {+}
-          109, 189: speAnalyze.Value:=speAnalyze.Value-1; {-}
+          107, 187: speNumPoints.Value:=speNumPoints.Value+1; {+}
+          109, 189: speNumPoints.Value:=speNumPoints.Value-1; {-}
         end;
         if key=vk_n then
           btnCutClick(self);                       {Ausschneiden}
@@ -6893,7 +7096,7 @@ begin
   Chart1BarSeries3.Clear;
   Chart1BarSeries4.Clear;
   Chart1BarSeries5.Clear;
-  Chart1BarSeries7.Clear;
+  Chart1BarSeries6.Clear;
   PopupMenuTab.Items[0].Enabled:=false;            {GoogleMaps}
   PopupMenuTab.Items[1].Enabled:=false;            {OSM}
   PopupMenuTab.Items[4].Enabled:=false;            {Datenanalyse}
@@ -7139,9 +7342,9 @@ procedure TForm1.FreigabeCut(a: boolean);          {Freigabe und Anzeige Cut}
 var ts: TDateTime;
 begin
   btnCut.Enabled:=false;                           {Default: nicht gültig}
-  Label13.Caption:=capLabel13;
-  Label14.Caption:=capLabel14;
-  Label15.Caption:='';                             {Dauer leer}
+  lblBegin.Caption:=capLabel13;
+  lblEnde.Caption:=capLabel14;
+  lblDuration.Caption:='';                         {Dauer leer}
   if (cutb>0) and
      (cute>0) and
      (cutb>cute) then begin
@@ -7150,23 +7353,23 @@ begin
     cutb:=ts;
   end;
   if cutb>0 then
-    Label13.Caption:=FormatDateTime(vzf, cutb);
+    lblBegin.Caption:=FormatDateTime(vzf, cutb);
   if cute>0 then
-    Label14.Caption:=FormatDateTime(vzf, cute);
+    lblEnde.Caption:=FormatDateTime(vzf, cute);
   if (cutb>0) and
      (cute>cutb) then begin                        {Dauer anzeigen}
     btnCut.Enabled:=true;
     cutbidx:=lbflights.ItemIndex;                  {To what file timestamps belong}
-    Label15.Caption:=rsDauer+tab1+FormatDateTime('= nn:ss'+zzz, cute-cutb);
+    lblDuration.Caption:=rsDauer+tab1+FormatDateTime('= nn:ss'+zzz, cute-cutb);
     if a then begin
-      StatusBar1.Panels[5].Text:=Label15.Caption;  {Textfeld überschreiben}
+      StatusBar1.Panels[5].Text:=lblDuration.Caption;  {Textfeld überschreiben}
       AppLog.Lines.Add(capBitBtn14+tab1+StatusBar1.Panels[5].Text);
     end;
   end else
     StatusBar1.Tag:=0;                             {nicht kopieren}
   if a then begin                                  {Ausgabe in Statuszeile erlauben}
-    StatusBar1.Panels[3].Text:=Label13.Caption;
-    StatusBar1.Panels[4].Text:=Label14.Caption;
+    StatusBar1.Panels[3].Text:=lblBegin.Caption;
+    StatusBar1.Panels[4].Text:=lblEnde.Caption;
   end;
   mnCut.Enabled:=btnCut.Enabled;
   mnCutTab.Enabled:=btnCut.Enabled;
@@ -7219,6 +7422,7 @@ begin                                              {Tabs umschalten}
   cbxProfiles.ItemIndex:=0;                        {Profiles zurücksetzen}
   rgVehicleType.Enabled:=cbVehicleType.Checked;
   cbxSearch.Enabled:=false;
+  EnableMultiSelect;
   case pcMain.ActivePageIndex of                   {alle anderen Fälle ohne Änderung}
     1: begin                                       {Datentabelle}
          cbxSearch.Enabled:=true;                  {nur bei Datentabelle}
@@ -7849,7 +8053,7 @@ begin                                              {Datenanalyse ausgewählter B
     Application.ProcessMessages;
     an:='';
     try
-      n:=speDataPoint.Value+speAnalyze.Value+1;
+      n:=speDataPoint.Value+speNumPoints.Value+1;
       if n>gridDetails.RowCount-1 then
         n:=gridDetails.RowCount-1;                 {Ende der Datei}
       AppLog.Lines.Add(capTabSheet10+tab1+rsFor+tab1+
@@ -7993,7 +8197,7 @@ begin
           StaticText1.Caption:=vtypeToStr(v_type); {anzeigen}
         end;
         speDataPoint.MaxValue:=inlist.Count;
-        speAnalyze.MaxValue:=inlist.Count-10;
+        speNumPoints.MaxValue:=inlist.Count-10;
         speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
@@ -8213,7 +8417,7 @@ begin
         rgQuelle.ItemIndex:=0;
         topp[lbFlights.ItemIndex, 5]:=0;           {Pointer Null setzen}
         speDataPoint.MaxValue:=inlist.Count-9;
-        speAnalyze.MaxValue:=inlist.Count-10;
+        speNumPoints.MaxValue:=inlist.Count-10;
         speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-10);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
@@ -8406,7 +8610,7 @@ begin
         topp[lbFlights.ItemIndex, 5]:=0;           {Pointer Null setzen}
         StaticText1.Caption:=vtypeToStr(H501id);   {Typ anzeigen}
         speDataPoint.MaxValue:=inlist.Count;
-        speAnalyze.MaxValue:=inlist.Count-10;
+        speNumPoints.MaxValue:=inlist.Count-10;
         speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
@@ -8548,7 +8752,7 @@ begin
         rgQuelle.ItemIndex:=0;
         topp[lbFlights.ItemIndex, 5]:=0;           {Pointer Null setzen}
         speDataPoint.MaxValue:=inlist.Count-16;
-        speAnalyze.MaxValue:=inlist.Count-17;
+        speNumPoints.MaxValue:=inlist.Count-17;
         speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-17);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);
@@ -8636,6 +8840,29 @@ begin
   end;
 end;
 
+{ Legacy / default
+Chart1BarSeries1: Series Color:=clFuchsia  (Angle Mode – Purple LED)
+Chart1BarSeries2: Series Color:=clGreen    (für Smart Mode)
+Chart1BarSeries3: Series Color:=clRTH      (für RTH)
+Chart1BarSeries4: Series Color:=clMaroon   (Emergency)
+Chart1BarSeries5: Series Color:=clNoGPS    (Orange)
+Chart1BarSeries6: Series Color:=clBlue     (Sports Mode, Stability)
+}
+
+procedure TForm1.HdiaColor;                        {Colors for Bar series depending on vehicle type}
+begin
+  Chart1BarSeries1.SeriesColor:=clAngle;
+  Chart1BarSeries2.SeriesColor:=clSmart;
+  Chart1BarSeries3.SeriesColor:=clRTH;
+  Chart1BarSeries4.SeriesColor:=clEmergency;
+  Chart1BarSeries5.SeriesColor:=clNoGPS;
+  Chart1BarSeries6.SeriesColor:=clSport;
+  if v_type=ThBid then                             {Thunderbird}
+    Chart1BarSeries3.SeriesColor:=clAcro;
+end;
+
+
+
 {siehe auch:
 http://www.lazarusforum.de/viewtopic.php?f=18&t=5516
 http://www.lazarusforum.de/viewtopic.php?f=18&t=6769
@@ -8657,15 +8884,7 @@ Altitude-Werte den verschiedenen Bars zugeordnet.
 So entsteht (mit etwas Glück) ein farbiges Diagramm, wo man in etwa sehen kann,
 in welchem Mode geflogen wird. Die Farben sind weitestgehend den Farben
 der Status-LED am Kopter angepasst.
-Dies funktioniert nicht beim Typhoon H Plus.
-
-Chart1BarSeries1: Series Color:=clFuchsia  (Angle Mode – Purple LED)
-Chart1BarSeries2: Series Color:=clGreen    (für Smart Mode)
-Chart1BarSeries3: Series Color:=clRed      (für RTH)
-Chart1BarSeries4: Series Color:=clMaroon   (Emergency)
-Chart1BarSeries5: Series Color:=$000080FF  (Orange)
-Chart1BarSeries7: Series Color:=clBlue     (Sports Mode, Stability)
-}
+Dies funktioniert nicht beim Typhoon H Plus. }
 
 procedure TForm1.HDiaInit;
 var
@@ -8687,19 +8906,22 @@ begin
   Chart1BarSeries3.Clear;
   Chart1BarSeries4.Clear;
   Chart1BarSeries5.Clear;
-  Chart1BarSeries7.Clear;
+  Chart1BarSeries6.Clear;
   case v_type of
     3: bwPercent:=60;                              {for Blade 350QX}
     ThBid: bwPercent:=50;                          {Thunderbird}
   else
     bwPercent:=100;
   end;
+
+  HDiaColor;
+
   Chart1BarSeries1.BarWidthPercent:=bwPercent;
   Chart1BarSeries2.BarWidthPercent:=bwPercent;
   Chart1BarSeries3.BarWidthPercent:=bwPercent;
   Chart1BarSeries4.BarWidthPercent:=bwPercent;
   Chart1BarSeries5.BarWidthPercent:=bwPercent;
-  Chart1BarSeries7.BarWidthPercent:=bwPercent;
+  Chart1BarSeries6.BarWidthPercent:=bwPercent;
 {$IFDEF LINUX}
   Chart1BarSeries1.Transparency:=0;                {sonst schwarzer Hintergrund}
 {$ELSE}
@@ -8709,7 +8931,7 @@ begin
   Chart1BarSeries3.Transparency:=Chart1BarSeries1.Transparency;
   Chart1BarSeries4.Transparency:=Chart1BarSeries1.Transparency;
   Chart1BarSeries5.Transparency:=Chart1BarSeries1.Transparency;
-  Chart1BarSeries7.Transparency:=Chart1BarSeries1.Transparency;
+  Chart1BarSeries6.Transparency:=Chart1BarSeries1.Transparency;
   Chart1LineSeries1.Clear;                         {Spanungskurve}
   Chart1LineSeries2.Clear;                         {Hüllkurve}
   Chart1LineSeries1.SeriesColor:=clBlue;
@@ -8743,9 +8965,10 @@ var x: integer;
     Chart1LineSeries2.AddXY(bg, h);                {Hüllkurve}
     case StrToIntDef(splitlist[gridDetails.Tag], 25) of
       25: Chart1BarSeries1.AddXY(bg, h);           {Angle (AP mode)}
-      11: Chart1BarSeries7.AddXY(bg, h);           {Stability mit/ohne GPS}
+      11: Chart1BarSeries6.AddXY(bg, h);           {Stability mit/ohne GPS}
       12: Chart1BarSeries2.AddXY(bg, h);           {Smart}
-      9, 10, 13, 14: Chart1BarSeries3.AddXY(bg, h); {Agility + RTH}
+      9, 14: Chart1BarSeries3.AddXY(bg, h);        {RTH}
+      10, 13: Chart1BarSeries5.AddXY(bg, h);       {Agility}
       8:  Chart1BarSeries4.AddXY(bg, h);           {Emergency}
     end;
   end;
@@ -8757,9 +8980,9 @@ var x: integer;
       4: Chart1BarSeries5.AddXY(bg, h);            {ohne GPS}
       5: Chart1BarSeries1.AddXY(bg, h);            {Angle}
       6: Chart1BarSeries2.AddXY(bg, h);            {Smart}
-      7: Chart1BarSeries7.AddXY(bg, h);            {Sport mode blau}
+      7: Chart1BarSeries6.AddXY(bg, h);            {Sport mode blau}
 //    10, 14, 17, 20: Chart1BarSeries4.AddXY(bg, h); {maroon}
-      12, 13: Chart1BarSeries3.AddXY(bg, h);       {RTH rot}
+      12, 13: Chart1BarSeries3.AddXY(bg, h);       {RTH}
     end;
   end;
 
@@ -8767,13 +8990,12 @@ var x: integer;
   begin
     Chart1LineSeries2.AddXY(bg, h);                {Hüllkurve}
     case StrToIntDef(splitlist[gridDetails.Tag], 3) of        {f_mode; default: Angle}
-      3, 4: Chart1BarSeries1.AddXY(bg, h);                    {Angle}
-      2, 5, 7, 22, 24, 31, 32: Chart1BarSeries5.AddXY(bg, h); {ohne GPS}
+      3, 4:                    Chart1BarSeries1.AddXY(bg, h); {Angle}
       6, 21, 23, 26..29, 33:   Chart1BarSeries2.AddXY(bg, h); {Smart}
       13, 14, 20:              Chart1BarSeries3.AddXY(bg, h); {Agility + RTH}
-//    9, 10, 11, 17, 18:   Chart1BarSeries4.AddXY(bg, h);     {Error, Cali}
       12:                      Chart1BarSeries4.AddXY(bg, h); {Emergency}
-      0, 1:                    Chart1BarSeries7.AddXY(bg, h); {Stability}
+      2, 5, 7, 22, 24, 31, 32: Chart1BarSeries5.AddXY(bg, h); {ohne GPS, Manual}
+      0, 1:                    Chart1BarSeries6.AddXY(bg, h); {Stability}
     end;
   end;
 
@@ -8790,12 +9012,12 @@ var x: integer;
       h:=alt1;                                     {If 0 the keep previous value}
     Chart1LineSeries2.AddXY(bg, h-baseh);          {Hüllkurve}
     case StrToIntDef(splitlist[gridDetails.Tag], 3) of
-      0:  Chart1BarSeries7.AddXY(bg, h-baseh);     {Stabilized mode, blue}
+      0:  Chart1BarSeries6.AddXY(bg, h-baseh);     {Stabilized mode, blue}
       1:  Chart1BarSeries5.AddXY(bg, h-baseh);     {Altitude mode, orange}
       3:  Chart1BarSeries1.AddXY(bg, h-baseh);     {Position mode, purple}
-      13, 14: Chart1BarSeries4.AddXY(bg, h-baseh); {Failsave, RTH mode, maroon}
-      20: Chart1BarSeries3.AddXY(bg, h-baseh);     {Rattitude/Rate mode, red}
-      33: Chart1BarSeries2.AddXY(bg, h-baseh);     {Mission mode, green}
+      12: Chart1BarSeries4.AddXY(bg, h-baseh);     {Emergency}
+      20: Chart1BarSeries3.AddXY(bg, h-baseh);     {Rattitude/Rate mode, red (clAcro)}
+      33, 13: Chart1BarSeries2.AddXY(bg, h-baseh); {Mission mode, RTH, green}
     end;
   end;
 
@@ -8828,7 +9050,7 @@ begin
       splitlist.DelimitedText:=inlist[0];          {Überschrift einlesen zum f_mode ermitteln}
       fModeFinden(splitlist);                      {Position f-mode merken}
       speDataPoint.MaxValue:=inlist.Count;
-      speAnalyze.MaxValue:=inlist.Count-10;
+      speNumPoints.MaxValue:=inlist.Count-10;
       speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
       if inlist.Count>1500 then
         Chart1BarSeries1.BarPen.Width:=2           {Bar smoothing}
@@ -8840,7 +9062,7 @@ begin
       Chart1BarSeries3.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       Chart1BarSeries4.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       Chart1BarSeries5.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
-      Chart1BarSeries7.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
+      Chart1BarSeries6.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       StatusBar1.Panels[5].Text:=rsHProfil+fn;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
@@ -8990,7 +9212,7 @@ begin
     if inlist.count>minlines then begin
       KursorAus;                                   {Fadenkreuz aus bei neuem Flug}
       speDataPoint.MaxValue:=inlist.Count-9;
-      speAnalyze.MaxValue:=inlist.Count-10;
+      speNumPoints.MaxValue:=inlist.Count-10;
       speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
       if inlist.Count>1500 then
         Chart1BarSeries1.BarPen.Width:=2           {Bar smoothing}
@@ -9000,7 +9222,7 @@ begin
       Chart1BarSeries3.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       Chart1BarSeries4.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       Chart1BarSeries5.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
-      Chart1BarSeries7.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
+      Chart1BarSeries6.BarPen.Width:=Chart1BarSeries1.BarPen.Width;
       StatusBar1.Panels[5].Text:=rsHProfil+fn;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       StatusBar1.Panels[1].Text:=IntToStr(inlist.count-10);
@@ -9023,7 +9245,7 @@ begin
           Chart1LineSeries2.AddXY(bg, h);          {Hüllkurve}
           case StrToIntDef(splitlist[14], 0) of
             1, 18: Chart1BarSeries2.AddXY(bg, h);  {Start, Landung: green}
-            2:     Chart1BarSeries7.AddXY(bg, h);  {In flight: blue}
+            2:     Chart1BarSeries6.AddXY(bg, h);  {In flight: blue}
             16:    Chart1BarSeries4.AddXY(bg, h);  {Notlandung: maroon}
           end;
         end else begin
@@ -9080,7 +9302,7 @@ begin
     if inlist.count>minlines then begin
       KursorAus;                                   {Fadenkreuz aus bei neuem Flug}
       speDataPoint.MaxValue:=inlist.Count;
-      speAnalyze.MaxValue:=inlist.Count-10;
+      speNumPoints.MaxValue:=inlist.Count-10;
       speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
       if inlist.Count>1500 then
         Chart1BarSeries1.BarPen.Width:=2           {Bar smoothing}
@@ -9090,7 +9312,7 @@ begin
       Chart1BarSeries3.BarPen.Width:=Chart1BarSeries1.BarPen.Width;  {red}
       Chart1BarSeries4.BarPen.Width:=Chart1BarSeries1.BarPen.Width;  {maroon}
       Chart1BarSeries5.BarPen.Width:=Chart1BarSeries1.BarPen.Width;  {orange}
-      Chart1BarSeries7.BarPen.Width:=Chart1BarSeries1.BarPen.Width;  {blue}
+      Chart1BarSeries6.BarPen.Width:=Chart1BarSeries1.BarPen.Width;  {blue}
       StatusBar1.Panels[5].Text:=rsHProfil+fn;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
@@ -9117,7 +9339,7 @@ begin
           case StrToInt(splitlist[1]) of
             0: Chart1BarSeries3.AddXY(bg, h);      {red}
             1, 2, 4: Chart1BarSeries5.AddXY(bg, h);  {orange: 1 frame}
-            3, 5, 6: Chart1BarSeries7.AddXY(bg, h);  {blue: 2 frames}
+            3, 5, 6: Chart1BarSeries6.AddXY(bg, h);  {blue: 2 frames}
             7: Chart1BarSeries2.AddXY(bg, h);      {all frames: green}
           else
             Chart1BarSeries4.AddXY(bg, h);         {all other frames: maroon}
@@ -13047,7 +13269,7 @@ begin
       try
         splitlist.DelimitedText:=inlist[0];        {Überschrift einlesen}
         speDataPoint.MaxValue:=inlist.Count;
-        speAnalyze.MaxValue:=inlist.Count-10;
+        speNumPoints.MaxValue:=inlist.Count-10;
         speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
         AppLog.Lines.Add(StatusBar1.Panels[1].Text+tab1+rsDS);

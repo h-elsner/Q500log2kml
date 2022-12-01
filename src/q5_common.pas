@@ -147,6 +147,11 @@
 2021-07-04       Screenshot only from TabControl (the most intresting part).
 2022-01-30       Indication for WiFi connection added to fsk_rssi chart.
 2022-03-14       CGO3 control and Geotagging removed - independent extra tool
+2022-06-22       MAV state values updated.
+2022-07-04       GPS_sued in quick analysis chart as value +/-1
+2022-09-18       Update Thunderbird FlightMode 12 - Emergency
+2022-09-25  V4.9 New function: Combine legacy Yuneec flight logs
+2022-11-30       Added function to clean flightlogs with wrong time stamps
 }
 
 
@@ -162,8 +167,8 @@ uses
 const
 {public constants}
   AppName=   'q500log2kml';
-  AppVersion='V4.8 04/2022';
-  VersValue='4.8.4';
+  AppVersion='V4.9.1 - 11/2022';
+  VersValue=490;                                   {Verion number as Integer to compare}
   VersFile='/v';
 
   homepage='http://h-elsner.mooo.com';             {My Homepage}
@@ -182,7 +187,8 @@ const
 
   InvalidChars: set of char=['\', '/', ':', '*', '?', '"', '<', '>', '|', '&'];
   ziff=['0'..'9'];                                 {gültige Ziffern}
-  valchars=[32..126, 128, 166, 167, 169, 177..179, 181, 188..190, 215, 247, 196, 214, 220, 223, 228, 246, 252];tab1=' ';                                        {ein Leerzeichen}
+  valchars=[32..126, 128, 166, 167, 169, 177..179, 181, 188..190, 215, 247, 196, 214, 220, 223, 228, 246, 252];
+  tab1=' ';                                        {ein Leerzeichen}
   tab2='  ';
   tab4='    ';
   tab6='      ';
@@ -214,14 +220,14 @@ const
   pfmode='fMode';                                  {Spaltenbezeichnung beim YTH Plus}
   brfmode='flightMode';                            {FlightMode beim Breeze}
 
-  clOrange=$000080FF;
+  clOrange=$000080F8;
   clNoGPS=$000080FF;                               {Dark Orange}
-
-  clAngle=clFuchsia;
+  clAngle=clFuchsia;                               {Angle, Position}
   clEmergency=clMaroon;
-  clSmart=clGreen;
-  clRTH=clRed;
-  clSport=clBlue;
+  clSmart=clGreen;                                 {Smart, Mission}
+  clRTH=$005D00F3;                                 {Dark red}
+  clSport=clBlue;                                  {Sport, Stabilized}
+  clAcro=clRed;                                    {Rattitude, Acro}
 
   clFairGood=clMoneyGreen;
   clVeryGood=clGreen;
@@ -252,7 +258,7 @@ var timestr: string;
 
 {Public functions and procedures}
 
-  function BoolToDouble(const s: string): double;  {zum Darstellen von Boolean}
+  function BoolToDouble(const s: string): double;  {zum Darstellen von Boolean in charts}
   function KorrBool(const s: string): string;      {true -> 1, Rest -> 0}
   function StatusToByte(const s: string): byte;    {wandelt negative Statusanzeigen um}
   function StrToFloatN(s: string): double; {kapselt StrToFloat, gibt bei Fehler 0 zurück}
@@ -271,15 +277,17 @@ var timestr: string;
   procedure FMcolor(aGrid: TStringGrid; fm, vt: integer);  {Flight mode coloe r settings}
   function testh(const a: double): boolean; inline;  {Datensätze mit unsinniger Höhe ausblenden}
 
+
 implementation
 
-function BoolToDouble(const s: string): double;    {zum Darstellen von Boolean}
+function BoolToDouble(const s: string): double;    {zum Darstellen von Boolean in charts}
 begin
   result:=0;
   if LowerCase(trim(s))=idfalse then
-    result:=-1;
-  if LowerCase(trim(s))=idtrue then
-    result:=1;
+    result:=-1
+  else
+    if LowerCase(trim(s))=idtrue then
+      result:=1;
 end;
 
 function KorrBool(const s: string): string;        {true -> 1, Rest -> 0}
@@ -324,7 +332,7 @@ begin
   end;
 end;
 
-function CleanDN(const s: string): string;         {Ungültige Zeichen entfernen}
+function CleanDN(const s: string): string;         {Ungültige Zeichen aus Dateiname entfernen}
 var i: integer;
 begin
   result:='';
@@ -336,7 +344,7 @@ begin
         result:=result+s[i];
 end;
 
-function CleanNum(const s: string): string;        {Ziffern filtern}
+function CleanNum(const s: string): string;        {Ziffern aus String filtern}
 var i: integer;
 begin
   result:='';
@@ -405,17 +413,22 @@ Test-3565 : Nan von 48.86739 9.366313 48.86739  9.366313
 Test-3566 : 0.1 von 48.86739 9.366313 48.86739  9.366315
 Test-3567 : Nan von 48.86739 9.366315 48.86739  9.366315
 Test-3568 : 0.5 von 48.86739 9.366315 48.867386 9.366317
+
+hier krachtes bei exact gleichen Koordinaten in den Rohdaten.
+Muss unbedingt abgefangen werden.
 }
 function DeltaKoord(const lat1, lon1, lat2, lon2: double): double;
 begin
   result:=0;
   try
-    result:=6365692*arccos(sin(lat1*pi/180)*sin(lat2*pi/180)+
-            cos(lat1*pi/180)*cos(lat2*pi/180)*cos((lon1-lon2)*pi/180));
-    if IsNan(result) or                            {Fehler in Formel ?}
-       (result>30000) or   {> 30km --> unplausible Werte identifizieren}
-       (result<0.005) then                         {Fehler reduzieren, Glättung}
-      result:=0;
+    if (lat1<>lat2) or (lon1<>lon2) then begin
+      result:=6365692*arccos(sin(lat1*pi/180)*sin(lat2*pi/180)+
+              cos(lat1*pi/180)*cos(lat2*pi/180)*cos((lon1-lon2)*pi/180));
+      if IsNan(result) or                            {Fehler in Formel ?}
+         (result>30000) or   {> 30km --> unplausible Werte identifizieren}
+         (result<0.005) then                         {Fehler reduzieren, Glättung}
+        result:=0;
+    end;
   except
   end;
 end;
@@ -444,12 +457,13 @@ end;
 procedure BladeCol(aGrid: TStringGrid; fm: integer);
 begin
   case fm of                                       {flight modes; wie Chart1BarSeries}
-    25:             CellColorSetting(aGrid, clAngle);
-    11:             CellColorSetting(aGrid, clSport);
-    9, 14, 10, 13:  CellColorSetting(aGrid, clRTH);
-    12:             CellColorSetting(aGrid, clSmart);
-    8:              CellColorSetting(aGrid, clEmergency);
-    5:              CellColorSetting(aGrid, clSilver);        {Motor Starting}
+    25:     CellColorSetting(aGrid, clAngle);
+    11:     CellColorSetting(aGrid, clSport);
+    9, 14:  CellColorSetting(aGrid, clRTH);
+    10, 13: CellColorSetting(aGrid, clAcro);
+    12:     CellColorSetting(aGrid, clSmart);
+    8:      CellColorSetting(aGrid, clEmergency);
+    5:      CellColorSetting(aGrid, clSilver);     {Motor Starting}
   end;
 end;
 
@@ -458,7 +472,8 @@ begin
   case fm of                                       {flight modes wie Chart1BarSeries}
     3, 4:                  CellColorSetting(aGrid, clAngle);
     2, 5, 7, 22, 24, 32:   CellColorSetting(aGrid, clNoGPS);
-    13, 14, 20:            CellColorSetting(aGrid, clRTH);
+    13, 14:                CellColorSetting(aGrid, clRTH);
+    20:                    CellColorSetting(aGrid, clAcro);
     6, 21, 23:             CellColorSetting(aGrid, clSmart);
     9, 10, 11, 12, 17, 18: CellColorSetting(aGrid, clEmergency);
     0, 1:                  CellColorSetting(aGrid, clSport);
@@ -470,13 +485,14 @@ end;
 procedure ThunderCol(aGrid: TStringGrid; fm: integer);
 begin
   case fm of                                       {flight modes; wie Chart1BarSeries}
-    0:      CellColorSetting(aGrid, clSport);                 {Stabilized blue}
-    1:      CellColorSetting(aGrid, clNoGPS);                 {Altitude orange}
-    3:      CellColorSetting(aGrid, clAngle);                 {Position purple}
-    13, 14: CellColorSetting(aGrid, clAttention);             {RTH other red}
-    20:     CellColorSetting(aGrid, clRTH);                   {Rattitude/Rate red}
-    33:     CellColorSetting(aGrid, clSmart);                 {Mission green}
-    16:     CellColorSetting(aGrid, clSilver);                {Ready silver}
+    0:  CellColorSetting(aGrid, clSport);          {Stabilized blue}
+    1:  CellColorSetting(aGrid, clNoGPS);          {Altitude orange}
+    3:  CellColorSetting(aGrid, clAngle);          {Position purple}
+    12: CellColorSetting(aGrid, clEmergency);      {Emergency maroon}
+    13: CellColorSetting(aGrid, clRTH);            {RTH other red}
+    20: CellColorSetting(aGrid, clAcro);           {Rattitude/Rate red}
+    33: CellColorSetting(aGrid, clSmart);          {Mission green}
+    16: CellColorSetting(aGrid, clSilver);         {Ready silver}
   end;
 end;
 

@@ -288,4 +288,12 @@ resourcestring                                     {english}
   rsConsistent='consistent - no split needed';
   rsSplits='splitted files created';
   resNew='created';
+  errSelect='Select more than one flight log.';
+  capCombineLogsLong='Combine some FlightLog sets to one';
+  capCombineLogs='Combine';
+  hntCombineLogs='Combine some selected FlightLos sets (Remote/RemoteGPS/Telemetry) to one set. Multiselect flights enabled for now.';
+  capDeleteLn='Delete rows';
+  hntDeleteLn='Delete unwanted rows in selected file that starts with entered value. Main use case: Clean flight logs with wrong time stamps. Start with telemetry files.';
+  hntDeleteEd='Lines to delete starts with this value.';
+
 

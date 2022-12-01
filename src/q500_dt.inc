@@ -288,4 +288,12 @@ resourcestring                                     {deutsch}
   rsConsistent='konsistent - kein Split notwendig';
   rsSplits='aufgeteilte Dateien angelegt';
   resNew='neu angelegt';
+  errSelect='Wähle mehr als einen FlightLog aus.';
+  capCombineLogs='Kombinieren';
+  capCombineLogsLong='Mehrere FlightLog Sets kombinieren';
+  hntCombineLogs='Füge mehrere ausgewählte FlightLos Sets (Remote/RemoteGPS/Telemetry) zu einem zusammen. Multiselect für Flugnummernliste freigegeben (nur hier).';
+  capDeleteLn='Löschen';
+  hntDeleteLn='Unerwünschte Zeilen in der ausgewählten Datei, die mit dem angegebenen Wert beginnen, löschen. Hauptsächlich gedacht, um Flightlogs mit falschen Zeitstempeln zu bereinigen. Beginne dazu mit den Telemetriedateien.';
+  hntDeleteEd='Wert, mit dem die zu löschenden Zeilen beginnen.';
+
 
