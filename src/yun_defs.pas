@@ -26,10 +26,11 @@ const
   sext='.bin';                                     {Sensor files}
   wext='.txt';
   skyext='.sky';
+  bakext='.bak';
 
   rfm2=[0..7, 9..14, 18, 20..24, 26..29, 31..33];  {Real flight modes, Yuneec legacy}
   rfm3=[8..14, 25];                                {Real flight modes Blade}
-  rfmT=[0, 1, 3, 13, 14, 20, 33];                  {Real flight modes Thunderbird}
+  rfmT=[0, 1, 3, 12, 13, 20, 33];                  {Real flight modes Thunderbird}
   rfmP=[4..7, 10, 12, 13, 17];                     {Real flight modes YTH Plus  ???}
 
   stkang =2184;                                    {switch tilt angle, 10%}
@@ -175,8 +176,8 @@ begin
     4: result:='Blade Chroma (380QX)';
     5: result:='Yuneec Typhoon H';
     6: result:='Yuneec H920+';                     {vermutlich nie genutzt}
-	20..29: result:='SR24 car';
-	30..39: result:='SR24 boat';
+    20..29: result:='SR24 car';
+    30..39: result:='SR24 boat';
     brID: result:='Yuneec Breeze';                 {selbst bestimmte Typ-IDs, 10..14, 90, 91}
     MQid, MQcsvID: result:='Yuneec MantisQ';       {MantisQ erkannt}
     H5id: result:='Yuneec H520';                   {tlog files from H520}
@@ -265,9 +266,10 @@ begin
   result:='';
   case f of                                        {Overwrite for Thunderbird}
     0: result:=fmStabilized;
-    1: result:=fmAltitude+' or '+fmStabilized;     {??}
+    1: result:=fmAltitude+' or '+fmStabilized;     {Wrong definition in RCInput.cpp, line 176}
     3: result:=fmPosition;
     8: result:='GPS Aquiring';
+    12: result:=rsEmergency;                       {vs.Arming_state=3}
     13: result:=fmRTH;
     16: result:='Ready';                           {Ready to start}
     20: result:=fmRattitude;
