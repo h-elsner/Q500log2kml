@@ -147,5 +147,9 @@ History:
 2021-07-04       Screenshot only from TabControl (the most intresting part).
 2022-01-30       Indication for WiFi connection added to fsk_rssi chart.
 2022-03-14       CGO3 control and Geotagging removed - independent extra tool
-2022-06-22       MAV_state values updated.
+2022-06-22       MAV state values updated.
+2022-07-04       GPS_sued in quick analysis chart as value +/-1
+2022-09-18       Update Thunderbird FlightMode 12 - Emergency
+2022-09-25  V4.9  New function: Combine legacy Yuneec flight logs
+2022-11-30       Added function to clean flightlogs with wrong time stamps
 
