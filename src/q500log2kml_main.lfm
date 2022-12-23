@@ -5,7 +5,7 @@ object Form1: TForm1
   Width = 1001
   AllowDropFiles = True
   Anchors = [akTop, akRight]
-  ClientHeight = 658
+  ClientHeight = 654
   ClientWidth = 1001
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
@@ -20,13 +20,13 @@ object Form1: TForm1
   OnShow = FormShow
   ParentBiDiMode = False
   Position = poDefaultPosOnly
-  SessionProperties = 'cbCap.Checked;cbCleanHplus.Checked;cbDashw.Checked;cbExtrude.Checked;cbHighLight.Checked;cbMarker.Checked;cbMAVasCSV.Checked;cbPilot.Checked;cbReduced.Checked;cbSensorKML.Checked;cbSimu.Checked;cbThunder.Checked;cbVehicleType.Checked;cbxLogDir.ItemIndex;cbxLogDir.Items;cbxLogDir.Text;cbxProfiles.ItemIndex;cbxProfiles.Text;cbxScanDir.ItemIndex;cbxScanDir.Items;cbxScanDir.Text;cbxSearch.ItemIndex;cbxSearch.Items;cbxSearch.Text;cbxText.ItemIndex;cbxText.Items;cbxText.Text;ColorButton1.ButtonColor;ColorButton2.ButtonColor;ColorButton3.ButtonColor;ColorButton4.ButtonColor;Height;LabeledEdit1.Tag;LabeledEdit1.Text;LabeledEdit2.Tag;LabeledEdit2.Text;LabeledEdit3.Tag;LabeledEdit3.Text;MAVmsg.Tag;pcMain.TabIndex;pcSettings3.TabIndex;rgAltitudeType.ItemIndex;rgBlockSize.ItemIndex;rgCSVtext.ItemIndex;rgErrType.ItemIndex;rgOutFormat.ItemIndex;rgQuelle.ItemIndex;rgSpeedUnit.ItemIndex;rgTimeType.ItemIndex;rgVehicleType.ItemIndex;rgVoltRule.ItemIndex;SelectDirectoryDialog1.FileName;SelectDirectoryDialog1.InitialDir;speAnalyze.Value;speBaseLoad.Value;speBlockNum.Value;speDataPoint.Value;speItems.Value;speLinePath.Value;tbrDistWP.Position;tbrSaturation.Position;Width;WindowState'
+  SessionProperties = 'cbCap.Checked;cbCleanHplus.Checked;cbDashw.Checked;cbExtrude.Checked;cbHighLight.Checked;cbMarker.Checked;cbMAVasCSV.Checked;cbPilot.Checked;cbReduced.Checked;cbSensorKML.Checked;cbSimu.Checked;cbThunder.Checked;cbVehicleType.Checked;cbxLogDir.ItemIndex;cbxLogDir.Items;cbxLogDir.Text;cbxProfiles.ItemIndex;cbxProfiles.Text;cbxScanDir.ItemIndex;cbxScanDir.Items;cbxScanDir.Text;cbxSearch.ItemIndex;cbxSearch.Items;cbxSearch.Text;cbxText.ItemIndex;cbxText.Items;cbxText.Text;ColorButton1.ButtonColor;ColorButton2.ButtonColor;ColorButton3.ButtonColor;ColorButton4.ButtonColor;Height;LabeledEdit1.Tag;LabeledEdit1.Text;LabeledEdit2.Tag;LabeledEdit2.Text;LabeledEdit3.Tag;LabeledEdit3.Text;MAVmsg.Tag;pcMain.TabIndex;pcSettings3.TabIndex;rgAltitudeType.ItemIndex;rgBlockSize.ItemIndex;rgCSVtext.ItemIndex;rgErrType.ItemIndex;rgOutFormat.ItemIndex;rgQuelle.ItemIndex;rgSpeedUnit.ItemIndex;rgTimeType.ItemIndex;rgVehicleType.ItemIndex;rgVoltRule.ItemIndex;SelectDirectoryDialog1.FileName;SelectDirectoryDialog1.InitialDir;speAnalyze.Value;speBaseLoad.Value;speBlockNum.Value;speDataPoint.Value;speItems.Value;speLinePath.Value;tbrDistWP.Position;tbrSaturation.Position;Width;WindowState;AppLog.Font'
   ShowHint = True
-  LCLVersion = '2.2.3.0'
+  LCLVersion = '2.2.0.4'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 23
-    Top = 635
+    Height = 17
+    Top = 637
     Width = 1001
     Anchors = [akRight, akBottom]
     Panels = <    
@@ -54,7 +54,7 @@ object Form1: TForm1
   end
   object lbFlights: TListBox
     Left = 11
-    Height = 356
+    Height = 352
     Top = 272
     Width = 134
     Anchors = [akTop, akLeft, akBottom]
@@ -64,6 +64,7 @@ object Form1: TForm1
     ScrollWidth = 132
     Sorted = True
     TabOrder = 1
+    TopIndex = -1
   end
   object rgQuelle: TRadioGroup
     Left = 12
@@ -79,8 +80,8 @@ object Form1: TForm1
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 1
-    ClientHeight = 100
-    ClientWidth = 129
+    ClientHeight = 103
+    ClientWidth = 131
     Enabled = False
     ItemIndex = 0
     Items.Strings = (
@@ -107,11 +108,10 @@ object Form1: TForm1
   end
   object Label2: TLabel
     Left = 16
-    Height = 15
+    Height = 16
     Top = 12
-    Width = 50
+    Width = 58
     Caption = 'FlightLog'
-    ParentColor = False
   end
   object btnConv: TBitBtn
     Left = 762
@@ -128,11 +128,10 @@ object Form1: TForm1
   end
   object Label3: TLabel
     Left = 16
-    Height = 15
+    Height = 16
     Top = 64
-    Width = 38
+    Width = 44
     Caption = 'Kopter:'
-    ParentColor = False
   end
   object btnArchive: TBitBtn
     Left = 634
@@ -149,7 +148,7 @@ object Form1: TForm1
   end
   object speDataPoint: TSpinEdit
     Left = 634
-    Height = 23
+    Height = 27
     Top = 60
     Width = 107
     Alignment = taRightJustify
@@ -161,25 +160,23 @@ object Form1: TForm1
     Value = 1
   end
   object Label6: TLabel
-    Left = 707
-    Height = 15
+    Left = 700
+    Height = 16
     Top = 38
-    Width = 34
+    Width = 41
     Anchors = [akTop, akRight]
     Caption = 'Label6'
-    ParentColor = False
   end
   object lblManual: TLabel
     Cursor = crHandPoint
-    Left = 941
-    Height = 15
+    Left = 932
+    Height = 16
     Top = 38
-    Width = 53
+    Width = 62
     Anchors = [akTop, akRight]
     Caption = 'lblManual'
     Font.Color = clNavy
     Font.Style = [fsUnderline]
-    ParentColor = False
     ParentFont = False
     OnClick = lblManualClick
     OnMouseEnter = lblManualMouseEnter
@@ -187,25 +184,24 @@ object Form1: TForm1
   end
   object cbxText: TComboBox
     Left = 152
-    Height = 23
+    Height = 27
     Top = 60
     Width = 428
     Anchors = [akTop, akLeft, akRight]
-    ItemHeight = 15
+    ItemHeight = 0
     OnMouseUp = cbxTextMouseUp
     TabOrder = 7
   end
   object lblUpdate: TLabel
     Cursor = crHandPoint
-    Left = 943
-    Height = 15
+    Left = 934
+    Height = 16
     Top = 63
-    Width = 51
+    Width = 60
     Anchors = [akTop, akRight]
     Caption = 'lblUpdate'
     Font.Color = clNavy
     Font.Style = [fsUnderline]
-    ParentColor = False
     ParentFont = False
     OnClick = lblUpdateClick
     OnMouseEnter = lblUpdateMouseEnter
@@ -247,52 +243,52 @@ object Form1: TForm1
     Top = 216
     Width = 141
     Caption = 'Find'
-    ClientHeight = 26
-    ClientWidth = 137
+    ClientHeight = 29
+    ClientWidth = 139
     TabOrder = 10
     object cbxSearch: TComboBox
       Left = 0
-      Height = 23
+      Height = 27
       Top = 0
       Width = 128
       CharCase = ecLowerCase
-      ItemHeight = 15
+      ItemHeight = 0
       OnMouseUp = cbxSearchMouseUp
       TabOrder = 0
     end
   end
   object Panel1: TPanel
     Left = 152
-    Height = 532
+    Height = 528
     Top = 96
     Width = 842
     Anchors = [akTop, akLeft, akRight, akBottom]
-    ClientHeight = 532
+    ClientHeight = 528
     ClientWidth = 842
     TabOrder = 11
     object pcMain: TPageControl
       Left = 1
-      Height = 530
+      Height = 526
       Top = 1
       Width = 840
-      ActivePage = tabSettings
+      ActivePage = tabAppLog
       Align = alClient
       Images = TabImages
       ParentShowHint = False
       ShowHint = True
-      TabIndex = 5
+      TabIndex = 6
       TabOrder = 0
       OnChange = pcMainChange
       Options = [nboKeyboardTabSwitch]
       object tabOverview: TTabSheet
-        ClientHeight = 502
-        ClientWidth = 832
+        ClientHeight = 496
+        ClientWidth = 830
         ImageIndex = 0
         object gridOverview: TStringGrid
           Left = 0
-          Height = 502
+          Height = 496
           Top = 0
-          Width = 832
+          Width = 830
           Align = alClient
           Color = clDefault
           ColCount = 11
@@ -322,15 +318,15 @@ object Form1: TForm1
         end
       end
       object tabDetails: TTabSheet
-        ClientHeight = 502
-        ClientWidth = 832
+        ClientHeight = 496
+        ClientWidth = 830
         ImageIndex = 1
         object gridDetails: TStringGrid
           Cursor = crHelp
           Left = 0
-          Height = 502
+          Height = 496
           Top = 0
-          Width = 832
+          Width = 830
           Align = alClient
           Color = clDefault
           ColCount = 2
@@ -355,14 +351,14 @@ object Form1: TForm1
         end
       end
       object tabHdia: TTabSheet
-        ClientHeight = 502
-        ClientWidth = 832
+        ClientHeight = 496
+        ClientWidth = 830
         ImageIndex = 2
         object Chart1: TChart
           Left = 0
-          Height = 502
+          Height = 496
           Top = 0
-          Width = 832
+          Width = 830
           AxisList = <          
             item
               Grid.Color = clGray
@@ -477,8 +473,8 @@ object Form1: TForm1
         end
       end
       object tabAnalyze3: TTabSheet
-        ClientHeight = 502
-        ClientWidth = 832
+        ClientHeight = 496
+        ClientWidth = 830
         ImageIndex = 3
         OnResize = tabAnalyze3Resize
         PopupMenu = PopupMenuProfile
@@ -486,7 +482,7 @@ object Form1: TForm1
           Left = 0
           Height = 176
           Top = 0
-          Width = 832
+          Width = 830
           AxisList = <          
             item
               Grid.Color = clGray
@@ -538,7 +534,7 @@ object Form1: TForm1
           Left = 0
           Height = 168
           Top = 184
-          Width = 757
+          Width = 755
           AxisList = <          
             item
               Grid.Color = clGray
@@ -577,8 +573,8 @@ object Form1: TForm1
         object Chart5: TChart
           Left = 0
           Height = 156
-          Top = 346
-          Width = 832
+          Top = 340
+          Width = 830
           AxisList = <          
             item
               Grid.Color = clGray
@@ -618,8 +614,8 @@ object Form1: TForm1
       end
       object tabScan: TTabSheet
         Caption = 'Scan'
-        ClientHeight = 502
-        ClientWidth = 832
+        ClientHeight = 496
+        ClientWidth = 830
         ImageIndex = 9
         object GroupBox10: TGroupBox
           Left = 0
@@ -627,8 +623,8 @@ object Form1: TForm1
           Top = 48
           Width = 362
           Caption = 'prot'
-          ClientHeight = 92
-          ClientWidth = 358
+          ClientHeight = 95
+          ClientWidth = 360
           TabOrder = 0
           object btnFlugBuch: TBitBtn
             Left = 168
@@ -643,9 +639,9 @@ object Form1: TForm1
           end
           object cbSimu: TCheckBox
             Left = 8
-            Height = 19
+            Height = 23
             Top = 21
-            Width = 40
+            Width = 47
             Caption = 'Sim'
             TabOrder = 1
           end
@@ -663,8 +659,8 @@ object Form1: TForm1
             ChildSizing.ShrinkVertical = crsScaleChilds
             ChildSizing.Layout = cclLeftToRightThenTopToBottom
             ChildSizing.ControlsPerLine = 2
-            ClientHeight = 20
-            ClientWidth = 180
+            ClientHeight = 23
+            ClientWidth = 182
             Columns = 2
             ItemIndex = 0
             Items.Strings = (
@@ -676,17 +672,17 @@ object Form1: TForm1
         end
         object cbxScanDir: TComboBox
           Left = 8
-          Height = 23
+          Height = 27
           Top = 14
-          Width = 327
+          Width = 325
           Anchors = [akTop, akLeft, akRight]
-          ItemHeight = 15
+          ItemHeight = 0
           OnDblClick = cbxScanDirDblClick
           OnMouseUp = cbxScanDirMouseUp
           TabOrder = 1
         end
         object sbtnScanDir: TSpeedButton
-          Left = 334
+          Left = 332
           Height = 25
           Top = 13
           Width = 25
@@ -696,7 +692,7 @@ object Form1: TForm1
           OnClick = sbtnScanDirClick
         end
         object ProgressBarScan: TProgressBar
-          Left = 391
+          Left = 389
           Height = 23
           Top = 13
           Width = 425
@@ -712,8 +708,8 @@ object Form1: TForm1
           Top = 168
           Width = 362
           Caption = 'ScProbs'
-          ClientHeight = 316
-          ClientWidth = 358
+          ClientHeight = 319
+          ClientWidth = 360
           TabOrder = 3
           object rgErrType: TRadioGroup
             Left = 8
@@ -729,8 +725,8 @@ object Form1: TForm1
             ChildSizing.ShrinkVertical = crsScaleChilds
             ChildSizing.Layout = cclLeftToRightThenTopToBottom
             ChildSizing.ControlsPerLine = 1
-            ClientHeight = 276
-            ClientWidth = 205
+            ClientHeight = 279
+            ClientWidth = 207
             ItemIndex = 0
             Items.Strings = (
               'Flight mode Emergency'
@@ -765,14 +761,14 @@ object Form1: TForm1
             Top = 8
             Width = 128
             Caption = 'Filter'
-            ClientHeight = 205
-            ClientWidth = 124
+            ClientHeight = 208
+            ClientWidth = 126
             TabOrder = 2
             object cbVehicleType: TCheckBox
               Left = 8
-              Height = 19
+              Height = 23
               Top = 6
-              Width = 84
+              Width = 99
               Caption = 'Vehicle type'
               OnChange = cbVehicleTypeChange
               TabOrder = 0
@@ -790,8 +786,8 @@ object Form1: TForm1
               ChildSizing.ShrinkVertical = crsScaleChilds
               ChildSizing.Layout = cclLeftToRightThenTopToBottom
               ChildSizing.ControlsPerLine = 1
-              ClientHeight = 148
-              ClientWidth = 103
+              ClientHeight = 151
+              ClientWidth = 105
               ItemIndex = 1
               Items.Strings = (
                 '1 - H920'
@@ -806,9 +802,9 @@ object Form1: TForm1
         end
         object gridScanResult: TStringGrid
           Left = 391
-          Height = 448
+          Height = 442
           Top = 48
-          Width = 426
+          Width = 424
           Anchors = [akTop, akLeft, akRight, akBottom]
           Color = clDefault
           ColCount = 2
@@ -827,14 +823,14 @@ object Form1: TForm1
         end
       end
       object tabSettings: TTabSheet
-        ClientHeight = 502
-        ClientWidth = 832
+        ClientHeight = 496
+        ClientWidth = 830
         ImageIndex = 4
         object pcSettings3: TPageControl
           Left = 0
-          Height = 502
+          Height = 496
           Top = 0
-          Width = 832
+          Width = 830
           ActivePage = tabData
           Align = alClient
           Images = TabImages
@@ -843,8 +839,8 @@ object Form1: TForm1
           OnChange = pcSettings3Change
           Options = [nboKeyboardTabSwitch]
           object tabConvert: TTabSheet
-            ClientHeight = 474
-            ClientWidth = 824
+            ClientHeight = 492
+            ClientWidth = 820
             ImageIndex = 6
             object rgOutFormat: TRadioGroup
               Left = 8
@@ -860,8 +856,8 @@ object Form1: TForm1
               ChildSizing.ShrinkVertical = crsScaleChilds
               ChildSizing.Layout = cclLeftToRightThenTopToBottom
               ChildSizing.ControlsPerLine = 1
-              ClientHeight = 220
-              ClientWidth = 124
+              ClientHeight = 223
+              ClientWidth = 126
               ItemIndex = 0
               Items.Strings = (
                 '.kml'
@@ -876,9 +872,9 @@ object Form1: TForm1
             end
             object cbDashw: TCheckBox
               Left = 8
-              Height = 19
+              Height = 23
               Top = 320
-              Width = 34
+              Width = 42
               Caption = 'C3'
               OnChange = cbDashwChange
               TabOrder = 1
@@ -889,8 +885,8 @@ object Form1: TForm1
               Top = 8
               Width = 408
               Caption = 'GroupBox2'
-              ClientHeight = 220
-              ClientWidth = 404
+              ClientHeight = 238
+              ClientWidth = 406
               ParentColor = False
               TabOrder = 2
               object ColorButton1: TColorButton
@@ -917,7 +913,7 @@ object Form1: TForm1
               end
               object speLinePath: TSpinEdit
                 Left = 232
-                Height = 23
+                Height = 27
                 Top = 81
                 Width = 72
                 Alignment = taRightJustify
@@ -929,19 +925,17 @@ object Form1: TForm1
               end
               object Label1: TLabel
                 Left = 232
-                Height = 15
+                Height = 16
                 Top = 60
-                Width = 34
+                Width = 41
                 Caption = 'Label1'
-                ParentColor = False
               end
               object lblSaturation: TLabel
                 Left = 152
-                Height = 15
+                Height = 16
                 Top = 152
-                Width = 67
+                Width = 79
                 Caption = 'lblSaturation'
-                ParentColor = False
               end
               object rgAltitudeType: TRadioGroup
                 Left = 16
@@ -957,8 +951,8 @@ object Form1: TForm1
                 ChildSizing.ShrinkVertical = crsScaleChilds
                 ChildSizing.Layout = cclLeftToRightThenTopToBottom
                 ChildSizing.ControlsPerLine = 1
-                ClientHeight = 76
-                ClientWidth = 180
+                ClientHeight = 79
+                ClientWidth = 182
                 ItemIndex = 1
                 Items.Strings = (
                   'absolute'
@@ -970,9 +964,9 @@ object Form1: TForm1
               end
               object cbPilot: TCheckBox
                 Left = 232
-                Height = 19
+                Height = 23
                 Top = 121
-                Width = 44
+                Width = 54
                 Caption = 'Pilot'
                 Checked = True
                 OnChange = cbPilotChange
@@ -981,18 +975,18 @@ object Form1: TForm1
               end
               object cbExtrude: TCheckBox
                 Left = 24
-                Height = 19
+                Height = 23
                 Top = 121
-                Width = 60
+                Width = 74
                 Caption = 'Extrude'
                 OnChange = cbExtrudeChange
                 TabOrder = 4
               end
               object cbMarker: TCheckBox
                 Left = 136
-                Height = 19
+                Height = 23
                 Top = 121
-                Width = 57
+                Width = 69
                 Caption = 'Marker'
                 OnChange = cbMarkerChange
                 TabOrder = 5
@@ -1000,11 +994,10 @@ object Form1: TForm1
             end
             object lblDistWP: TLabel
               Left = 7
-              Height = 15
+              Height = 16
               Top = 256
-              Width = 51
+              Width = 60
               Caption = 'lblDistWP'
-              ParentColor = False
             end
             object tbrDistWP: TTrackBar
               Left = 0
@@ -1021,16 +1014,16 @@ object Form1: TForm1
             end
             object cbSensorKML: TCheckBox
               Left = 7
-              Height = 19
+              Height = 23
               Top = 352
-              Width = 38
+              Width = 47
               Caption = 'sen'
               TabOrder = 4
             end
           end
           object tabData: TTabSheet
-            ClientHeight = 474
-            ClientWidth = 824
+            ClientHeight = 492
+            ClientWidth = 820
             ImageIndex = 7
             object GroupBox3: TGroupBox
               Left = 8
@@ -1038,20 +1031,19 @@ object Form1: TForm1
               Top = 24
               Width = 216
               Caption = 'an'
-              ClientHeight = 212
-              ClientWidth = 212
+              ClientHeight = 230
+              ClientWidth = 214
               TabOrder = 0
               object lblNumPoints: TLabel
                 Left = 8
-                Height = 15
+                Height = 16
                 Top = 8
-                Width = 73
+                Width = 83
                 Caption = 'lblNumPoints'
-                ParentColor = False
               end
               object speNumPoints: TSpinEdit
                 Left = 8
-                Height = 23
+                Height = 27
                 Top = 32
                 Width = 96
                 Alignment = taRightJustify
@@ -1074,8 +1066,8 @@ object Form1: TForm1
                 ChildSizing.ShrinkVertical = crsScaleChilds
                 ChildSizing.Layout = cclLeftToRightThenTopToBottom
                 ChildSizing.ControlsPerLine = 1
-                ClientHeight = 100
-                ClientWidth = 124
+                ClientHeight = 103
+                ClientWidth = 126
                 ItemIndex = 0
                 Items.Strings = (
                   'm/s'
@@ -1088,23 +1080,22 @@ object Form1: TForm1
             end
             object GroupBox4: TGroupBox
               Left = 232
-              Height = 364
+              Height = 382
               Top = 24
               Width = 384
               Anchors = [akTop, akLeft, akBottom]
               Caption = 'sel'
-              ClientHeight = 344
-              ClientWidth = 380
+              ClientHeight = 380
+              ClientWidth = 382
               TabOrder = 1
               object LabeledEdit1: TLabeledEdit
                 Left = 256
-                Height = 23
+                Height = 27
                 Top = 32
                 Width = 112
-                EditLabel.Height = 15
+                EditLabel.Height = 16
                 EditLabel.Width = 112
                 EditLabel.Caption = 'LabeledEdit1'
-                EditLabel.ParentColor = False
                 ReadOnly = True
                 TabOrder = 1
                 Text = 'pitch'
@@ -1113,13 +1104,12 @@ object Form1: TForm1
               end
               object LabeledEdit2: TLabeledEdit
                 Left = 256
-                Height = 23
+                Height = 27
                 Top = 120
                 Width = 112
-                EditLabel.Height = 15
+                EditLabel.Height = 16
                 EditLabel.Width = 112
                 EditLabel.Caption = 'LabeledEdit2'
-                EditLabel.ParentColor = False
                 TabOrder = 2
                 Text = 'roll'
                 OnDragDrop = LabeledEdit2DragDrop
@@ -1127,13 +1117,12 @@ object Form1: TForm1
               end
               object LabeledEdit3: TLabeledEdit
                 Left = 256
-                Height = 23
+                Height = 27
                 Top = 208
                 Width = 112
-                EditLabel.Height = 15
+                EditLabel.Height = 16
                 EditLabel.Width = 112
                 EditLabel.Caption = 'LabeledEdit3'
-                EditLabel.ParentColor = False
                 TabOrder = 3
                 Text = 'yaw'
                 OnDragDrop = LabeledEdit3DragDrop
@@ -1141,7 +1130,7 @@ object Form1: TForm1
               end
               object TreeView1: TTreeView
                 Left = 8
-                Height = 322
+                Height = 358
                 Top = 8
                 Width = 216
                 Anchors = [akTop, akLeft, akBottom]
@@ -1226,10 +1215,10 @@ object Form1: TForm1
               end
               object cbxProfiles: TComboBox
                 Left = 256
-                Height = 23
+                Height = 27
                 Top = 296
                 Width = 112
-                ItemHeight = 15
+                ItemHeight = 0
                 ItemIndex = 0
                 Items.Strings = (
                   'None'
@@ -1249,28 +1238,25 @@ object Form1: TForm1
               end
               object Label9: TLabel
                 Left = 256
-                Height = 15
+                Height = 16
                 Top = 278
-                Width = 39
+                Width = 47
                 Caption = 'Profiles'
-                ParentColor = False
               end
             end
             object lblBegin: TLabel
               Left = 8
-              Height = 15
+              Height = 16
               Top = 269
-              Width = 14
+              Width = 16
               Caption = 'bg'
-              ParentColor = False
             end
             object lblEnde: TLabel
               Left = 8
-              Height = 15
+              Height = 16
               Top = 293
-              Width = 13
+              Width = 15
               Caption = 'ed'
-              ParentColor = False
             end
             object btnCut: TBitBtn
               Left = 8
@@ -1286,11 +1272,10 @@ object Form1: TForm1
             end
             object lblDuration: TLabel
               Left = 8
-              Height = 15
+              Height = 16
               Top = 317
-              Width = 18
+              Width = 21
               Caption = 'dur'
-              ParentColor = False
             end
             object MAVmsg: TCheckGroup
               Tag = 65535
@@ -1308,8 +1293,8 @@ object Form1: TForm1
               ChildSizing.ShrinkVertical = crsScaleChilds
               ChildSizing.Layout = cclLeftToRightThenTopToBottom
               ChildSizing.ControlsPerLine = 1
-              ClientHeight = 316
-              ClientWidth = 212
+              ClientHeight = 319
+              ClientWidth = 214
               Items.Strings = (
                 'HEARTBEAT (0)'
                 'MAV_SYS_STATUS (1)'
@@ -1334,22 +1319,21 @@ object Form1: TForm1
             end
             object cbMAVasCSV: TCheckBox
               Left = 640
-              Height = 19
+              Height = 23
               Top = 376
-              Width = 37
+              Width = 45
               Caption = 'csv'
               TabOrder = 4
             end
             object lblMAVcommon: TLabel
               Cursor = crHandPoint
               Left = 640
-              Height = 15
+              Height = 16
               Top = 407
-              Width = 147
+              Width = 162
               Caption = 'MAVlink C-library/common'
               Font.Color = clNavy
               Font.Style = [fsUnderline]
-              ParentColor = False
               ParentFont = False
               OnClick = lblMAVcommonClick
               OnMouseEnter = lblMAVcommonMouseEnter
@@ -1390,7 +1374,7 @@ object Form1: TForm1
             end
             object edDeleteLn: TEdit
               Left = 117
-              Height = 23
+              Height = 27
               Top = 394
               Width = 107
               TabOrder = 8
@@ -1399,8 +1383,8 @@ object Form1: TForm1
           end
           object tabCommon: TTabSheet
             Caption = 'allg'
-            ClientHeight = 474
-            ClientWidth = 824
+            ClientHeight = 492
+            ClientWidth = 820
             ImageIndex = 8
             object rgTimeType: TRadioGroup
               Left = 8
@@ -1416,8 +1400,8 @@ object Form1: TForm1
               ChildSizing.ShrinkVertical = crsScaleChilds
               ChildSizing.Layout = cclLeftToRightThenTopToBottom
               ChildSizing.ControlsPerLine = 1
-              ClientHeight = 140
-              ClientWidth = 217
+              ClientHeight = 143
+              ClientWidth = 219
               ItemIndex = 1
               Items.Strings = (
                 'Date_Time'
@@ -1433,8 +1417,8 @@ object Form1: TForm1
               Top = 8
               Width = 200
               Caption = 'gbDiverse'
-              ClientHeight = 324
-              ClientWidth = 196
+              ClientHeight = 342
+              ClientWidth = 198
               TabOrder = 1
               OnKeyUp = gbDiverseKeyUp
               object btnSpecial: TButton
@@ -1653,9 +1637,9 @@ object Form1: TForm1
               end
               object cbThunder: TCheckBox
                 Left = 12
-                Height = 19
+                Height = 23
                 Top = 16
-                Width = 77
+                Width = 92
                 Caption = 'cbThunder'
                 OnChange = cbThunderChange
                 TabOrder = 1
@@ -1674,8 +1658,8 @@ object Form1: TForm1
                 ChildSizing.ShrinkVertical = crsScaleChilds
                 ChildSizing.Layout = cclLeftToRightThenTopToBottom
                 ChildSizing.ControlsPerLine = 1
-                ClientHeight = 76
-                ClientWidth = 173
+                ClientHeight = 79
+                ClientWidth = 175
                 ItemIndex = 0
                 Items.Strings = (
                   '2k'
@@ -1686,7 +1670,7 @@ object Form1: TForm1
               end
               object speItems: TSpinEdit
                 Left = 12
-                Height = 23
+                Height = 27
                 Top = 96
                 Width = 56
                 MaxValue = 50
@@ -1696,17 +1680,16 @@ object Form1: TForm1
               end
               object Label10: TLabel
                 Left = 12
-                Height = 15
+                Height = 16
                 Top = 76
-                Width = 29
+                Width = 33
                 Caption = 'Items'
-                ParentColor = False
               end
               object cbCleanHplus: TCheckBox
                 Left = 12
-                Height = 19
+                Height = 23
                 Top = 44
-                Width = 48
+                Width = 59
                 Caption = 'ChVT'
                 Checked = True
                 State = cbChecked
@@ -1746,8 +1729,8 @@ object Form1: TForm1
               Top = 176
               Width = 222
               Caption = 'gbBatt'
-              ClientHeight = 156
-              ClientWidth = 218
+              ClientHeight = 174
+              ClientWidth = 220
               TabOrder = 3
               object rgVoltRule: TRadioGroup
                 Left = 8
@@ -1763,8 +1746,8 @@ object Form1: TForm1
                 ChildSizing.ShrinkVertical = crsScaleChilds
                 ChildSizing.Layout = cclLeftToRightThenTopToBottom
                 ChildSizing.ControlsPerLine = 1
-                ClientHeight = 44
-                ClientWidth = 196
+                ClientHeight = 47
+                ClientWidth = 198
                 ItemIndex = 0
                 Items.Strings = (
                   'Yuneec'
@@ -1774,15 +1757,15 @@ object Form1: TForm1
               end
               object cbCap: TCheckBox
                 Left = 8
-                Height = 19
+                Height = 23
                 Top = 128
-                Width = 54
+                Width = 63
                 Caption = 'cbCap'
                 TabOrder = 1
               end
               object speBaseLoad: TSpinEdit
                 Left = 8
-                Height = 23
+                Height = 27
                 Top = 88
                 Width = 200
                 MaxValue = 2000
@@ -1791,11 +1774,10 @@ object Form1: TForm1
               end
               object lblBaseLoad: TLabel
                 Left = 8
-                Height = 15
+                Height = 16
                 Top = 72
-                Width = 63
+                Width = 75
                 Caption = 'lblBaseLoad'
-                ParentColor = False
               end
             end
             object gbStkProz: TGroupBox
@@ -1804,12 +1786,12 @@ object Form1: TForm1
               Top = 176
               Width = 296
               Caption = 'gbStkProz'
-              ClientHeight = 85
-              ClientWidth = 292
+              ClientHeight = 103
+              ClientWidth = 294
               TabOrder = 4
               object speStk: TSpinEdit
                 Left = 8
-                Height = 23
+                Height = 27
                 Top = 16
                 Width = 106
                 OnEditingDone = speStkEditingDone
@@ -1817,7 +1799,7 @@ object Form1: TForm1
               end
               object speProz: TSpinEdit
                 Left = 8
-                Height = 23
+                Height = 27
                 Top = 48
                 Width = 106
                 MaxValue = 150
@@ -1829,31 +1811,28 @@ object Form1: TForm1
               end
               object Label11: TLabel
                 Left = 128
-                Height = 15
+                Height = 16
                 Top = 18
-                Width = 47
+                Width = 53
                 Caption = 'Stick Pos'
-                ParentColor = False
               end
               object Label17: TLabel
                 Left = 128
-                Height = 15
+                Height = 16
                 Top = 51
-                Width = 23
+                Width = 27
                 Caption = 'proz'
-                ParentColor = False
               end
             end
             object lblGitHub: TLabel
               Cursor = crHandPoint
               Left = 464
-              Height = 15
+              Height = 16
               Top = 304
-              Width = 51
+              Width = 58
               Caption = 'lblGitHub'
               Font.Color = clNavy
               Font.Style = [fsUnderline]
-              ParentColor = False
               ParentFont = False
               OnClick = lblGitHubClick
               OnMouseEnter = lblGitHubMouseEnter
@@ -1864,13 +1843,13 @@ object Form1: TForm1
       end
       object tabAppLog: TTabSheet
         Caption = 'AppLog'
-        ClientHeight = 502
-        ClientWidth = 832
+        ClientHeight = 496
+        ClientWidth = 830
         ImageIndex = 11
         object btnSaveApplog: TBitBtn
-          Left = 714
+          Left = 712
           Height = 34
-          Top = 464
+          Top = 458
           Width = 107
           Anchors = [akRight, akBottom]
           Caption = 'Sv'
@@ -1881,9 +1860,9 @@ object Form1: TForm1
         end
         inline AppLog: TSynEdit
           Left = 0
-          Height = 451
+          Height = 445
           Top = 0
-          Width = 832
+          Width = 830
           Align = alTop
           Anchors = [akTop, akLeft, akRight, akBottom]
           Color = clDefault
@@ -1894,6 +1873,8 @@ object Form1: TForm1
           ParentColor = False
           ParentFont = False
           TabOrder = 1
+          OnMouseWheelDown = AppLogMouseWheelDown
+          OnMouseWheelUp = AppLogMouseWheelUp
           Gutter.Width = 57
           Gutter.MouseActions = <>
           RightGutter.Width = 0
@@ -2386,7 +2367,7 @@ object Form1: TForm1
         object btnDelAppLog: TBitBtn
           Left = 8
           Height = 34
-          Top = 464
+          Top = 458
           Width = 107
           Anchors = [akLeft, akBottom]
           Caption = 'del'
@@ -2397,17 +2378,17 @@ object Form1: TForm1
         end
         object cbReduced: TCheckBox
           Left = 128
-          Height = 19
-          Top = 479
-          Width = 79
+          Height = 23
+          Top = 469
+          Width = 92
           Anchors = [akLeft, akBottom]
           Caption = 'cbReduced'
           TabOrder = 3
         end
         object speBlockNum: TSpinEdit
           Left = 272
-          Height = 23
-          Top = 470
+          Height = 27
+          Top = 460
           Width = 71
           Anchors = [akLeft, akBottom]
           MaxValue = 100000
@@ -2418,7 +2399,7 @@ object Form1: TForm1
         object btnShowHex: TBitBtn
           Left = 360
           Height = 34
-          Top = 464
+          Top = 458
           Width = 107
           Anchors = [akLeft, akBottom]
           Caption = 'hex'
@@ -2429,9 +2410,9 @@ object Form1: TForm1
         end
         object cbHighLight: TCheckBox
           Left = 128
-          Height = 19
-          Top = 459
-          Width = 86
+          Height = 23
+          Top = 449
+          Width = 99
           Anchors = [akLeft, akBottom]
           Caption = 'cbHighLight'
           OnChange = cbHighLightChange
@@ -2442,11 +2423,11 @@ object Form1: TForm1
   end
   object cbxLogDir: TComboBox
     Left = 152
-    Height = 23
+    Height = 27
     Top = 6
     Width = 428
     Anchors = [akTop, akLeft, akRight]
-    ItemHeight = 15
+    ItemHeight = 0
     OnChange = cbxLogDirChange
     OnDblClick = cbxLogDirDblClick
     OnMouseUp = cbxLogDirMouseUp

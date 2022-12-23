@@ -346,6 +346,10 @@ type
     TreeView1: TTreeView;
     XMLPropStorage1: TXMLPropStorage;
 
+    procedure AppLogMouseWheelDown(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure AppLogMouseWheelUp(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
     procedure btnCombineLogsClick(Sender: TObject);
     procedure btnDefaultProfileClick(Sender: TObject);
     procedure btnDeleteLnClick(Sender: TObject);
@@ -2792,6 +2796,20 @@ begin
     StatusBar1.Panels[5].Text:=errSelect;
 end;
 
+procedure TForm1.AppLogMouseWheelDown(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if ssCtrl in Shift then
+    AppLog.Font.Size:=AppLog.Font.Size-1;
+end;
+
+procedure TForm1.AppLogMouseWheelUp(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if ssCtrl in Shift then
+    AppLog.Font.Size:=AppLog.Font.Size+1;
+end;
+
 procedure TForm1.btnCombineLogsClick(Sender: TObject); {Combine some legacy Yuneec Flightlog to one log files set}
 begin
   CombineLogs;
@@ -2904,6 +2922,7 @@ var dsbuf: array[0..YTHPcols] of byte;
 
 {https://www.delphipraxis.net/122021-single-byte-array-konvertieren-und-umgekehrt.html
  http://forum.lazarus-ide.org/index.php?topic=42182.0
+ https://www.lazarusforum.de/viewtopic.php?f=55&t=14659
  Direkter Typecast mit dem Zieldatentyp oder die Deklaration mittels absolute}
   function GetFloatFromBuf(const p: integer): single; {Position, Länge immer 4}
   var i: integer;
