@@ -41,4 +41,4 @@ Hex dump: Dump an unknown file as hexadecimal for analysis. Result can be saved 
 
 ---------------------------------------
 
-For news and updates see "history.txt"
+**For news and updates see "history.txt"**
