@@ -280,6 +280,9 @@ begin
    12904: result:='open_drone_id_system';
    12905: result:='open_drone_id_operator_id';
    12915: result:='open_drone_id_message_pack';
+   12918: result:='open_drone_id_arm_status';
+   12919: result:='open_drone_id_system_update';
+   19920: result:='hygrometer_sensor';
   end;
 end;
 

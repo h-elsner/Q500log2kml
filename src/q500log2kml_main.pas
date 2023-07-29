@@ -3770,7 +3770,7 @@ begin
       Chart3LineSeries1.SeriesColor:=ColorButton2.ButtonColor;
       Chart4LineSeries1.SeriesColor:=ColorButton3.ButtonColor;
       Chart5LineSeries1.SeriesColor:=ColorButton4.ButtonColor;
-      Chart1.AxisList[2].Title.Caption:=rsDistHome;        {Entfernung}
+      Chart1.AxisList[2].Title.Caption:=rsDistHome+' [m]'; {Entfernung}
       Chart3.AxisList[0].Title.Caption:=csvVolt+' [V]';    {y-Achse top}
       Chart4.AxisList[0].Title.Caption:=csvAmp+' [A]';     {y-Achse middle}
       Chart5.AxisList[0].Title.Caption:=csvUcap+' [mAh]';  {y-Achse bottom}
@@ -4597,7 +4597,7 @@ begin
             if testh(h) then begin                 {nicht bei unsinnigen Höhenwerten}
               tas:=StrToFloatN(splitlist[7]);      {True Air Speed in m/s}
               u:=StrToFloatN(splitlist[2]);        {LiPo Spannung}
-              if (u<umin) and (u>5) then
+              if (u<umin) and (u>1) then
                 umin:=u;
               if NichtLeer(splitlist[3]) and       {Simulatorflug}
                  (splitlist[15]='231') then
@@ -7732,7 +7732,7 @@ const bgid=999999;
                    if tas>tasmax then
                      tasmax:=tas;
                    if (u<umin) and
-                      (u>5) then
+                      (u>1) then
                      umin:=u;
                    if NichtLeer(splitlist[5]) and
                       NichtLeer(splitlist[6]) then begin  {GPS Koordinaten vorh.}
@@ -7753,7 +7753,7 @@ const bgid=999999;
                         (u<200) then
                        umaxg:=u;
                      if (u<uming) and
-                        (u>5) then
+                        (u>1) then
                        uming:=u;
                      if slat<>'' then begin        {Startpunkt mit GPS}
                        lat2:=StrToFloatN(splitlist[5]);
@@ -11374,7 +11374,7 @@ end;
 procedure TForm1.DiaWerte(p: byte);                {Anzeige Diagramm Werte für Spalte p}
 var x: integer;
     w, lat1, lon1, alt1: double;
-    bg, lbg: TDateTime;
+    bg: TDateTime;
     s: string;
     vp, zp: boolean;                               {Valid data point, zero datapoint RSSI}
 
@@ -11383,7 +11383,7 @@ var x: integer;
   begin
     case p of                                      {Tom's Hubsan Log Recorder}
       4: s:=s+' [m]';                              {Elevation}
-      2, 3: s:=rsDistHome;
+      2, 3: s:=rsDistHome+' [m]';
       6, 7, 8: s:=s+' [°]';
       9: s:=s+' [V]';
       18: s:=s+' [%]';                             {RSSI}
@@ -11395,9 +11395,8 @@ var x: integer;
   procedure PrepBreeze;                            {Breeze vorbereiten}
   begin
     case p of                                      {Telemetrie Breeze}
-      0:  s:=rsSampling;
       10: s:=s+' [m]';
-      12, 13: s:=rsDistHome;
+      12, 13: s:=rsDistHome+' [m]';
       15, 16, 17: s:=s+' [°]';
       21: s:=s+' [%]';                             {Breeze: Restkapazität}
     end;
@@ -11405,9 +11404,6 @@ var x: integer;
 
   procedure PrepYTHPlus;                           {YTH Plus vorbereiten}
   begin
-    if p=0 then begin
-      s:=rsSampling;
-    end else
     case rgQuelle.ItemIndex of
       0: begin                                     {Telemetry}
             case p of
@@ -11415,14 +11411,14 @@ var x: integer;
               2: s:=s+' [V]';
               3: s:=rsRest+' [%]';
               4: s:=s+' [m]';
-              5, 6: s:=rsDistHome;
+              5, 6: s:=rsDistHome+' [m]';
               7, 24, 25: s:=s+' ['+rgSpeedUnit.Items[rgSpeedUnit.ItemIndex]+']'; {selected speed}
               11, 12, 13: s:=s+' [°]';
             end;
          end;
       1: begin                                     {RemoteGPS}
             case p of                              {ST16}
-              1, 2: s:=rsDistHome;
+              1, 2: s:=rsDistHome+' [m]';
               3: s:=s+' [m]';
               5: s:=s+' [cm]';                     {Accuracy GPS ST16}
               6: s:=s+' ['+rgSpeedUnit.Items[rgSpeedUnit.ItemIndex]+']';
@@ -11437,9 +11433,6 @@ var x: integer;
 
   procedure PrepYlegacy;                           {Alle anderen vorbereiten}
   begin
-    if p=0 then begin
-      s:=rsSampling;
-    end else
     case rgQuelle.ItemIndex of
       0: begin                                     {Telemetry}
             case p of
@@ -11448,14 +11441,14 @@ var x: integer;
               3: if v_type=1
                    then s:=s+' [A]';               {nur H920}
               4: s:=s+' [m]';
-              5, 6: s:=rsDistHome;
+              5, 6: s:=rsDistHome+' [m]';
               7, 24, 25: s:=s+' ['+rgSpeedUnit.Items[rgSpeedUnit.ItemIndex]+']';  {selected speed}
               11, 12, 13: s:=s+' [°]';
             end;
          end;
       1: begin                                     {RemoteGPS}
             case p of                              {ST10/ST16}
-              1, 2: s:=rsDistHome;
+              1, 2: s:=rsDistHome+' [m]';
               3: s:=s+' [m]';
               4: s:=s+' [cm]';                     {Accuracy GPS ST10}
               5: s:=s+' ['+rgSpeedUnit.Items[rgSpeedUnit.ItemIndex]+']';
@@ -11476,7 +11469,7 @@ var x: integer;
       2: s:=s+' [V]';
       3: s:=s+' [A]';
       4, 21, 22, 37..40, 51: s:=s+' [m]';
-      5, 6: s:=rsDistHome;
+      5, 6: s:=rsDistHome+' [m]';
       7, 25, 41..43, 48: s:=s+' [m/s]';
       26..28: s:=s+' [m/s²]';
       11..13: s:=s+' [rad]';
@@ -11490,15 +11483,6 @@ var x: integer;
     end;
   end;
 
-  function SamplingRegularity: double;             {Spalte 0, Timestamps Deltawert}
-  begin
-    result:=0;
-    if lbg>0 then begin
-      result:=(bg-lbg)*secpd*1000;                 {delta in ms}
-    end;
-    lbg:=bg;
-  end;
-
 {Die Zeitachse und Werte entsprechend der Datenformate in den Spalten
  anpassen und Diagramme anlegen}
 
@@ -11507,7 +11491,6 @@ var x: integer;
     bg:=ZeitToDT(gridDetails.Cells[0, x], v_type); {Zeitstempel}
     w:=StrToFloatN(gridDetails.Cells[p, x]);       {default: Wert einfach übernehmen}
     case p of                                      {Telemetrie Breeze}
-      0: w:=SamplingRegularity;
       12, 13: begin                                {Koordinaten}
                  if ((lat1<>0) or (lon1<>0)) and   {Koordinaten vorhanden}
                     BrGPSfix(gridDetails.Cells[20, x]) then begin {GPS-Fix}
@@ -11559,7 +11542,6 @@ var x: integer;
                       gridDetails.Cells[gridDetails.Tag, x]) then begin
               w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
               case p of                            {Liste der Spalten für Dia}
-                0: w:=SamplingRegularity;
                 2: if w<=5 then                    {Suppress initial values}
                      vp:=false;
                 5, 6: begin
@@ -11580,13 +11562,11 @@ var x: integer;
               end;
               if (p=4) and (not testh(w)) then
                 w:=0;                              {Korrektur unplausibler Höhe}
-           end else                                {Ende Blödsinn ausblenden}
-             vp:=false;                            {Data set not valid}
+           end;                                    {Ende Blödsinn ausblenden}
          end;
       1: begin                                     {RemoteGPS}
             w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
             case p of                              {ST16}
-              0: w:=SamplingRegularity;
               1,2: if (lat1<>0) or (lon1<>0) then begin
                      w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
                                    StrToFloatN(gridDetails.Cells[1, x]));
@@ -11604,10 +11584,8 @@ var x: integer;
          end;
       2: begin                                     {Remote: nur Angle}
            w:=StrToFloatN(gridDetails.Cells[p, x]); {default: Wert einfach übernehmen}
-           case p of
-             0: w:=SamplingRegularity;
-             7: w:=TiltToGrad(StrToFloatN(gridDetails.Cells[p, x]));
-           end;
+           if p=7 then
+             w:=TiltToGrad(StrToFloatN(gridDetails.Cells[p, x]));
          end;
     end;
   end;
@@ -11616,9 +11594,6 @@ var x: integer;
   begin
     bg:=ZeitToDT(gridDetails.Cells[0, x], v_type); {Zeitstempel}
     w:=StrToFloatN(gridDetails.Cells[p, x]);       {default: Wert einfach übernehmen}
-    if p=0 then
-      w:=SamplingRegularity
-    else
     case rgQuelle.ItemIndex of                     {Selected file}
       0: begin                                     {Telemetry}
             case p of                              {Liste der Spalten für Dia}
@@ -11675,10 +11650,7 @@ var x: integer;
   begin
     bg:=ZeitToDT(gridDetails.Cells[0, x], defVT);  {Zeitstempel}
     w:=StrToFloatN(gridDetails.Cells[p, x]);       {default: Wert einfach übernehmen}
-    if p=0 then
-      w:=SamplingRegularity
-    else
-    case rgQuelle.ItemIndex of                     {Gewählte Datei}
+    case rgQuelle.ItemIndex of                  {Gewählte Datei}
       0: begin                                     {Telemetry}
             case p of                              {Liste der Spalten für Dia}
               4: if testh(w) and
@@ -11749,15 +11721,11 @@ var x: integer;
   end;
 
 begin
-  if p=0 then begin
-    if gridDetails.ColCount=csvanz then exit;      {not for PX4 CSV}
-    if v_type=H501ID then exit;                    {Not for Hubsan}
-  end;
-  if (gridDetails.RowCount>25) then begin          {genügend Zeilen}
+  if (p>0) and                                     {Spalte Datum/Zeit ausschließen}
+     (gridDetails.RowCount>25) then begin          {genügend Zeilen}
     DoForm2Show(0);
     pcMain.Tag:=1;
     w:=0;
-    lbg:=0;
     lat1:=0;
     lon1:=0;
     alt1:=0;
@@ -11811,11 +11779,10 @@ begin
           w:=0;
         end;
         try
-          if vp then begin
+          if vp then
             Form2.Chart1LineSeries1.AddXY(bg, w);
-            if zp then
-              Form2.Chart1LineSeries2.AddXY(bg, -1); {Indication for existing WiFi connection from CGOx}
-          end;
+          if zp then
+            Form2.Chart1LineSeries2.AddXY(bg, -1); {Indication for existing WiFi connection from CGOx}
         except
           Form2.Close;
         end;
@@ -12211,7 +12178,7 @@ begin
          else begin                                {andere Yuneec Kopter}
            case Index of                           {Telemetrie Spalten auswerten}
              8, 9, 14..20: ZhlWerte(Index);
-             0..7, 10..13: DiaWerte(Index);
+             1..7, 10..13: DiaWerte(Index);
              else begin                            {variable Spalten}
                if index=gridDetails.Tag+2 then
                  ZhlWerte(Index);
@@ -12231,7 +12198,7 @@ begin
        end;
     1: DiaWerte(Index);                            {ST10 Spalten auswerten}
     2: case Index of                               {Funk Spalten auswerten}
-         0..4, 7..8:  DiaWerte(Index);
+         1..4, 7..8:  DiaWerte(Index);
          5..6, 9..24: ZhlWerte(Index);
        end;
   end;
@@ -12787,7 +12754,7 @@ begin
   end else KursorAus;                              {Fadenkreuz aus}
 end;
 
-procedure TForm1.mnCopyTabClick(Sender: TObject);  {Tabelle kopieren}
+procedure TForm1.mnCopyTabClick(Sender: TObject); {Tabelle kopieren}
 begin
   if rgQuelle.ItemIndex=3 then gridDetails.CopyToClipboard(false) {Sensor: Alles}
                              else gridDetails.CopyToClipboard(true); {nur Zeile}
@@ -12824,7 +12791,7 @@ begin
   TimerDiashow.Enabled:=true;
 end;
 
-procedure TForm1.GoToZ(a: integer);                {Gehe zu Zeilennummer, a..freie Zeilen oben}
+procedure TForm1.GoToZ(a: integer); {Gehe zu Zeilennummer, a..freie Zeilen oben}
 var grSel: TGridRect;
     z: integer=1;
 

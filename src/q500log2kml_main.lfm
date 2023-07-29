@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 1217
+  Left = 1554
   Height = 678
-  Top = 146
+  Top = 144
   Width = 1001
   AllowDropFiles = True
   Anchors = [akTop, akRight]
@@ -22,7 +22,7 @@ object Form1: TForm1
   Position = poDefaultPosOnly
   SessionProperties = 'cbCap.Checked;cbCleanHplus.Checked;cbDashw.Checked;cbExtrude.Checked;cbHighLight.Checked;cbMarker.Checked;cbMAVasCSV.Checked;cbPilot.Checked;cbReduced.Checked;cbSensorKML.Checked;cbSimu.Checked;cbThunder.Checked;cbVehicleType.Checked;cbxLogDir.ItemIndex;cbxLogDir.Items;cbxLogDir.Text;cbxProfiles.ItemIndex;cbxProfiles.Text;cbxScanDir.ItemIndex;cbxScanDir.Items;cbxScanDir.Text;cbxSearch.ItemIndex;cbxSearch.Items;cbxSearch.Text;cbxText.ItemIndex;cbxText.Items;cbxText.Text;ColorButton1.ButtonColor;ColorButton2.ButtonColor;ColorButton3.ButtonColor;ColorButton4.ButtonColor;Height;LabeledEdit1.Tag;LabeledEdit1.Text;LabeledEdit2.Tag;LabeledEdit2.Text;LabeledEdit3.Tag;LabeledEdit3.Text;MAVmsg.Tag;pcMain.TabIndex;pcSettings3.TabIndex;rgAltitudeType.ItemIndex;rgBlockSize.ItemIndex;rgCSVtext.ItemIndex;rgErrType.ItemIndex;rgOutFormat.ItemIndex;rgQuelle.ItemIndex;rgSpeedUnit.ItemIndex;rgTimeType.ItemIndex;rgVehicleType.ItemIndex;rgVoltRule.ItemIndex;SelectDirectoryDialog1.FileName;SelectDirectoryDialog1.InitialDir;speAnalyze.Value;speBaseLoad.Value;speBlockNum.Value;speDataPoint.Value;speItems.Value;speLinePath.Value;tbrDistWP.Position;tbrSaturation.Position;Width;WindowState;AppLog.Font'
   ShowHint = True
-  LCLVersion = '2.2.0.4'
+  LCLVersion = '2.2.4.0'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 17
@@ -112,6 +112,7 @@ object Form1: TForm1
     Top = 12
     Width = 58
     Caption = 'FlightLog'
+    ParentColor = False
   end
   object btnConv: TBitBtn
     Left = 762
@@ -132,6 +133,7 @@ object Form1: TForm1
     Top = 64
     Width = 44
     Caption = 'Kopter:'
+    ParentColor = False
   end
   object btnArchive: TBitBtn
     Left = 634
@@ -166,6 +168,7 @@ object Form1: TForm1
     Width = 41
     Anchors = [akTop, akRight]
     Caption = 'Label6'
+    ParentColor = False
   end
   object lblManual: TLabel
     Cursor = crHandPoint
@@ -177,6 +180,7 @@ object Form1: TForm1
     Caption = 'lblManual'
     Font.Color = clNavy
     Font.Style = [fsUnderline]
+    ParentColor = False
     ParentFont = False
     OnClick = lblManualClick
     OnMouseEnter = lblManualMouseEnter
@@ -202,6 +206,7 @@ object Form1: TForm1
     Caption = 'lblUpdate'
     Font.Color = clNavy
     Font.Style = [fsUnderline]
+    ParentColor = False
     ParentFont = False
     OnClick = lblUpdateClick
     OnMouseEnter = lblUpdateMouseEnter
@@ -271,12 +276,12 @@ object Form1: TForm1
       Height = 526
       Top = 1
       Width = 840
-      ActivePage = tabAppLog
+      ActivePage = tabSettings
       Align = alClient
       Images = TabImages
       ParentShowHint = False
       ShowHint = True
-      TabIndex = 6
+      TabIndex = 5
       TabOrder = 0
       OnChange = pcMainChange
       Options = [nboKeyboardTabSwitch]
@@ -839,7 +844,7 @@ object Form1: TForm1
           OnChange = pcSettings3Change
           Options = [nboKeyboardTabSwitch]
           object tabConvert: TTabSheet
-            ClientHeight = 492
+            ClientHeight = 466
             ClientWidth = 820
             ImageIndex = 6
             object rgOutFormat: TRadioGroup
@@ -929,6 +934,7 @@ object Form1: TForm1
                 Top = 60
                 Width = 41
                 Caption = 'Label1'
+                ParentColor = False
               end
               object lblSaturation: TLabel
                 Left = 152
@@ -936,6 +942,7 @@ object Form1: TForm1
                 Top = 152
                 Width = 79
                 Caption = 'lblSaturation'
+                ParentColor = False
               end
               object rgAltitudeType: TRadioGroup
                 Left = 16
@@ -998,6 +1005,7 @@ object Form1: TForm1
               Top = 256
               Width = 60
               Caption = 'lblDistWP'
+              ParentColor = False
             end
             object tbrDistWP: TTrackBar
               Left = 0
@@ -1022,7 +1030,7 @@ object Form1: TForm1
             end
           end
           object tabData: TTabSheet
-            ClientHeight = 492
+            ClientHeight = 466
             ClientWidth = 820
             ImageIndex = 7
             object GroupBox3: TGroupBox
@@ -1031,7 +1039,7 @@ object Form1: TForm1
               Top = 24
               Width = 216
               Caption = 'an'
-              ClientHeight = 230
+              ClientHeight = 215
               ClientWidth = 214
               TabOrder = 0
               object lblNumPoints: TLabel
@@ -1040,6 +1048,7 @@ object Form1: TForm1
                 Top = 8
                 Width = 83
                 Caption = 'lblNumPoints'
+                ParentColor = False
               end
               object speNumPoints: TSpinEdit
                 Left = 8
@@ -1080,12 +1089,12 @@ object Form1: TForm1
             end
             object GroupBox4: TGroupBox
               Left = 232
-              Height = 382
+              Height = 356
               Top = 24
               Width = 384
               Anchors = [akTop, akLeft, akBottom]
               Caption = 'sel'
-              ClientHeight = 380
+              ClientHeight = 339
               ClientWidth = 382
               TabOrder = 1
               object LabeledEdit1: TLabeledEdit
@@ -1096,6 +1105,7 @@ object Form1: TForm1
                 EditLabel.Height = 16
                 EditLabel.Width = 112
                 EditLabel.Caption = 'LabeledEdit1'
+                EditLabel.ParentColor = False
                 ReadOnly = True
                 TabOrder = 1
                 Text = 'pitch'
@@ -1110,6 +1120,7 @@ object Form1: TForm1
                 EditLabel.Height = 16
                 EditLabel.Width = 112
                 EditLabel.Caption = 'LabeledEdit2'
+                EditLabel.ParentColor = False
                 TabOrder = 2
                 Text = 'roll'
                 OnDragDrop = LabeledEdit2DragDrop
@@ -1123,6 +1134,7 @@ object Form1: TForm1
                 EditLabel.Height = 16
                 EditLabel.Width = 112
                 EditLabel.Caption = 'LabeledEdit3'
+                EditLabel.ParentColor = False
                 TabOrder = 3
                 Text = 'yaw'
                 OnDragDrop = LabeledEdit3DragDrop
@@ -1130,7 +1142,7 @@ object Form1: TForm1
               end
               object TreeView1: TTreeView
                 Left = 8
-                Height = 358
+                Height = 317
                 Top = 8
                 Width = 216
                 Anchors = [akTop, akLeft, akBottom]
@@ -1242,6 +1254,7 @@ object Form1: TForm1
                 Top = 278
                 Width = 47
                 Caption = 'Profiles'
+                ParentColor = False
               end
             end
             object lblBegin: TLabel
@@ -1250,6 +1263,7 @@ object Form1: TForm1
               Top = 269
               Width = 16
               Caption = 'bg'
+              ParentColor = False
             end
             object lblEnde: TLabel
               Left = 8
@@ -1257,6 +1271,7 @@ object Form1: TForm1
               Top = 293
               Width = 15
               Caption = 'ed'
+              ParentColor = False
             end
             object btnCut: TBitBtn
               Left = 8
@@ -1276,6 +1291,7 @@ object Form1: TForm1
               Top = 317
               Width = 21
               Caption = 'dur'
+              ParentColor = False
             end
             object MAVmsg: TCheckGroup
               Tag = 65535
@@ -1334,6 +1350,7 @@ object Form1: TForm1
               Caption = 'MAVlink C-library/common'
               Font.Color = clNavy
               Font.Style = [fsUnderline]
+              ParentColor = False
               ParentFont = False
               OnClick = lblMAVcommonClick
               OnMouseEnter = lblMAVcommonMouseEnter
@@ -1383,7 +1400,7 @@ object Form1: TForm1
           end
           object tabCommon: TTabSheet
             Caption = 'allg'
-            ClientHeight = 492
+            ClientHeight = 466
             ClientWidth = 820
             ImageIndex = 8
             object rgTimeType: TRadioGroup
@@ -1684,6 +1701,7 @@ object Form1: TForm1
                 Top = 76
                 Width = 33
                 Caption = 'Items'
+                ParentColor = False
               end
               object cbCleanHplus: TCheckBox
                 Left = 12
@@ -1778,6 +1796,7 @@ object Form1: TForm1
                 Top = 72
                 Width = 75
                 Caption = 'lblBaseLoad'
+                ParentColor = False
               end
             end
             object gbStkProz: TGroupBox
@@ -1815,6 +1834,7 @@ object Form1: TForm1
                 Top = 18
                 Width = 53
                 Caption = 'Stick Pos'
+                ParentColor = False
               end
               object Label17: TLabel
                 Left = 128
@@ -1822,6 +1842,7 @@ object Form1: TForm1
                 Top = 51
                 Width = 27
                 Caption = 'proz'
+                ParentColor = False
               end
             end
             object lblGitHub: TLabel
@@ -1833,6 +1854,7 @@ object Form1: TForm1
               Caption = 'lblGitHub'
               Font.Color = clNavy
               Font.Style = [fsUnderline]
+              ParentColor = False
               ParentFont = False
               OnClick = lblGitHubClick
               OnMouseEnter = lblGitHubMouseEnter
