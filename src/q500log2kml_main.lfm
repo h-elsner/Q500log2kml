@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 1554
+  Left = 1439
   Height = 678
-  Top = 144
+  Top = 147
   Width = 1001
   AllowDropFiles = True
   Anchors = [akTop, akRight]
@@ -22,11 +22,11 @@ object Form1: TForm1
   Position = poDefaultPosOnly
   SessionProperties = 'cbCap.Checked;cbCleanHplus.Checked;cbDashw.Checked;cbExtrude.Checked;cbHighLight.Checked;cbMarker.Checked;cbMAVasCSV.Checked;cbPilot.Checked;cbReduced.Checked;cbSensorKML.Checked;cbSimu.Checked;cbThunder.Checked;cbVehicleType.Checked;cbxLogDir.ItemIndex;cbxLogDir.Items;cbxLogDir.Text;cbxProfiles.ItemIndex;cbxProfiles.Text;cbxScanDir.ItemIndex;cbxScanDir.Items;cbxScanDir.Text;cbxSearch.ItemIndex;cbxSearch.Items;cbxSearch.Text;cbxText.ItemIndex;cbxText.Items;cbxText.Text;ColorButton1.ButtonColor;ColorButton2.ButtonColor;ColorButton3.ButtonColor;ColorButton4.ButtonColor;Height;LabeledEdit1.Tag;LabeledEdit1.Text;LabeledEdit2.Tag;LabeledEdit2.Text;LabeledEdit3.Tag;LabeledEdit3.Text;MAVmsg.Tag;pcMain.TabIndex;pcSettings3.TabIndex;rgAltitudeType.ItemIndex;rgBlockSize.ItemIndex;rgCSVtext.ItemIndex;rgErrType.ItemIndex;rgOutFormat.ItemIndex;rgQuelle.ItemIndex;rgSpeedUnit.ItemIndex;rgTimeType.ItemIndex;rgVehicleType.ItemIndex;rgVoltRule.ItemIndex;SelectDirectoryDialog1.FileName;SelectDirectoryDialog1.InitialDir;speAnalyze.Value;speBaseLoad.Value;speBlockNum.Value;speDataPoint.Value;speItems.Value;speLinePath.Value;tbrDistWP.Position;tbrSaturation.Position;Width;WindowState;AppLog.Font'
   ShowHint = True
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '2.2.6.0'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 17
-    Top = 637
+    Height = 18
+    Top = 636
     Width = 1001
     Anchors = [akRight, akBottom]
     Panels = <    
@@ -150,7 +150,7 @@ object Form1: TForm1
   end
   object speDataPoint: TSpinEdit
     Left = 634
-    Height = 27
+    Height = 28
     Top = 60
     Width = 107
     Alignment = taRightJustify
@@ -188,7 +188,7 @@ object Form1: TForm1
   end
   object cbxText: TComboBox
     Left = 152
-    Height = 27
+    Height = 28
     Top = 60
     Width = 428
     Anchors = [akTop, akLeft, akRight]
@@ -215,7 +215,7 @@ object Form1: TForm1
   object btnScreenshot: TBitBtn
     Left = 762
     Height = 30
-    Top = 56
+    Top = 58
     Width = 107
     Anchors = [akTop, akRight]
     Caption = 'Sc'
@@ -253,7 +253,7 @@ object Form1: TForm1
     TabOrder = 10
     object cbxSearch: TComboBox
       Left = 0
-      Height = 27
+      Height = 28
       Top = 0
       Width = 128
       CharCase = ecLowerCase
@@ -276,12 +276,12 @@ object Form1: TForm1
       Height = 526
       Top = 1
       Width = 840
-      ActivePage = tabSettings
+      ActivePage = tabDetails
       Align = alClient
       Images = TabImages
       ParentShowHint = False
       ShowHint = True
-      TabIndex = 5
+      TabIndex = 1
       TabOrder = 0
       OnChange = pcMainChange
       Options = [nboKeyboardTabSwitch]
@@ -327,7 +327,7 @@ object Form1: TForm1
         ClientWidth = 830
         ImageIndex = 1
         object gridDetails: TStringGrid
-          Cursor = crHelp
+          Cursor = crSizeAll
           Left = 0
           Height = 496
           Top = 0
@@ -677,7 +677,7 @@ object Form1: TForm1
         end
         object cbxScanDir: TComboBox
           Left = 8
-          Height = 27
+          Height = 28
           Top = 14
           Width = 325
           Anchors = [akTop, akLeft, akRight]
@@ -844,7 +844,7 @@ object Form1: TForm1
           OnChange = pcSettings3Change
           Options = [nboKeyboardTabSwitch]
           object tabConvert: TTabSheet
-            ClientHeight = 466
+            ClientHeight = 492
             ClientWidth = 820
             ImageIndex = 6
             object rgOutFormat: TRadioGroup
@@ -918,7 +918,7 @@ object Form1: TForm1
               end
               object speLinePath: TSpinEdit
                 Left = 232
-                Height = 27
+                Height = 28
                 Top = 81
                 Width = 72
                 Alignment = taRightJustify
@@ -1030,7 +1030,7 @@ object Form1: TForm1
             end
           end
           object tabData: TTabSheet
-            ClientHeight = 466
+            ClientHeight = 492
             ClientWidth = 820
             ImageIndex = 7
             object GroupBox3: TGroupBox
@@ -1039,7 +1039,7 @@ object Form1: TForm1
               Top = 24
               Width = 216
               Caption = 'an'
-              ClientHeight = 215
+              ClientHeight = 230
               ClientWidth = 214
               TabOrder = 0
               object lblNumPoints: TLabel
@@ -1052,7 +1052,7 @@ object Form1: TForm1
               end
               object speNumPoints: TSpinEdit
                 Left = 8
-                Height = 27
+                Height = 28
                 Top = 32
                 Width = 96
                 Alignment = taRightJustify
@@ -1089,17 +1089,17 @@ object Form1: TForm1
             end
             object GroupBox4: TGroupBox
               Left = 232
-              Height = 356
+              Height = 382
               Top = 24
               Width = 384
               Anchors = [akTop, akLeft, akBottom]
               Caption = 'sel'
-              ClientHeight = 339
+              ClientHeight = 380
               ClientWidth = 382
               TabOrder = 1
               object LabeledEdit1: TLabeledEdit
                 Left = 256
-                Height = 27
+                Height = 28
                 Top = 32
                 Width = 112
                 EditLabel.Height = 16
@@ -1114,7 +1114,7 @@ object Form1: TForm1
               end
               object LabeledEdit2: TLabeledEdit
                 Left = 256
-                Height = 27
+                Height = 28
                 Top = 120
                 Width = 112
                 EditLabel.Height = 16
@@ -1128,7 +1128,7 @@ object Form1: TForm1
               end
               object LabeledEdit3: TLabeledEdit
                 Left = 256
-                Height = 27
+                Height = 28
                 Top = 208
                 Width = 112
                 EditLabel.Height = 16
@@ -1142,7 +1142,7 @@ object Form1: TForm1
               end
               object TreeView1: TTreeView
                 Left = 8
-                Height = 317
+                Height = 358
                 Top = 8
                 Width = 216
                 Anchors = [akTop, akLeft, akBottom]
@@ -1227,7 +1227,7 @@ object Form1: TForm1
               end
               object cbxProfiles: TComboBox
                 Left = 256
-                Height = 27
+                Height = 28
                 Top = 296
                 Width = 112
                 ItemHeight = 0
@@ -1391,7 +1391,7 @@ object Form1: TForm1
             end
             object edDeleteLn: TEdit
               Left = 117
-              Height = 27
+              Height = 28
               Top = 394
               Width = 107
               TabOrder = 8
@@ -1400,7 +1400,7 @@ object Form1: TForm1
           end
           object tabCommon: TTabSheet
             Caption = 'allg'
-            ClientHeight = 466
+            ClientHeight = 492
             ClientWidth = 820
             ImageIndex = 8
             object rgTimeType: TRadioGroup
@@ -1687,7 +1687,7 @@ object Form1: TForm1
               end
               object speItems: TSpinEdit
                 Left = 12
-                Height = 27
+                Height = 28
                 Top = 96
                 Width = 56
                 MaxValue = 50
@@ -1783,7 +1783,7 @@ object Form1: TForm1
               end
               object speBaseLoad: TSpinEdit
                 Left = 8
-                Height = 27
+                Height = 28
                 Top = 88
                 Width = 200
                 MaxValue = 2000
@@ -1810,7 +1810,7 @@ object Form1: TForm1
               TabOrder = 4
               object speStk: TSpinEdit
                 Left = 8
-                Height = 27
+                Height = 28
                 Top = 16
                 Width = 106
                 OnEditingDone = speStkEditingDone
@@ -1818,7 +1818,7 @@ object Form1: TForm1
               end
               object speProz: TSpinEdit
                 Left = 8
-                Height = 27
+                Height = 28
                 Top = 48
                 Width = 106
                 MaxValue = 150
@@ -2409,8 +2409,8 @@ object Form1: TForm1
         end
         object speBlockNum: TSpinEdit
           Left = 272
-          Height = 27
-          Top = 460
+          Height = 28
+          Top = 459
           Width = 71
           Anchors = [akLeft, akBottom]
           MaxValue = 100000
@@ -2445,7 +2445,7 @@ object Form1: TForm1
   end
   object cbxLogDir: TComboBox
     Left = 152
-    Height = 27
+    Height = 28
     Top = 6
     Width = 428
     Anchors = [akTop, akLeft, akRight]

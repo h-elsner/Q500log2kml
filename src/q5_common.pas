@@ -152,6 +152,8 @@
 2022-09-18       Update Thunderbird FlightMode 12 - Emergency
 2022-09-25  V4.9 New function: Combine legacy Yuneec flight logs
 2022-11-30       Added function to clean flightlogs with wrong time stamps
+2023-02-27       Splitting TLOG files improved
+2023-05-16       Sampling regularity for column 0 (Date/Time)
 }
 
 
@@ -167,8 +169,8 @@ uses
 const
 {public constants}
   AppName=   'q500log2kml';
-  AppVersion='V4.9.1 - 11/2022';
-  VersValue=490;                                   {Verion number as Integer to compare}
+  AppVersion='V4.9.2 - 05/2023';
+  VersValue=492;                                   {Verion number as Integer to compare}
   VersFile='/v';
 
   homepage='http://h-elsner.mooo.com';             {My Homepage}
