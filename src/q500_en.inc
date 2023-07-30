@@ -108,7 +108,8 @@ resourcestring                                     {english}
   hntGroupBox5='Select altitude mode for output file';
   capDirSuffix='Path suffix';
   hntDirSuffix='Set format of path suffix for archiving';
-  rsDistHome='Distance to home point';
+  rsDistHome='Distance to home point [m]';
+  rsSampling='Sampling regularity [ms]';
   rsAllSet='All Set (Simulator)';
   rsAllOK='All OK';
   capLabel8='Download update';

@@ -108,7 +108,8 @@ resourcestring                                     {deutsch}
   hntGroupBox5='Art und Weise der Höhenangabe wählen für Ausgabedatei';
   capDirSuffix='Pfadsuffix';
   hntDirSuffix='Format Pfadsuffix für Archivierung einstellen';
-  rsDistHome='Entfernung zum Startpunkt';
+  rsDistHome='Entfernung zum Startpunkt [m]';
+  rsSampling='Sampling regularity [ms]';
   rsAllSet='All Set';
   rsAllOK='Alles OK';
   capLabel8='Neueste Version';
