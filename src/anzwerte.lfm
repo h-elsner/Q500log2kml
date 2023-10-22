@@ -1,18 +1,18 @@
 object Form2: TForm2
-  Left = 2009
+  Left = 1956
   Height = 292
-  Top = 905
+  Top = 873
   Width = 671
   Caption = 'Form2'
   ClientHeight = 292
   ClientWidth = 671
-  OnCreate = FormCreate
-  OnResize = FormResize
-  OnShow = FormShow
   PopupMenu = PopupMenu1
   Position = poDefaultPosOnly
   ShowInTaskBar = stNever
-  LCLVersion = '2.2.0.4'
+  LCLVersion = '3.99.0.0'
+  OnCreate = FormCreate
+  OnResize = FormResize
+  OnShow = FormShow
   object StringGrid1: TStringGrid
     Left = 8
     Height = 235
@@ -47,8 +47,8 @@ object Form2: TForm2
     Caption = '&OK'
     Images = Form1.TabImages
     ImageIndex = 39
-    OnClick = btnOKform2Click
     TabOrder = 1
+    OnClick = btnOKform2Click
   end
   object Chart1: TChart
     Left = 8
@@ -109,8 +109,8 @@ object Form2: TForm2
   end
   object edTime: TEdit
     Left = 8
-    Height = 15
-    Top = 256
+    Height = 17
+    Top = 254
     Width = 64
     Alignment = taCenter
     Anchors = [akLeft, akBottom]

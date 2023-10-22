@@ -1,7 +1,7 @@
 object Form4: TForm4
-  Left = 1495
+  Left = 1420
   Height = 292
-  Top = 850
+  Top = 885
   Width = 409
   BorderStyle = bsNone
   Caption = 'Log'
@@ -10,7 +10,7 @@ object Form4: TForm4
   FormStyle = fsSplash
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '3.99.0.0'
   object Image1: TImage
     Left = 0
     Height = 292

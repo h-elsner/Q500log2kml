@@ -31,7 +31,7 @@ resourcestring                                     {english}
   rsNotRename='Rename not possible. Another application uses the directory, write protection or missing access rights';
   rsFLDir='Yuneec FlightLog directory';
   rsEmpty='is empty';
-  rsHProfil='Elevation histogram from ';
+  rsHProfil='Elevation chart from ';
   rsToGMaps='Show at GoogleMaps';
   rsToOSM='Show at OpenStreetMap';
   rsHDiaSave='Save as picture...';
@@ -42,7 +42,7 @@ resourcestring                                     {english}
   rsTurns=' Tracks';
   rsRG1Item0='Drone';
   rsPC1Tab1='Overview';
-  rsPC1Tab2='Elevation histogram';
+  rsPC1Tab2='Elevation chart';
   rsPC1Tab3='Display files';
   rsPC1Tab4='Settings';
   capForm1='FlightLog evaluation for Yuneec drones';
@@ -141,10 +141,10 @@ resourcestring                                     {english}
   rsK1='K1 (camera pan)';
   rsK2='K2 (camera tilt)';
   rsFModeSw='Flight mode switch';
-  capTopDia='Top histogram';
-  capMiddleDia='Middle histogram';
-  capBottomDia='Bottom histogram';
-  hntGroupBox4='Select columns for histograms in ';
+  capTopDia='Top chart';
+  capMiddleDia='Middle chart';
+  capBottomDia='Bottom chart';
+  hntGroupBox4='Select columns for charts in ';
   capBitBtn12='Default';
   hntBitBtn12='Reset selected columns to default';
   rsCheckSettings='Check settings for ';
@@ -249,7 +249,7 @@ resourcestring                                     {english}
   capVrule='Conversion rule';
   hntVrule='Rule to convert battery voltage to remaining capacity';
   cbCapCaption='Capacity instead of voltage';
-  cbCapHint='Show remaining battery capacity instead of voltage at Elevation histogram';
+  cbCapHint='Show remaining battery capacity instead of voltage at Elevation chart';
   rsAbattCap='Computed batt capacity';
   capgbBatt='Battery capacity';
   hntgbBatt='Rules to approximate the battery capacity.';
