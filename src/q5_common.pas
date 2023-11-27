@@ -1,4 +1,4 @@
-{           History:
+(*          History:
 
 2015-12-10  V0.1 First try to read telemetry, GUI created, import and data
                  consistence check.
@@ -154,7 +154,8 @@
 2022-11-30       Added function to clean flightlogs with wrong time stamps
 2023-02-27       Splitting TLOG files improved
 2023-05-16       Sampling regularity for column 0 (Date/Time)
-}
+2023-11-23       Added save as CSV to grid Details
+*)
 
 
 unit q5_common;                                    {Common definitions and variables}
@@ -456,7 +457,7 @@ begin
   aGrid.Canvas.Font.Color:=GetContrastTextColor(Farbe);
 end;
 
-procedure BladeCol(aGrid: TStringGrid; fm: integer);
+procedure BladeCol(aGrid: TStringGrid; fm: integer); {Flight mode to color assignement}
 begin
   case fm of                                       {flight modes; wie Chart1BarSeries}
     25:     CellColorSetting(aGrid, clAngle);
@@ -469,7 +470,7 @@ begin
   end;
 end;
 
-procedure LegacyCol(aGrid: TStringGrid; fm: integer);
+procedure LegacyCol(aGrid: TStringGrid; fm: integer); {Flight mode to color assignement}
 begin
   case fm of                                       {flight modes wie Chart1BarSeries}
     3, 4:                  CellColorSetting(aGrid, clAngle);

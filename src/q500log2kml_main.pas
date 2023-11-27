@@ -67,11 +67,6 @@ RadioGroup1.Tag:  Indicates if autosize columns is needed. 0 means yes.
 Icon: Aus einem Bild, gemacht von der obersten Flugleitung
 http://image.online-convert.com/convert-to-ico
 
-Dank für Unterstützung und Erstellung der Mac OS X - Version an:
-Frank Kieselbach
-info@kieselbach.de
-www.kieselbach.de
-
 ToDo: Liniendiagramm entspechend FlghtMode einfärben
 
 https://forum.lazarus.freepascal.org/index.php?topic=40024.0
@@ -218,6 +213,8 @@ type
     lblMAVcommon: TLabel;
     lblSaturation: TLabel;
     MAVmsg: TCheckGroup;
+    mnSaveTab: TMenuItem;
+    Separator1: TMenuItem;
     mnSplit: TMenuItem;
     mnDownload: TMenuItem;
     mnReload: TMenuItem;
@@ -405,6 +402,7 @@ type
     procedure mnDownloadClick(Sender: TObject);
     procedure mnFlDelClick(Sender: TObject);
     procedure mnReloadClick(Sender: TObject);
+    procedure mnSaveTabClick(Sender: TObject);
     procedure mnSplitClick(Sender: TObject);
     procedure pcSettings3Change(Sender: TObject);
     procedure speDataPointEditingDone(Sender: TObject);
@@ -718,16 +716,6 @@ const
   tabu=19;
   lblsize=35;                                      {LabelSize zum Ausrichten der Y-Achsen bei Schnellanalyse}
 
-{Sensordateien: }
-  dsID=$BC;                                        {ID für einen Datensatz}
-  lenfix=8;                                        {Länge Fixpart}
-  dsIDP=$FD;                                       {ID für einen PX Datensatz}
-  lenfixP=20;                                      {Länge Fixpart YTH Plus}
-  HBlen=9;                                         {Länge Payload Heartbeat}
-  csvanz=80;                                       {Anzahl Spalten bei PX4 CSV Datei}
-  posChan=60;                                      {Startposition Spalten RC-Channels}
-  deltayaw=15;                                     {Change of direction [°] for Waypoints}
-
 var
   Form1: TForm1;
   InitDone: boolean=false;                         {OnShow kann mehrfach aufgerufen werden}
@@ -925,6 +913,7 @@ begin
   mnReload.Hint:=hntReload;
   mnSplit.Caption:=capSplit;                       {Menu: Split PX4 Sensor file at time resets}
   mnSplit.Hint:=hntSplit;
+  mnSaveTab.Caption:=capSaveTab;
   rgQuelle.Caption:=capRadioGroup1;
   rgQuelle.Hint:=hntRadioGroup1;
   rgQuelle.Items[0]:=dkpath;
@@ -6788,6 +6777,15 @@ end;
 procedure TForm1.mnReloadClick(Sender: TObject);   {Reload files}
 begin
   SelDirAct('');
+end;
+
+procedure TForm1.mnSaveTabClick(Sender: TObject);           {Save grid details}
+begin
+  SaveDialog1.Title:=titSaveTab;
+  SaveDialog1.FileName:='tab'+lbFlights.Items[lbFlights.ItemIndex]+fext;
+  if SaveDialog1.Execute then begin
+    gridDetails.SaveToCSVFile(SaveDialog1.FileName,';');
+  end;
 end;
 
 procedure TForm1.speDataPointEditingDone(Sender: TObject);  {Change dataset number}

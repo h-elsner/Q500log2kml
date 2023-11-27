@@ -1,3 +1,10 @@
+(* Helpful information:
+
+https://mavlink.io/en/guide/serialization.html
+https://github.com/mavlink/c_library_v2/tree/master/common
+
+*)
+
 unit mav_defs;                                     {MAVlink definitions and variables}
 
 {$mode objfpc}{$H+}
@@ -11,6 +18,17 @@ const
   MAVurl='https://github.com/mavlink/c_library_v2/tree/master/common';
 {Extract data from following messages}
   MAVmsgX=[0, 1, 22, 24, 30, 32, 33, 65, 74, 87, 105, 141, 147, 245, 253];
+
+{Sensordateien: }
+  dsID=$BC;                                        {ID für einen Datensatz}
+  lenfix=8;                                        {Länge Fixpart}
+  dsIDP=$FD;                                       {ID für einen PX Datensatz}
+  lenfixP=20;                                      {Länge Fixpart YTH Plus}
+  HBlen=9;                                         {Länge Payload Heartbeat}
+  csvanz=80;                                       {Anzahl Spalten bei PX4 CSV Datei}
+  posChan=60;                                      {Startposition Spalten RC-Channels}
+  deltayaw=15;                                     {Change of direction [°] for Waypoints}
+
 
 {Public functions and procedures}
   function MsgIDtoStr(id: integer): string;
@@ -170,7 +188,7 @@ begin
 
 {MESSAGE IDs 180 - 229: Space for custom messages in
  individual projectname_messages.xml files -->}
-(*  201:  result:='sens_power';                    {not know if used}
+(*  201:  result:='sens_power';                    {I do not know if used}
     202:  result:='sens_MPTT';
     203:  result:='aslctrl_data';
     204:  result:='aslctrl_debug';
@@ -308,6 +326,7 @@ begin
     2: result:='2G (GSM/GRPS/EDGE) link';
     3: result:='3G link (WCDMA/HSDPA/HSPA)';
     4: result:='4G link (LTE)';
+    5: result:='5G link';
   end;
 end;   *)
 
@@ -552,7 +571,8 @@ begin
     if (m and 32)>0  then result:=result+'HIL_ENABLED ';
     if (m and 64)>0  then result:=result+'MANUAL_INPUT_ENABLED ';
     if (m and 128)>0 then result:=result+'SAFETY_ARMED';
-  end else Result:=result+rsUnknown;
+  end else
+    Result:=result+rsUnknown;
 end;
 
 

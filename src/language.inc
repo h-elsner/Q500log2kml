@@ -1,6 +1,6 @@
 
-{ $I q500_dt.inc}
-{$I q500_en.inc}
+{$I q500_dt.inc}
+{ $I q500_en.inc}
 
 resourcestring                                     {Länderneutrale strings}
 

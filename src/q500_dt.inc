@@ -296,5 +296,6 @@ resourcestring                                     {deutsch}
   capDeleteLn='Löschen';
   hntDeleteLn='Unerwünschte Zeilen in der ausgewählten Datei, die mit dem angegebenen Wert beginnen, löschen. Hauptsächlich gedacht, um Flightlogs mit falschen Zeitstempeln zu bereinigen. Beginne dazu mit den Telemetriedateien.';
   hntDeleteEd='Wert, mit dem die zu löschenden Zeilen beginnen.';
-
+  titSaveTab='Tabelle als CSV-Datei speichern...';
+  capSaveTab='Als CSV speichern';
 

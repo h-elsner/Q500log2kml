@@ -296,5 +296,7 @@ resourcestring                                     {english}
   capDeleteLn='Delete rows';
   hntDeleteLn='Delete unwanted rows in selected file that starts with entered value. Main use case: Clean flight logs with wrong time stamps. Start with telemetry files.';
   hntDeleteEd='Lines to delete starts with this value.';
+  titSaveTab='Save table as CSV file...';
+  capSaveTab='Save as CSV';
 
 
