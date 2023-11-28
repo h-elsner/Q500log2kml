@@ -39,6 +39,10 @@ AppLog: Listing of actions, messages and errors from the application. For sensor
 
 Hex dump: Dump an unknown file as hexadecimal for analysis. Result can be saved as text.
 
+
+MacOS version compiled and only tested with at MacOS 10.14 (Mojave).
+
+
 ---------------------------------------
 
 **For news and updates see "history.txt"**
