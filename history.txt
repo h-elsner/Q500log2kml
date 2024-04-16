@@ -154,4 +154,7 @@ History:
 2022-11-30       Added function to clean flightlogs with wrong time stamps
 2023-02-27       Splitting TLOG files improved
 2023-05-16       Sampling regularity for column 0 (Date/Time)
+2023-11-23       Added save as CSV to grid Details
+2024-04-15  V5.0 AutoCut added: Automatically cut flightlog data to the flight only
+
 
