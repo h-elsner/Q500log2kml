@@ -150,8 +150,8 @@ resourcestring                                     {deutsch}
   rsCheckSettings='Einstellungen prüfen für ';
   rsScreenshot='&Screenshot';
   hntBitBtn13='Abbild vom Anwendungsfenster als PNG speichern...';
-  capBitBtn14='Ausschneiden';
-  hntBitBtn14='FlightLog Daten zur besseren Analyse beschneiden (Strg+n)';
+  capCut='Ausschneiden';
+  hntCut='FlightLog Daten zur besseren Analyse beschneiden (Strg+n)';
   rsStartTPunkt='Startpunkt setzen';
   rsEndTPunkt='Endpunkt setzen';
   rsResetCutBE='Start/Ende rücksetzen';
@@ -298,4 +298,6 @@ resourcestring                                     {deutsch}
   hntDeleteEd='Wert, mit dem die zu löschenden Zeilen beginnen.';
   titSaveTab='Tabelle als CSV-Datei speichern...';
   capSaveTab='Als CSV speichern';
+  capAutoCut='AutoCut';
+  hntAutoCut='Automatisches Ausschneiden des Fluges, um Standzeiten zu entfernen (Strg+m).';
 

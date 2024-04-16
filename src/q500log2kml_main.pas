@@ -2,7 +2,7 @@
           {                                                        }
           {     Auswertung FlightLog Daten von Yuneec Koptern      }
           {                                                        }
-          {       Copyright (c) 2015-2022    Helmut Elsner         }
+          {       Copyright (c) 2015-2024    Helmut Elsner         }
           {                                                        }
           {       Compiler: FPC 3.2.2   /    Lazarus 2.2.0         }
           {                                                        }
@@ -109,6 +109,7 @@ type
 
   TForm1 = class(TForm)
     AppLog: TSynEdit;
+    btnAutoCut: TBitBtn;
     btnDeleteLn: TBitBtn;
     btnCombineLogs: TBitBtn;
     btnClose: TBitBtn;
@@ -213,6 +214,8 @@ type
     lblMAVcommon: TLabel;
     lblSaturation: TLabel;
     MAVmsg: TCheckGroup;
+    Separator2: TMenuItem;
+    mnAutoCut: TMenuItem;
     mnSaveTab: TMenuItem;
     Separator1: TMenuItem;
     mnSplit: TMenuItem;
@@ -347,6 +350,7 @@ type
       MousePos: TPoint; var Handled: Boolean);
     procedure AppLogMouseWheelUp(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
+    procedure btnAutoCutClick(Sender: TObject);
     procedure btnCombineLogsClick(Sender: TObject);
     procedure btnDefaultProfileClick(Sender: TObject);
     procedure btnDeleteLnClick(Sender: TObject);
@@ -399,6 +403,7 @@ type
     procedure lblGitHubClick(Sender: TObject);
     procedure lblGitHubMouseEnter(Sender: TObject);
     procedure lblGitHubMouseLeave(Sender: TObject);
+    procedure mnAutoCutClick(Sender: TObject);
     procedure mnDownloadClick(Sender: TObject);
     procedure mnFlDelClick(Sender: TObject);
     procedure mnReloadClick(Sender: TObject);
@@ -631,7 +636,8 @@ type
     procedure HexHeader(const fn: string);         {Write header for file and take block size}
     procedure CheckVersion;                        {Call version file and check}
     procedure SplitSensorPlus;                     {Split PX4 Sensor file}
-
+    procedure ManualCut;                           {Manuelles Ausschneiden}
+    procedure CutLegacy(mode: integer);            {mode = 1: Automatisches Ausschneiden}
 {Special analysis with (hidden) extra button "Special" on Settings > Common settings}
     procedure TLOGanalysis(fn: string);            {Special analysis}
     procedure EnableMultiselect;                   {Multiselect flight list to combine files}
@@ -666,6 +672,7 @@ const
   hsw=2;                                           {Höhen-Schwellwert für Analyse in m}
   minlines=10;                                     {Minimum number if lines that makes sense to deal with}
   exID=' ';                                        {ID for values updated by in StringGrid}
+  SpaceAutoCut=12;                                 {Number of rows before start and after end for AutoCut}
 
 {http://docwiki.embarcadero.com/RADStudio/Seattle/de/Farben_in_der_VCL}
   osmURL='https://www.openstreetmap.org/';         {als Karte}
@@ -851,14 +858,16 @@ begin
   SizeSpeedBtn(sbtnLogDir, cbxLogDir);             {Anpassen Speedbuttons an Darstellung in verschiedenen Betrienssystemen}
   SizeSpeedBtn(sbtnScanDir, cbxScanDir);
 
-  btnCut.Caption:=capBitBtn14;                     {Ausschneiden / Cut}
-  btnCut.Hint:=hntBitBtn14;
+  btnCut.Caption:=capCut;                          {Ausschneiden / Cut}
+  btnCut.Hint:=hntCut;
+  btnAutoCut.Caption:=capAutoCut;                  {Ausschneiden / AutoCut}
+  btnAutoCut.Hint:=hntAutoCut;
   btnSplit.Caption:=capSplit1;                     {Menu: Split PX4 Sensor file at time resets}
   btnSplit.Hint:=hntSplit;
   btnFlugBuch.Caption:=capNachweis;                {Flugprotokoll}
   btnCombineLogs.Caption:=capCombineLogs;
   btnCombineLogs.Hint:=hntCombineLogs;
-   lbFlights.Hint:=hntListBox1;
+  lbFlights.Hint:=hntListBox1;
   ColorButton1.Hint:=hntColorBtn1;
   StatusBar1.Panels[5].Text:=DefaultStatus;
   cbxLogDir.TextHint:=DefaultStatus;
@@ -889,8 +898,8 @@ begin
   mnMainDel.Caption:=rsResetCutBE;
   mnMainStart.Caption:=rsStartTPunkt;
   mnMainStop.Caption:=rsEndTPunkt;
-  mnCut.Caption:=capBitBtn14;                      {Ausschneiden / Cut}
-  mnCutTab.Caption:=capBitBtn14;                   {Ausschneiden / Cut}
+  mnCut.Caption:=capCut;                           {Ausschneiden / Cut}
+  mnCutTab.Caption:=capCut;                        {Ausschneiden / Cut}
   mnArchive.Caption:=capBitBtn3;
   mnClose.Caption:=capBitBtn1;
   mnExploreLog.Caption:=capOpen;
@@ -914,6 +923,8 @@ begin
   mnSplit.Caption:=capSplit;                       {Menu: Split PX4 Sensor file at time resets}
   mnSplit.Hint:=hntSplit;
   mnSaveTab.Caption:=capSaveTab;
+  mnAutoCut.Caption:=capAutoCut;
+  mnAutoCut.Hint:=hntAutoCut;
   rgQuelle.Caption:=capRadioGroup1;
   rgQuelle.Hint:=hntRadioGroup1;
   rgQuelle.Items[0]:=dkpath;
@@ -2802,6 +2813,11 @@ begin
     AppLog.Font.Size:=AppLog.Font.Size+1;
 end;
 
+procedure TForm1.btnAutoCutClick(Sender: TObject);     {Automatisches Ausschneiden}
+begin
+  CutLegacy(1);
+end;
+
 procedure TForm1.btnCombineLogsClick(Sender: TObject); {Combine some legacy Yuneec Flightlog to one log files set}
 begin
   CombineLogs;
@@ -3749,6 +3765,10 @@ begin
     if tb then begin
       KursorAus;
       SetSensorEnv;
+      Chart1.DisableRedrawing;
+      Chart3.DisableRedrawing;
+      Chart4.DisableRedrawing;
+      Chart5.DisableRedrawing;
       Chart1ConstantLine2.Position:=0;
       Chart1ConstantLine2.Active:=false;
       Chart3LineSeries1.Clear;
@@ -3794,6 +3814,10 @@ begin
 
       gridDetails.ColWidths[8]:=110;               {Msg Name}
       gridDetails.EndUpdate;
+      Chart1.EnableRedrawing;
+      Chart3.EnableRedrawing;
+      Chart4.EnableRedrawing;
+      Chart5.EnableRedrawing;
     end;
     FillChar(dsbuf, length(dsbuf), 0);             {Datenbuffer löschen}
     maplist:=TStringList.Create;
@@ -4167,71 +4191,49 @@ begin
 end;
 
 procedure TForm1.btnCutClick(Sender: TObject);     {Cut files for analysis}
-var inlist, outlist: TStringList;
-    fno: string;
+begin
+  ManualCut;
+end;
 
-  procedure CutBreeze;
-  var x: integer;
-      fn: string;                                  {file name}
-      bg: TDateTime;
+procedure TForm1.CutLegacy(mode: integer);
+var
+  x: integer;
+  fn, fno: string;                                 {file name, file number}
+  z:  integer;
+  bg: TDateTime;
+  inlist, outlist: TStringList;
 
-  begin
-    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
-        lbFlights.Items[lbFlights.ItemIndex]+bext; {Breeze Logdateien}
-    if FileExists(fn) then begin
-      inlist.LoadFromFile(fn);
-      for x:=0 to 8 do
-        outlist.Add(inlist[x]);
-      for x:=9 to inlist.count-1 do begin
-        bg:=ZeitToDT(copy(inlist[x], 1, lzbr), brID);
-        if (bg>=cutb) and
-           (bg<=cute) then outlist.Add(inlist[x]);
-      end;
-      fno:=RandomFN(fn, brID, 0);
-      outlist.SaveToFile(fno);
-      AppLog.Lines.Add(capBitBtn14+suff+rsGridCell2+tab1+        {von}
-                         StatusBar1.Panels[3].Text+tab1+rsGridCell3+tab1+
-                         StatusBar1.Panels[4].Text);             {bis}
-      StatusBar1.Panels[5].Text:=ExtractFileName(fno)+tab1+rsSaved;
-      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
-    end;
-  end;
-
-  procedure CutH501;
-  var i, z: integer;
-      bg: TDateTime;
-      fn: string;
-
-  begin
-    z:=random(8)+1;
-    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+H5file+
-        lbFlights.Items[lbFlights.ItemIndex]+fext; {H501 logs}
-    if FileExists(fn) then begin
-      inlist.LoadFromFile(fn);
-      outlist.Add(inlist[0]);                      {take over header}
-      for i:=1 to inlist.Count-1 do begin
-        bg:=ZeitToDT(copy(inlist[i], 1, lzyu), 0);
-        if (bg>=cutb) and
-           (bg<=cute) then
-         outlist.Add(inlist[i]);
-      end;
-      fno:=RandomFN(fn, 0, z);
-      outlist.SaveToFile(fno);
-    end;
-  end;
-
-  procedure CutYLegacy;
-  var x: integer;
-      fn: string;                                  {file name}
-      z:  integer;
-      bg: TDateTime;
-
-  begin
+begin
+  inlist:=TStringList.Create;
+  outlist:=TStringList.Create;
+  fno:='';
+  try
     z:=random(8)+1;
     fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
         kfile+lbFlights.Items[lbFlights.ItemIndex]+fext;  {Telemetry}
     if FileExists(fn) then begin
       inlist.LoadFromFile(fn);
+      if mode=1 then begin                         {Autocut, define start- and endpoint automatically}
+        cutb:=ZeitToDT(copy(inlist[1], 1, lzyu), 0);      {defaults for non fly}
+        cute:=ZeitToDT(copy(inlist[inlist.Count-1], 1, lzyu), 0);
+
+        for x:=1 to inlist.count-1 do begin        {Find start a/c}
+          if inlist[x].Split([sep])[gridDetails.Tag]<>'16' then begin
+            if x>SpaceAutoCut then
+              cutb:=ZeitToDT(copy(inlist[x-SpaceAutoCut], 1, lzyu), 0);
+            break;
+          end;
+        end;
+
+        for x:=inlist.count-1 downto 1 do begin    {Find last landing}
+          if inlist[x].Split([sep])[gridDetails.Tag]<>'16' then begin
+            if inlist.count>(x+SpaceAutoCut+1) then
+              cute:=ZeitToDT(copy(inlist[x+SpaceAutoCut], 1, lzyu), 0);
+            break;
+          end;
+        end;
+
+      end;
       outlist.Add(inlist[0]);                      {take over header}
       for x:=1 to inlist.count-1 do begin
         bg:=ZeitToDT(copy(inlist[x], 1, lzyu), 0);
@@ -4276,7 +4278,7 @@ var inlist, outlist: TStringList;
     end;
 
     if fno<>'' then begin
-      AppLog.Lines.Add(capBitBtn14+suff+rsGridCell2+tab1+      {von}
+      AppLog.Lines.Add(capCut+suff+rsGridCell2+tab1+           {von}
                          StatusBar1.Panels[3].Text+tab1+rsGridCell3+tab1+
                          StatusBar1.Panels[4].Text);           {bis}
       if v_type=YTHPid then begin                  {YTH Plus}
@@ -4286,6 +4288,65 @@ var inlist, outlist: TStringList;
       end;
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       SelDirAct('');
+    end;
+  finally
+    inlist.Free;
+    outlist.Free;
+  end;
+end;
+
+
+procedure TForm1.ManualCut;                        {Cut files for analysis}
+var inlist, outlist: TStringList;
+    fno: string;
+
+  procedure CutBreeze;
+  var x: integer;
+      fn: string;                                  {file name}
+      bg: TDateTime;
+
+  begin
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+        lbFlights.Items[lbFlights.ItemIndex]+bext; {Breeze Logdateien}
+    if FileExists(fn) then begin
+      inlist.LoadFromFile(fn);
+      for x:=0 to 8 do
+        outlist.Add(inlist[x]);
+      for x:=9 to inlist.count-1 do begin
+        bg:=ZeitToDT(copy(inlist[x], 1, lzbr), brID);
+        if (bg>=cutb) and
+           (bg<=cute) then outlist.Add(inlist[x]);
+      end;
+      fno:=RandomFN(fn, brID, 0);
+      outlist.SaveToFile(fno);
+      AppLog.Lines.Add(capCut+suff+rsGridCell2+tab1+        {von}
+                         StatusBar1.Panels[3].Text+tab1+rsGridCell3+tab1+
+                         StatusBar1.Panels[4].Text);             {bis}
+      StatusBar1.Panels[5].Text:=ExtractFileName(fno)+tab1+rsSaved;
+      AppLog.Lines.Add(StatusBar1.Panels[5].Text);
+    end;
+  end;
+
+  procedure CutH501;
+  var i, z: integer;
+      bg: TDateTime;
+      fn: string;
+
+  begin
+    z:=random(8)+1;
+    fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+H5file+
+        lbFlights.Items[lbFlights.ItemIndex]+fext; {H501 logs}
+    if FileExists(fn) then begin
+      inlist.LoadFromFile(fn);
+      outlist.Add(inlist[0]);                      {take over header}
+      for i:=1 to inlist.Count-1 do begin
+        bg:=ZeitToDT(copy(inlist[i], 1, lzyu), 0);
+        if (bg>=cutb) and
+           (bg<=cute) then
+         outlist.Add(inlist[i]);
+      end;
+      fno:=RandomFN(fn, 0, z);
+      outlist.SaveToFile(fno);
     end;
   end;
 
@@ -4301,7 +4362,7 @@ begin
         brID: CutBreeze;                           {Breeze}
         H501ID: CutH501;                           {Tom's Hubsan log recorder}
       else
-         CutYLegacy;                               {legacy Yuneec}
+        CutLegacy(0);                              {legacy Yuneec}
       end;
     finally
       FreeAndNil(inlist);
@@ -6479,6 +6540,11 @@ begin
   lblGitHub.Font.Style:=lblGitHub.Font.Style-[fsBold];
 end;
 
+procedure TForm1.mnAutoCutClick(Sender: TObject);
+begin
+  CutLegacy(1);                                    {AutoCut}
+end;
+
 procedure TForm1.mnDownloadClick(Sender: TObject);
 begin
   CheckVersion;
@@ -6824,7 +6890,7 @@ begin
           109, 189: speNumPoints.Value:=speNumPoints.Value-1; {-}
         end;
         if key=vk_n then
-          btnCutClick(self);                       {Ausschneiden}
+          ManualCut;                               {Ausschneiden}
       end;
       if key=vk_c then
         Chart1.CopyToClipboardBitmap;              {Höhenprofil ins Clipboard}
@@ -7383,7 +7449,7 @@ begin
     lblDuration.Caption:=rsDauer+tab1+FormatDateTime('= nn:ss'+zzz, cute-cutb);
     if a then begin
       StatusBar1.Panels[5].Text:=lblDuration.Caption;  {Textfeld überschreiben}
-      AppLog.Lines.Add(capBitBtn14+tab1+StatusBar1.Panels[5].Text);
+      AppLog.Lines.Add(capCut+tab1+StatusBar1.Panels[5].Text);
     end;
   end else
     StatusBar1.Tag:=0;                             {nicht kopieren}
@@ -9072,6 +9138,8 @@ begin
       speDataPoint.MaxValue:=inlist.Count;
       speNumPoints.MaxValue:=inlist.Count-10;
       speDataPoint.Hint:=hntSpinEdit3+', max. '+IntToStr(speDataPoint.MaxValue);
+
+      Chart1.DisableRedrawing;
       if inlist.Count>1500 then
         Chart1BarSeries1.BarPen.Width:=2           {Bar smoothing}
       else
@@ -9192,6 +9260,7 @@ begin
         end;
       end;
       Chart1.Title.Visible:=true;
+      Chart1.EnableRedrawing;
     end;
   finally
     FreeAndNil(inlist);
@@ -11358,6 +11427,8 @@ var
 begin                                              {Main part}
   if (aRow>0) and                                  {nicht in Überschrift malen}
      (aState=[]) then begin                        {nicht, wenn selected}
+     if not odd(aRow) then
+       gridDetails.Canvas.Brush.Color:=clTabs;
     if gridDetails.ColCount=csvanz then begin
       FarbenPX4csv;
     end else begin
@@ -11766,7 +11837,7 @@ begin
     s:=gridDetails.Cells[p, 0];
     Form2.Caption:=rsChart+' "'+s+'"';
     if rgQuelle.ItemIndex=2 then Form2.Caption:=ChToStr(Form2.Caption, p);
-    Form2.StringGrid1.Visible:=false;
+    Form2.gridAnzwerte.Visible:=false;
     if gridDetails.ColCount=csvanz then begin      {eigenes PX4 CSV Format}
       PrepPX4csv;
     end else begin
@@ -11786,6 +11857,8 @@ begin
     Form2.Chart1LineSeries1.Pointer.Visible:=false;
     Form2.Chart1.ZoomFull;
     Form2.Chart1.Tag:=rgQuelle.ItemIndex;          {Tell what type of values}
+
+    Form2.Chart1.DisableRedrawing;
     for x:=2 to gridDetails.RowCount-1 do begin    {skip first line}
       vp:=true;                                    {Default: Datapoint is valid}
       zp:=false;                                   {Not a RSSI zero point (WiFi)}
@@ -11821,6 +11894,7 @@ begin
         end;
       end;
     end;
+    Form2.Chart1.EnableRedrawing;
   end;                                             {Ende p>0}
 end;
 
@@ -11849,12 +11923,12 @@ var
     var dur: TDateTime;
 
     begin
-      Form2.StringGrid1.Cells[3, Form2.StringGrid1.RowCount-1]:=
+      Form2.gridAnzwerte.Cells[3, Form2.gridAnzwerte.RowCount-1]:=
         FormatDateTime(zagf, ag.Beginn);
-      Form2.StringGrid1.Cells[4, Form2.StringGrid1.RowCount-1]:=
+      Form2.gridAnzwerte.Cells[4, Form2.gridAnzwerte.RowCount-1]:=
         FormatDateTime(zagf, ag.Ende);
       dur:=round((ag.Ende-ag.Beginn)*secpd)/secpd;
-      Form2.StringGrid1.Cells[5, Form2.StringGrid1.RowCount-1]:=
+      Form2.gridAnzwerte.Cells[5, Form2.gridAnzwerte.RowCount-1]:=
         FormatDateTime(dagf, dur);
     end;
 
@@ -11863,21 +11937,21 @@ var
       try                                          {3. Spalte füllen}
         case p of
           2:  begin                          {Breeze Flight Mode}
-                Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+                Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
                   BrfmodeToStr(StrToInt(ag.Value));
                 vbd;
               end;
-          11: Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+          11: Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
                 brIMUStatusToStr(StatusToByte(ag.Value));  {Breeze IMU Status}
           14: begin                         {Breeze AutoTakeOff}
-                Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+                Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
                   AutoTakeOffToStr(StrToInt(ag.Value));
                 vbd;
               end;
-          18: Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+          18: Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
                 MotStatusToStr(StatusToByte(ag.Value));  {motor_status}
           19: begin                         {error flag}
-                Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+                Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
                   eflagToStr(ag.Value);
                 vbd;
               end;
@@ -11892,7 +11966,7 @@ var
       try                                          {3. Spalte füllen}
         case p of
           1:  begin
-                Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+                Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
                   FrameToStr(StrToInt(ag.Value));
 //                vbd;                             {with times}
               end;
@@ -11910,25 +11984,25 @@ var
           vbd;
         end;
         if p=14 then begin                         {motor_status}
-          Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+          Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
             MotStatusToStr(StatusToByte(ag.Value));
         end;
         if p=15 then                               {imu_status}
-          Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+          Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
             IMUstatusToStr(StatusToByte(ag.Value));
         if p=gridDetails.Tag-1 then                {press_compass_status}
-          Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+          Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
             PCGstatusToStr(StatusToByte(ag.Value), v_type);
         if p=gridDetails.Tag then begin            {f_mode}
-          Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+          Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
             fmodeToStr(StrToInt(ag.Value));
           vbd;
         end;
         if p=gridDetails.Tag+2 then                {vehicle type}
-          Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+          Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
             vtypeToStr(StrToInt(ag.Value));
         if p=gridDetails.Tag+3 then begin          {error flag}
-          Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+          Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
             eflagToStr(ag.Value);
           vbd;
         end;
@@ -11938,15 +12012,15 @@ var
       if rgQuelle.ItemIndex=2 then                 {Remote}
       try
         if (p=5) then begin                        {Flight Mode switch}
-          Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+          Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
             SwitchToStr(p, v_type, ag.Value);
           vbd;
         end;
         if (p=6) or (p=9) or (p=10) then           {Rest}
-          Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+          Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
             SwitchToStr(p, v_type, ag.Value);
         if p=11 then                               {Landing gear}
-          Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+          Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
             LandGearToStr(ag.Value);
       except
         AppLog.Lines.Add(rsError+' during count of values at Remote');
@@ -11954,20 +12028,20 @@ var
     end;
 
   begin
-    Form2.StringGrid1.RowCount:=Form2.StringGrid1.RowCount+1;
-    Form2.StringGrid1.Cells[0, Form2.StringGrid1.RowCount-1]:=FormSR(ag.Value, 4);
-    Form2.StringGrid1.Cells[1, Form2.StringGrid1.RowCount-1]:=IntToStrFL(ag.Count, 6);
+    Form2.gridAnzwerte.RowCount:=Form2.gridAnzwerte.RowCount+1;
+    Form2.gridAnzwerte.Cells[0, Form2.gridAnzwerte.RowCount-1]:=FormSR(ag.Value, 4);
+    Form2.gridAnzwerte.Cells[1, Form2.gridAnzwerte.RowCount-1]:=IntToStrFL(ag.Count, 6);
     if gridDetails.ColCount=csvanz then begin      {eigenes PX4 CSV Format}
       try                                          {3. Spalte füllen}
         if ag.Value<>'' then begin                 {leere Zellen nicht auflösen}
           case p of
-            15: Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+            15: Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
                   MSenStat(Hex2Dec('$'+ag.Value)); {Sensor health}
-            18: Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+            18: Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
                   MSTtoStr(Hex2Dec('$'+ag.Value)); {MAV state}
-            19: Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+            19: Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
                   MMFtoStr(Hex2Dec('$'+ag.Value)); {MAV mode flag}
-            59: Form2.StringGrid1.Cells[2, Form2.StringGrid1.RowCount-1]:=
+            59: Form2.gridAnzwerte.Cells[2, Form2.gridAnzwerte.RowCount-1]:=
                   MsgIDtoStr(StrToInt(ag.Value));  {MAV message ID}
           end;
         end;
@@ -11986,19 +12060,19 @@ var
 
   procedure DreiSpalten;  {zusätzliche Kommentarspalte in Statistik anlegen}
   begin
-    Form2.StringGrid1.ColCount:=3;                 {Kommentarspalte anfügen}
-    Form2.OnResize(Form2);                         {Spalten anpassen}
-    Form2.StringGrid1.Cells[2, 0]:=rsDescript;     {Beschreibung}
+    Form2.gridAnzwerte.ColCount:=3;                 {Kommentarspalte anfügen}
+    Form2.OnResize(Form2);                          {Spalten anpassen}
+    Form2.gridAnzwerte.Cells[2, 0]:=rsDescript;     {Beschreibung}
   end;
 
   procedure SechsSpalten;        {zusätzliche Kommentarspalte + Beginn/Ende}
   begin
-    Form2.StringGrid1.ColCount:=6;                 {Drei Spalten anfügen}
-    Form2.OnResize(Form2);                         {Spalten anpassen}
-    Form2.StringGrid1.Cells[2, 0]:=rsDescript;     {Beschreibung}
-    Form2.StringGrid1.Cells[3, 0]:=rsGridCell2;    {Beginn}
-    Form2.StringGrid1.Cells[4, 0]:=rsGridCell3;    {Ende}
-    Form2.StringGrid1.Cells[5, 0]:=rsDauer;        {Dauer}
+    Form2.gridAnzwerte.ColCount:=6;                 {Drei Spalten anfügen}
+    Form2.OnResize(Form2);                          {Spalten anpassen}
+    Form2.gridAnzwerte.Cells[2, 0]:=rsDescript;     {Beschreibung}
+    Form2.gridAnzwerte.Cells[3, 0]:=rsGridCell2;    {Beginn}
+    Form2.gridAnzwerte.Cells[4, 0]:=rsGridCell3;    {Ende}
+    Form2.gridAnzwerte.Cells[5, 0]:=rsDauer;        {Dauer}
   end;
 
   procedure CountValues;                           {Zählerspalte versorgen}
@@ -12104,14 +12178,14 @@ begin
     10: Form2.Caption:=Form2.Caption+' - S2 Gimbal pan mode';
     11: Form2.Caption:=Form2.Caption+' - S5 '+rsLandgear;
   end;
-  Form2.StringGrid1.Visible:=true;
+  Form2.gridAnzwerte.Visible:=true;
   Form2.Chart1.Visible:=false;
   Form2.edTime.Visible:=false;
-  Form2.StringGrid1.BeginUpdate;
-  Form2.StringGrid1.RowCount:=1;
-  Form2.StringGrid1.ColCount:=2;
-  Form2.StringGrid1.Cells[0, 0]:=gridDetails.Cells[p, 0];
-  Form2.StringGrid1.Cells[1, 0]:=rsAnzahl;
+  Form2.gridAnzwerte.BeginUpdate;
+  Form2.gridAnzwerte.RowCount:=1;
+  Form2.gridAnzwerte.ColCount:=2;
+  Form2.gridAnzwerte.Cells[0, 0]:=gridDetails.Cells[p, 0];
+  Form2.gridAnzwerte.Cells[1, 0]:=rsAnzahl;
   if gridDetails.ColCount=csvanz then begin        {eigenes PX4 CSV Format}
     case p of                                      {muss zu Formatwandlung passen}
       15, 18, 19, 59: DreiSpalten;
@@ -12176,8 +12250,8 @@ begin
   end;
   for i:=0 to high(a) do
     AusgWe(a[i]);                                  {Werte ausgeben}
-  Form2.StringGrid1.AutoSizeColumns;
-  Form2.StringGrid1.EndUpdate;
+  Form2.gridAnzwerte.AutoSizeColumns;
+  Form2.gridAnzwerte.EndUpdate;
 
   Form2.Invalidate;
   setlength(a,0);                                  {Array aufräumen}
@@ -12272,7 +12346,8 @@ begin
     if key=vk_b then SetStartP;                    {Begin point}
     if key=vk_e then SetEndP;                      {End point}
     if key=vk_s then TabSelect;                    {Filterfunktion analog Suche}
-    if key=vk_n then btnCutClick(self);            {Ausschneiden}
+    if key=vk_n then ManualCut;                    {Ausschneiden}
+    if key=vk_m then CutLegacy(1);                 {Automatisch Ausschneiden}
   end;
 end;
 
@@ -12367,24 +12442,27 @@ procedure TForm1.gridOverviewPrepareCanvas(sender: TObject; aCol, aRow: Integer;
   aState: TGridDrawState);
 begin
   topp[0, 4]:=gridOverview.TopRow;                 {Top merken für Übersicht}
-  if (aState=[]) and
-     (aCol>0) and (aRow>0) then begin              {1. Spalte ausschliessen}
-    if aRow<gridOverview.RowCount-1 then begin     {Fußzeile ausschliessen}
-      if (topp[aRow-1, 6] and 32)>0 then           {Compass error, ganze Zeile}
-        CellColorSetting(gridOverview, clErrFlag);
-      if ((topp[aRow-1, 6] and 1)>0) and
-         (aCol=10) then                            {Voltage 1}
-        CellColorSetting(gridOverview, clVolt1);
-      if ((topp[aRow-1, 6] and 2)>0) and
-         (aCol=10) then                            {Voltage 2}
-        CellColorSetting(gridOverview, clVolt2);
-      if ((topp[aRow-1, 6] and 256)>0) and
-         (aCol<4) then                             {Emergency}
-        CellColorSetting(gridOverview, clEmergency);
-    end else begin
-      if (v_type<>MQid) and
-         (v_type<>H5id) then begin
-        CellColorSetting(gridOverview, clMoneyGreen); {Summenzeile}
+  if aRow>0 then begin
+    if not odd(aRow) then
+      gridOverview.Canvas.Brush.Color:=clTabs;     {Jede 2. Zeile grau}
+    if (aState=[]) and (aCol>0) then begin         {1. Spalte ausschliessen}
+      if aRow<gridOverview.RowCount-1 then begin   {Fußzeile ausschliessen}
+        if (topp[aRow-1, 6] and 32)>0 then         {Compass error, ganze Zeile}
+          CellColorSetting(gridOverview, clErrFlag);
+        if ((topp[aRow-1, 6] and 1)>0) and
+           (aCol=10) then                          {Voltage 1}
+          CellColorSetting(gridOverview, clVolt1);
+        if ((topp[aRow-1, 6] and 2)>0) and
+           (aCol=10) then                          {Voltage 2}
+          CellColorSetting(gridOverview, clVolt2);
+        if ((topp[aRow-1, 6] and 256)>0) and
+           (aCol<4) then                           {Emergency}
+          CellColorSetting(gridOverview, clEmergency);
+      end else begin
+        if (v_type<>MQid) and
+           (v_type<>H5id) then begin
+          CellColorSetting(gridOverview, clMoneyGreen); {Summenzeile}
+        end;
       end;
     end;
   end;
@@ -12911,6 +12989,7 @@ begin
   tend:=0;
   SetLength(topp, 2);                              {Topzeilen array}
   n:=0;                                            {Anzahl erstmal Null}
+  btnAutoCut.Enabled:=false;
   try
     if FindFirst(IncludeTrailingPathDelimiter(dn)+kpath+
                  kfile+wldcd+fext, faAnyFile, sr) = 0 then
@@ -12922,6 +13001,7 @@ begin
       if n>0 then begin
         gridOverview.ColWidths[0]:=fw0;            {default}
         gridOverview.Update;
+        btnAutoCut.Enabled:=true;
       end;
     finally
       FindClose(sr);
@@ -12938,6 +13018,7 @@ begin
           kpath:='';                {nur, wenn dort wirklich was gefunden wurde}
           gridOverview.ColWidths[0]:=fw1;
           gridOverview.Update;
+          btnAutoCut.Enabled:=true;
         end;
       finally
         FindClose(sr);
@@ -13050,6 +13131,7 @@ begin
     end;
 
     if n>0 then begin                              {irgendwas von oben wurde gefunden}
+      mnAutoCut.Enabled:=btnAutoCut.Enabled;
       StaticText1.Caption:=VTypeToStr(v_type);
       cbxText.Text:=StaticText1.Caption;           {Drone ID Mantis}
       Merkliste(cbxText, speItems.Value);          {Type merken}

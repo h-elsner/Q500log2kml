@@ -1,11 +1,11 @@
 object Form1: TForm1
-  Left = 1439
+  Left = 1940
   Height = 678
-  Top = 147
+  Top = 151
   Width = 1001
   AllowDropFiles = True
   Anchors = [akTop, akRight]
-  ClientHeight = 658
+  ClientHeight = 678
   ClientWidth = 1001
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
@@ -22,11 +22,11 @@ object Form1: TForm1
   Position = poDefaultPosOnly
   SessionProperties = 'cbCap.Checked;cbCleanHplus.Checked;cbDashw.Checked;cbExtrude.Checked;cbHighLight.Checked;cbMarker.Checked;cbMAVasCSV.Checked;cbPilot.Checked;cbReduced.Checked;cbSensorKML.Checked;cbSimu.Checked;cbThunder.Checked;cbVehicleType.Checked;cbxLogDir.ItemIndex;cbxLogDir.Items;cbxLogDir.Text;cbxProfiles.ItemIndex;cbxProfiles.Text;cbxScanDir.ItemIndex;cbxScanDir.Items;cbxScanDir.Text;cbxSearch.ItemIndex;cbxSearch.Items;cbxSearch.Text;cbxText.ItemIndex;cbxText.Items;cbxText.Text;ColorButton1.ButtonColor;ColorButton2.ButtonColor;ColorButton3.ButtonColor;ColorButton4.ButtonColor;Height;LabeledEdit1.Tag;LabeledEdit1.Text;LabeledEdit2.Tag;LabeledEdit2.Text;LabeledEdit3.Tag;LabeledEdit3.Text;MAVmsg.Tag;pcMain.TabIndex;pcSettings3.TabIndex;rgAltitudeType.ItemIndex;rgBlockSize.ItemIndex;rgCSVtext.ItemIndex;rgErrType.ItemIndex;rgOutFormat.ItemIndex;rgQuelle.ItemIndex;rgSpeedUnit.ItemIndex;rgTimeType.ItemIndex;rgVehicleType.ItemIndex;rgVoltRule.ItemIndex;SelectDirectoryDialog1.FileName;SelectDirectoryDialog1.InitialDir;speAnalyze.Value;speBaseLoad.Value;speBlockNum.Value;speDataPoint.Value;speItems.Value;speLinePath.Value;tbrDistWP.Position;tbrSaturation.Position;Width;WindowState;AppLog.Font'
   ShowHint = True
-  LCLVersion = '2.2.6.0'
+  LCLVersion = '3.3.0.0'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
-    Top = 635
+    Top = 655
     Width = 1001
     Anchors = [akRight, akBottom]
     Panels = <    
@@ -54,16 +54,16 @@ object Form1: TForm1
   end
   object lbFlights: TListBox
     Left = 11
-    Height = 356
+    Height = 376
     Top = 272
     Width = 134
     Anchors = [akTop, akLeft, akBottom]
     ItemHeight = 0
-    OnClick = lbFlightsClick
     PopupMenu = PopUpMenuFlights
     ScrollWidth = 132
     Sorted = True
     TabOrder = 1
+    OnClick = lbFlightsClick
   end
   object rgQuelle: TRadioGroup
     Left = 12
@@ -192,8 +192,8 @@ object Form1: TForm1
     Width = 428
     Anchors = [akTop, akLeft, akRight]
     ItemHeight = 17
-    OnMouseUp = cbxTextMouseUp
     TabOrder = 7
+    OnMouseUp = cbxTextMouseUp
   end
   object lblUpdate: TLabel
     Cursor = crHandPoint
@@ -257,40 +257,40 @@ object Form1: TForm1
       Width = 128
       CharCase = ecLowerCase
       ItemHeight = 17
-      OnMouseUp = cbxSearchMouseUp
       TabOrder = 0
+      OnMouseUp = cbxSearchMouseUp
     end
   end
   object Panel1: TPanel
     Left = 152
-    Height = 532
+    Height = 552
     Top = 96
     Width = 842
     Anchors = [akTop, akLeft, akRight, akBottom]
-    ClientHeight = 532
+    ClientHeight = 552
     ClientWidth = 842
     TabOrder = 11
     object pcMain: TPageControl
       Left = 1
-      Height = 530
+      Height = 550
       Top = 1
       Width = 840
-      ActivePage = tabDetails
+      ActivePage = tabSettings
       Align = alClient
       Images = TabImages
       ParentShowHint = False
       ShowHint = True
-      TabIndex = 1
+      TabIndex = 5
       TabOrder = 0
       OnChange = pcMainChange
       Options = [nboKeyboardTabSwitch]
       object tabOverview: TTabSheet
-        ClientHeight = 500
+        ClientHeight = 520
         ClientWidth = 832
         ImageIndex = 0
         object gridOverview: TStringGrid
           Left = 0
-          Height = 500
+          Height = 520
           Top = 0
           Width = 832
           Align = alClient
@@ -322,13 +322,13 @@ object Form1: TForm1
         end
       end
       object tabDetails: TTabSheet
-        ClientHeight = 500
+        ClientHeight = 520
         ClientWidth = 832
         ImageIndex = 1
         object gridDetails: TStringGrid
           Cursor = crSizeAll
           Left = 0
-          Height = 500
+          Height = 520
           Top = 0
           Width = 832
           Align = alClient
@@ -355,12 +355,12 @@ object Form1: TForm1
         end
       end
       object tabHdia: TTabSheet
-        ClientHeight = 500
+        ClientHeight = 520
         ClientWidth = 832
         ImageIndex = 2
         object Chart1: TChart
           Left = 0
-          Height = 500
+          Height = 520
           Top = 0
           Width = 832
           AxisList = <          
@@ -477,7 +477,7 @@ object Form1: TForm1
         end
       end
       object tabAnalyze3: TTabSheet
-        ClientHeight = 500
+        ClientHeight = 520
         ClientWidth = 832
         ImageIndex = 3
         OnResize = tabAnalyze3Resize
@@ -577,7 +577,7 @@ object Form1: TForm1
         object Chart5: TChart
           Left = 0
           Height = 156
-          Top = 344
+          Top = 364
           Width = 832
           AxisList = <          
             item
@@ -618,7 +618,7 @@ object Form1: TForm1
       end
       object tabScan: TTabSheet
         Caption = 'Scan'
-        ClientHeight = 500
+        ClientHeight = 520
         ClientWidth = 832
         ImageIndex = 9
         object GroupBox10: TGroupBox
@@ -645,7 +645,7 @@ object Form1: TForm1
             Left = 8
             Height = 21
             Top = 21
-            Width = 43
+            Width = 39
             Caption = 'Sim'
             TabOrder = 1
           end
@@ -681,9 +681,9 @@ object Form1: TForm1
           Width = 327
           Anchors = [akTop, akLeft, akRight]
           ItemHeight = 17
+          TabOrder = 1
           OnDblClick = cbxScanDirDblClick
           OnMouseUp = cbxScanDirMouseUp
-          TabOrder = 1
         end
         object sbtnScanDir: TSpeedButton
           Left = 334
@@ -772,10 +772,10 @@ object Form1: TForm1
               Left = 8
               Height = 21
               Top = 6
-              Width = 92
+              Width = 88
               Caption = 'Vehicle type'
-              OnChange = cbVehicleTypeChange
               TabOrder = 0
+              OnChange = cbVehicleTypeChange
             end
             object rgVehicleType: TRadioGroup
               Left = 8
@@ -806,7 +806,7 @@ object Form1: TForm1
         end
         object gridScanResult: TStringGrid
           Left = 391
-          Height = 446
+          Height = 466
           Top = 48
           Width = 426
           Anchors = [akTop, akLeft, akRight, akBottom]
@@ -827,12 +827,12 @@ object Form1: TForm1
         end
       end
       object tabSettings: TTabSheet
-        ClientHeight = 500
+        ClientHeight = 520
         ClientWidth = 832
         ImageIndex = 4
         object pcSettings3: TPageControl
           Left = 0
-          Height = 500
+          Height = 520
           Top = 0
           Width = 832
           ActivePage = tabData
@@ -843,7 +843,7 @@ object Form1: TForm1
           OnChange = pcSettings3Change
           Options = [nboKeyboardTabSwitch]
           object tabConvert: TTabSheet
-            ClientHeight = 470
+            ClientHeight = 490
             ClientWidth = 824
             ImageIndex = 6
             object rgOutFormat: TRadioGroup
@@ -878,10 +878,10 @@ object Form1: TForm1
               Left = 8
               Height = 21
               Top = 320
-              Width = 37
+              Width = 33
               Caption = 'C3'
-              OnChange = cbDashwChange
               TabOrder = 1
+              OnChange = cbDashwChange
             end
             object GroupBox2: TGroupBox
               Left = 152
@@ -972,30 +972,30 @@ object Form1: TForm1
                 Left = 232
                 Height = 21
                 Top = 121
-                Width = 47
+                Width = 43
                 Caption = 'Pilot'
                 Checked = True
-                OnChange = cbPilotChange
                 State = cbChecked
                 TabOrder = 3
+                OnChange = cbPilotChange
               end
               object cbExtrude: TCheckBox
                 Left = 24
                 Height = 21
                 Top = 121
-                Width = 66
+                Width = 62
                 Caption = 'Extrude'
-                OnChange = cbExtrudeChange
                 TabOrder = 4
+                OnChange = cbExtrudeChange
               end
               object cbMarker: TCheckBox
                 Left = 136
                 Height = 21
                 Top = 121
-                Width = 64
+                Width = 60
                 Caption = 'Marker'
-                OnChange = cbMarkerChange
                 TabOrder = 5
+                OnChange = cbMarkerChange
               end
             end
             object lblDistWP: TLabel
@@ -1023,13 +1023,13 @@ object Form1: TForm1
               Left = 7
               Height = 21
               Top = 352
-              Width = 42
+              Width = 38
               Caption = 'sen'
               TabOrder = 4
             end
           end
           object tabData: TTabSheet
-            ClientHeight = 470
+            ClientHeight = 490
             ClientWidth = 824
             ImageIndex = 7
             object GroupBox3: TGroupBox
@@ -1088,12 +1088,12 @@ object Form1: TForm1
             end
             object GroupBox4: TGroupBox
               Left = 232
-              Height = 360
+              Height = 448
               Top = 24
               Width = 384
               Anchors = [akTop, akLeft, akBottom]
               Caption = 'sel'
-              ClientHeight = 338
+              ClientHeight = 426
               ClientWidth = 380
               TabOrder = 1
               object LabeledEdit1: TLabeledEdit
@@ -1141,7 +1141,7 @@ object Form1: TForm1
               end
               object TreeView1: TTreeView
                 Left = 8
-                Height = 316
+                Height = 404
                 Top = 8
                 Width = 216
                 Anchors = [akTop, akLeft, akBottom]
@@ -1242,10 +1242,10 @@ object Form1: TForm1
                   'Yaw'
                   '3Axis'
                 )
-                OnChange = cbxProfilesChange
-                OnDblClick = cbxProfilesDblClick
                 TabOrder = 5
                 Text = 'None'
+                OnChange = cbxProfilesChange
+                OnDblClick = cbxProfilesDblClick
               end
               object Label9: TLabel
                 Left = 256
@@ -1275,7 +1275,7 @@ object Form1: TForm1
             object btnCut: TBitBtn
               Left = 8
               Height = 30
-              Top = 349
+              Top = 352
               Width = 107
               Caption = 'Cut'
               Enabled = False
@@ -1336,7 +1336,7 @@ object Form1: TForm1
               Left = 640
               Height = 21
               Top = 376
-              Width = 40
+              Width = 36
               Caption = 'csv'
               TabOrder = 4
             end
@@ -1358,7 +1358,7 @@ object Form1: TForm1
             object btnSplit: TBitBtn
               Left = 117
               Height = 30
-              Top = 349
+              Top = 397
               Width = 107
               Caption = 'splt'
               Images = TabImages
@@ -1369,7 +1369,7 @@ object Form1: TForm1
             object btnCombineLogs: TBitBtn
               Left = 117
               Height = 30
-              Top = 304
+              Top = 352
               Width = 107
               Caption = 'btnCombineLogs'
               Images = TabImages
@@ -1380,7 +1380,7 @@ object Form1: TForm1
             object btnDeleteLn: TBitBtn
               Left = 8
               Height = 30
-              Top = 392
+              Top = 440
               Width = 107
               Caption = 'btnDeleteLn'
               Images = TabImages
@@ -1391,15 +1391,26 @@ object Form1: TForm1
             object edDeleteLn: TEdit
               Left = 117
               Height = 25
-              Top = 394
+              Top = 442
               Width = 107
               TabOrder = 8
               Text = '2014'
             end
+            object btnAutoCut: TBitBtn
+              Left = 8
+              Height = 30
+              Top = 397
+              Width = 107
+              Caption = 'Auto'
+              Images = TabImages
+              ImageIndex = 14
+              OnClick = btnAutoCutClick
+              TabOrder = 9
+            end
           end
           object tabCommon: TTabSheet
             Caption = 'allg'
-            ClientHeight = 470
+            ClientHeight = 490
             ClientWidth = 824
             ImageIndex = 8
             object rgTimeType: TRadioGroup
@@ -1444,9 +1455,9 @@ object Form1: TForm1
                 Top = 92
                 Width = 82
                 Caption = 'Special'
-                OnClick = btnSpecialClick
                 TabOrder = 0
                 Visible = False
+                OnClick = btnSpecialClick
               end
               object Image4: TImage
                 Left = 32
@@ -1655,10 +1666,10 @@ object Form1: TForm1
                 Left = 12
                 Height = 21
                 Top = 16
-                Width = 84
+                Width = 80
                 Caption = 'cbThunder'
-                OnChange = cbThunderChange
                 TabOrder = 1
+                OnChange = cbThunderChange
               end
               object rgBlockSize: TRadioGroup
                 Left = 12
@@ -1706,7 +1717,7 @@ object Form1: TForm1
                 Left = 12
                 Height = 21
                 Top = 44
-                Width = 52
+                Width = 48
                 Caption = 'ChVT'
                 Checked = True
                 State = cbChecked
@@ -1776,7 +1787,7 @@ object Form1: TForm1
                 Left = 8
                 Height = 21
                 Top = 128
-                Width = 59
+                Width = 55
                 Caption = 'cbCap'
                 TabOrder = 1
               end
@@ -1864,13 +1875,13 @@ object Form1: TForm1
       end
       object tabAppLog: TTabSheet
         Caption = 'AppLog'
-        ClientHeight = 500
+        ClientHeight = 520
         ClientWidth = 832
         ImageIndex = 11
         object btnSaveApplog: TBitBtn
           Left = 714
           Height = 34
-          Top = 462
+          Top = 482
           Width = 107
           Anchors = [akRight, akBottom]
           Caption = 'Sv'
@@ -1881,7 +1892,7 @@ object Form1: TForm1
         end
         inline AppLog: TSynEdit
           Left = 0
-          Height = 449
+          Height = 469
           Top = 0
           Width = 832
           Align = alTop
@@ -2388,7 +2399,7 @@ object Form1: TForm1
         object btnDelAppLog: TBitBtn
           Left = 8
           Height = 34
-          Top = 462
+          Top = 482
           Width = 107
           Anchors = [akLeft, akBottom]
           Caption = 'del'
@@ -2400,8 +2411,8 @@ object Form1: TForm1
         object cbReduced: TCheckBox
           Left = 128
           Height = 21
-          Top = 475
-          Width = 87
+          Top = 495
+          Width = 83
           Anchors = [akLeft, akBottom]
           Caption = 'cbReduced'
           TabOrder = 3
@@ -2409,7 +2420,7 @@ object Form1: TForm1
         object speBlockNum: TSpinEdit
           Left = 272
           Height = 25
-          Top = 466
+          Top = 486
           Width = 71
           Anchors = [akLeft, akBottom]
           MaxValue = 100000
@@ -2420,7 +2431,7 @@ object Form1: TForm1
         object btnShowHex: TBitBtn
           Left = 360
           Height = 34
-          Top = 462
+          Top = 482
           Width = 107
           Anchors = [akLeft, akBottom]
           Caption = 'hex'
@@ -2432,12 +2443,12 @@ object Form1: TForm1
         object cbHighLight: TCheckBox
           Left = 128
           Height = 21
-          Top = 455
-          Width = 91
+          Top = 475
+          Width = 87
           Anchors = [akLeft, akBottom]
           Caption = 'cbHighLight'
-          OnChange = cbHighLightChange
           TabOrder = 6
+          OnChange = cbHighLightChange
         end
       end
     end
@@ -2449,11 +2460,11 @@ object Form1: TForm1
     Width = 428
     Anchors = [akTop, akLeft, akRight]
     ItemHeight = 17
+    TabOrder = 12
     OnChange = cbxLogDirChange
     OnDblClick = cbxLogDirDblClick
     OnMouseUp = cbxLogDirMouseUp
     OnSelect = cbxLogDirSelect
-    TabOrder = 12
   end
   object XMLPropStorage1: TXMLPropStorage
     StoredValues = <>
@@ -2705,6 +2716,14 @@ object Form1: TForm1
         Enabled = False
         ImageIndex = 14
         OnClick = btnCutClick
+      end
+      object Separator2: TMenuItem
+        Caption = '-'
+      end
+      object mnAutoCut: TMenuItem
+        Caption = 'Auto'
+        ImageIndex = 14
+        OnClick = mnAutoCutClick
       end
       object mnTR2: TMenuItem
         Caption = '-'

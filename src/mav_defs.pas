@@ -29,9 +29,13 @@ const
   posChan=60;                                      {Startposition Spalten RC-Channels}
   deltayaw=15;                                     {Change of direction [°] for Waypoints}
 
+{CGO3+ serial}
+  dsIDC=$FE;                                       {ID for einen seriellen Datensatz aus CGO3 (MAV link V1?)}
+  lenfixC=8;                                       {Länge Fixpart seriellen Datensatz aus CGO3 (wie bei $BC)}
+
 
 {Public functions and procedures}
-  function MsgIDtoStr(id: integer): string;
+  function MsgIDtoStr(id: integer): string;        {Sammlung bekannter Message ID's}
   function CoordFrameToStr(f: integer): string;    {for POSITION_TARGET_GLOBAL_INT}
   function MAVseverity(sv: byte): string;
   function MAVcompID(cid: byte): string;           {MAV_Component_ID}

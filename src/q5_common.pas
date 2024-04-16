@@ -155,6 +155,7 @@
 2023-02-27       Splitting TLOG files improved
 2023-05-16       Sampling regularity for column 0 (Date/Time)
 2023-11-23       Added save as CSV to grid Details
+2024-04-15  V5.0 AutoCut added: Automatically cut flightlog data to the flight only
 *)
 
 
@@ -169,8 +170,8 @@ uses
 
 const
 {public constants}
-  AppName=   'q500log2kml';
-  AppVersion='V4.9.2 - 05/2023';
+  AppName=   'Q500log2kml';
+  AppVersion='V5.0 - 04/2024';
   VersValue=492;                                   {Verion number as Integer to compare}
   VersFile='/v';
 
@@ -242,6 +243,8 @@ const
   clVolt2=$00FF901E;                               {Voltage 2 Farbe}
   clErrFlag=$000080FF;                             {Orange}
   clPeaks=clYellow;
+
+  clTabs=$00F7F7F7;
 
   minh=0.01;                                       {Höhengrenzen bei Übernahme}
   maxh=300;

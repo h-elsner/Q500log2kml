@@ -1,7 +1,7 @@
 object Form2: TForm2
-  Left = 1813
+  Left = 1932
   Height = 292
-  Top = 871
+  Top = 897
   Width = 671
   Caption = 'Form2'
   ClientHeight = 292
@@ -12,8 +12,8 @@ object Form2: TForm2
   PopupMenu = PopupMenu1
   Position = poDefaultPosOnly
   ShowInTaskBar = stNever
-  LCLVersion = '2.2.6.0'
-  object StringGrid1: TStringGrid
+  LCLVersion = '3.3.0.0'
+  object gridAnzwerte: TStringGrid
     Left = 8
     Height = 235
     Top = 8
@@ -24,11 +24,11 @@ object Form2: TForm2
     FixedCols = 0
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColSpanning, goDblClickAutoSize, goSmoothScroll]
     TabOrder = 0
-    OnCompareCells = StringGrid1CompareCells
-    OnDblClick = StringGrid1DblClick
-    OnKeyUp = StringGrid1KeyUp
-    OnMouseDown = StringGrid1MouseDown
-    OnPrepareCanvas = StringGrid1PrepareCanvas
+    OnCompareCells = gridAnzwerteCompareCells
+    OnDblClick = gridAnzwerteDblClick
+    OnKeyUp = gridAnzwerteKeyUp
+    OnMouseDown = gridAnzwerteMouseDown
+    OnPrepareCanvas = gridAnzwertePrepareCanvas
     ColWidths = (
       140
       60

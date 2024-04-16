@@ -150,8 +150,8 @@ resourcestring                                     {english}
   rsCheckSettings='Check settings for ';
   rsScreenshot='&Screenshot';
   hntBitBtn13='Save screenshot from the application window as PNG...';
-  capBitBtn14='Cut files';
-  hntBitBtn14='Cut FlightLog data for better analysis (Ctrl+n)';
+  capCut='Cut files';
+  hntCut='Cut FlightLog data for better analysis (Ctrl+n)';
   rsStartTPunkt='Set start';
   rsEndTPunkt='Set end';
   rsResetCutBE='Reset start/end';
@@ -298,5 +298,7 @@ resourcestring                                     {english}
   hntDeleteEd='Lines to delete starts with this value.';
   titSaveTab='Save table as CSV file...';
   capSaveTab='Save as CSV';
+  capAutoCut='AutoCut';
+  hntAutoCut='Automatically cut flight data for the flight to suppress data from initializing phase (Ctrl+m).';
 
 
