@@ -399,7 +399,6 @@ type
     procedure cbxSearchMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormActivate(Sender: TObject);
-    procedure gbDiverseKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure lblGitHubClick(Sender: TObject);
     procedure lblGitHubMouseEnter(Sender: TObject);
     procedure lblGitHubMouseLeave(Sender: TObject);
@@ -638,11 +637,12 @@ type
     procedure SplitSensorPlus;                     {Split PX4 Sensor file}
     procedure ManualCut;                           {Manuelles Ausschneiden}
     procedure CutLegacy(mode: integer);            {mode = 1: Automatisches Ausschneiden}
-{Special analysis with (hidden) extra button "Special" on Settings > Common settings}
-    procedure TLOGanalysis(fn: string);            {Special analysis}
     procedure EnableMultiselect;                   {Multiselect flight list to combine files}
     procedure CombineLogs;                         {Combine some legacy Yuneec Flightlog to one log files set}
-//    procedure AuswertungCSVdatei;                {Spezielle Auswertung für CSV-Datei}
+{Special analysis with (hidden) extra button "Special" on Settings > Common settings}
+//    procedure TLOGanalysis(fn: string);            {Special analysis: TLOG altitudes}
+//    procedure AuswertungCSVdatei;                {Special analysis: allg. für CSV-Datei}
+    procedure IMUstatusCheck;                      {Special analysis: List all IMU stuts during flight}
   end;
 
 {$I language.inc}
@@ -1042,7 +1042,7 @@ begin
   DefaultFormatSettings.DecimalSeparator:='.';
   tend:=0;
   rgQuelle.ItemIndex:=0;
-  gridDetails.Tag:=19;                             {default Position bei neuer FW ST10+}
+  gridDetails.Tag:=DefaultPosFlightMode;           {default Position bei neuer FW ST10+}
   gridDetails.ColWidths[0]:=130;
   gridDetails.Hint:=hntGrid1;                      {Default Hint data}
   gridDetails.ColCount:=defaultcol;
@@ -1132,7 +1132,17 @@ begin
 end;
 
 procedure TForm1.FormActivate(Sender: TObject);    {Action after initializing}
+var
+  ctrlkeypressed: TShiftState;
+
 begin
+  ctrlkeypressed:=GetKeyShiftState;                {Hold Ctrl key during start-up to get special analysis}
+  if ssCtrl in ctrlkeypressed then begin
+    btnSpecial.Visible:=true;
+    pcMain.ActivePage:=tabSettings;
+    pcSettings3.ActivePage:=tabCommon;
+    btnSpecial.SetFocus;
+  end;
   EnableMultiselect;
 end;
 
@@ -5467,7 +5477,7 @@ begin
   ProgressBarScan.Position:=0;
   rgQuelle.ItemIndex:=0;                           {File type: Telemetry}
   zhl:=0;                                          {Trefferzähler}
-  gridDetails.Tag:=19;                     {default Position bei neuer FW ST10+}
+  gridDetails.Tag:=DefaultPosFlightMode;           {default Position bei neuer FW ST10+}
   cbxSearch.Text:=trim(StringReplace(cbxSearch.Text, sep, '.', []));
   cbxScanDir.Text:=ExcludeTrailingPathDelimiter(cbxScanDir.Text);
   flist:=TStringList.Create;
@@ -6748,14 +6758,6 @@ begin
     cbxLogDir.Items.Clear;
 end;
 
-procedure TForm1.gbDiverseKeyUp(Sender: TObject; var Key: Word;
-  Shift: TShiftState);                             {Ctrl+S to enable special actions}
-begin
-  if (ssCtrl in Shift) and
-     (key=vk_S) then
-    btnSpecial.Visible:=true;
-end;
-
 procedure TForm1.mnFlDelClick(Sender: TObject);    {Delete selected FlightLog}
 var nf: integer;                                   {Number files deleted}
 
@@ -6824,7 +6826,7 @@ begin
       StatusBar1.Panels[5].Text:=rsFLdelete+tab1+
                                  lbFlights.Items[lbFlights.ItemIndex]+suff+
                                  IntToStr(nf)+tab1+rsFilesDel;
-      StatusBar1.Refresh;
+      StatusBar1.Invalidate;
       AppLog.Lines.Add(LineEnding);
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
       AppLog.Lines.Add(LineEnding);
@@ -9123,7 +9125,7 @@ begin
   baseh:=0;                                        {default: relative altitude}
   try
     HDiaInit;
-    gridDetails.Tag:=19;                           {default Position bei neuer FW}
+    gridDetails.Tag:=DefaultPosFlightMode;         {default Position bei neuer FW}
     try
       inlist.LoadFromFile(fn);                     {Telemtry Datei laden}
     except
@@ -11427,8 +11429,8 @@ var
 begin                                              {Main part}
   if (aRow>0) and                                  {nicht in Überschrift malen}
      (aState=[]) then begin                        {nicht, wenn selected}
-     if not odd(aRow) then
-       gridDetails.Canvas.Brush.Color:=clTabs;
+    if not odd(aRow) then
+      CellColorSetting(gridDetails, clTabs);
     if gridDetails.ColCount=csvanz then begin
       FarbenPX4csv;
     end else begin
@@ -12444,7 +12446,7 @@ begin
   topp[0, 4]:=gridOverview.TopRow;                 {Top merken für Übersicht}
   if aRow>0 then begin
     if not odd(aRow) then
-      gridOverview.Canvas.Brush.Color:=clTabs;     {Jede 2. Zeile grau}
+      CellColorSetting(gridOverview, clTabs);      {Jede 2. Zeile grau}
     if (aState=[]) and (aCol>0) then begin         {1. Spalte ausschliessen}
       if aRow<gridOverview.RowCount-1 then begin   {Fußzeile ausschliessen}
         if (topp[aRow-1, 6] and 32)>0 then         {Compass error, ganze Zeile}
@@ -13230,7 +13232,7 @@ begin
     AppLog.Highlighter:=AppLogHighlighter
   else
     AppLog.HighLighter:=nil;
-  AppLog.Refresh;
+  AppLog.Invalidate;
 end;
 
 procedure TForm1.cbMarkerChange(Sender: TObject); {Time marker changed --> enable convertion}
@@ -13351,13 +13353,13 @@ end;
 procedure TForm1.btnSpecialClick(Sender: TObject);  {Spezielle Auswertung für CSV-Datei}
 begin
 //  AuswertungCSVdatei;
-  if OpenDialog1.Execute then
-    TLOGanalysis(OpenDialog1.FileName);
+//  if OpenDialog1.Execute then TLOGanalysis(OpenDialog1.FileName);
+  IMUstatusCheck;
 end;
 
 
 {Sonderauswertung einer CSV-Datei : Hier ist der Rahmen dazu.
- Enable Button Special: Ctrl+S }
+ Enable Button Special: Hold Ctrl key during program start-up }
 
 (*
 procedure TForm1.AuswertungCSVdatei;               {Spezielle Auswertung für CSV-Datei}
@@ -13505,7 +13507,7 @@ begin
 end; *)
 
 
-
+(*
 {https://github.com/mavlink/c_library_v2/tree/master/common
 
  Special analysis TLOG (Beispiel für eigene CSV Listen:
@@ -13727,6 +13729,82 @@ begin
       csvlist.Free;
       Screen.Cursor:=crDefault;
     end;
+  end;
+end;  *)
+
+procedure TForm1.IMUstatusCheck;
+const
+  IMUpos=15;
+
+var
+  filelist, splitlist, csvlist, imulist, imutemp: TStringList;
+  i: integer;
+
+  procedure IMU_CheckOneTelemetryFile(fn: string);
+  var
+    i: integer;
+    IMUstatus, IMUstatus_old: integer;
+
+  begin
+    IMUstatus_old:=256;
+    imutemp.Clear;
+    csvlist.LoadFromFile(fn);
+    if csvlist.Count<25 then                          {Have enough data to do analysis}
+      exit;
+    splitlist.DelimitedText:=csvlist[8];              {8 --> skip eventually invalid datasets at the beginning}
+    if StrToIntDef(splitlist[19], 999)<>DefVT then    {Only for H480 (default flight mode 5)}
+      exit;
+    imutemp.Add('File: '+ExtractFileName(fn)+'   Date: '+
+                 copy(csvlist[8], 1, 4)+'-'+          {Year}
+                 copy(csvlist[8], 5, 2)+'-'+          {Month}
+                 copy(csvlist[8], 7, 2));             {Day}
+    for i:=1 to csvlist.Count-1 do begin
+      splitlist.DelimitedText:=csvlist[i];
+      if Splitlist.Count>19 then begin
+        if StrToIntDef(splitlist[17], 999) in rfm2 then begin   {Only during flight}
+          IMUstatus:=StrToIntDef(splitlist[IMUpos],999);
+          if IMUstatus<256 then begin
+            if IMUstatus<>IMUstatus_old then begin
+              imutemp.Add(splitlist[0]+Format('%5d', [IMUstatus])+tab2+
+                          IntToBin(IMUstatus, 8, 4)+tab2+'"'+IMUstatusToStr(IMUstatus)+'"');
+            end;
+            IMUstatus_old:=IMUstatus;
+          end;
+        end;
+      end;
+    end;
+    imutemp.Add('');
+    if imutemp.Count>2 then
+      for i:=0 to imutemp.Count-1 do
+        imulist.Add(imutemp[i]);
+  end;
+
+begin
+  filelist:=TStringList.Create;
+  csvlist:=TStringList.Create;
+  imulist:=TStringList.Create;
+  imutemp:=TStringList.Create;
+  splitlist:=TStringList.Create;
+  splitlist.Delimiter:=sep;
+  splitlist.StrictDelimiter:=True;
+  Screen.Cursor:=crHourGlass;
+  try
+    FindAllFiles(filelist, cbxLogDir.Text, kfile+wldcd+fext);
+    filelist.Sort;
+    StatusBar1.Panels[0].Text:=IntToStr(filelist.Count);
+    for i:=0 to filelist.Count-1 do begin
+      StatusBar1.Panels[1].Text:=IntToStr(i+1);
+      IMU_CheckOneTelemetryFile(filelist[i]);
+    end;
+    StatusBar1.Panels[5].Text:='IMU analysis done';
+    imulist.SaveToFile(IncludeTrailingPathDelimiter(cbxLogDir.Text)+'IMU_Status_list.txt');
+  finally
+    filelist.Free;
+    csvlist.Free;
+    imulist.Free;
+    imutemp.Free;
+    splitlist.Free;
+    Screen.Cursor:=crDefault;
   end;
 end;
 

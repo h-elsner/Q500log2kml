@@ -1,7 +1,7 @@
 object Form2: TForm2
-  Left = 1932
+  Left = 1796
   Height = 292
-  Top = 897
+  Top = 879
   Width = 671
   Caption = 'Form2'
   ClientHeight = 292
@@ -109,8 +109,8 @@ object Form2: TForm2
   end
   object edTime: TEdit
     Left = 8
-    Height = 17
-    Top = 254
+    Height = 20
+    Top = 251
     Width = 64
     Alignment = taCenter
     Anchors = [akLeft, akBottom]
