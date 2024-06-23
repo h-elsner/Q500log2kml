@@ -28,6 +28,7 @@ const
   skyext='.sky';
   bakext='.bak';
 
+  DefaultPosFlightMode=19;
   rfm2=[0..7, 9..14, 18, 20..24, 26..29, 31..33];  {Real flight modes, Yuneec legacy}
   rfm3=[8..14, 25];                                {Real flight modes Blade}
   rfmT=[0, 1, 3, 12, 13, 20, 33];                  {Real flight modes Thunderbird}
