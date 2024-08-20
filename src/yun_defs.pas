@@ -40,7 +40,8 @@ const
   stkup  =3412;                                    {+100%}
   stkmax =4095;                                    {+150%}
   stkmin=0;                                        {-150%}
-  m45val=1433;                                     {Pan -40% TeamMode}
+  m45val=1433;                                     {Pan -45% TeamMode}
+  m40val=1502;                                     {Pan -40% Pan Follow controlable}
   p50val=2730;                                     {+50%}
   m50val=1365;                                     {-50%}
 
@@ -177,6 +178,7 @@ begin
     4: result:='Blade Chroma (380QX)';
     5: result:='Yuneec Typhoon H';
     6: result:='Yuneec H920+';                     {vermutlich nie genutzt}
+	7: result:='Yuneec H520';
     20..29: result:='SR24 car';
     30..39: result:='SR24 boat';
     brID: result:='Yuneec Breeze';                 {selbst bestimmte Typ-IDs, 10..14, 90, 91}
@@ -585,7 +587,7 @@ begin
            result:=rsNeutral;
          if stk=m45val then
            result:=rsTeam;
-         if stk=1502 then
+         if stk=m45val then
            result:='Controllable mode';
          if stk=stkdown then
            result:='Follow mode';

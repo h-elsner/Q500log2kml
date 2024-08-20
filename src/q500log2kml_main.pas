@@ -50,7 +50,6 @@ KML file generation: https://developers.google.com/kml/documentation/
 YTH waypoints: http://www.eegalmc2.com/us/typhoonh/
 
 Hilfsvariablen:
-Form1.Tag:        Original Dezimal Separator zwischenspeichern (ob das nötig ist?)
 btnClose.Tag:     1=Breeze telemetry als ft, sonst Meter
 btnArchive.Tag:   Plattform for Breeze: 1: Android, 0: iOS
 gridDetails.Tag:  Spaltennummer, wo f_mode steht.
@@ -1038,7 +1037,6 @@ begin
   LabeledEdit1.EditLabel.Caption:=capTopDia;
   LabeledEdit2.EditLabel.Caption:=capMiddleDia;
   LabeledEdit3.EditLabel.Caption:=capBottomDia;
-  Tag:=ord(DefaultFormatSettings.DecimalSeparator); {Original zwischenspeichern}
   DefaultFormatSettings.DecimalSeparator:='.';
   tend:=0;
   rgQuelle.ItemIndex:=0;
@@ -6863,7 +6861,6 @@ end;
 
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
-  DefaultFormatSettings.DecimalSeparator:=chr(Tag); {Original wiederherstellen}
 //  topp:=nil;
 end;
 
