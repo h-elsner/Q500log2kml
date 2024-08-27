@@ -398,6 +398,10 @@ type
     procedure cbxSearchMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormActivate(Sender: TObject);
+    procedure gridDetailsGetCellHint(Sender: TObject; ACol, ARow: Integer;
+      var HintText: String);
+    procedure gridOverviewGetCellHint(Sender: TObject; ACol, ARow: Integer;
+      var HintText: String);
     procedure lblGitHubClick(Sender: TObject);
     procedure lblGitHubMouseEnter(Sender: TObject);
     procedure lblGitHubMouseLeave(Sender: TObject);
@@ -491,8 +495,6 @@ type
       Index: Integer);
     procedure gridDetailsKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure gridDetailsMouseMove(Sender: TObject; Shift: TShiftState;
-      X, Y: Integer);
     procedure gridDetailsMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure gridDetailsPrepareCanvas(sender: TObject; aCol, aRow: Integer;
@@ -505,8 +507,6 @@ type
       Index: Integer);
     procedure gridOverviewKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure gridOverviewMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
     procedure gridOverviewMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure gridOverviewPrepareCanvas(sender: TObject; aCol, aRow: Integer;
@@ -1142,6 +1142,46 @@ begin
     btnSpecial.SetFocus;
   end;
   EnableMultiselect;
+end;
+
+procedure TForm1.gridDetailsGetCellHint(Sender: TObject; ACol, ARow: Integer;
+  var HintText: String);
+begin
+  if ARow>0 then begin
+    HintText:=GetCellInfo(aCol, aRow)
+  end else begin
+    if rgQuelle.ItemIndex=3 then                   {Hint bei Sensor ausblenden}
+      HintText:=gridDetails.Cells[aCol, 0]
+    else
+      gridDetails.Hint:=hntGrid1;
+  end;
+  if (aRow=0) and (rgQuelle.ItemIndex=2) then      {Kanalzuordnung Remote}
+    HintText:=ChToStr('', aCol);                   {CH vs Ch --> Channel settings}
+end;
+
+procedure TForm1.gridOverviewGetCellHint(Sender: TObject; ACol, ARow: Integer;
+  var HintText: String);
+begin
+  if (aCol>0) and (aRow>0) then begin
+    if aRow=gridOverview.RowCount-1 then begin     {Last line: Sumn}
+      case aCol of
+        1: HintText:=hntNumFlt;
+        4: HintText:=hntDauer;
+        7: HintText:=hntStrecke;
+        8: HintText:=hntHGeschw;
+        else HintText:=rsPC1Tab1;                  {default}
+      end;
+    end else begin
+      case aCol of
+        9, 10: HintText:=                          {min/max voltage}
+               ShowVoltageF(GetFVal(gridOverview.Cells[aCol, aRow]), v_type);
+      else
+        HintText:=gridOverview.Cells[aCol, 0]+'='+
+                           gridOverview.Cells[aCol, aRow];     {Default hint}
+      end;
+    end;
+  end else
+    HintText:=gridOverview.Cells[aCol, aRow];      {Header}
 end;
 
 procedure TForm1.EnableMultiselect;                {Multiselect flight list to combine files}
@@ -12350,26 +12390,6 @@ begin
   end;
 end;
 
-procedure TForm1.gridDetailsMouseMove(Sender: TObject; Shift: TShiftState;
-  x, y: Integer);                                  {Info per Zelle}
-var sp, zl: integer;                               {Spalte und Zeile}
-
-begin
-  gridDetails.MouseToCell(x, y, sp, zl);           {Zelle unter Maus finden}
-  if zl>0 then begin
-    gridDetails.Cursor:=crHelp;
-    gridDetails.Hint:=GetCellInfo(sp, zl)
-  end else begin
-    gridDetails.Cursor:=crSizeAll;
-    if rgQuelle.ItemIndex=3 then                   {Hint bei Sensor ausblenden}
-      gridDetails.Hint:=gridDetails.Cells[sp, 0]
-    else
-      gridDetails.Hint:=hntGrid1;
-  end;
-  if (zl=0) and (rgQuelle.ItemIndex=2) then        {Kanalzuordnung Remote}
-    gridDetails.Hint:=ChToStr('', sp);             {CH vs Ch --> Channel settings}
-end;
-
 {http://www.delphipraxis.net/13528-stringgrid-rechte-mousetaste-reihe-selektieren.html
  Pop-up Menü mit rechter Maustaste aufrufen}
 procedure TForm1.gridDetailsMouseUp(Sender: TObject; Button: TMouseButton;
@@ -12486,36 +12506,6 @@ procedure TForm1.gridOverviewKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if (key=vk_c) and (ssCtrl in Shift) then gridOverview.CopyToClipboard(false);
-end;
-
-procedure TForm1.gridOverviewMouseMove(Sender: TObject; Shift: TShiftState;
-          x, y: Integer);                          {Show hint per cell}
-var sp, zl: integer;                               {Spalte und Zeile}
-
-begin
-  sp:=0;
-  zl:=0;
-  gridOverview.MouseToCell(x, y, sp, zl);          {Zelle unter Maus finden}
-  if (sp>0) and (zl>0) then begin
-    if zl=gridOverview.RowCount-1 then begin       {Last line: Sumn}
-      case sp of
-        1: gridOverview.Hint:=hntNumFlt;
-        4: gridOverview.Hint:=hntDauer;
-        7: gridOverview.Hint:=hntStrecke;
-        8: gridOverview.Hint:=hntHGeschw;
-        else gridOverview.Hint:=rsPC1Tab1;         {default}
-      end;
-    end else begin
-      case sp of
-        9, 10: gridOverview.Hint:=                 {min/max voltage}
-               ShowVoltageF(GetFVal(gridOverview.Cells[sp, zl]), v_type);
-      else
-        gridOverview.Hint:=gridOverview.Cells[sp, 0]+'='+
-                           gridOverview.Cells[sp, zl];     {Default hint}
-      end;
-    end;
-  end else
-    gridOverview.Hint:=gridOverview.Cells[sp, zl];  {Header}
 end;
 
 procedure TForm1.gridOverviewMouseUp(Sender: TObject; Button: TMouseButton;
