@@ -2472,7 +2472,7 @@ begin
       while inf.Position<(inf.Size-20)  do begin   {bis zum Ende der Datei}
         repeat
           b:=inf.ReadByte;
-        until (b=dsIDP) or (inf.Position>=inf.Size-lenfixP);
+        until (b=MagicBC) or (inf.Position>=inf.Size-lenfixP);
         len:=inf.ReadByte;                         {Länge Payload mit CRC}
         if len=HBlen then begin                    {Nur Heartbeat lesen}
           inf.ReadBuffer(dsbuf, HBlen+lenfixP-2);  {Länge Rest-Datensatz mit FixPart}
@@ -2497,25 +2497,178 @@ begin
   end;
 end;
 
+{Many messages are like MAVlink V1:
+ https://github.com/mavlink/c_library_v1/tree/master/common
+ https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/ardupilotmega.xml}
+
 procedure TForm1.ShowSensorH(const fn: string; mode: integer);
-var dsbuf: array[0..264] of byte;
-    i, len, zhl, n3: integer;
+var msg: TMAVmessage;
+    i, zhl, n3: integer;
     infn: TMemoryStream;
     b: byte;
 
-  procedure AusgabeSensor;
-  var i: integer;
+  procedure WriteToGrid(msg: TMAVmessage);
+  var
+    i: integer;
+
   begin
     if gridDetails.RowCount<(zhl+2) then
       gridDetails.RowCount:=gridDetails.RowCount+2000;    {neue Zeilen}
     inc(zhl);                                             {Datensätze zählen}
-    if zhl=10 then                                        {Check till line 10}
+    if zhl=20 then                                        {Check till line 20}
       gridDetails.AutoSizeColumns;
-    for i:=0 to lenfix-3 do
-      gridDetails.Cells[i, zhl]:=IntToHex(dsbuf[i], 2);   {Header Hex}
-    gridDetails.Cells[lenfix-2, zhl]:=IntToStr(len-2);    {Payload Länge ohne CRC}
-    for i:=lenfix-2 to len+lenfix-5 do
-      gridDetails.Cells[i+1, zhl]:=IntToHex(dsbuf[i], 2); {Payload in Hex}
+
+    gridDetails.Cells[0, zhl]:='BC';
+    for i:=1 to 5 do
+      gridDetails.Cells[i, zhl]:=IntToStr(msg.msgbytes[i]);      {Header in dec}
+//    for i:=6 to msg.msglength+7 do                             {with CRC}
+    for i:=6 to msg.msglength+5 do                               {w/o CRC}
+      gridDetails.Cells[i+1, zhl]:=IntToHex(msg.msgbytes[i], 2); {Payload in hex}
+
+    gridDetails.Cells[5, zhl]:=BCMsgTypeToStr(msg.msgbytes[5]);
+  end;
+
+  procedure TimeBoot_ms(pos: byte);
+  var
+    timeboot: uint32;
+
+  begin
+    timeboot:=MavGetUInt32(msg, pos);
+    msg.time:=timeboot/secpd/1000;
+//    gridDetails.Cells[6, zhl]:=IntToStr(timeboot);                  {in ms}
+    gridDetails.Cells[6, zhl]:=FormatFloat('0.000', timeboot/1000); {in s}
+//    gridDetails.Cells[6, zhl]:=FormatDateTime(zzf+zzz, msg.time); {as time in hours}
+  end;
+
+  procedure Sys_Time;
+  var
+    ts: TDateTime;
+
+  begin
+    TimeBoot_ms(14);
+    if not cbReduced.Checked then begin
+      ts:=UnixToDateTime(MavGetIntFromBuf(msg, 6, 8) div 1000000);  {us --> s}
+      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
+                       FormatDateTime(zzf+zzz, msg.time)+tab2+'UTC:  '+
+                       FormatDateTime(vzf, ts));
+    end;
+  end;
+
+  procedure GPS_RAW;
+  var
+    timeboot: uint64;
+
+  begin
+    timeboot:=MavGetIntFromBuf(msg, 6, 8);
+    if timeboot>0 then begin
+      msg.time:=timeboot/secpd/1000000;
+      gridDetails.Cells[6, zhl]:=FormatFloat('0.000', timeboot/1000000); {in s};
+    end;
+  end;
+
+  procedure RAW_IMU;
+  var
+    timeboot: uint64;
+
+  begin
+    timeboot:=MavGetIntFromBuf(msg, 6, 8);
+    msg.time:=timeboot/secpd/1000000;
+    gridDetails.Cells[6, zhl]:=FormatFloat('0.000', timeboot/1000000); {in s};
+
+  end;
+
+  procedure Scaled_Pressure;
+  begin
+    TimeBoot_ms(6);
+
+  end;
+
+  procedure Attitude;
+  begin
+    TimeBoot_ms(6);
+
+  end;
+
+  procedure Global_Position;
+  begin
+    TimeBoot_ms(6);
+
+  end;
+
+  procedure RC_CHANNELS_RAW;
+  begin
+    TimeBoot_ms(6);
+
+  end;
+
+  procedure SERVO_OUTPUT_RAW;
+  var
+    timeboot: uint32;
+
+  begin
+    timeboot:=MavGetUint32(msg, 6);
+    msg.time:=timeboot/secpd/1000000;
+    gridDetails.Cells[6, zhl]:=FormatFloat('0.000', timeboot/1000000); {in s};
+
+  end;
+
+  procedure Camera_type;
+  var
+    i: integer;
+
+  begin
+    for i:=12 to msg.msglength+5 do
+      if msg.msgbytes[i]>0 then
+        gridDetails.Cells[i+1, zhl]:=chr(msg.msgbytes[i]);
+  end;
+
+  procedure NAV_CONTROLLER_OUTPUT;
+  begin
+    TimeBoot_ms(6);
+
+  end;
+
+{See also (alternative):
+ https://mavlink.github.io/rust-mavlink/mavlink/ardupilotmega/struct.EKF_STATUS_REPORT_DATA.html}
+  procedure EKF_STATUS_REPORT;
+  var
+    velocity_variance: single;
+
+  begin
+    velocity_variance:=MavGetFloatFromBuf(msg, 6);
+    if velocity_variance>=0.8 then begin
+      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
+                           FormatDateTime(zzf+zzz, msg.time)+tab2+'EKF status: Velocity_variance='+
+                           FormatFloat('0.000', velocity_variance)+
+                           ' is bad!');
+    end else begin
+      if velocity_variance>=0.5 then begin
+        AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
+                             FormatDateTime(zzf+zzz, msg.time)+tab2+'EKF status: Velocity_variance='+
+                             FormatFloat('0.000', velocity_variance)+
+                             ' is at warning level');
+      end;
+    end;
+  end;
+
+{AHRS: Attitude and Heading Reference Systems
+ EKF : Extended Kalman Filter}
+  procedure StatusText;
+  var
+    Text: string;
+    pos: byte;
+
+  begin
+    text:='';
+    pos:=7;
+    while (msg.msgbytes[pos]>0) and (pos<msg.msglength+6) do begin
+      text:=text+chr(msg.msgbytes[pos]);
+      inc(pos);
+    end;
+    AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
+                     FormatDateTime(zzf+zzz, msg.time)+tab2+'Severity: '+
+                     MAVseverity(msg.msgbytes[6])+tab2+
+                     'Msg: '+text);
   end;
 
 begin
@@ -2530,19 +2683,19 @@ begin
 
     gridDetails.BeginUpdate;
     gridDetails.RowCount:=1;
-    gridDetails.ColCount:=105;                     {Spalten vorbelegen}
-    gridDetails.Cells[0, 0]:='SeqNo';
-    gridDetails.Cells[1, 0]:='SysID';
-    gridDetails.Cells[2, 0]:='CompID';
-    gridDetails.Cells[3, 0]:=csvMsgID;
-    gridDetails.Cells[4, 0]:='TargetID?';
-    gridDetails.Cells[5, 0]:='TgtSubID?';
-    gridDetails.Cells[lenfix-2, 0]:='lenPL';       {Länge Payload Header}
+    gridDetails.ColCount:=200;                     {Spalten vorbelegen}
+    gridDetails.Cells[0, 0]:='Magic';
+    gridDetails.Cells[1, 0]:='Len';
+    gridDetails.Cells[2, 0]:='SequNo';
+    gridDetails.Cells[3, 0]:='SysID';
+    gridDetails.Cells[4, 0]:='TargetID';
+    gridDetails.Cells[5, 0]:='MsgID';
+    gridDetails.Cells[6, 0]:='Since boot [s]';
     for i:=1 to gridDetails.ColCount-lenfix+1 do   {Payload Byte Nummern}
-      gridDetails.Cells[i+lenfix-2, 0]:='PL'+IntToStr(i);
+      gridDetails.Cells[i+6, 0]:='PL'+IntToStr(i);
     gridDetails.EndUpdate;
 
-    FillChar(dsbuf, length(dsbuf), 0);             {Datenbuffer löschen}
+    msg:=ClearMAVmessage;                          {Datenbuffer löschen}
     infn:=TMemoryStream.Create;
     try
       infn.LoadFromFile(fn);
@@ -2552,32 +2705,33 @@ begin
 
       gridDetails.BeginUpdate;
       while infn.Position<(infn.Size-lenfix) do begin
-        repeat                                     {RecordID suchen}
+        repeat                                     {RecordID suchen $BC}
           b:=infn.ReadByte;
-        until (b=dsID) or (infn.Position>=infn.Size-lenfix);
-        len:=infn.ReadByte;                        {Länge Payload mit CRC}
+        until (b=MagicBC) or (infn.Position>=infn.Size-lenfix);
+        msg.msgbytes[0]:=b;
+        msg.msglength:=infn.ReadByte;              {Länge Payload mit CRC}
+        msg.msgbytes[1]:=msg.msglength;
         try
-          infn.ReadBuffer(dsbuf, len+lenfix-2);    {Länge Rest-Datensatz mit FixPart}
-          if mode=0 then
-            AusgabeSensor                          {alles anzeigen, ohne Filter}
-          else if mode=1 then begin                {mit Filter}
-            try
-              case n3 of                           {Spaltennummer}
-                0..5: if StrToInt(cbxSearch.Text)=dsbuf[n3] then
-                     AusgabeSensor;                {dezimal}
-                6: if StrToInt(cbxSearch.Text)=len-2 then
-                     AusgabeSensor;                {Länge Payload mit CRC}
-                else
-                  if (n3<(len+lenfix-3)) and
-                        (Hex2Dec('$'+cbxSearch.Text)=dsbuf[n3-1]) then
-                    AusgabeSensor;                 {Hexadezimal}
-              end;
-            except
-              AusgabeSensor;                       {Kein Filter, alles ausgeben}
-              StatusBar1.Panels[2].Text:=rgOutFormat.Items[rgOutFormat.ItemIndex];
-              StatusBar1.Panels[5].Text:=errSelection;
-              AppLog.Lines.Add('''2881'+suff+StatusBar1.Panels[5].Text);
-            end;
+          infn.Position:=infn.Position-2;
+          infn.ReadBuffer(msg.msgbytes, msg.msglength+8);  {Länge Rest-Datensatz mit FixPart und CRC}
+          msg.sysid:=msg.msgbytes[3];
+          msg.targetid:=msg.msgbytes[4];
+          msg.msgid:=msg.msgbytes[5];
+          WriteToGrid(msg);
+
+          case msg.msgid of
+            2:  Sys_Time;
+            24: GPS_RAW;
+            27: RAW_IMU;
+            29: Scaled_Pressure;
+            30: Attitude;
+            33: Global_Position;
+            35: RC_CHANNELS_RAW;
+            36: SERVO_OUTPUT_RAW;
+            52: Camera_type;
+            65: NAV_CONTROLLER_OUTPUT;
+            193: EKF_STATUS_REPORT;
+            253: StatusText;
           end;
         except
           AppLog.Lines.Add(fn+': Abrupt sensor file end');  {Msg too short}
@@ -2603,6 +2757,7 @@ begin
     end;
   end;
 end;
+
 
 procedure TForm1.OpenSensorPlus;                   {Sensordatei vom YTH Plus öffnen}
 var spdir: string;
@@ -2707,10 +2862,10 @@ begin
         try
           repeat
             b:=infn.ReadByte;
-          until (b=dsIDP) or (infn.Position>infn.Size-lenfixP);
+          until (b=MagicMAVlinkV2) or (infn.Position>infn.Size-lenfixP);
           inc(zhl);
           len:=infn.ReadByte;                      {Length payload including CRC}
-          infn.ReadBuffer(dsbuf, len+lenfixP-2);   {Whole message, w/o $FD and len (-2)}
+          infn.ReadBuffer(dsbuf, len+lenfixP-2);   {Whole message, w/o $BC and len (-2)}
 
           e:=GetIntFromBuf(-3, 3);                 {MsgID 3 byte as integer}
           case e of                                {Messages with time stamps}
@@ -3132,7 +3287,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     lat:=GetIntFromBuf(8, 4);                      {uint32}
     lon:=GetIntFromBuf(12, 4);
     tme:=GetIntFromBuf(0, 8);                      {in mysec}
-    bg:=tme/(Secpd*1000000);                       {Zeitstempel überall verfügbar}
+    bg:=tme/Secpd/1000000;                         {Zeitstempel überall verfügbar}
     tstr:=FormatDateTime(dzf, ftm)+'T'+
           FormatDateTime(zzf, bg)+'Z';             {Zeitstring überall verfügbar}
     ele:=GetIntFromBuf(16, 4);                     {Höhe}
@@ -3258,7 +3413,7 @@ var dsbuf: array[0..YTHPcols] of byte;
   begin
     StandardAusgabe;
     tme:=GetIntFromBuf(0, 8);                      {in mysec}
-    bg:=tme/(Secpd*1000000);                       {Zeitstempel überall verfügbar}
+    bg:=tme/Secpd/1000000;                         {Zeitstempel überall verfügbar}
     tstr:=FormatDateTime(dzf, ftm)+'T'+
           FormatDateTime(zzf, bg)+'Z';             {Zeitstring überall verfügbar}
 
@@ -3356,7 +3511,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
       tme:=GetIntFromBuf(0, 8);                    {in mysec, uint64}
-      bg:=tme/(Secpd*1000000);                     {Zeitstempel überall verfügbar}
+      bg:=tme/Secpd/1000000;                       {Zeitstempel überall verfügbar}
       for i:=0 to 11 do begin
         wrt:=GetFloatFromBuf((i*4)+8);             {12 Werte ab [m/s/s] X acceleration}
         csvarr[i+26]:=FormatFloat(ctfl, wrt);
@@ -3384,7 +3539,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
       tme:=GetIntFromBuf(0, 4);                    {in ms}
-      bg:=tme/(Secpd*1000);                        {Zeitstempel überall verfügbar}
+      bg:=tme/Secpd/1000;                          {Zeitstempel überall verfügbar}
       for i:=0 to 2 do begin
         vx:=GetFloatFromBuf((i*4)+4);              {3 Werte ab [m] X Position}
         csvarr[i+38]:=FormatFloat(ctfl, vx);
@@ -3411,7 +3566,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
       tme:=GetIntFromBuf(0, 4);                    {in ms}
-      bg:=tme/(Secpd*1000);                        {Zeitstempel überall verfügbar}
+      bg:=tme/secpd/1000;                          {Zeitstempel überall verfügbar}
       tstr:=FormatDateTime(dzf, ftm)+'T'+
             FormatDateTime(zzf, bg)+'Z';           {Zeitstring überall verfügbar}
 
@@ -3446,7 +3601,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
       tme:=GetIntFromBuf(0, 4);                    {in ms}
-      bg:=tme/(Secpd*1000);                        {Zeitstempel überall verfügbar}
+      bg:=tme/secpd/1000;                          {Zeitstempel überall verfügbar}
       tstr:=FormatDateTime(dzf, ftm)+'T'+
             FormatDateTime(zzf, bg)+'Z';           {Zeitstring überall verfügbar}
 
@@ -3576,7 +3731,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
       tme:=GetIntFromBuf(0, 4);                    {in ms}
-      bg:=tme/(Secpd*1000);                        {Zeitstempel überall verfügbar}
+      bg:=tme/Secpd/1000;                          {Zeitstempel überall verfügbar}
       wrt:=GetFloatFromBuf(4);                     {[rad] Roll angle (-pi..+pi)}
       csvarr[11]:=FormatFloat(mlfl, wrt);
       wrt:=GetFloatFromBuf(8);                     {[rad] Pitch angle (-pi..+pi)}
@@ -3656,7 +3811,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     StandardAusgabe;                               {hexwerte in StringGrid darstellen}
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
       wrt:=GetIntFromBuf(0, 4);                    {in ms}
-      bg:=wrt/(Secpd*1000);                        {Zeitstempel überall verfügbar}
+      bg:=wrt/Secpd/1000;                          {Zeitstempel überall verfügbar}
       csvarr[posChan]:=IntToStr(dsbuf[lenfix+40]); {Channels used}
       csvarr[1]:=IntToStr(dsbuf[lenfix+41]);       {rssi}
       for i:=0 to 17 do begin
@@ -3762,7 +3917,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       if ov10 then begin                           {Search PX4 Emergency}
         case e of
           0: Heartbeat;                            {Set result if Mavstate = critical or emergency}
-          30, 65: bg:=GetIntFromBuf(0, 4)/(Secpd*1000); {Zeitstempel speichern}
+          30, 65: bg:=GetIntFromBuf(0, 4)/secpd/1000; {Zeitstempel speichern}
           253: TextAusgabe;                        {Looking for severity EMERGENCY}
         end;
       end;
@@ -3770,7 +3925,7 @@ var dsbuf: array[0..YTHPcols] of byte;
         GPSAusgabe;                                {GPS raw_int for track w/o table}
       if ov11 then begin                           {Overview PX4 text messages}
         case e of
-          30, 65: bg:=GetIntFromBuf(0, 4)/(Secpd*1000); {Zeitstempel}
+          30, 65: bg:=GetIntFromBuf(0, 4)/secpd/1000; {Zeitstempel}
           87:  PositionTargetGlobal;               {POSITION_TARGET_GLOBAL_INT 87 ($57)}
           253: TextOverview;
         end;
@@ -3897,7 +4052,7 @@ begin
         try
           repeat
             b:=infn.ReadByte;
-          until (b=dsIDP) or (infn.Position>infn.Size-lenfixP);
+          until (b=MagicMAVlinkV2) or (infn.Position>infn.Size-lenfixP);
           len:=infn.ReadByte;                      {Länge Payload mit CRC}
           infn.ReadBuffer(dsbuf, len+lenfixP-2);   {Länge Rest-Datensatz mit
                                     FixPart, aber ohne $FD und Längen-Byte (-2)}
@@ -4059,7 +4214,7 @@ begin
         try
           repeat                                   {Scan whole file for msgIDs}
             b:=inf.ReadByte;
-          until (b=dsIDP) or (inf.Position>inf.Size-lenfixP);
+          until (b=MagicMAVlinkV2) or (inf.Position>inf.Size-lenfixP);
           len:=inf.ReadByte;                       {Länge Payload mit CRC}
           inf.ReadBuffer(dsbuf, len+lenfixP-2);    {Read Rest-Datensatz mit
                                     FixPart, aber ohne $FD und Längen-Byte (-2)}
@@ -11383,18 +11538,18 @@ const mxw=1365;
     if (aCol<lenfix-3) then
       CellColorSetting(gridDetails, clMoneyGreen);  {die wirklich fixen Bytes}
     if (aCol=lenfix-3) then
-      CellColorSetting(gridDetails, clOlive);     {Message ID (0)}
-    if gridDetails.ColCount>=YTHPcols then begin   {YTH Plus}
+      CellColorSetting(gridDetails, clSkyBlue);     {Message ID (0)}
+    if gridDetails.ColCount>=YTHPcols then begin    {YTH Plus}
       if (aCol=lenfix-2) or
           (aCol=lenfix-1) then
-        CellColorSetting(gridDetails, clOlive);   {Message ID 1 und 2}
+        CellColorSetting(gridDetails, clSkyBlue);   {Message ID 1 und 2}
       if (aCol=lenfix) then
        CellColorSetting(gridDetails, clMoneyGreen); {Message Name YTH Plus}
       if (aCol=lenfix+1) then
-        CellColorSetting(gridDetails, clSilver);  {Längenspalte YTH Plus}
+        CellColorSetting(gridDetails, clSilver);    {Längenspalte YTH Plus}
     end else begin
       if (aCol=lenfix-2) then
-        CellColorSetting(gridDetails, clSilver);  {Längenspalte andere mit Sensor Datei}
+        CellColorSetting(gridDetails, clSilver);    {Längenspalte andere mit Sensor Datei}
     end;
 {und was auch immer noch bei Sensor Datei}
   end;
@@ -13436,13 +13591,13 @@ begin
                 ddist:=DeltaKoord(StrToFloatN(vlat), StrToFloatN(vlon),
                                   StrToFloatN(splitlist[5]), StrToFloatN(splitlist[6]));
 
-                rslt1:=ddist/(tdiff*Secpd);        {Ground speed}
+                rslt1:=ddist/tdiff/secpd;          {Ground speed}
 
                 vlat:=splitlist[5];
                 vlon:=splitlist[6];
               end;
 
-              rslt2:=(wrt-wrtv)/(tdiff*Secpd);     {Vertical speed}
+              rslt2:=(wrt-wrtv)/tdiff/Secpd;       {Vertical speed}
 
               tmev:=tme;
               wrtv:=wrt;
@@ -13555,7 +13710,7 @@ var dsbuf: array[0..YTHPcols] of byte;
 
   begin
     tme:=GetIntFromBuf(0, 8);                      {in mysec}
-    bg:=tme/(Secpd*1000000);                       {Zeitstempel überall verfügbar}
+    bg:=tme/Secpd/1000000;                         {Zeitstempel überall verfügbar}
     lat:=GetIntFromBuf(8, 4);                      {uint32}
     lon:=GetIntFromBuf(12, 4);
     ele:=GetIntFromBuf(16, 4);                     {Höhe}
@@ -13579,7 +13734,7 @@ var dsbuf: array[0..YTHPcols] of byte;
   begin
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
       tme:=GetIntFromBuf(0, 4);                    {in ms}
-      bg:=tme/(Secpd*1000);                        {Zeitstempel überall verfügbar}
+      bg:=tme/Secpd/1000;                          {Zeitstempel überall verfügbar}
 
       lat:=GetIntFromBuf(4, 4);
       lon:=GetIntFromBuf(8, 4);                    {degrees E7  (/10000000)}
@@ -13630,8 +13785,8 @@ var dsbuf: array[0..YTHPcols] of byte;
       fval: double;
 
   begin
-    tme:=GetIntFromBuf(0, 8);                      {in mysec}
-    bg:=tme/(Secpd*1000000);                       {Zeitstempel überall verfügbar}
+    tme:=GetIntFromBuf(0, 8);                      {in µs}
+    bg:=tme/secpd/1000000;                         {Zeitstempel überall verfügbar}
 
     fval:=GetFloatFromBuf(8);                      {altitude_monotonic x -> 4}
     csvarr[4]:=FormatFloat(ctfl, fval);

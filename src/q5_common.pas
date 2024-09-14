@@ -157,6 +157,7 @@
 2023-11-23       Added save as CSV to grid Details
 2024-04-15  V5.0 AutoCut added: Automatically cut flightlog data to the flight only
 2024-06-18       Add special analysis for IMU status
+2024-09-14       Sensorfile H480 reworked
 *)
 
 
@@ -172,7 +173,7 @@ uses
 const
 {public constants}
   AppName=   'Q500log2kml';
-  AppVersion='V5.0 - 06/2024';
+  AppVersion='V5.0 - 09/2024';
   VersValue=492;                                   {Verion number as Integer to compare}
   VersFile='/v';
 

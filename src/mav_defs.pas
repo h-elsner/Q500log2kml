@@ -12,7 +12,9 @@ unit mav_defs;                                     {MAVlink definitions and vari
 interface
 
 uses
-  sysutils, q5_common;
+  sysutils, q5_common, math;
+
+
 
 const
   MAVurl='https://github.com/mavlink/c_library_v2/tree/master/common';
@@ -20,25 +22,51 @@ const
   MAVmsgX=[0, 1, 22, 24, 30, 32, 33, 65, 74, 87, 105, 141, 147, 245, 253];
 
 {Sensordateien: }
-  dsID=$BC;                                        {ID für einen Datensatz}
+  MagicBC=$BC;                                     {ID für einen Datensatz}
   lenfix=8;                                        {Länge Fixpart}
-  dsIDP=$FD;                                       {ID für einen PX Datensatz}
+  MagicMAVlinkV2=$FD;                              {ID für einen PX Datensatz}
   lenfixP=20;                                      {Länge Fixpart YTH Plus}
   HBlen=9;                                         {Länge Payload Heartbeat}
   csvanz=80;                                       {Anzahl Spalten bei PX4 CSV Datei}
   posChan=60;                                      {Startposition Spalten RC-Channels}
   deltayaw=15;                                     {Change of direction [°] for Waypoints}
+  NumPayloadBytes=255;                             {Reserved lenght for data}
 
 {CGO3+ serial}
   dsIDC=$FE;                                       {ID for einen seriellen Datensatz aus CGO3 (MAV link V1?)}
   lenfixC=8;                                       {Länge Fixpart seriellen Datensatz aus CGO3 (wie bei $BC)}
 
+type
+  TMAVmessage = record
+    time: TDateTime;
+    msglength: integer;
+    msgbytes: array[0..NumPayLoadBytes+lenfix] of byte;
+    sysid: byte;
+    targetid: byte;
+    msgid: byte;
+    valid: boolean;
+  end;
+
+
 
 {Public functions and procedures}
+  function MavGetIntFromBuf(msg: TMAVmessage; pos, numbytes: integer): uint64;
+                                                   {Position, Anzahl Bytes}
+  function MavGetFloatFromBuf(msg: TMAVmessage; pos: integer): single;
+                                                   {Position, Länge immer 4}
+  function MavGetUInt16(msg: TMAVmessage; pos: integer): uint16;
+  function MavGetInt16(msg: TMAVmessage; pos: integer): int16;
+  function MavGetUInt32(msg: TMAVmessage; pos: integer): uint32;
+  function MavGetInt32(msg: TMAVmessage; pos: integer): int32;
+  function ClearMAVmessage: TMAVmessage;
+  function SysIDToStr(SysID: byte): string;
+  function TargetIDToStr(TargetID: byte): string;
+
   function MsgIDtoStr(id: integer): string;        {Sammlung bekannter Message ID's}
   function CoordFrameToStr(f: integer): string;    {for POSITION_TARGET_GLOBAL_INT}
-  function MAVseverity(sv: byte): string;
-  function MAVcompID(cid: byte): string;           {MAV_Component_ID}
+  function MAVseverity(severity: byte): string;
+  function MAVcompID(CompID: byte): string;        {MAV_Component_ID}
+  function BCMsgTypeToStr(id: byte): string;       {Message type $BC}
   function MSenStat(m: longword): string;          {uint32 MAV_SYS_STATUS_SENSOR}
   function GPSfixType(const s:string): string;     {MAVlink GPS fix type to string}
   function MLStoStr(const m: byte): string;        {MAV_LANDED_STATE}
@@ -48,6 +76,107 @@ const
 {$I language.inc}
 
 implementation
+
+function MavGetIntFromBuf(msg: TMAVmessage; pos, numbytes: integer): uint64;
+                                                   {Position, Anzahl Bytes}
+var
+  i: integer;
+
+begin
+  result:=0;
+  for i:=0 to numbytes-1 do begin
+    result:=result+msg.msgbytes[i+pos]*(256**i);
+  end;
+end;
+
+function MavGetFloatFromBuf(msg: TMAVmessage; pos: integer): single;
+                                                   {Position, Länge immer 4}
+var i: integer;
+    wfl: packed array[0..3] of Byte;
+    wx: Single absolute wfl;
+
+begin
+  result:=0;
+  for i:=0 to 3 do                                 {Endianess prüfen (to/downto)}
+    wfl[i]:=msg.msgbytes[i+pos];                   {4 byte aus Buffer ausschneiden}
+  result:=wx;                                      {Typecast mittels absolute}
+end;
+
+function MavGetInt16(msg: TMAVmessage; pos: integer): int16;
+begin
+  result:=msg.msgbytes[pos]+msg.msgbytes[pos+1]*256;
+end;
+
+function MavGetUInt16(msg: TMAVmessage; pos: integer): uint16;
+begin
+  result:=msg.msgbytes[pos]+msg.msgbytes[pos+1]*256;
+end;
+
+function MavGetUInt32(msg: TMAVmessage; pos: integer): uint32;
+var
+  i: integer;
+
+begin
+  result:=0;
+  for i:=0 to 3 do begin
+    result:=result+msg.msgbytes[i+pos]*(256**i);
+  end;
+end;
+
+function MavGetInt32(msg: TMAVmessage; pos: integer): int32;
+var
+  i: integer;
+
+begin
+  result:=0;
+  for i:=0 to 3 do begin
+    result:=result+msg.msgbytes[i+pos]*(256**i);
+  end;
+end;
+
+function ClearMAVmessage: TMAVmessage;
+var
+  i: integer;
+
+begin
+  result.msglength:=0;
+  result.sysid:=0;
+  result.targetid:=0;
+  result.valid:=false;
+  for i:=0 to lenfix do
+    result.msgbytes[i]:=0;                         {Fix part empty}
+end;
+
+function SysIDToStr(SysID: byte): string;          {Sent from}
+begin
+  result:=IntToStr(SysID);
+  case SysID of
+    1: result:='Autopilot';                        {Flight controller (Autopilot)}
+    2: result:='Gimbal';
+    3, 200: result:='Gimbal';                      {200 in nested Sensor data}
+    4: result:='Remote';
+    6: result:='SysID6';
+    10: result:='YQGC';
+
+    88: result:='Undef';                           {Platzhalter für undef}
+  end;
+end;
+
+function TargetIDToStr(TargetID: byte): string;    {Send to}
+begin
+  result:=IntToStr(TargetID);
+  case TargetID of
+    0: result:='All (broadcast)';
+    1: result:='Autopilot';                        {Flight controller (Autopilot)}
+    2: result:='Gimbal';
+    3: result:='Camera';
+    5: result:='WiFi? (5)';
+    10: result:='YQGC';
+
+    88: result:='Undef';                          {Platzhalter für undef}
+    99: result:='Remote';                         {Platzhalter für virtuelle Sender ID}
+  end;
+end;
 
 {Message Struktur:
  https://github.com/mavlink/c_library_v2/tree/master/common
@@ -308,6 +437,38 @@ begin
   end;
 end;
 
+{https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/ardupilotmega.xml}
+function BCMsgTypeToStr(id: byte): string;           {Message type $BC}
+begin
+  result:=rsUnknown+' '+IntToStr(id);
+  case id of
+    0:   result:='Heartbeat?';
+    1:   result:='SYS_STATUS';
+    2:   result:='System_Time';
+    24:  result:='GPS_RAW';
+    27:  result:='RAW_IMU';
+    29:  result:='SCALED_PRESSURE';
+    30:  result:='ATTITUDE';
+    33:  result:='GLOBAL_POSITION';
+    35:  result:='RC_CHANNELS_RAW';
+    36:  result:='SERVO_OUTPUT_RAW';
+    42:  result:='MISSION_CURRENT';
+    51:  result:='MISSION_REQUEST_INT';
+    52:  result:='Sys_type?';                      {Text: CGO3_Plus / TyphoonH}
+    62:  result:='NAV_CONTROLLER_OUTPUT';
+    65:  result:='RC_CHANNELS';
+    74:  result:='VRF_HUD';
+    150: result:='SENSOR_OFFSETS';
+    163: result:='AHRS';                           {Attitude and Heading Reference System}
+    165: result:='HW_STATUS';
+    172: result:='DATA96';
+    173: result:='RANGEFINDER';
+    178: result:='AHRS2';
+    193: result:='EKF_STATUS_REPORT';              {Extended Kalman Filter}
+    253: result:='STATUS_TEXT';
+  end;
+end;
+
 {https://github.com/mavlink/c_library_v2/blob/master/common/mavlink_msg_position_target_global_int.h}
 function CoordFrameToStr(f: integer): string;      {for POSITION_TARGET_GLOBAL_INT}
 begin
@@ -335,10 +496,10 @@ begin
 end;   *)
 
 {ENUMs see: https://github.com/mavlink/c_library_v2/blob/master/common/common.h}
-function MAVseverity(sv: byte): string;
+function MAVseverity(severity: byte): string;
 begin
-  result:='';
-  case sv of
+  result:=IntToStr(severity);
+  case severity of
     0: result:=emcyID;      {System is unusable. This is a "panic" condition}
     1: result:='ALERT';     {Action should be taken immediately. Indicates error
                              in non-critical systems}
@@ -361,16 +522,16 @@ end;
 
 {https://developer.yuneec.com/documentation/125/Supported-mavlink-messages
  https://github.com/YUNEEC/MavlinkLib/blob/master/message_definitions/common.xml}
-function MAVcompID(cid: byte): string;             {MAV_Component_ID}
+function MAVcompID(CompID: byte): string;             {MAV_Component_ID}
 begin
-  result:='';
-  case cid of
+  result:=IntToStr(CompID);;
+  case CompID of
     0: result:='ALL';
     1: result:='AUTOPILOT 1';
-    25..86, 88..99: result:='USER '+IntToStr(cid-24);
+    25..86, 88..99: result:='USER '+IntToStr(CompID-24);
     87: result:='USER 63 (H520 - CGO-ET?)';
-    100..105: result:='CAMERA '+IntToStr(cid-99);
-    140..153: result:='SERVO '+IntToStr(cid-139);
+    100..105: result:='CAMERA '+IntToStr(CompID-99);
+    140..153: result:='SERVO '+IntToStr(CompID-139);
     154: result:='GIMBAL 1';
     155: result:='LOG';
     156: result:='ADSB';
@@ -378,7 +539,7 @@ begin
     158: result:='PERIPHERAL';
     159: result:='QX1_GIMBAL';
     160: result:='FLARM';
-    171..175: result:='GIMBAL '+IntToStr(cid-169);
+    171..175: result:='GIMBAL '+IntToStr(CompID-169);
     180: result:='MAPPER';
     190: result:='MISSIONPLANNER';
     195: result:='PATHPLANNER';
