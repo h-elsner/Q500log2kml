@@ -168,6 +168,7 @@ type
     ChartToolset2DataPointCrosshairTool1: TDataPointCrosshairTool;
     ChartToolset2PanDragTool1: TPanDragTool;
     ChartToolset2ZoomMouseWheelTool1: TZoomMouseWheelTool;
+    cbSensorHasData: TCheckBox;
     ColorButton1: TColorButton;
     ColorButton2: TColorButton;
     ColorButton3: TColorButton;
@@ -1017,6 +1018,8 @@ begin
   cbThunder.Hint:=hntThunder;
   cbHighLight.Caption:=capHighLight;
   cbHighLight.Hint:=hntHighLight;
+  cbSensorHasData.Caption:=capSensorHasData;
+  cbSensorHasData.Hint:=hntSensorHasData;
   GroupBox2.Caption:=capGroupBox2;
   GroupBox3.Caption:=rsPC1Tab2;
   GroupBox4.Caption:=capAnalyse;
@@ -2497,8 +2500,9 @@ begin
   end;
 end;
 
-{Many messages are like MAVlink V1:
+{Basically modified/unmodified MAVlink V1 format + some undocumented msg:
  https://github.com/mavlink/c_library_v1/tree/master/common
+ https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/common.xml
  https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/ardupilotmega.xml}
 
 procedure TForm1.ShowSensorH(const fn: string; mode: integer);
@@ -2507,15 +2511,15 @@ var msg: TMAVmessage;
     infn: TMemoryStream;
     b: byte;
 
-  procedure WriteToGrid(msg: TMAVmessage);
+  procedure WriteToGrid(msg: TMAVmessage);         {Default output, payload in hex}
   var
     i: integer;
 
   begin
     if gridDetails.RowCount<(zhl+2) then
       gridDetails.RowCount:=gridDetails.RowCount+2000;    {neue Zeilen}
-    inc(zhl);                                             {Datensätze zählen}
-    if zhl=20 then                                        {Check till line 20}
+    inc(zhl);                                      {Datensätze zählen}
+    if zhl=20 then                                 {Check till line 20}
       gridDetails.AutoSizeColumns;
 
     gridDetails.Cells[0, zhl]:='BC';
@@ -2535,145 +2539,653 @@ var msg: TMAVmessage;
   begin
     timeboot:=MavGetUInt32(msg, pos);
     msg.time:=timeboot/secpd/1000;
-//    gridDetails.Cells[6, zhl]:=IntToStr(timeboot);                  {in ms}
-    gridDetails.Cells[6, zhl]:=FormatFloat('0.000', timeboot/1000); {in s}
-//    gridDetails.Cells[6, zhl]:=FormatDateTime(zzf+zzz, msg.time); {as time in hours}
+    gridDetails.Cells[6, zhl]:=FormatFloat(mlfl, timeboot/1000); {Default: in s}
   end;
 
-  procedure Sys_Time;
+{Communication drop rate, (UART, I2C, SPI, CAN)
+ Communication errors (UART, I2C, SPI, CAN)
+ dropped packets on all links (packets that were corrupted on reception on the MAV)}
+
+  procedure SYS_STATUS(data: boolean);             {MsgID 1}
+  var
+    batt_voltage, load, droprate: single;
+    commerror: integer;
+    errText: string;
+
+  begin
+    errText:='';
+    load:=MavGetUInt16(msg, 18)/10;
+    batt_voltage:=MavGetUInt16(msg, 20)/1000;
+    if batt_voltage<lowbatt4S  then
+      errText:='Battery low';
+    droprate:=MavGetUInt16(msg, 24)/100;
+    commerror:=MavGetUInt16(msg, 26);
+    if droprate+commerror>0 then
+      errText:='Communication problems';
+
+    If data then begin
+      gridDetails.Cells[19, zhl]:='Load=';
+      gridDetails.Cells[20, zhl]:=FormatFloat(dzfl, load)+'%';
+      gridDetails.Cells[21, zhl]:='Vbatt=';
+      gridDetails.Cells[22, zhl]:=FormatFloat(ctfl, batt_voltage)+'V';
+      gridDetails.Cells[25, zhl]:='Drop rate=';
+      gridDetails.Cells[26, zhl]:=FormatFloat(dzfl, droprate)+'%';
+
+    end;
+
+    if errText<>'' then begin
+      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
+                       FormatDateTime(zzf+zzz, msg.time)+tab2+
+                       'SYS_STATUS: '+errText+' -- Load='+
+                       FormatFloat(dzfl, load)+'%, Vbatt='+
+                       FormatFloat(ctfl, batt_voltage)+'V, Drop rate='+
+                       FormatFloat(ctfl, droprate)+'%, Communication errors='+
+                       IntToStr(commerror));
+    end;
+  end;
+
+  procedure Sys_Time(data: boolean);                  {Time synchronization MsgID 2}
   var
     ts: TDateTime;
+    i: integer;
 
   begin
     TimeBoot_ms(14);
+    ts:=UnixToDateTime(MavGetIntFromBuf(msg, 6, 8) div 1000000);  {us --> s}
+    if data then begin
+      gridDetails.Cells[7, zhl]:='System time UTC:';
+      gridDetails.Cells[8, zhl]:=FormatDateTime(dzf, ts);
+      gridDetails.Cells[9, zhl]:=FormatDateTime(zzf, ts);
+      for i:=10 to 14 do
+        gridDetails.Cells[i, zhl]:='';
+      gridDetails.Cells[15, zhl]:='Time since boot:';
+      gridDetails.Cells[16, zhl]:=FormatDateTime(szzz, msg.time);
+      for i:=17 to 18 do
+        gridDetails.Cells[i, zhl]:='';
+    end;
     if not cbReduced.Checked then begin
-      ts:=UnixToDateTime(MavGetIntFromBuf(msg, 6, 8) div 1000000);  {us --> s}
       AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
                        FormatDateTime(zzf+zzz, msg.time)+tab2+'UTC:  '+
                        FormatDateTime(vzf, ts));
     end;
   end;
 
-  procedure GPS_RAW;
+{eph:Standard deviation of horizontal position error, (metres)
+ epv:Standard deviation of vertical position error, (metres)}
+
+  procedure GPS_RAW_INT;                           {MsgID 24}
   var
     timeboot: uint64;
+    lat, lon, alt: single;
 
   begin
-    timeboot:=MavGetIntFromBuf(msg, 6, 8);
+    timeboot:=MavGetIntFromBuf(msg, 6, 8);         {Time since boot in µs}
     if timeboot>0 then begin
       msg.time:=timeboot/secpd/1000000;
-      gridDetails.Cells[6, zhl]:=FormatFloat('0.000', timeboot/1000000); {in s};
+      gridDetails.Cells[6, zhl]:=FormatFloat(mlfl, timeboot/1000000); {in s};
+    end;
+    lat:=MavGetint32(msg,14)/10000000;
+    lon:=MavGetint32(msg,18)/10000000;
+    alt:=MavGetint32(msg, 22)*0.001;
+    if (lat<>0) or (lon<>0) then begin
+      gridDetails.Cells[15, zhl]:='Lat:';
+      gridDetails.Cells[16, zhl]:=FormatFloat(coordfl8, lat);
+      gridDetails.Cells[17, zhl]:='';
+      gridDetails.Cells[18, zhl]:='';
+      gridDetails.Cells[19, zhl]:='Lon:';
+      gridDetails.Cells[20, zhl]:=FormatFloat(coordfl8, lon);
+      gridDetails.Cells[21, zhl]:='';
+      gridDetails.Cells[22, zhl]:='';
+    end;
+    gridDetails.Cells[23, zhl]:='Alt_MSL=';
+    gridDetails.Cells[24, zhl]:=FormatFloat(ctfl, alt);
+    gridDetails.Cells[25, zhl]:='m';
+    gridDetails.Cells[26, zhl]:='';
+    gridDetails.Cells[27, zhl]:='eph=';
+    gridDetails.Cells[28, zhl]:=FormatFloat(ctfl, MavGetUint16(msg, 26)/100)+'m';
+    gridDetails.Cells[29, zhl]:='epv=';
+    gridDetails.Cells[30, zhl]:=FormatFloat(ctfl, MavGetUint16(msg, 28)/100)+'m';
+    gridDetails.Cells[31, zhl]:='Velocity=';
+    gridDetails.Cells[32, zhl]:=FormatFloat(ctfl, MavGetUint16(msg, 30)/10)+'m/s';
+    gridDetails.Cells[33, zhl]:='Cog=';
+    gridDetails.Cells[34, zhl]:=FormatFloat(ctfl, MavGetUint16(msg, 30)/10)+'°';
+    gridDetails.Cells[35, zhl]:=GPSfixType(IntToStr(msg.msgbytes[34]));
+    gridDetails.Cells[36, zhl]:=IntToStr(msg.msgbytes[35])+' sats';
+  end;
+
+  procedure GPS_STATUS;                            {MsgID 25 - Data structure for 20 sats}
+  var
+    i: integer;
+
+  begin
+    gridDetails.Cells[7, zhl]:='Sats_visible='+IntToStr(msg.msgbytes[6]);
+    for i:=0 to 19 do begin                        {For all 20 sats}
+      gridDetails.Cells[i+8, zhl]:=IntToStr(msg.msgbytes[i+7]);
+      if msg.msgbytes[i+27]=1 then begin
+        gridDetails.Cells[i+28, zhl]:=IntToStr(msg.msgbytes[i+7])+' in use';
+      end;
+      gridDetails.Cells[i+48, zhl]:=IntToStr(msg.msgbytes[i+47])+'° ele';
+      gridDetails.Cells[i+68, zhl]:=IntToStr(msg.msgbytes[i+67])+'° azi';
+      gridDetails.Cells[i+88, zhl]:=IntToStr(msg.msgbytes[i+87])+'dB';
     end;
   end;
 
-  procedure RAW_IMU;
+  procedure RAW_IMU;                               {MsgID 27}
   var
     timeboot: uint64;
 
   begin
-    timeboot:=MavGetIntFromBuf(msg, 6, 8);
+    timeboot:=MavGetIntFromBuf(msg, 6, 8);         {Time since boot in µs}
     msg.time:=timeboot/secpd/1000000;
-    gridDetails.Cells[6, zhl]:=FormatFloat('0.000', timeboot/1000000); {in s};
+    gridDetails.Cells[6, zhl]:=FormatFloat(mlfl, timeboot/1000000); {in s};
 
+    gridDetails.Cells[15, zhl]:='xAcc=';
+    gridDetails.Cells[16, zhl]:=IntToStr(MavGetint16(msg, 14));
+    gridDetails.Cells[17, zhl]:='yAcc=';
+    gridDetails.Cells[18, zhl]:=IntToStr(MavGetint16(msg, 16));
+    gridDetails.Cells[19, zhl]:='zAcc=';
+    gridDetails.Cells[20, zhl]:=IntToStr(MavGetint16(msg, 18));
+
+    gridDetails.Cells[21, zhl]:='xGyro=';
+    gridDetails.Cells[22, zhl]:=IntToStr(MavGetint16(msg, 20));
+    gridDetails.Cells[23, zhl]:='yGyro=';
+    gridDetails.Cells[24, zhl]:=IntToStr(MavGetint16(msg, 22));
+    gridDetails.Cells[25, zhl]:='zGyro=';
+    gridDetails.Cells[26, zhl]:=IntToStr(MavGetint16(msg, 24));
+
+    gridDetails.Cells[27, zhl]:='xMag=';
+    gridDetails.Cells[28, zhl]:=IntToStr(MavGetint16(msg, 26));
+    gridDetails.Cells[29, zhl]:='yMag=';
+    gridDetails.Cells[30, zhl]:=IntToStr(MavGetint16(msg, 28));
+    gridDetails.Cells[31, zhl]:='zMag=';
+    gridDetails.Cells[32, zhl]:=IntToStr(MavGetint16(msg, 30));
   end;
 
-  procedure Scaled_Pressure;
+  procedure SCALED_PRESSURE;                       {MsgID 29}
+  begin
+    TimeBoot_ms(6);
+    gridDetails.Cells[11, zhl]:='Pressure_abs=';
+    gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));
+    gridDetails.Cells[13, zhl]:='hPa';
+    gridDetails.Cells[14, zhl]:='';
+    gridDetails.Cells[15, zhl]:='Pressure_diff=';
+    gridDetails.Cells[16, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 14));;
+    gridDetails.Cells[17, zhl]:='hPa';
+    gridDetails.Cells[18, zhl]:='';
+    gridDetails.Cells[19, zhl]:='Baro_temp=';
+    gridDetails.Cells[20, zhl]:=FormatFloat(ctfl, MavGetInt16(msg, 18)/100)+'°C';
+  end;
+
+  procedure ATTITUDE;                              {MsgID 30}
   begin
     TimeBoot_ms(6);
 
+    gridDetails.Cells[11, zhl]:='Roll=';
+    gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));;
+    gridDetails.Cells[13, zhl]:='rad';
+    gridDetails.Cells[14, zhl]:='';
+    gridDetails.Cells[15, zhl]:='Pitch=';
+    gridDetails.Cells[16, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 14));;
+    gridDetails.Cells[17, zhl]:='rad';
+    gridDetails.Cells[18, zhl]:='';
+    gridDetails.Cells[19, zhl]:='Yaw=';
+    gridDetails.Cells[20, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 18));;
+    gridDetails.Cells[21, zhl]:='rad';
+    gridDetails.Cells[22, zhl]:='';
+
+    gridDetails.Cells[23, zhl]:='Rollspeed=';
+    gridDetails.Cells[24, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 22));;
+    gridDetails.Cells[25, zhl]:='rad/s';
+    gridDetails.Cells[26, zhl]:='';
+    gridDetails.Cells[27, zhl]:='Pitchspeed=';
+    gridDetails.Cells[28, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 26));;
+    gridDetails.Cells[29, zhl]:='rad/s';
+    gridDetails.Cells[30, zhl]:='';
+    gridDetails.Cells[31, zhl]:='Yawspeed=';
+    gridDetails.Cells[32, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 30));
+    gridDetails.Cells[33, zhl]:='rad/s';
+    gridDetails.Cells[34, zhl]:='';
   end;
 
-  procedure Attitude;
+  procedure LOCAL_POSITION_NED;                    {MsgID 32}
   begin
     TimeBoot_ms(6);
+    gridDetails.Cells[11, zhl]:='X_Pos=';
+    gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));
+    gridDetails.Cells[13, zhl]:='m';
+    gridDetails.Cells[14, zhl]:='';
 
+    gridDetails.Cells[15, zhl]:='Y_Pos=';
+    gridDetails.Cells[16, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 14));
+    gridDetails.Cells[17, zhl]:='m';
+    gridDetails.Cells[18, zhl]:='';
+
+    gridDetails.Cells[19, zhl]:='Z_Pos=';
+    gridDetails.Cells[20, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 18));
+    gridDetails.Cells[21, zhl]:='m';
+    gridDetails.Cells[22, zhl]:='';
+
+    gridDetails.Cells[23, zhl]:='Vx=';
+    gridDetails.Cells[24, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 22));
+    gridDetails.Cells[25, zhl]:='m/s';
+    gridDetails.Cells[26, zhl]:='';
+
+    gridDetails.Cells[27, zhl]:='Vy=';
+    gridDetails.Cells[28, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 26));
+    gridDetails.Cells[29, zhl]:='m/s';
+    gridDetails.Cells[30, zhl]:='';
+
+    gridDetails.Cells[31, zhl]:='Vz=';
+    gridDetails.Cells[32, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 30));
+    gridDetails.Cells[33, zhl]:='m/s';
+    gridDetails.Cells[34, zhl]:='';
   end;
 
-  procedure Global_Position;
+  procedure GLOBAL_POSITION_INT;                   {MsgID 33}
+  var
+    lat, lon, alt: single;
+
   begin
     TimeBoot_ms(6);
+    lat:=MavGetint32(msg,10)/10000000;
+    lon:=MavGetint32(msg,14)/10000000;
+    alt:=MavGetint32(msg, 18)*0.001;
+    if (lat<>0) or (lon<>0) then begin
+      gridDetails.Cells[11, zhl]:='Lat:';
+      gridDetails.Cells[12, zhl]:=FormatFloat(coordfl8, lat);
+      gridDetails.Cells[13, zhl]:='';
+      gridDetails.Cells[14, zhl]:='';
+      gridDetails.Cells[15, zhl]:='Lon:';
+      gridDetails.Cells[16, zhl]:=FormatFloat(coordfl8, lon);
+      gridDetails.Cells[17, zhl]:='';
+      gridDetails.Cells[18, zhl]:='';
+    end;
+    gridDetails.Cells[19, zhl]:='Alt_MSL=';
+    gridDetails.Cells[20, zhl]:=FormatFloat(ctfl, alt);
+    gridDetails.Cells[21, zhl]:='m';
+    gridDetails.Cells[22, zhl]:='';
+    alt:=MavGetint32(msg, 22)*0.001;
+    gridDetails.Cells[23, zhl]:='Alt_rel=';
+    gridDetails.Cells[24, zhl]:=FormatFloat(ctfl, alt);
+    gridDetails.Cells[25, zhl]:='m';
+    gridDetails.Cells[26, zhl]:='';
 
+    gridDetails.Cells[27, zhl]:='Vx';
+    gridDetails.Cells[28, zhl]:=IntToStr(MavGetint16(msg, 26));
+    gridDetails.Cells[29, zhl]:='Vx';
+    gridDetails.Cells[30, zhl]:=IntToStr(MavGetint16(msg, 28));
+    gridDetails.Cells[31, zhl]:='Vx';
+    gridDetails.Cells[32, zhl]:=IntToStr(MavGetint16(msg, 30));
+
+    gridDetails.Cells[33, zhl]:='Hdg';
+    gridDetails.Cells[34, zhl]:=FormatFloat(dzfl, MavGetUint16(msg, 32)/100);
   end;
 
   procedure RC_CHANNELS_RAW;
+  var
+    i: integer;
+
   begin
     TimeBoot_ms(6);
 
+    for i:=1 to 8 do begin
+      gridDetails.Cells[i*2+9, zhl]:='Chan'+IntToStr(i)+'=';
+      gridDetails.Cells[i*2+10, zhl]:=IntToStr(MavGetUInt16(msg, i*2+8));
+    end;
+    gridDetails.Cells[27, zhl]:='Port'+IntToStr(msg.msgbytes[26]);
+    gridDetails.Cells[28, zhl]:='RSSI='+IntToStr(msg.msgbytes[27]);
   end;
 
   procedure SERVO_OUTPUT_RAW;
   var
     timeboot: uint32;
+    i: integer;
 
   begin
     timeboot:=MavGetUint32(msg, 6);
     msg.time:=timeboot/secpd/1000000;
-    gridDetails.Cells[6, zhl]:=FormatFloat('0.000', timeboot/1000000); {in s};
+    gridDetails.Cells[6, zhl]:=FormatFloat(mlfl, timeboot/1000000); {in s};
 
+    for i:=1 to 8 do begin
+      gridDetails.Cells[i*2+9, zhl]:='Servo'+IntToStr(i)+'=';
+      gridDetails.Cells[i*2+10, zhl]:=IntToStr(MavGetUInt16(msg, i*2+8));
+    end;
+    gridDetails.Cells[27, zhl]:='Port'+IntToStr(msg.msgbytes[26]);
   end;
 
-  procedure Camera_type;
+  procedure MISSION_CURRENT;
+  begin
+    gridDetails.Cells[7, zhl]:='Sequence=';
+    gridDetails.Cells[8, zhl]:=IntToStr(MavGetUint16(msg, 6));
+  end;
+
+  procedure MISSION_REQUEST_INT;
+  begin
+    {Target, Component, Sequence?}
+  end;
+
+  procedure Sys_type(data: boolean);
   var
     i: integer;
+    systxt: strinG;
 
   begin
-    for i:=12 to msg.msglength+5 do
-      if msg.msgbytes[i]>0 then
-        gridDetails.Cells[i+1, zhl]:=chr(msg.msgbytes[i]);
+    systxt:='';
+
+    for i:=12 to msg.msglength+5 do begin
+      if msg.msgbytes[i]>31 then begin
+        if data then
+          gridDetails.Cells[i+1, zhl]:=chr(msg.msgbytes[i]);
+        systxt:=systxt+chr(msg.msgbytes[i]);
+      end;
+    end;
+
+    if not cbReduced.Checked then begin
+      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
+                       FormatDateTime(zzf+zzz, msg.time)+tab2+systxt);
+    end;
   end;
 
   procedure NAV_CONTROLLER_OUTPUT;
   begin
+    gridDetails.Cells[7, zhl]:='NavRoll=';
+    gridDetails.Cells[8, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 6));
+    gridDetails.Cells[9, zhl]:='deg';
+    gridDetails.Cells[10, zhl]:='';
+    gridDetails.Cells[11, zhl]:='NavPitch=';
+    gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));
+    gridDetails.Cells[13, zhl]:='deg';
+    gridDetails.Cells[14, zhl]:='';
+    gridDetails.Cells[15, zhl]:='NavBearing=';
+    gridDetails.Cells[16, zhl]:=FormatFloat(ctfl, MavGetInt16(msg, 14));
+    gridDetails.Cells[17, zhl]:='TargetBearing=';
+    gridDetails.Cells[18, zhl]:=FormatFloat(ctfl, MavGetInt16(msg, 16));
+    gridDetails.Cells[19, zhl]:='WP_dist';
+    gridDetails.Cells[20, zhl]:=FormatFloat(ctfl, MavGetInt16(msg, 18))+'m';
+
+    gridDetails.Cells[21, zhl]:='Alt_Error=';
+    gridDetails.Cells[22, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 20));
+    gridDetails.Cells[23, zhl]:='m';
+    gridDetails.Cells[24, zhl]:='';
+    gridDetails.Cells[25, zhl]:='AirSpd_Error=';
+    gridDetails.Cells[26, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 24));
+    gridDetails.Cells[27, zhl]:='m/s';
+    gridDetails.Cells[28, zhl]:='';
+    gridDetails.Cells[29, zhl]:='Xtrack_Error=';
+    gridDetails.Cells[30, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 28));
+    gridDetails.Cells[31, zhl]:='m/s';
+    gridDetails.Cells[32, zhl]:='';
+  end;
+
+  procedure RC_CHANNELS;
+  var
+    i: integer;
+
+  begin
     TimeBoot_ms(6);
 
+    for i:=1 to 18 do begin
+      gridDetails.Cells[i*2+9, zhl]:='Chan'+IntToStr(i)+'=';
+      gridDetails.Cells[i*2+10, zhl]:=IntToStr(MavGetUInt16(msg, i*2+8));
+    end;
+    gridDetails.Cells[47, zhl]:='Used:'+IntToStr(msg.msgbytes[46]);
+    gridDetails.Cells[48, zhl]:='RSSI='+IntToStr(msg.msgbytes[47]);
+  end;
+
+  procedure VRF_HUD;
+  begin
+    gridDetails.Cells[7, zhl]:='Airspeed=';
+    gridDetails.Cells[8, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 6));
+    gridDetails.Cells[9, zhl]:='m/s';
+    gridDetails.Cells[10, zhl]:='';
+
+    gridDetails.Cells[11, zhl]:='Groundspeed=';
+    gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));
+    gridDetails.Cells[13, zhl]:='m/s';
+    gridDetails.Cells[14, zhl]:='';
+
+    gridDetails.Cells[15, zhl]:='Alt=';
+    gridDetails.Cells[16, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 14));
+    gridDetails.Cells[17, zhl]:='m';
+    gridDetails.Cells[18, zhl]:='';
+
+    gridDetails.Cells[19, zhl]:='Climb_rate=';
+    gridDetails.Cells[20, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 18));
+    gridDetails.Cells[21, zhl]:='m/s';
+    gridDetails.Cells[22, zhl]:='';
+
+    gridDetails.Cells[23, zhl]:='Heading=';
+    gridDetails.Cells[24, zhl]:=IntToStr(MavGetInt16(msg, 22))+'°';
+    gridDetails.Cells[25, zhl]:='Throttle=';
+    gridDetails.Cells[26, zhl]:=IntToStr(MavGetInt16(msg, 24))+'%';
+  end;
+
+  procedure SENSOR_OFFSETS;
+  begin
+    gridDetails.Cells[7, zhl]:='Mag_ofs_X';
+    gridDetails.Cells[8, zhl]:=FormatFloat(dzfl, MavGetInt16(msg, 6));
+    gridDetails.Cells[9, zhl]:='Mag_ofs_Y';
+    gridDetails.Cells[10, zhl]:=FormatFloat(dzfl, MavGetInt16(msg, 8));
+    gridDetails.Cells[11, zhl]:='Mag_ofs_Z';
+    gridDetails.Cells[12, zhl]:=FormatFloat(dzfl, MavGetInt16(msg, 10));
+    gridDetails.Cells[13, zhl]:='Mag_declination';
+    gridDetails.Cells[14, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 12));
+    gridDetails.Cells[15, zhl]:='';
+    gridDetails.Cells[16, zhl]:='';
+
+    gridDetails.Cells[17, zhl]:='Raw_pressure';
+    gridDetails.Cells[18, zhl]:=IntToStr(MavGetInt32(msg, 16));
+    gridDetails.Cells[19, zhl]:='';
+    gridDetails.Cells[20, zhl]:='';
+    gridDetails.Cells[21, zhl]:='Raw_temp';
+    gridDetails.Cells[22, zhl]:=IntToStr(MavGetInt32(msg, 20));
+    gridDetails.Cells[23, zhl]:='';
+    gridDetails.Cells[24, zhl]:='';
+
+    gridDetails.Cells[25, zhl]:='Gyro_cal_x';
+    gridDetails.Cells[26, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 24));
+    gridDetails.Cells[27, zhl]:='';
+    gridDetails.Cells[28, zhl]:='';
+    gridDetails.Cells[29, zhl]:='Gyro_cal_y';
+    gridDetails.Cells[30, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 28));
+    gridDetails.Cells[31, zhl]:='';
+    gridDetails.Cells[32, zhl]:='';
+    gridDetails.Cells[33, zhl]:='Gyro_cal_z';
+    gridDetails.Cells[34, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 32));
+    gridDetails.Cells[35, zhl]:='';
+    gridDetails.Cells[36, zhl]:='';
+
+    gridDetails.Cells[37, zhl]:='Acc_cal_x';
+    gridDetails.Cells[38, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 36));
+    gridDetails.Cells[39, zhl]:='';
+    gridDetails.Cells[40, zhl]:='';
+    gridDetails.Cells[41, zhl]:='Acc_cal_y';
+    gridDetails.Cells[42, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 40));
+    gridDetails.Cells[43, zhl]:='';
+    gridDetails.Cells[44, zhl]:='';
+    gridDetails.Cells[45, zhl]:='Acc_cal_z';
+    gridDetails.Cells[46, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 44));
+    gridDetails.Cells[47, zhl]:='';
+    gridDetails.Cells[48, zhl]:='';
+  end;
+
+  procedure AHRS;
+  begin
+    gridDetails.Cells[7, zhl]:='Gyro_drift_x';
+    gridDetails.Cells[8, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 6));
+    gridDetails.Cells[9, zhl]:='';
+    gridDetails.Cells[10, zhl]:='';
+    gridDetails.Cells[11, zhl]:='Gyro_drift_y';
+    gridDetails.Cells[12, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 10));
+    gridDetails.Cells[13, zhl]:='';
+    gridDetails.Cells[14, zhl]:='';
+    gridDetails.Cells[15, zhl]:='Gyro_driftl_z';
+    gridDetails.Cells[16, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 14));
+    gridDetails.Cells[17, zhl]:='';
+    gridDetails.Cells[18, zhl]:='';
+
+    gridDetails.Cells[19, zhl]:='Acc_weight';
+    gridDetails.Cells[20, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 18));
+    gridDetails.Cells[21, zhl]:='';
+    gridDetails.Cells[22, zhl]:='';
+    gridDetails.Cells[23, zhl]:='Renorm_val';
+    gridDetails.Cells[24, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 22));
+    gridDetails.Cells[25, zhl]:='';
+    gridDetails.Cells[26, zhl]:='';
+
+    gridDetails.Cells[27, zhl]:='Error_RP';
+    gridDetails.Cells[28, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 26));
+    gridDetails.Cells[29, zhl]:='';
+    gridDetails.Cells[30, zhl]:='';
+    gridDetails.Cells[31, zhl]:='Error_Yaw';
+    gridDetails.Cells[32, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 30));
+    gridDetails.Cells[33, zhl]:='';
+    gridDetails.Cells[34, zhl]:='';
+end;
+
+  procedure HW_STATUS;                             {Example how to decode small messages}
+  var
+    vcc_cpu: single;
+
+  begin
+    vcc_cpu:=MavGetUint16(msg, 6)/1000;
+    gridDetails.Cells[7, zhl]:='Vcc FC=';
+    gridDetails.Cells[8, zhl]:=FormatFloat(dzfl, vcc_cpu)+'V';
+    gridDetails.Cells[9, zhl]:='I²C error: '+IntToStr(msg.msgbytes[8]);
+  end;
+
+  procedure DATA96;
+  begin
+    gridDetails.Cells[7, zhl]:='Data_type='+IntToStr(msg.msgbytes[6]);
+    gridDetails.Cells[7, zhl]:='Len='+IntToStr(msg.msgbytes[7]);
+  end;
+
+  procedure RANGEFINDER;
+  begin
+    gridDetails.Cells[7, zhl]:='Distance=';
+    gridDetails.Cells[8, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 6));
+    gridDetails.Cells[9, zhl]:='m';
+    gridDetails.Cells[10, zhl]:='';
+    gridDetails.Cells[11, zhl]:='RawVoltage=';
+    gridDetails.Cells[12, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 10));
+    gridDetails.Cells[13, zhl]:='V';
+    gridDetails.Cells[14, zhl]:='';
+  end;
+
+  procedure AHRS2;
+  var
+    lat, lon: single;
+
+  begin
+    gridDetails.Cells[7, zhl]:='Roll';
+    gridDetails.Cells[8, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 6));
+    gridDetails.Cells[9, zhl]:='';
+    gridDetails.Cells[10, zhl]:='';
+    gridDetails.Cells[11, zhl]:='Pitch';
+    gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));
+    gridDetails.Cells[13, zhl]:='';
+    gridDetails.Cells[14, zhl]:='';
+    gridDetails.Cells[15, zhl]:='Yaw';
+    gridDetails.Cells[16, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 14));
+    gridDetails.Cells[17, zhl]:='';
+    gridDetails.Cells[18, zhl]:='';
+
+    gridDetails.Cells[19, zhl]:='Alt_MSL';
+    gridDetails.Cells[20, zhl]:=FormatFloat(dzfl, MavGetFloatFromBuf(msg, 18));
+    gridDetails.Cells[21, zhl]:='m';
+    gridDetails.Cells[22, zhl]:='';
+
+    lat:=MavGetInt32(msg,22)/10000000;
+    lon:=MavGetInt32(msg,26)/10000000;
+    if (lat<>0) or (lon<>0) then begin
+      gridDetails.Cells[23, zhl]:='Lat:';
+      gridDetails.Cells[24, zhl]:=FormatFloat(coordfl8, lat);
+      gridDetails.Cells[25, zhl]:='';
+      gridDetails.Cells[26, zhl]:='';
+      gridDetails.Cells[27, zhl]:='Lon:';
+      gridDetails.Cells[28, zhl]:=FormatFloat(coordfl8, lon);
+      gridDetails.Cells[29, zhl]:='';
+      gridDetails.Cells[30, zhl]:='';
+    end;
   end;
 
 {See also (alternative):
  https://mavlink.github.io/rust-mavlink/mavlink/ardupilotmega/struct.EKF_STATUS_REPORT_DATA.html}
-  procedure EKF_STATUS_REPORT;
+  procedure EKF_STATUS_REPORT(data: boolean);      {To AppLog in case of problems}
   var
-    velocity_variance: single;
+    Velocity_variance: single;
+    errText: string;
 
   begin
+    errText:='';
     velocity_variance:=MavGetFloatFromBuf(msg, 6);
     if velocity_variance>=0.8 then begin
-      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                           FormatDateTime(zzf+zzz, msg.time)+tab2+'EKF status: Velocity_variance='+
-                           FormatFloat('0.000', velocity_variance)+
-                           ' is bad!');
+      errText:=' is bad!';
     end else begin
       if velocity_variance>=0.5 then begin
-        AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                             FormatDateTime(zzf+zzz, msg.time)+tab2+'EKF status: Velocity_variance='+
-                             FormatFloat('0.000', velocity_variance)+
-                             ' is at warning level');
+        errtext:=' is at warning level';
       end;
+    end;
+    if errText<>'' then
+      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
+                       FormatDateTime(zzf+zzz, msg.time)+tab2+
+                       'EKF_STATUS_REPORT: Velocity_variance='+
+                       FormatFloat(mlfl, velocity_variance)+errText);
+
+    if data then begin
+      gridDetails.Cells[7, zhl]:='Velocity_variance=';
+      gridDetails.Cells[8, zhl]:=FormatFloat(ctfl, Velocity_variance);
+      gridDetails.Cells[9, zhl]:='';
+      gridDetails.Cells[10, zhl]:='';
+      gridDetails.Cells[11, zhl]:='Pos_horiz_variance=';
+      gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));
+      gridDetails.Cells[13, zhl]:='';
+      gridDetails.Cells[14, zhl]:='';
+      gridDetails.Cells[15, zhl]:='Pos_vert_variance=';
+      gridDetails.Cells[16, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 14));
+      gridDetails.Cells[17, zhl]:='';
+      gridDetails.Cells[18, zhl]:='';
+
+      gridDetails.Cells[19, zhl]:='Compass_variance=';
+      gridDetails.Cells[20, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 18));
+      gridDetails.Cells[21, zhl]:='';
+      gridDetails.Cells[22, zhl]:='Flags?:';
+      {2 bytes EKF Flags}
+      gridDetails.Cells[25, zhl]:='Airspeed_variance?=';
+      gridDetails.Cells[26, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 24));
+      gridDetails.Cells[27, zhl]:='';
+      gridDetails.Cells[28, zhl]:='';
     end;
   end;
 
+
 {AHRS: Attitude and Heading Reference Systems
  EKF : Extended Kalman Filter}
-  procedure StatusText;
+  procedure StatusText(data: boolean);             {Will be written to AppLog}
   var
     Text: string;
     pos: byte;
+    txt: char;
 
   begin
     text:='';
     pos:=7;
     while (msg.msgbytes[pos]>0) and (pos<msg.msglength+6) do begin
-      text:=text+chr(msg.msgbytes[pos]);
+      txt:=chr(msg.msgbytes[pos]);
+      text:=text+txt;
+      if data then
+        gridDetails.Cells[pos+1, zhl]:=txt;
       inc(pos);
     end;
     AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                     FormatDateTime(zzf+zzz, msg.time)+tab2+'Severity: '+
-                     MAVseverity(msg.msgbytes[6])+tab2+
-                     'Msg: '+text);
+                     FormatDateTime(zzf+zzz, msg.time)+tab2+
+                     MAVseverity(msg.msgbytes[6])+': '+text);
   end;
 
 begin
   n3:=Label3.Tag;                                  {Suchspalte umkopieren, wird verändert}
   zhl:=0;
+  msg.time:=0;
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   if FileSize(fn)>lenfix then begin
     Screen.Cursor:=crHourGlass;
@@ -2719,19 +3231,43 @@ begin
           msg.msgid:=msg.msgbytes[5];
           WriteToGrid(msg);
 
-          case msg.msgid of
-            2:  Sys_Time;
-            24: GPS_RAW;
-            27: RAW_IMU;
-            29: Scaled_Pressure;
-            30: Attitude;
-            33: Global_Position;
-            35: RC_CHANNELS_RAW;
-            36: SERVO_OUTPUT_RAW;
-            52: Camera_type;
-            65: NAV_CONTROLLER_OUTPUT;
-            193: EKF_STATUS_REPORT;
-            253: StatusText;
+          if cbSensorHasData.Checked then begin
+            case msg.msgid of
+  //            0:  Heartbeat;  {??}
+              1:  SYS_STATUS(true);
+              2:  Sys_Time(true);
+              24: GPS_RAW_INT;
+              25: GPS_STATUS;
+              27: RAW_IMU;
+              29: SCALED_PRESSURE;
+              30: ATTITUDE;
+              32: LOCAL_POSITION_NED;
+              33: GLOBAL_POSITION_INT;
+              35: RC_CHANNELS_RAW;
+              36: SERVO_OUTPUT_RAW;
+              42: MISSION_CURRENT;
+              51: MISSION_REQUEST_INT;
+              52: Sys_type(true);
+              62: NAV_CONTROLLER_OUTPUT;
+              65: RC_CHANNELS;
+              74: VRF_HUD;
+              150: SENSOR_OFFSETS;
+              163: AHRS;
+              165: HW_STATUS;
+              172: DATA96;
+              173: RANGEFINDER;
+              178: AHRS2;
+              193: EKF_STATUS_REPORT(true);
+              253: StatusText(true);
+            end;
+          end else begin                           {SensorH as raw (hex bytes)}
+            case msg.msgid of                      {Some important info to AppLog}
+              1:   SYS_STATUS(false);
+              2:   Sys_Time(false);
+//              52:  Sys_type(false);              {Not really important}
+              193: EKF_STATUS_REPORT(false);
+              253: StatusText(false);
+            end;
           end;
         except
           AppLog.Lines.Add(fn+': Abrupt sensor file end');  {Msg too short}
@@ -3765,7 +4301,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     csvarr[3]:=FormatFloat(ctfl, curr);            {Current in A}
     battremain:=dsbuf[lenfix+30];
     csvarr[46]:=IntToStr(battremain);              {Battery remaining %}
-    csvarr[47]:=FormatFloat(ctfl, ucap);;          {Battery used mAh}
+    csvarr[47]:=FormatFloat(ctfl, ucap);          {Battery used mAh}
     if not cbReduced.Checked then
       AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
                          FormatDateTime(zzf, bg)+tab2+csvVolt+
@@ -6941,7 +7477,9 @@ end;
 
 procedure TForm1.cbxLogDirDblClick(Sender: TObject);
 begin                                              {Verzeichnis öffnen}
-  OpenDocument(IncludeTrailingPathDelimiter(cbxLogDir.Text));
+//  OpenDocument(IncludeTrailingPathDelimiter(cbxLogDir.Text));
+
+  OpenDocument(cbxLogDir.Text);
 end;
 
 procedure TForm1.cbxLogDirMouseUp(Sender: TObject; Button: TMouseButton;
@@ -13602,8 +14140,8 @@ begin
               tmev:=tme;
               wrtv:=wrt;
             end;
-            gridDetails.Cells[7, i]:=FormatFloat('0.00', rslt1);
-            gridDetails.Cells[11, i]:=FormatFloat('0.00', rslt2);
+            gridDetails.Cells[7, i]:=FormatFloat(ctfl, rslt1);
+            gridDetails.Cells[11, i]:=FormatFloat(ctfl, rslt2);
 {Ende spezielle Auswertung}
             if i=(inlist.Count div 2) then
               gridDetails.AutoSizeColumns;

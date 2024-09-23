@@ -300,4 +300,7 @@ resourcestring                                     {deutsch}
   capSaveTab='Als CSV speichern';
   capAutoCut='AutoCut';
   hntAutoCut='Automatisches Ausschneiden des Fluges, um Standzeiten zu entfernen (Strg+m).';
+  capSensorHasData='Sensor H480 als Daten';
+  hntSensorHasData='Sollen die Sensordaten ausgewertet werden?';
+
 

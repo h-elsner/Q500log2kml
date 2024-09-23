@@ -211,6 +211,7 @@ const
   dzf='yyyy-mm-dd';
   vzf=dzf+' '+zzf;
   zzz='.zzz';
+  szzz='nn:ss.zzz';                                {Boottime}
   dzfl='0.0';                                      {Formatierung für FormatFloat}
   ctfl='0.00';
   mlfl='0.000';

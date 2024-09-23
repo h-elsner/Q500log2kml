@@ -36,6 +36,8 @@ const
   dsIDC=$FE;                                       {ID for einen seriellen Datensatz aus CGO3 (MAV link V1?)}
   lenfixC=8;                                       {Länge Fixpart seriellen Datensatz aus CGO3 (wie bei $BC)}
 
+  lowbatt4S=14.0;                                  {Low battery threshold in volt for 4S}
+
 type
   TMAVmessage = record
     time: TDateTime;
@@ -438,18 +440,20 @@ begin
 end;
 
 {https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/ardupilotmega.xml}
-function BCMsgTypeToStr(id: byte): string;           {Message type $BC}
+function BCMsgTypeToStr(id: byte): string;         {Message type $BC}
 begin
   result:=rsUnknown+' '+IntToStr(id);
   case id of
     0:   result:='Heartbeat?';
     1:   result:='SYS_STATUS';
     2:   result:='System_Time';
-    24:  result:='GPS_RAW';
+    24:  result:='GPS_RAW_INT';
+    25:  result:='GPS_STATUS';                     {Struct for 20 sats}
     27:  result:='RAW_IMU';
     29:  result:='SCALED_PRESSURE';
     30:  result:='ATTITUDE';
-    33:  result:='GLOBAL_POSITION';
+    32:  result:='LOCAL_POSITION_NED';
+    33:  result:='GLOBAL_POSITION_INT';
     35:  result:='RC_CHANNELS_RAW';
     36:  result:='SERVO_OUTPUT_RAW';
     42:  result:='MISSION_CURRENT';
@@ -461,11 +465,11 @@ begin
     150: result:='SENSOR_OFFSETS';
     163: result:='AHRS';                           {Attitude and Heading Reference System}
     165: result:='HW_STATUS';
-    172: result:='DATA96';
+    172: result:='DATA96';                         {Whatever this is...}
     173: result:='RANGEFINDER';
     178: result:='AHRS2';
     193: result:='EKF_STATUS_REPORT';              {Extended Kalman Filter}
-    253: result:='STATUS_TEXT';
+    253: result:='STATUS_TEXT';                    {Written AppLog}
   end;
 end;
 
