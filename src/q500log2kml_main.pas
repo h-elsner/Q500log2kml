@@ -663,7 +663,6 @@ const
   csvdef=us1+fext;
   wexdef=us1+wext;
   sep=',';                                         {Datenseparator im CSV file}
-  kma=', ';                                        {Kommaausgabe}
   anzsp=20;                                        {Mindestanzahl Spalten}
   lzbr=19;                                         {Länge Zeitstempel Breeze}
   lzyu=21;                                         {Länge Zeitstempel Yuneec}
@@ -1710,22 +1709,14 @@ var e: integer;
   procedure TabHintSensorYTH;
   begin
     s:='';
-    if sp=0 then begin                             {Sequenz number}
-      try
-        e:=Hex2Dec('$'+gridDetails.Cells[sp, zl]); {dezimal}
-        s:=rsRecordNo+IntToStr(zl)+kma+HeaderHnt+IntToStr(e);
-      except
-        s:='';                                     {bei Fehler Standardausgabe}
-      end;
+    case sp of
+      0: s:='Magic '+gridDetails.Cells[sp, zl];
+      1: s:=rsLenPL+gridDetails.Cells[sp, zl];
+      5: s:='MAV message '+gridDetails.Cells[sp, zl];
+      6: s:=rsTimeToBoot+suff+gridDetails.Cells[sp, zl]+'s';
     end;
-
-    if (sp=1) or (sp=2) then begin                 {SysID/CompID}
-      s:=rsRecordNo+IntToStr(zl)+kma+DefaultHnt;
-    end;
-    if sp>lenfix-2 then
-      PayLoad;                                     {Payload anzeigen}
-    if sp=lenfix-2 then
-      s:=rsLenPL+gridDetails.Cells[sp, zl];        {Payloadlänge ohne CRC}
+    if (not cbSensorhAsdata.Checked) and (sp>6) then
+      PayLoad;
   end;
 
   procedure TabHltYTHP;                            {Typhoon H Plus}
@@ -2646,9 +2637,9 @@ var msg: TMAVmessage;
     gridDetails.Cells[29, zhl]:='epv=';
     gridDetails.Cells[30, zhl]:=FormatFloat(ctfl, MavGetUint16(msg, 28)/100)+'m';
     gridDetails.Cells[31, zhl]:='Velocity=';
-    gridDetails.Cells[32, zhl]:=FormatFloat(ctfl, MavGetUint16(msg, 30)/10)+'m/s';
+    gridDetails.Cells[32, zhl]:=FormatFloat(ctfl, MavGetUint16(msg, 30)/100)+'m/s';
     gridDetails.Cells[33, zhl]:='Cog=';
-    gridDetails.Cells[34, zhl]:=FormatFloat(ctfl, MavGetUint16(msg, 30)/10)+'°';
+    gridDetails.Cells[34, zhl]:=FormatFloat(ctfl, MavGetUint16(msg, 32)/100)+'°';
     gridDetails.Cells[35, zhl]:=GPSfixType(IntToStr(msg.msgbytes[34]));
     gridDetails.Cells[36, zhl]:=IntToStr(msg.msgbytes[35])+' sats';
   end;
@@ -2670,7 +2661,7 @@ var msg: TMAVmessage;
     end;
   end;
 
-  procedure RAW_IMU;                               {MsgID 27}
+  procedure RAW_IMU(data: boolean);                {MsgID 27}
   var
     timeboot: uint64;
 
@@ -2679,26 +2670,28 @@ var msg: TMAVmessage;
     msg.time:=timeboot/secpd/1000000;
     gridDetails.Cells[6, zhl]:=FormatFloat(mlfl, timeboot/1000000); {in s};
 
-    gridDetails.Cells[15, zhl]:='xAcc=';
-    gridDetails.Cells[16, zhl]:=IntToStr(MavGetint16(msg, 14));
-    gridDetails.Cells[17, zhl]:='yAcc=';
-    gridDetails.Cells[18, zhl]:=IntToStr(MavGetint16(msg, 16));
-    gridDetails.Cells[19, zhl]:='zAcc=';
-    gridDetails.Cells[20, zhl]:=IntToStr(MavGetint16(msg, 18));
+    if data then begin
+      gridDetails.Cells[15, zhl]:='xAcc=';
+      gridDetails.Cells[16, zhl]:=IntToStr(MavGetint16(msg, 14));
+      gridDetails.Cells[17, zhl]:='yAcc=';
+      gridDetails.Cells[18, zhl]:=IntToStr(MavGetint16(msg, 16));
+      gridDetails.Cells[19, zhl]:='zAcc=';
+      gridDetails.Cells[20, zhl]:=IntToStr(MavGetint16(msg, 18));
 
-    gridDetails.Cells[21, zhl]:='xGyro=';
-    gridDetails.Cells[22, zhl]:=IntToStr(MavGetint16(msg, 20));
-    gridDetails.Cells[23, zhl]:='yGyro=';
-    gridDetails.Cells[24, zhl]:=IntToStr(MavGetint16(msg, 22));
-    gridDetails.Cells[25, zhl]:='zGyro=';
-    gridDetails.Cells[26, zhl]:=IntToStr(MavGetint16(msg, 24));
+      gridDetails.Cells[21, zhl]:='xGyro=';
+      gridDetails.Cells[22, zhl]:=IntToStr(MavGetint16(msg, 20));
+      gridDetails.Cells[23, zhl]:='yGyro=';
+      gridDetails.Cells[24, zhl]:=IntToStr(MavGetint16(msg, 22));
+      gridDetails.Cells[25, zhl]:='zGyro=';
+      gridDetails.Cells[26, zhl]:=IntToStr(MavGetint16(msg, 24));
 
-    gridDetails.Cells[27, zhl]:='xMag=';
-    gridDetails.Cells[28, zhl]:=IntToStr(MavGetint16(msg, 26));
-    gridDetails.Cells[29, zhl]:='yMag=';
-    gridDetails.Cells[30, zhl]:=IntToStr(MavGetint16(msg, 28));
-    gridDetails.Cells[31, zhl]:='zMag=';
-    gridDetails.Cells[32, zhl]:=IntToStr(MavGetint16(msg, 30));
+      gridDetails.Cells[27, zhl]:='xMag=';
+      gridDetails.Cells[28, zhl]:=IntToStr(MavGetint16(msg, 26));
+      gridDetails.Cells[29, zhl]:='yMag=';
+      gridDetails.Cells[30, zhl]:=IntToStr(MavGetint16(msg, 28));
+      gridDetails.Cells[31, zhl]:='zMag=';
+      gridDetails.Cells[32, zhl]:=IntToStr(MavGetint16(msg, 30));
+    end;
   end;
 
   procedure SCALED_PRESSURE;                       {MsgID 29}
@@ -2821,7 +2814,7 @@ var msg: TMAVmessage;
     gridDetails.Cells[34, zhl]:=FormatFloat(dzfl, MavGetUint16(msg, 32)/100);
   end;
 
-  procedure RC_CHANNELS_RAW;
+  procedure RC_CHANNELS_RAW;                       {MsgID 35}
   var
     i: integer;
 
@@ -2917,7 +2910,7 @@ var msg: TMAVmessage;
     gridDetails.Cells[32, zhl]:='';
   end;
 
-  procedure RC_CHANNELS;
+  procedure RC_CHANNELS;                           {MsgID 65}
   var
     i: integer;
 
@@ -3238,7 +3231,7 @@ begin
               2:  Sys_Time(true);
               24: GPS_RAW_INT;
               25: GPS_STATUS;
-              27: RAW_IMU;
+              27: RAW_IMU(true);
               29: SCALED_PRESSURE;
               30: ATTITUDE;
               32: LOCAL_POSITION_NED;
@@ -3264,6 +3257,8 @@ begin
             case msg.msgid of                      {Some important info to AppLog}
               1:   SYS_STATUS(false);
               2:   Sys_Time(false);
+              27:  RAW_IMU(false);
+              29, 30, 32, 33, 35, 65: TimeBoot_ms(6);
 //              52:  Sys_type(false);              {Not really important}
               193: EKF_STATUS_REPORT(false);
               253: StatusText(false);
@@ -5131,7 +5126,9 @@ begin
     bld.SaveToFile(fn);
   finally
     bld.Free;
-    bmp.Free;
+    {$IFDEF LINUX}
+      bmp.Free;
+    {$ENDIF}
   end;
 end;
 
