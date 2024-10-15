@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 1830
+  Left = 1395
   Height = 781
-  Top = 182
+  Top = 143
   Width = 1086
   AllowDropFiles = True
   Anchors = [akTop, akRight]
@@ -276,12 +276,12 @@ object Form1: TForm1
       Height = 653
       Top = 1
       Width = 925
-      ActivePage = tabSettings
+      ActivePage = tabAppLog
       Align = alClient
       Images = TabImages
       ParentShowHint = False
       ShowHint = True
-      TabIndex = 5
+      TabIndex = 6
       TabOrder = 0
       OnChange = pcMainChange
       Options = [nboKeyboardTabSwitch]
@@ -844,7 +844,7 @@ object Form1: TForm1
           OnChange = pcSettings3Change
           Options = [nboKeyboardTabSwitch]
           object tabConvert: TTabSheet
-            ClientHeight = 593
+            ClientHeight = 619
             ClientWidth = 905
             ImageIndex = 6
             object rgOutFormat: TRadioGroup
@@ -1030,7 +1030,7 @@ object Form1: TForm1
             end
           end
           object tabData: TTabSheet
-            ClientHeight = 593
+            ClientHeight = 619
             ClientWidth = 905
             ImageIndex = 7
             object GroupBox3: TGroupBox
@@ -1039,7 +1039,7 @@ object Form1: TForm1
               Top = 24
               Width = 216
               Caption = 'an'
-              ClientHeight = 215
+              ClientHeight = 230
               ClientWidth = 214
               TabOrder = 0
               object lblNumPoints: TLabel
@@ -1089,12 +1089,12 @@ object Form1: TForm1
             end
             object GroupBox4: TGroupBox
               Left = 232
-              Height = 551
+              Height = 577
               Top = 24
               Width = 384
               Anchors = [akTop, akLeft, akBottom]
               Caption = 'sel'
-              ClientHeight = 534
+              ClientHeight = 575
               ClientWidth = 382
               TabOrder = 1
               object LabeledEdit1: TLabeledEdit
@@ -1142,7 +1142,7 @@ object Form1: TForm1
               end
               object TreeView1: TTreeView
                 Left = 8
-                Height = 512
+                Height = 553
                 Top = 8
                 Width = 216
                 Anchors = [akTop, akLeft, akBottom]
@@ -1419,7 +1419,7 @@ object Form1: TForm1
           end
           object tabCommon: TTabSheet
             Caption = 'allg'
-            ClientHeight = 593
+            ClientHeight = 619
             ClientWidth = 905
             ImageIndex = 8
             object rgTimeType: TRadioGroup
@@ -1906,8 +1906,8 @@ object Form1: TForm1
           Align = alTop
           Anchors = [akTop, akLeft, akRight, akBottom]
           Color = clDefault
-          Font.Height = -13
-          Font.Name = 'Courier New'
+          Font.Height = -16
+          Font.Name = 'FreeMono'
           Font.Pitch = fpFixed
           Font.Quality = fqNonAntialiased
           ParentColor = False
@@ -1915,7 +1915,7 @@ object Form1: TForm1
           TabOrder = 1
           OnMouseWheelDown = AppLogMouseWheelDown
           OnMouseWheelUp = AppLogMouseWheelUp
-          Gutter.Width = 57
+          Gutter.Width = 61
           Gutter.MouseActions = <>
           RightGutter.Width = 0
           RightGutter.MouseActions = <>
@@ -2373,7 +2373,7 @@ object Form1: TForm1
               MouseActions = <>
             end
             object SynGutterLineNumber1: TSynGutterLineNumber
-              Width = 17
+              Width = 21
               MouseActions = <>
               MarkupInfo.Background = clBtnFace
               MarkupInfo.Foreground = clNone

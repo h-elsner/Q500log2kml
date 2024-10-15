@@ -4,7 +4,7 @@
           {                                                        }
           {       Copyright (c) 2015-2024    Helmut Elsner         }
           {                                                        }
-          {       Compiler: FPC 3.2.2   /    Lazarus 2.2.0         }
+          {       Compiler: FPC 3.2.3   /    Lazarus 3.3.0         }
           {                                                        }
           { Pascal programmers tend to plan ahead, they think      }
           { before they type. We type a lot because of Pascal      }
@@ -29,8 +29,9 @@
   to the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
   Boston, MA 02110-1335, USA.
 
-================================================================================
+*******************************************************************************)
 
+(*
   Auswertung der FlightLogDaten vom Yuneec Q500 und weitere
   (Q500, H920, Typhoon H, Blade Chroma, Blade 350QX, Mantis Q)
 
@@ -615,7 +616,6 @@ type
                                    ov11: boolean): boolean; {PX4 Overview Text}
     procedure AusgabeMessages(const fn: string;
                      var outlist: TStringList);    {Datenausgabe MsgID sortiert}
-    procedure ShowSensorH(const fn: string; mode: integer); {Sensor File YTH}
     function ComplFN(st: string; tp: TDateTime): string;    {Dateinamen mit Nummer ergänzen}
     procedure AppLogTimeStamp(s: string);          {AppLogHighlighter einteilen}
     procedure OpenSensorPlus;                      {Sensordatei vom YTH Plus öffnen}
@@ -624,6 +624,7 @@ type
     procedure ShowH520;                            {Anzeige TLOG File H520}
     procedure KMLheader(f: string; dt: TDateTime; klist: TStringList);
     procedure HDiaInit;                            {HöhenDiagramm Anzeige rücksetzen}
+    procedure ShowSensorH(const fn: string; mode: integer); {Sensor File YTH}
     procedure SetSensorEnv;                        {Bedienung für Sensor anpassen}
     procedure ResetSensorEnv;
     procedure AnzeigePX4CSV(fn: string);           {CSV aus eigenem Format anzeigen}
@@ -717,8 +718,6 @@ const
   rrk='# ';                                        {RaceRender Kommentar}
   FWsz=18;                                         {Mindestgröße Datei für FW}
 
-  trenner='--------------------';
-  trnrApplog='                  ';
   tabu=19;
   lblsize=35;                                      {LabelSize zum Ausrichten der Y-Achsen bei Schnellanalyse}
 
@@ -1256,7 +1255,7 @@ begin
 end;
 
 {File name part}
-function GetDateFile(s: string): TDateTime;        {Date from Filename H501}
+function GetDateFromFile(s: string): TDateTime;    {Date from Filename H501}
 begin
   try
     result:=ScanDateTime(dzf, copy(s, 1, 10));
@@ -1564,7 +1563,7 @@ var e: integer;
     if sp=0 then begin
       case v_type of
         h501ID: s:=FormatDateTime(vzf, ZeitToDT(gridDetails.Cells[0, zl], H501ID)+
-                                  GetDateFile(lbFlights.Items[lbFlights.ItemIndex]));
+                                  GetDateFromFile(lbFlights.Items[lbFlights.ItemIndex]));
       else
         s:=FormatDateTime(vzf+zzz, ZeitToDT(gridDetails.Cells[0, zl], v_type));
       end;
@@ -2491,6 +2490,27 @@ begin
   end;
 end;
 
+procedure WriteSensorHeaderToGridDetails(grid: TStringGrid);
+var
+  i: integer;
+
+begin
+  grid.BeginUpdate;
+  grid.RowCount:=1;
+  grid.ColCount:=200;                     {Spalten vorbelegen}
+  grid.Cells[0, 0]:='Magic';
+  grid.Cells[1, 0]:='Len';
+  grid.Cells[2, 0]:='SequNo';
+  grid.Cells[3, 0]:='SysID';
+  grid.Cells[4, 0]:='TargetID';
+  grid.Cells[5, 0]:='MsgID';
+  grid.Cells[6, 0]:='Since boot [s]';
+  for i:=1 to grid.ColCount-lenfix+1 do   {Payload Byte Nummern}
+    grid.Cells[i+6, 0]:='PL'+IntToStr(i);
+  grid.EndUpdate;
+end;
+
+
 {Basically modified/unmodified MAVlink V1 format + some undocumented msg:
  https://github.com/mavlink/c_library_v1/tree/master/common
  https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/common.xml
@@ -2498,7 +2518,7 @@ end;
 
 procedure TForm1.ShowSensorH(const fn: string; mode: integer);
 var msg: TMAVmessage;
-    i, zhl, n3: integer;
+    zhl, n3: integer;
     infn: TMemoryStream;
     b: byte;
 
@@ -2523,7 +2543,17 @@ var msg: TMAVmessage;
     gridDetails.Cells[5, zhl]:=BCMsgTypeToStr(msg.msgbytes[5]);
   end;
 
-  procedure TimeBoot_ms(pos: byte);
+  procedure TimeSinceBoot_micros(pos: byte);
+  var
+    timeboot: uint64;
+
+  begin
+    timeboot:=MavGetUInt64(msg, pos);              {Time since boot in µs}
+    msg.time:=timeboot/secpd/1000000;
+    gridDetails.Cells[6, zhl]:=FormatFloat(mlfl, timeboot/1000000); {in s};
+  end;
+
+  procedure TimeSinceBoot_ms(pos: byte);
   var
     timeboot: uint32;
 
@@ -2540,7 +2570,7 @@ var msg: TMAVmessage;
   procedure SYS_STATUS(data: boolean);             {MsgID 1}
   var
     batt_voltage, load, droprate: single;
-    commerror: integer;
+    i, commerror: integer;
     errText: string;
 
   begin
@@ -2554,24 +2584,53 @@ var msg: TMAVmessage;
     if droprate+commerror>0 then
       errText:='Communication problems';
 
+    if not cbReduced.Checked then begin            {MAV_SYS_STATUS_SENSOR to AppLog, sensors long}
+      AppLog.Lines.Add(trnrApplog+'onboard_control_sensors_present'+suff+
+                       MSenStat(MavGetUint32(msg, 6)));
+      AppLog.Lines.Add(trnrApplog+'onboard_control_sensors_enabled'+suff+
+                       MSenStat(MavGetUint32(msg, 10)));
+      AppLog.Lines.Add(trnrApplog+'onboard_control_sensors_health '+suff+
+                       MSenStat(MavGetUint32(msg, 14)));
+    end;
+
     If data then begin
+      for i:=0 to 2 do begin
+        gridDetails.Cells[7+i*4, zhl]:='OnboardControlSensors';
+//        gridDetails.Cells[9+i*4, zhl]:=MSenStat(MavGetUint32(msg, 6+i*4));
+        gridDetails.Cells[9+i*4, zhl]:=IntToHex(MavGetUint32(msg, 6+i*4), 6);    {sensors short}
+        gridDetails.Cells[10+i*4, zhl]:='';
+      end;
+      gridDetails.Cells[8, zhl]:='present: ';
+      gridDetails.Cells[12, zhl]:='enabled: ';
+      gridDetails.Cells[16, zhl]:='health: ';
       gridDetails.Cells[19, zhl]:='Load=';
       gridDetails.Cells[20, zhl]:=FormatFloat(dzfl, load)+'%';
       gridDetails.Cells[21, zhl]:='Vbatt=';
       gridDetails.Cells[22, zhl]:=FormatFloat(ctfl, batt_voltage)+'V';
+      if (msg.msgbytes[23]<>$FF) or (msg.msgbytes[22]<>$FF) then begin
+        gridDetails.Cells[23, zhl]:='Current=';
+        gridDetails.Cells[24, zhl]:=IntToStr(MavGetUint16(msg, 22));
+        // Measurement unit unknown, Current not used at Typhoon H
+      end;
       gridDetails.Cells[25, zhl]:='Drop rate=';
       gridDetails.Cells[26, zhl]:=FormatFloat(dzfl, droprate)+'%';
-
+      gridDetails.Cells[27, zhl]:='CommunicationErrors=';
+      gridDetails.Cells[28, zhl]:=IntToStr(commerror);
+      for i:=0 to 3 do begin                       {for error count 1 to 4}
+        gridDetails.Cells[29+i*2, zhl]:='ErrorCount'+IntToStr(i+1)+'=';
+        gridDetails.Cells[30+i*2, zhl]:=IntToStr(MavGetUint16(msg, 28+1*2));
+      end;
+      if msg.msgbytes[36]<>$FF then
+        gridDetails.Cells[37, zhl]:='Battery='+IntToStr(msg.msgbytes[36])+'%';
     end;
 
     if errText<>'' then begin
-      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                       FormatDateTime(zzf+zzz, msg.time)+tab2+
+      Applog.Lines.Add(DefaultOuputToAppLog(zhl, msg.time,
                        'SYS_STATUS: '+errText+' -- Load='+
                        FormatFloat(dzfl, load)+'%, Vbatt='+
                        FormatFloat(ctfl, batt_voltage)+'V, Drop rate='+
                        FormatFloat(ctfl, droprate)+'%, Communication errors='+
-                       IntToStr(commerror));
+                       IntToStr(commerror)));
     end;
   end;
 
@@ -2581,23 +2640,23 @@ var msg: TMAVmessage;
     i: integer;
 
   begin
-    TimeBoot_ms(14);
-    ts:=UnixToDateTime(MavGetIntFromBuf(msg, 6, 8) div 1000000);  {us --> s}
+    TimeSinceBoot_ms(14);
+    ts:=UnixToDateTime(MavGetUInt64(msg, 6) div 1000000);  {us --> s}
     if data then begin
       gridDetails.Cells[7, zhl]:='System time UTC:';
       gridDetails.Cells[8, zhl]:=FormatDateTime(dzf, ts);
       gridDetails.Cells[9, zhl]:=FormatDateTime(zzf, ts);
       for i:=10 to 14 do
         gridDetails.Cells[i, zhl]:='';
+
       gridDetails.Cells[15, zhl]:='Time since boot:';
       gridDetails.Cells[16, zhl]:=FormatDateTime(szzz, msg.time);
-      for i:=17 to 18 do
-        gridDetails.Cells[i, zhl]:='';
+      gridDetails.Cells[17, zhl]:='s';
+      gridDetails.Cells[18, zhl]:='';
     end;
     if not cbReduced.Checked then begin
-      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                       FormatDateTime(zzf+zzz, msg.time)+tab2+'UTC:  '+
-                       FormatDateTime(vzf, ts));
+      AppLog.Lines.Add(DefaultOuputToAppLog(zhl, msg.time,
+                      'UTC:  '+FormatDateTime(vzf, ts)));
     end;
   end;
 
@@ -2610,11 +2669,12 @@ var msg: TMAVmessage;
     lat, lon, alt: single;
 
   begin
-    timeboot:=MavGetIntFromBuf(msg, 6, 8);         {Time since boot in µs}
+    timeboot:=MavGetUInt64(msg, 6);                {Time since boot in µs}
     if timeboot>0 then begin
       msg.time:=timeboot/secpd/1000000;
       gridDetails.Cells[6, zhl]:=FormatFloat(mlfl, timeboot/1000000); {in s};
     end;
+
     lat:=MavGetint32(msg,14)/10000000;
     lon:=MavGetint32(msg,18)/10000000;
     alt:=MavGetint32(msg, 22)*0.001;
@@ -2666,10 +2726,7 @@ var msg: TMAVmessage;
     timeboot: uint64;
 
   begin
-    timeboot:=MavGetIntFromBuf(msg, 6, 8);         {Time since boot in µs}
-    msg.time:=timeboot/secpd/1000000;
-    gridDetails.Cells[6, zhl]:=FormatFloat(mlfl, timeboot/1000000); {in s};
-
+    TimeSinceBoot_micros(6);
     if data then begin
       gridDetails.Cells[15, zhl]:='xAcc=';
       gridDetails.Cells[16, zhl]:=IntToStr(MavGetint16(msg, 14));
@@ -2696,13 +2753,13 @@ var msg: TMAVmessage;
 
   procedure SCALED_PRESSURE;                       {MsgID 29}
   begin
-    TimeBoot_ms(6);
+    TimeSinceBoot_ms(6);
     gridDetails.Cells[11, zhl]:='Pressure_abs=';
     gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));
     gridDetails.Cells[13, zhl]:='hPa';
     gridDetails.Cells[14, zhl]:='';
     gridDetails.Cells[15, zhl]:='Pressure_diff=';
-    gridDetails.Cells[16, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 14));;
+    gridDetails.Cells[16, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 14));
     gridDetails.Cells[17, zhl]:='hPa';
     gridDetails.Cells[18, zhl]:='';
     gridDetails.Cells[19, zhl]:='Baro_temp=';
@@ -2711,27 +2768,27 @@ var msg: TMAVmessage;
 
   procedure ATTITUDE;                              {MsgID 30}
   begin
-    TimeBoot_ms(6);
+    TimeSinceBoot_ms(6);
 
     gridDetails.Cells[11, zhl]:='Roll=';
-    gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));;
+    gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));
     gridDetails.Cells[13, zhl]:='rad';
     gridDetails.Cells[14, zhl]:='';
     gridDetails.Cells[15, zhl]:='Pitch=';
-    gridDetails.Cells[16, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 14));;
+    gridDetails.Cells[16, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 14));
     gridDetails.Cells[17, zhl]:='rad';
     gridDetails.Cells[18, zhl]:='';
     gridDetails.Cells[19, zhl]:='Yaw=';
-    gridDetails.Cells[20, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 18));;
+    gridDetails.Cells[20, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 18));
     gridDetails.Cells[21, zhl]:='rad';
     gridDetails.Cells[22, zhl]:='';
 
     gridDetails.Cells[23, zhl]:='Rollspeed=';
-    gridDetails.Cells[24, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 22));;
+    gridDetails.Cells[24, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 22));
     gridDetails.Cells[25, zhl]:='rad/s';
     gridDetails.Cells[26, zhl]:='';
     gridDetails.Cells[27, zhl]:='Pitchspeed=';
-    gridDetails.Cells[28, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 26));;
+    gridDetails.Cells[28, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 26));
     gridDetails.Cells[29, zhl]:='rad/s';
     gridDetails.Cells[30, zhl]:='';
     gridDetails.Cells[31, zhl]:='Yawspeed=';
@@ -2742,7 +2799,7 @@ var msg: TMAVmessage;
 
   procedure LOCAL_POSITION_NED;                    {MsgID 32}
   begin
-    TimeBoot_ms(6);
+    TimeSinceBoot_ms(6);
     gridDetails.Cells[11, zhl]:='X_Pos=';
     gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));
     gridDetails.Cells[13, zhl]:='m';
@@ -2779,7 +2836,7 @@ var msg: TMAVmessage;
     lat, lon, alt: single;
 
   begin
-    TimeBoot_ms(6);
+    TimeSinceBoot_ms(6);
     lat:=MavGetint32(msg,10)/10000000;
     lon:=MavGetint32(msg,14)/10000000;
     alt:=MavGetint32(msg, 18)*0.001;
@@ -2819,7 +2876,7 @@ var msg: TMAVmessage;
     i: integer;
 
   begin
-    TimeBoot_ms(6);
+    TimeSinceBoot_ms(6);
 
     for i:=1 to 8 do begin
       gridDetails.Cells[i*2+9, zhl]:='Chan'+IntToStr(i)+'=';
@@ -2835,9 +2892,9 @@ var msg: TMAVmessage;
     i: integer;
 
   begin
-    timeboot:=MavGetUint32(msg, 6);
+    timeboot:=MavGetUInt32(msg, 6);                {Strange, but here in µs}
     msg.time:=timeboot/secpd/1000000;
-    gridDetails.Cells[6, zhl]:=FormatFloat(mlfl, timeboot/1000000); {in s};
+    gridDetails.Cells[6, zhl]:=FormatFloat(mlfl, timeboot/1000000); {Default: in s}
 
     for i:=1 to 8 do begin
       gridDetails.Cells[i*2+9, zhl]:='Servo'+IntToStr(i)+'=';
@@ -2874,8 +2931,7 @@ var msg: TMAVmessage;
     end;
 
     if not cbReduced.Checked then begin
-      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                       FormatDateTime(zzf+zzz, msg.time)+tab2+systxt);
+      AppLog.Lines.Add(DefaultOuputToAppLog(zhl, msg.time, systxt));
     end;
   end;
 
@@ -2915,7 +2971,7 @@ var msg: TMAVmessage;
     i: integer;
 
   begin
-    TimeBoot_ms(6);
+    TimeSinceBoot_ms(6);
 
     for i:=1 to 18 do begin
       gridDetails.Cells[i*2+9, zhl]:='Chan'+IntToStr(i)+'=';
@@ -3034,7 +3090,7 @@ var msg: TMAVmessage;
     gridDetails.Cells[32, zhl]:=FormatFloat(mlfl, MavGetFloatFromBuf(msg, 30));
     gridDetails.Cells[33, zhl]:='';
     gridDetails.Cells[34, zhl]:='';
-end;
+  end;
 
   procedure HW_STATUS;                             {Example how to decode small messages}
   var
@@ -3051,6 +3107,7 @@ end;
   begin
     gridDetails.Cells[7, zhl]:='Data_type='+IntToStr(msg.msgbytes[6]);
     gridDetails.Cells[7, zhl]:='Len='+IntToStr(msg.msgbytes[7]);
+    // rest of the data undocumented / unknown
   end;
 
   procedure RANGEFINDER;
@@ -3113,17 +3170,16 @@ end;
     errText:='';
     velocity_variance:=MavGetFloatFromBuf(msg, 6);
     if velocity_variance>=0.8 then begin
-      errText:=' is bad!';
+      errText:=errIsbad;
     end else begin
       if velocity_variance>=0.5 then begin
-        errtext:=' is at warning level';
+        errtext:=errWarningLevel;
       end;
     end;
     if errText<>'' then
-      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                       FormatDateTime(zzf+zzz, msg.time)+tab2+
+      AppLog.Lines.Add(DefaultOuputToAppLog(zhl, msg.time,
                        'EKF_STATUS_REPORT: Velocity_variance='+
-                       FormatFloat(mlfl, velocity_variance)+errText);
+                       FormatFloat(mlfl, velocity_variance)+errText));
 
     if data then begin
       gridDetails.Cells[7, zhl]:='Velocity_variance=';
@@ -3151,7 +3207,6 @@ end;
     end;
   end;
 
-
 {AHRS: Attitude and Heading Reference Systems
  EKF : Extended Kalman Filter}
   procedure StatusText(data: boolean);             {Will be written to AppLog}
@@ -3170,9 +3225,51 @@ end;
         gridDetails.Cells[pos+1, zhl]:=txt;
       inc(pos);
     end;
-    AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                     FormatDateTime(zzf+zzz, msg.time)+tab2+
-                     MAVseverity(msg.msgbytes[6])+': '+text);
+    AppLog.Lines.Add(DefaultOuputToAppLog(zhl, msg.time, MAVseverity(msg.msgbytes[6])+': '+text));
+  end;
+
+  procedure DecodeSensorMessages;
+  begin
+    if cbSensorHasData.Checked then begin
+      case msg.msgid of
+//      0:  Heartbeat;  {??}
+        1:  SYS_STATUS(true);
+        2:  Sys_Time(true);
+        24: GPS_RAW_INT;
+        25: GPS_STATUS;
+        27: RAW_IMU(true);
+        29: SCALED_PRESSURE;
+        30: ATTITUDE;
+        32: LOCAL_POSITION_NED;
+        33: GLOBAL_POSITION_INT;
+        35: RC_CHANNELS_RAW;
+        36: SERVO_OUTPUT_RAW;
+        42: MISSION_CURRENT;
+        51: MISSION_REQUEST_INT;
+        52: Sys_type(true);
+        62: NAV_CONTROLLER_OUTPUT;
+        65: RC_CHANNELS;
+        74: VRF_HUD;
+        150: SENSOR_OFFSETS;
+        163: AHRS;
+        165: HW_STATUS;
+        172: DATA96;
+        173: RANGEFINDER;
+        178: AHRS2;
+        193: EKF_STATUS_REPORT(true);
+        253: StatusText(true);
+      end;
+    end else begin                           {SensorH as raw (hex bytes)}
+      case msg.msgid of                      {Some important info to AppLog}
+        1:   SYS_STATUS(false);
+        2:   Sys_Time(false);
+        27:  RAW_IMU(false);
+        29, 30, 32, 33, 35, 65: TimeSinceBoot_ms(6);
+//      52:  Sys_type(false);                {Not really important}
+        193: EKF_STATUS_REPORT(false);
+        253: StatusText(false);
+      end;
+    end;
   end;
 
 begin
@@ -3182,26 +3279,11 @@ begin
   mnGoToErr.Enabled:=false;                        {gehe zum nächsten Fehler blocken}
   if FileSize(fn)>lenfix then begin
     Screen.Cursor:=crHourGlass;
-    Application.ProcessMessages;
-    cbxSearch.Text:=UpCase(trim(cbxSearch.Text));
-    Application.ProcessMessages;
-
-    gridDetails.BeginUpdate;
-    gridDetails.RowCount:=1;
-    gridDetails.ColCount:=200;                     {Spalten vorbelegen}
-    gridDetails.Cells[0, 0]:='Magic';
-    gridDetails.Cells[1, 0]:='Len';
-    gridDetails.Cells[2, 0]:='SequNo';
-    gridDetails.Cells[3, 0]:='SysID';
-    gridDetails.Cells[4, 0]:='TargetID';
-    gridDetails.Cells[5, 0]:='MsgID';
-    gridDetails.Cells[6, 0]:='Since boot [s]';
-    for i:=1 to gridDetails.ColCount-lenfix+1 do   {Payload Byte Nummern}
-      gridDetails.Cells[i+6, 0]:='PL'+IntToStr(i);
-    gridDetails.EndUpdate;
-
-    msg:=ClearMAVmessage;                          {Datenbuffer löschen}
     infn:=TMemoryStream.Create;
+    msg:=ClearMAVmessage;                          {Datenbuffer löschen}
+
+    cbxSearch.Text:=UpCase(trim(cbxSearch.Text));
+    WriteSensorHeaderToGridDetails(gridDetails);
     try
       infn.LoadFromFile(fn);
       AppLog.Lines.Add(LineEnding);
@@ -3209,66 +3291,27 @@ begin
       StatusBar1.Panels[5].Text:=rsWait;
 
       gridDetails.BeginUpdate;
-      while infn.Position<(infn.Size-lenfix) do begin
-        repeat                                     {RecordID suchen $BC}
-          b:=infn.ReadByte;
-        until (b=MagicBC) or (infn.Position>=infn.Size-lenfix);
-        msg.msgbytes[0]:=b;
-        msg.msglength:=infn.ReadByte;              {Länge Payload mit CRC}
-        msg.msgbytes[1]:=msg.msglength;
-        try
-          infn.Position:=infn.Position-2;
-          infn.ReadBuffer(msg.msgbytes, msg.msglength+8);  {Länge Rest-Datensatz mit FixPart und CRC}
-          msg.sysid:=msg.msgbytes[3];
-          msg.targetid:=msg.msgbytes[4];
-          msg.msgid:=msg.msgbytes[5];
-          WriteToGrid(msg);
+        while infn.Position<(infn.Size-lenfix) do begin
+          repeat                                     {RecordID suchen $BC}
+            b:=infn.ReadByte;
+          until (b=MagicBC) or (infn.Position>=infn.Size-lenfix);
+          msg.msgbytes[0]:=b;
+          msg.msglength:=infn.ReadByte;              {Länge Payload mit CRC}
+          msg.msgbytes[1]:=msg.msglength;
+          try
+            infn.Position:=infn.Position-2;
+            infn.ReadBuffer(msg.msgbytes, msg.msglength+8);  {Länge Rest-Datensatz mit FixPart und CRC}
+            msg.sysid:=msg.msgbytes[3];
+            msg.targetid:=msg.msgbytes[4];
+            msg.msgid:=msg.msgbytes[5];
 
-          if cbSensorHasData.Checked then begin
-            case msg.msgid of
-  //            0:  Heartbeat;  {??}
-              1:  SYS_STATUS(true);
-              2:  Sys_Time(true);
-              24: GPS_RAW_INT;
-              25: GPS_STATUS;
-              27: RAW_IMU(true);
-              29: SCALED_PRESSURE;
-              30: ATTITUDE;
-              32: LOCAL_POSITION_NED;
-              33: GLOBAL_POSITION_INT;
-              35: RC_CHANNELS_RAW;
-              36: SERVO_OUTPUT_RAW;
-              42: MISSION_CURRENT;
-              51: MISSION_REQUEST_INT;
-              52: Sys_type(true);
-              62: NAV_CONTROLLER_OUTPUT;
-              65: RC_CHANNELS;
-              74: VRF_HUD;
-              150: SENSOR_OFFSETS;
-              163: AHRS;
-              165: HW_STATUS;
-              172: DATA96;
-              173: RANGEFINDER;
-              178: AHRS2;
-              193: EKF_STATUS_REPORT(true);
-              253: StatusText(true);
-            end;
-          end else begin                           {SensorH as raw (hex bytes)}
-            case msg.msgid of                      {Some important info to AppLog}
-              1:   SYS_STATUS(false);
-              2:   Sys_Time(false);
-              27:  RAW_IMU(false);
-              29, 30, 32, 33, 35, 65: TimeBoot_ms(6);
-//              52:  Sys_type(false);              {Not really important}
-              193: EKF_STATUS_REPORT(false);
-              253: StatusText(false);
-            end;
+            WriteToGrid(msg);
+            DecodeSensorMessages;
+          except
+            AppLog.Lines.Add(fn+': Abrupt sensor file end');  {Msg too short}
           end;
-        except
-          AppLog.Lines.Add(fn+': Abrupt sensor file end');  {Msg too short}
         end;
-      end;
-      gridDetails.RowCount:=zhl+1;
+        gridDetails.RowCount:=zhl+1;
       gridDetails.EndUpdate;
 
       StatusBar1.Panels[0].Text:=IntToStr(FileSize(fn));
@@ -3288,7 +3331,6 @@ begin
     end;
   end;
 end;
-
 
 procedure TForm1.OpenSensorPlus;                   {Sensordatei vom YTH Plus öffnen}
 var spdir: string;
@@ -3702,9 +3744,7 @@ var dsbuf: array[0..YTHPcols] of byte;
 
   begin
     ch:=csvarr[posChan];                           {ursprünglichen Wert zwischenspeichern}
-    st:=Format('%6d', [zhl])+tab2+
-        FormatDateTime(zzf, bg)+tab2+
-        MAVseverity(dsbuf[lenfix])+suff+'''';
+    st:=DefaultOuputToAppLog(zhl, bg, MAVseverity(dsbuf[lenfix])+suff+'''');
     tm:='';
     if tb then
        gridDetails.Cells[lenfix+2, zhl]:=IntToStr(dsbuf[lenfix]); {Severity dezimal}
@@ -3896,10 +3936,8 @@ var dsbuf: array[0..YTHPcols] of byte;
     csvarr[20]:=MLStoStr(dsbuf[lenfix+1]);         {MAV landed state}
     if dsbuf[lenfix+1]<>msl then begin
       if not cbReduced.Checked then
-        AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                           FormatDateTime(zzf, bg)+tab2+
-                           csvMAVland+' ($F5)'+suff+
-                           csvarr[20]);
+        AppLog.Lines.Add(DefaultOuputToAppLog(zhl, bg,
+                         csvMAVland+' ($F5)'+suff+csvarr[20]));
       msl:=dsbuf[lenfix+1];                        {letzten Wert merken}
     end;
     SenCSVAusgabe;
@@ -3976,10 +4014,8 @@ var dsbuf: array[0..YTHPcols] of byte;
     if ival>=0 then
       csvarr[46]:=IntToStr(ival);                  {remaining capacity [%]}
     if not cbReduced.Checked then
-      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                         FormatDateTime(zzf, bg)+tab2+csvVolt+
-                         suff+csvarr[2]+'V'+
-                         tab4+csvAmp+suff+csvarr[3]+'A');
+      AppLog.Lines.Add(DefaultOuputToAppLog(zhl, bg, csvVolt+suff+csvarr[2]+'V'+
+                       tab4+csvAmp+suff+csvarr[3]+'A'));
     SenCSVAusgabe;
   end;
 
@@ -3991,9 +4027,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     if dsbuf[lenfix-4]=1 then begin                {Ausgaben nur für AUTOPILOT1}
       if ov10 then begin                           {PX4 Emergency Overview}
         if (dsbuf[lenfix+7]=5) or (dsbuf[lenfix+7]=6) then begin   {Critical or emcy}
-          AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                           FormatDateTime(zzf, bg)+tab2+
-                           MSTtoStr(dsbuf[lenfix+7]));
+          AppLog.Lines.Add(DefaultOuputToAppLog(zhl, b, MSTtoStr(dsbuf[lenfix+7])));
           topp[fnz, 6]:=topp[fnz, 6] or 256;
           result:=true;                            {Something found in PX4 overview}
         end;
@@ -4008,9 +4042,7 @@ var dsbuf: array[0..YTHPcols] of byte;
                                  VtypeToStr(MQid)); {4 Rotor = Mantis Q}
           end;
           if not cbReduced.Checked then
-            AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                               FormatDateTime(zzf, bg)+tab2+
-                               MSTtoStr(dsbuf[lenfix+7]));
+            AppLog.Lines.Add(DefaultOuputToAppLog(zhl, bg, MSTtoStr(dsbuf[lenfix+7])));
           hbt:=dsbuf[lenfix+7];                    {letzten Wert merken}
           cm:=GetIntFromBuf(0, 4);                 {custom mode}
 
@@ -4022,9 +4054,7 @@ var dsbuf: array[0..YTHPcols] of byte;
         end;
         if dsbuf[lenfix+6]<>mmf then begin         {nur ausgeben, wenn sich etwas ändert}
           if not cbReduced.Checked then
-            AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                               FormatDateTime(zzf, bg)+tab2+
-                               MMFtoStr(dsbuf[lenfix+6]));
+            AppLog.Lines.Add(DefaultOuputToAppLog(zhl, bg, MMFtoStr(dsbuf[lenfix+6])));
           mmf:=dsbuf[lenfix+6];                    {letzten Wert merken}
         end;
         SenCSVAusgabe;                             {CSV Datensatz schreiben}
@@ -4052,9 +4082,7 @@ var dsbuf: array[0..YTHPcols] of byte;
       csvarr[45]:=it;
       if it<>itemp then begin                      {nur wenn Temp sich ändert}
         if not cbReduced.Checked then
-          AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                             FormatDateTime(zzf, bg)+tab2+csvIMUtemp+
-                             suff+it+'°C');
+          AppLog.Lines.Add(DefaultOuputToAppLog(zhl, bg, csvIMUtemp+suff+it+'°C'));
         itemp:=it;                                 {Vergleichswert merken}
       end;
       SenCSVAusgabe;                               {CSV Datensatz schreiben}
@@ -4109,11 +4137,10 @@ var dsbuf: array[0..YTHPcols] of byte;
         yawsetp:=GetFloatFromBuf(40);              {Yaw setpoint}
         yawsetp:=RadToGrad(yawsetp);               {Conversion rad (+/- 180°) to °}
 
-        AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                           FormatDateTime(zzf, bg)+tab2+MsgIDtoStr(87)+suff+
+        AppLog.Lines.Add(DefaultOuputToAppLog(zhl, bg, MsgIDtoStr(87)+suff+
                            rsGPSh+suff+FormatFloat(ctfl, ele)+'m'+tab2+
                            CoordFrameToStr(dsbuf[lenfix+50])+tab2+
-                           'Yaw setpoint'+suff+FormatFloat(ctfl, yawsetp)+'°');
+                           'Yaw setpoint'+suff+FormatFloat(ctfl, yawsetp)+'°'));
         AppLog.Lines.Add(trnrApplog+URLGMap(FloatToStr(lat/10000000), FloatToStr(lon/10000000)));
 
         latw1:=lat;
@@ -4298,11 +4325,9 @@ var dsbuf: array[0..YTHPcols] of byte;
     csvarr[46]:=IntToStr(battremain);              {Battery remaining %}
     csvarr[47]:=FormatFloat(ctfl, ucap);          {Battery used mAh}
     if not cbReduced.Checked then
-      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                         FormatDateTime(zzf, bg)+tab2+csvVolt+
-                         suff+csvarr[2]+'V'+
-                         tab4+csvAmp+suff+csvarr[3]+'A'+
-                         tab4+csvUcap+suff+csvarr[47]+'mAh');
+      AppLog.Lines.Add(DefaultOuputToAppLog(zhl, bg, csvVolt+suff+csvarr[2]+'V'+
+                       tab4+csvAmp+suff+csvarr[3]+'A'+
+                       tab4+csvUcap+suff+csvarr[47]+'mAh'));
     sst:=GetIntFromBuf(0, 4);                      {Sensor present}
     if not cbReduced.Checked then
       AppLog.Lines.Add(trnrApplog+'onboard_control_sensors_present'+suff+
@@ -4381,13 +4406,11 @@ var dsbuf: array[0..YTHPcols] of byte;
     end;
     csvarr[57]:=paramID;
     csvarr[58]:=wrt;
-    AppLog.Lines.Add(Format('%6d', [zhl])+tab2+    {Onboard parameter value}
-                       FormatDateTime(zzf, bg)+tab2+
-                       Format('%-16s', [paramID])+suff+
+    AppLog.Lines.Add(DefaultOuputToAppLog(zhl, bg, Format('%-16s', [paramID])+suff+
                        'Type'+suff+IntToStr(dsbuf[lenfix+24])+kma+
                        'Index'+suff+IntToStr(idx)+kma+
                        'Count'+suff+IntToStr(num)+kma+
-                       'Value'+suff+wrt);
+                       'Value'+suff+wrt));
     SenCSVAusgabe;                                 {CSV Datensatz schreiben}
   end;
 
@@ -4397,9 +4420,7 @@ var dsbuf: array[0..YTHPcols] of byte;
     StandardAusgabe;                               {Hex values in CSV table}
     if (not cbReduced.Checked) or dzt then begin
       ts:=UnixToDateTime(GetIntFromBuf(0, 8) div 1000000);        {us --> s}
-      AppLog.Lines.Add(Format('%6d', [zhl])+tab2+
-                       FormatDateTime(zzf, bg)+tab2+'UTC:  '+
-                       FormatDateTime(vzf, ts));
+      AppLog.Lines.Add(DefaultOuputToAppLog(zhl, bg, 'UTC:  '+FormatDateTime(vzf, ts)));
       dzt:=false;
     end;
   end;
@@ -5363,7 +5384,6 @@ begin
       AppLog.Lines.Add(StatusBar1.Panels[5].Text);
     end;
     ProgressBarScan.Position:=ProgressBarScan.Position+1;
-    Application.ProcessMessages;
     if inlist.count>minlines then begin            {Überschrift und mind. 10 Zeilen}
       try
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
@@ -5602,7 +5622,7 @@ begin
     if inlist.count>minlines then begin            {Überschrift und mind. 10 Zeilen}
       try
         StatusBar1.Panels[1].Text:=IntToStr(inlist.count-1);
-        dtm:=GetDateFile(copy(ExtractFileName(fn), h5file.length+1, 10)); {Date from file name}
+        dtm:=GetDateFromFile(copy(ExtractFileName(fn), h5file.length+1, 10)); {Date from file name}
         for x:=1 to inlist.count-1 do begin        {Daten einlesen}
           splitlist.DelimitedText:=inlist[x];
           if splitlist.Count>14 then begin         {Konsistenz checken}
@@ -8394,7 +8414,7 @@ const bgid=999999;
           if tas>tasmax then
             tasmax:=tas;
           inc(n);
-          ed:=GetDateFile(lbFlights.Items[z]);
+          ed:=GetDateFromFile(lbFlights.Items[z]);
           ed:=ed+ZeitToDT(splitlist[0], v_type);
           if bg>ed then
             bg:=ed;                                {Beginnzeit ohne GPS}
@@ -9083,7 +9103,7 @@ begin
           end else begin
             StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsEmpty+tab1+
                                        capLabel6+Format('%6d', [x]);
-            AppLog.Lines.Add('''9011'+suff+StatusBar1.Panels[5].Text);
+            AppLog.Lines.Add('''9076'+suff+StatusBar1.Panels[5].Text);
           end;
         end;                                       {Ende Daten einlesen}
         gridDetails.Col:=CellFocus[rgQuelle.ItemIndex, 0]; {load cell focus}
@@ -9125,7 +9145,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [zhl]);
-        AppLog.Lines.Add('''9053'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9118'+suff+StatusBar1.Panels[5].Text);
       end;
       if pcMain.ActivePage=tabDetails then
         gridDetails.SetFocus;
@@ -9343,7 +9363,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        AppLog.Lines.Add('''9268'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9336'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
@@ -9502,7 +9522,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        AppLog.Lines.Add('''9426'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9495'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
@@ -9638,7 +9658,7 @@ begin
       except
         StatusBar1.Panels[5].Text:=ExtractFileName(fn)+suff+rsInvalid+tab1+
                                    capLabel6+Format('%6d', [x]);
-        AppLog.Lines.Add('''9561'+suff+StatusBar1.Panels[5].Text);
+        AppLog.Lines.Add('''9631'+suff+StatusBar1.Panels[5].Text);
       end;
     end else begin
       StatusBar1.Panels[5].Text:=ExtractFileName(fn)+tab1+rsEmpty;
@@ -9903,7 +9923,7 @@ begin
             end;
           except
             StatusBar1.Panels[5].Text:=rsInvalid;
-            AppLog.Lines.Add('''9805'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+            AppLog.Lines.Add('''9896'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                                suff+StatusBar1.Panels[5].Text);
           end;
         end;
@@ -9930,7 +9950,7 @@ begin
             end;
           except
             StatusBar1.Panels[5].Text:=rsInvalid;
-            AppLog.Lines.Add('''9832'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
+            AppLog.Lines.Add('''9923'+capLabel6+Format('%6d', [x])+  {Datenpunkt ausgeben}
                                suff+StatusBar1.Panels[5].Text);
           end;
         end;
@@ -10141,8 +10161,8 @@ begin
         if splitlist.Count>14 then begin
           if (NichtLeer(splitlist[2]) or
               NichtLeer(splitlist[3])) then GPS:=true;
-          bg:=ZeitToDT(splitlist[0], v_type);
 
+          bg:=ZeitToDT(splitlist[0], v_type);
           h:=H501alt(StrToFloatN(splitlist[4]));
           if hmxg<h then
             hmxg:=h;                               {Maximum elevation}
@@ -10192,77 +10212,106 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
     bg: TDateTime;
     w: double;
 
-  procedure MakeSAH(lab: TLabeledEdit; hist: TLineSeries; cht: TChart);
+  procedure MakeQuickAnalysisChartForTelemetry;
+  begin
+
+  end;
+
+  procedure MakeQuickAnalysisChart(lab: TLabeledEdit; hist: TLineSeries; cht: TChart);
   var
-    x, p: integer;
+    p: integer;
+
+    procedure MakeQuickAnalysisChartForTelemetry;
+    var
+      i: integer;
+
+    begin
+      begin                                        {Telemetry}
+        splitlist.DelimitedText:=inlist0[0];       {Column header}
+        if splitlist.count>30 then                 {Firmware error YTH}
+          for i:=15 to splitlist.count-1 do
+            if pos(lcol, splitlist[i])>0 then begin
+              splitlist[i]:=lcol;                  {Zahlen wegwerfen}
+              break;
+            end;
+        p:=splitlist.IndexOf(lab.Text);            {find index of column}
+
+        if p>0 then begin
+          for i:=1 to inlist0.count-1 do begin
+            splitlist.DelimitedText:=inlist0[i];
+            if CheckVT(splitlist[gridDetails.Tag+2],
+                       splitlist[gridDetails.Tag]) then begin
+              if p=8 then
+                w:=BoolToDouble(splitlist[8])
+              else
+                w:=TransformW(0, p, StrToFloatN(splitlist[p]));
+              if (p=1) and (w=0) then begin        {fsk_rssi ist Null}
+                bg:=ZeitToDT(splitlist[0], v_type);
+                Chart3LineSeries2.AddXY(bg, -1);
+              end else begin                       {Alle anderenWerte einlesen}
+                if (p<>4) or
+                   ((p=4) and testh(w)) then begin
+                  bg:=ZeitToDT(splitlist[0], v_type);
+                  hist.AddXY(bg, w);
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;   {Fehler im Hauptteil der Procedur werfen mit Fehlerausgabe}
+    end;
+
+    procedure MakeQuickAnalysisChartForRemoteGPS;
+    var
+      i: integer;
+
+    begin
+      try                                       {RemoteGPS, kann fehlen}
+        splitlist.DelimitedText:=inlist1[0];    {Column header}
+        p:=splitlist.IndexOf(lab.Text);         {find index of column}
+
+        if p>0 then begin
+          for i:=1 to inlist1.count-1 do begin  {Werte einlesen}
+            splitlist.DelimitedText:=inlist1[i];
+            bg:=ZeitToDT(splitlist[0], v_type);
+            w:=TransformW(1, p, StrToFloatN(splitlist[p]));
+            hist.AddXY(bg, w);
+          end;
+        end;
+      except
+        {fehlende Datei RemoteGPS ist kein Fehler, muss aber abgefangen werden}
+      end;
+    end;
+
+    procedure MakeQuickAnalysisChartForRemote;
+    var
+      i: integer;
+
+    begin
+      try                                       {Remote, kann fehlen}
+        splitlist.DelimitedText:=inlist2[0];    {Column header}
+        p:=splitlist.IndexOf(lab.Text);         {find index of column}
+
+        if p>0 then begin
+          cht.AxisList[0].Title.Caption:=       {Bezeichnung überschreiben}
+            ChToStr(cht.AxisList[0].Title.Caption, p);
+          for i:=1 to inlist2.count-1 do begin  {Werte einlesen}
+            splitlist.DelimitedText:=inlist2[i];
+            bg:=ZeitToDT(splitlist[0], v_type);
+            w:=TransformW(2, p, StrToFloatN(splitlist[p]));
+            hist.AddXY(bg, w);
+          end;
+        end;
+      except
+        {fehlende Datei Remote ist kein Fehler, muss aber abgefangen werden}
+      end;
+    end;
 
   begin
     case lab.Tag of
-      0: begin                                     {Telemetry}
-           splitlist.DelimitedText:=inlist0[0];    {Column header}
-           if splitlist.count>30 then              {Firmware error YTH}
-             for x:=15 to splitlist.count-1 do
-               if pos(lcol, splitlist[x])>0 then begin
-                 splitlist[x]:=lcol;               {Zahlen wegwerfen}
-                 break;
-               end;
-           p:=splitlist.IndexOf(lab.Text);         {find index of column}
-
-           if p>0 then begin
-             for x:=1 to inlist0.count-1 do begin
-               splitlist.DelimitedText:=inlist0[x];
-               if CheckVT(splitlist[gridDetails.Tag+2],
-                          splitlist[gridDetails.Tag]) then begin
-                 if p=8 then
-                   w:=BoolToDouble(splitlist[8])
-                 else
-                   w:=TransformW(0, p, StrToFloatN(splitlist[p]));
-                 if (p=1) and (w=0) then begin         {fsk_rssi ist Null}
-                   bg:=ZeitToDT(splitlist[0], v_type);
-                   Chart3LineSeries2.AddXY(bg, -1);
-                 end else begin                        {Alle anderenWerte einlesen}
-                   if (p<>4) or
-                      ((p=4) and testh(w)) then begin
-                     bg:=ZeitToDT(splitlist[0], v_type);
-                     hist.AddXY(bg, w);
-                   end;
-                 end;
-               end;
-             end;
-           end;
-         end;   {Fehler im Hauptteil der Procedur werfen mit Fehlerausgabe}
-
-      1: try                                       {RemoteGPS, kann fehlen}
-           splitlist.DelimitedText:=inlist1[0];    {Column header}
-           p:=splitlist.IndexOf(lab.Text);         {find index of column}
-           if p>0 then begin
-             for x:=1 to inlist1.count-1 do begin  {Werte einlesen}
-               splitlist.DelimitedText:=inlist1[x];
-               bg:=ZeitToDT(splitlist[0], v_type);
-               w:=TransformW(1, p, StrToFloatN(splitlist[p]));
-               hist.AddXY(bg, w);
-             end;
-           end;
-         except
-           {fehlende Datei RemoteGPS ist kein Fehler, muss aber abgefangen werden}
-         end;
-
-      2: try                                       {Remote, kann fehlen}
-           splitlist.DelimitedText:=inlist2[0];    {Column header}
-           p:=splitlist.IndexOf(lab.Text);         {find index of column}
-           if p>0 then begin
-             cht.AxisList[0].Title.Caption:=       {Bezeichnung überschreiben}
-               ChToStr(cht.AxisList[0].Title.Caption, p);
-             for x:=1 to inlist2.count-1 do begin  {Werte einlesen}
-               splitlist.DelimitedText:=inlist2[x];
-               bg:=ZeitToDT(splitlist[0], v_type);
-               w:=TransformW(2, p, StrToFloatN(splitlist[p]));
-               hist.AddXY(bg, w);
-             end;
-           end;
-         except
-           {fehlende Datei Remote ist kein Fehler, muss aber abgefangen werden}
-         end;
+      0: MakeQuickAnalysisChartForTelemetry;
+      1: MakeQuickAnalysisChartForRemoteGPS;
+      2: MakeQuickAnalysisChartForRemote;
     end;
   end;
 
@@ -10302,43 +10351,67 @@ var inlist0, inlist1, inlist2, splitlist: TStringList;
     end;
   end;
 
+  procedure FillTelemetry;
+  begin
+    if inlist0.Count=0 then begin
+      fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
+          kfile+lbFlights.Items[lbFlights.ItemIndex]+fext;
+      if FileExists(fn) then begin
+        inlist0.LoadFromFile(fn);
+        if pos(sep+'1'+sep, inlist0[0])>20 then    {if H920 + ST24, old firmware}
+          inlist0[0]:=FakeHeader;                  {Replace header}
+      end;
+    end;
+  end;
+
+  procedure FillRemoteGPS;
+  begin
+    if inlist1.Count=0 then begin
+      fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+spath+
+          PathDelim+sfile+lbFlights.Items[lbFlights.ItemIndex]+fext;
+      if FileExists(fn) then inlist1.LoadFromFile(fn);
+    end;
+  end;
+
+  procedure FillRemote;
+  begin
+    if inlist2.Count=0 then begin
+      fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+fpath+
+          PathDelim+ffile+lbFlights.Items[lbFlights.ItemIndex]+fext;
+      if FileExists(fn) then
+        inlist2.LoadFromFile(fn);
+    end;
+  end;
+
+  procedure FillBreezeData;
+  begin
+    if inlist0.Count=0 then begin
+      fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
+          lbFlights.Items[lbFlights.ItemIndex]+bext;
+      if FileExists(fn) then
+        inlist0.LoadFromFile(fn);
+    end;
+  end;
+
+  procedure FillH501Data;
+  begin
+    if inlist0.Count=0 then begin
+      fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+H5file+
+          lbFlights.Items[lbFlights.ItemIndex]+fext;
+      if FileExists(fn) then
+        inlist0.LoadFromFile(fn);
+    end;
+  end;
+
   procedure ChkFileFill(lab1: TLabeledEdit);       {Inlist füllen, aber nur wenn leer}
   begin
-    case lab1.Tag of                    {Datei laden, wenn noch nicht gefüllt}
-      0: if inlist0.Count=0 then begin
-           fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+kpath+
-               kfile+lbFlights.Items[lbFlights.ItemIndex]+fext;  {Telemetry}
-           if FileExists(fn) then begin
-             inlist0.LoadFromFile(fn);
-             if pos(sep+'1'+sep, inlist0[0])>20 then           {H920 + ST24, old firmware}
-                inlist0[0]:=FakeHeader;                        {Replace header}
-           end;
-         end;
-      1: if inlist1.Count=0 then begin
-           fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+spath+
-               PathDelim+sfile+lbFlights.Items[lbFlights.ItemIndex]+fext; {RemGPS}
-           if FileExists(fn) then inlist1.LoadFromFile(fn);
-         end;
-      2: if inlist2.Count=0 then begin
-           fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+fpath+
-               PathDelim+ffile+lbFlights.Items[lbFlights.ItemIndex]+fext; {Rem}
-           if FileExists(fn) then
-             inlist2.LoadFromFile(fn);
-         end;
-      brid: if inlist0.Count=0 then begin
-              fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+
-                  lbFlights.Items[lbFlights.ItemIndex]+bext;     {Breeze}
-             if FileExists(fn) then
-               inlist0.LoadFromFile(fn);
-           end;
-      H501ID: if inlist0.Count=0 then begin
-                fn:=IncludeTrailingPathDelimiter(cbxLogDir.Text)+H5file+
-                    lbFlights.Items[lbFlights.ItemIndex]+fext;   {h501}
-                if FileExists(fn) then
-                  inlist0.LoadFromFile(fn);
-              end;
+    case lab1.Tag of                               {Datei laden, wenn noch nicht gefüllt}
+      0:      FillTelemetry;
+      1:      FillRemoteGPS;
+      2:      FillRemote;
+      brid:   FillBreezeData;
+      H501ID: FillH501Data;
     end;
-
   end;
 
 begin
@@ -10380,7 +10453,7 @@ begin
         brID: brMakeSAH(LabeledEdit1, Chart3LineSeries1);  {Breeze}
         H501ID: H501MakeSAH(LabeledEdit1, Chart3LineSeries1) {H501}
       else
-        MakeSAH(LabeledEdit1, Chart3LineSeries1, Chart3);
+        MakeQuickAnalysisChart(LabeledEdit1, Chart3LineSeries1, Chart3);
       end;
 
       ChkFileFill(LabeledEdit2);
@@ -10388,7 +10461,7 @@ begin
         brID: brMakeSAH(LabeledEdit2, Chart4LineSeries1);  {Breeze}
         H501ID: H501MakeSAH(LabeledEdit2, Chart4LineSeries1) {H501}
       else
-        MakeSAH(LabeledEdit2, Chart4LineSeries1, Chart4);
+        MakeQuickAnalysisChart(LabeledEdit2, Chart4LineSeries1, Chart4);
       end;
 
       ChkFileFill(LabeledEdit3);
@@ -10396,7 +10469,7 @@ begin
         brID: brMakeSAH(LabeledEdit3, Chart5LineSeries1);  {Breeze}
         H501ID: H501MakeSAH(LabeledEdit3, Chart5LineSeries1) {H501}
       else
-        MakeSAH(LabeledEdit3, Chart5LineSeries1, Chart5);
+        MakeQuickAnalysisChart(LabeledEdit3, Chart5LineSeries1, Chart5);
       end;
     except
       StatusBar1.Panels[5].Text:=rsCheckSettings+capAnalyse;
@@ -10675,7 +10748,7 @@ begin
     h501ID: begin
               splitlist.Delimiter:=csvsep;
               lgcy:=false;
-              dt:=GetDateFile(lbFlights.Items[z]);
+              dt:=GetDateFromFile(lbFlights.Items[z]);
             end;
     MQcsvID: lgcy:=false;
   end;
@@ -10980,7 +11053,7 @@ begin
     h501ID: begin
               splitlist.Delimiter:=csvsep;
               lgcy:=false;
-              dt:=GetDateFile(lbFlights.Items[z]);  {Correction for date}
+              dt:=GetDateFromFile(lbFlights.Items[z]);  {Correction for date}
             end;
   end;
   splitlist.StrictDelimiter:=True;
