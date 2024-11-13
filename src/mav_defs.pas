@@ -19,7 +19,7 @@ uses
 const
   MAVurl='https://github.com/mavlink/c_library_v2/tree/master/common';
 {Extract data from following messages}
-  MAVmsgX=[0, 1, 22, 24, 30, 32, 33, 65, 74, 87, 105, 141, 147, 245, 253];
+  MAVmsgX=[0, 1, 2, 22, 24, 30, 32, 33, 65, 74, 87, 105, 141, 147, 245, 253];
 
 {Sensordateien: }
   MagicBC=$BC;                                     {ID für einen Datensatz}
@@ -52,10 +52,8 @@ type
 
 
 {Public functions and procedures}
-  function MavGetIntFromBuf(msg: TMAVmessage; pos, numbytes: integer): uint64;
-                                                   {Position, Anzahl Bytes}
+  function MavGetUInt64(msg: TMAVmessage; pos: integer): uint64;
   function MavGetFloatFromBuf(msg: TMAVmessage; pos: integer): single;
-                                                   {Position, Länge immer 4}
   function MavGetUInt16(msg: TMAVmessage; pos: integer): uint16;
   function MavGetInt16(msg: TMAVmessage; pos: integer): int16;
   function MavGetUInt32(msg: TMAVmessage; pos: integer): uint32;
@@ -69,30 +67,29 @@ type
   function MAVseverity(severity: byte): string;
   function MAVcompID(CompID: byte): string;        {MAV_Component_ID}
   function BCMsgTypeToStr(id: byte): string;       {Message type $BC}
-  function MSenStat(m: longword): string;          {uint32 MAV_SYS_STATUS_SENSOR}
+  function MSenStat(m: uint32): string;            {uint32 MAV_SYS_STATUS_SENSOR}
   function GPSfixType(const s:string): string;     {MAVlink GPS fix type to string}
   function MLStoStr(const m: byte): string;        {MAV_LANDED_STATE}
   function MSTtoStr(const m: byte): string;        {Bitleiste MAV_STATE auswerten}
   function MMFtoStr(const m: byte): string;        {Bitleiste MAV_Mode_FLAG auswerten}
+  function SatAzimuthToDeg(const az: byte): single;  {[deg] Direction of satellite, 0: 0 deg, 255: 360 deg}
 
 {$I language.inc}
 
 implementation
 
-function MavGetIntFromBuf(msg: TMAVmessage; pos, numbytes: integer): uint64;
-                                                   {Position, Anzahl Bytes}
+function MavGetUInt64(msg: TMAVmessage; pos: integer): uint64;
 var
   i: integer;
 
 begin
   result:=0;
-  for i:=0 to numbytes-1 do begin
-    result:=result+msg.msgbytes[i+pos]*(256**i);
+  for i:=0 to 7 do begin
+    result:=result+msg.msgbytes[pos+i]*(256**i);
   end;
 end;
 
 function MavGetFloatFromBuf(msg: TMAVmessage; pos: integer): single;
-                                                   {Position, Länge immer 4}
 var i: integer;
     wfl: packed array[0..3] of Byte;
     wx: Single absolute wfl;
@@ -121,7 +118,7 @@ var
 begin
   result:=0;
   for i:=0 to 3 do begin
-    result:=result+msg.msgbytes[i+pos]*(256**i);
+    result:=result+msg.msgbytes[pos+i]*(256**i);
   end;
 end;
 
@@ -132,7 +129,7 @@ var
 begin
   result:=0;
   for i:=0 to 3 do begin
-    result:=result+msg.msgbytes[i+pos]*(256**i);
+    result:=result+msg.msgbytes[pos+i]*(256**i);
   end;
 end;
 
@@ -589,7 +586,7 @@ end;
 67108864	MAV_SYS_STATUS_SENSOR_PROXIMITY	0x4000000 Proximity
 134217728	MAV_SYS_STATUS_SENSOR_SATCOM	0x8000000 Satellite Communication}
 
-function MSenStat(m: longword): string;            {uint32 MAV_SYS_STATUS_SENSOR}
+function MSenStat(m: uint32): string;              {uint32 MAV_SYS_STATUS_SENSOR}
 begin
   result:='';
   if m>0 then begin
@@ -744,5 +741,9 @@ begin
     Result:=result+rsUnknown;
 end;
 
+function SatAzimuthToDeg(const az: byte): single;  {[deg] Direction of satellite, 0: 0 deg, 255: 360 deg}
+begin
+  result:=az*360/255;
+end;
 
 end.

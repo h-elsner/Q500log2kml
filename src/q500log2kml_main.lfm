@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 1395
+  Left = 2111
   Height = 781
-  Top = 143
+  Top = 151
   Width = 1086
   AllowDropFiles = True
   Anchors = [akTop, akRight]
@@ -276,12 +276,12 @@ object Form1: TForm1
       Height = 653
       Top = 1
       Width = 925
-      ActivePage = tabAppLog
+      ActivePage = tabSettings
       Align = alClient
       Images = TabImages
       ParentShowHint = False
       ShowHint = True
-      TabIndex = 6
+      TabIndex = 5
       TabOrder = 0
       OnChange = pcMainChange
       Options = [nboKeyboardTabSwitch]
@@ -709,16 +709,16 @@ object Form1: TForm1
         end
         object GroupBox6: TGroupBox
           Left = 0
-          Height = 336
+          Height = 384
           Top = 168
           Width = 362
           Caption = 'ScProbs'
-          ClientHeight = 319
+          ClientHeight = 367
           ClientWidth = 360
           TabOrder = 3
           object rgErrType: TRadioGroup
             Left = 8
-            Height = 296
+            Height = 344
             Top = 8
             Width = 209
             AutoFill = True
@@ -730,7 +730,7 @@ object Form1: TForm1
             ChildSizing.ShrinkVertical = crsScaleChilds
             ChildSizing.Layout = cclLeftToRightThenTopToBottom
             ChildSizing.ControlsPerLine = 1
-            ClientHeight = 279
+            ClientHeight = 327
             ClientWidth = 207
             ItemIndex = 0
             Items.Strings = (
@@ -745,14 +745,14 @@ object Form1: TForm1
               'Sensor_xxxxx'
               'Sensor+FW'
               'PX4 Emergency'
-              'PX4 Textoverview'
+              'PX4 Text overview'
             )
             TabOrder = 0
           end
           object btnScanErr: TBitBtn
             Left = 224
             Height = 32
-            Top = 272
+            Top = 320
             Width = 128
             Caption = 'scan'
             Images = TabImages
@@ -762,17 +762,17 @@ object Form1: TForm1
           end
           object GroupBox12: TGroupBox
             Left = 224
-            Height = 225
+            Height = 256
             Top = 8
             Width = 128
             Caption = 'Filter'
-            ClientHeight = 208
+            ClientHeight = 239
             ClientWidth = 126
             TabOrder = 2
             object cbVehicleType: TCheckBox
               Left = 8
               Height = 23
-              Top = 6
+              Top = 8
               Width = 97
               Caption = 'Vehicle type'
               TabOrder = 0
@@ -780,8 +780,8 @@ object Form1: TForm1
             end
             object rgVehicleType: TRadioGroup
               Left = 8
-              Height = 168
-              Top = 24
+              Height = 176
+              Top = 48
               Width = 107
               AutoFill = True
               ChildSizing.LeftRightSpacing = 6
@@ -791,7 +791,7 @@ object Form1: TForm1
               ChildSizing.ShrinkVertical = crsScaleChilds
               ChildSizing.Layout = cclLeftToRightThenTopToBottom
               ChildSizing.ControlsPerLine = 1
-              ClientHeight = 151
+              ClientHeight = 159
               ClientWidth = 105
               ItemIndex = 1
               Items.Strings = (
@@ -806,7 +806,7 @@ object Form1: TForm1
           end
         end
         object gridScanResult: TStringGrid
-          Left = 391
+          Left = 392
           Height = 569
           Top = 48
           Width = 509
@@ -844,7 +844,7 @@ object Form1: TForm1
           OnChange = pcSettings3Change
           Options = [nboKeyboardTabSwitch]
           object tabConvert: TTabSheet
-            ClientHeight = 619
+            ClientHeight = 593
             ClientWidth = 905
             ImageIndex = 6
             object rgOutFormat: TRadioGroup
@@ -1030,7 +1030,7 @@ object Form1: TForm1
             end
           end
           object tabData: TTabSheet
-            ClientHeight = 619
+            ClientHeight = 593
             ClientWidth = 905
             ImageIndex = 7
             object GroupBox3: TGroupBox
@@ -1039,7 +1039,7 @@ object Form1: TForm1
               Top = 24
               Width = 216
               Caption = 'an'
-              ClientHeight = 230
+              ClientHeight = 215
               ClientWidth = 214
               TabOrder = 0
               object lblNumPoints: TLabel
@@ -1089,12 +1089,12 @@ object Form1: TForm1
             end
             object GroupBox4: TGroupBox
               Left = 232
-              Height = 577
+              Height = 551
               Top = 24
               Width = 384
               Anchors = [akTop, akLeft, akBottom]
               Caption = 'sel'
-              ClientHeight = 575
+              ClientHeight = 534
               ClientWidth = 382
               TabOrder = 1
               object LabeledEdit1: TLabeledEdit
@@ -1142,7 +1142,7 @@ object Form1: TForm1
               end
               object TreeView1: TTreeView
                 Left = 8
-                Height = 553
+                Height = 512
                 Top = 8
                 Width = 216
                 Anchors = [akTop, akLeft, akBottom]
@@ -1416,10 +1416,20 @@ object Form1: TForm1
               Caption = 'cbSensorHasData'
               TabOrder = 10
             end
+            object btnMAVmessageIDlist: TBitBtn
+              Left = 640
+              Height = 30
+              Top = 496
+              Width = 200
+              Action = actMAVmessageIDlist
+              Images = TabImages
+              ImageIndex = 15
+              TabOrder = 11
+            end
           end
           object tabCommon: TTabSheet
             Caption = 'allg'
-            ClientHeight = 619
+            ClientHeight = 593
             ClientWidth = 905
             ImageIndex = 8
             object rgTimeType: TRadioGroup
@@ -2747,9 +2757,7 @@ object Form1: TForm1
         OnClick = mnSplitClick
       end
       object mnMAVlist: TMenuItem
-        Caption = 'MAV'
-        ImageIndex = 15
-        OnClick = mnMAVlistClick
+        Action = actMAVmessageIDlist
       end
       object mnHexdump: TMenuItem
         Caption = 'hex'
@@ -3363,5 +3371,15 @@ object Form1: TForm1
   object IpHttpDataProvider1: TIpHttpDataProvider
     Left = 752
     Top = 528
+  end
+  object ActionList1: TActionList
+    Images = TabImages
+    Left = 855
+    Top = 542
+    object actMAVmessageIDlist: TAction
+      Caption = 'actMAVmessageIDlist'
+      ImageIndex = 15
+      OnExecute = actMAVmessageIDlistExecute
+    end
   end
 end

@@ -302,5 +302,7 @@ resourcestring                                     {deutsch}
   hntAutoCut='Automatisches Ausschneiden des Fluges, um Standzeiten zu entfernen (Strg+m).';
   capSensorHasData='Sensor H480 als Daten';
   hntSensorHasData='Sollen die Sensordaten ausgewertet werden?';
+  errIsBad=' ist schlecht!';
+  errWarningLevel=' ist auf Warn-Level';
 
 

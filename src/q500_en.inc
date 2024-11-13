@@ -302,5 +302,7 @@ resourcestring                                     {english}
   hntAutoCut='Automatically cut flight data for the flight to suppress data from initializing phase (Ctrl+m).';
   capSensorHasData='Sensor H480 as data';
   hntSensorHasData='Should sensor files from H480 decoded as data?';
+  errIsBad=' is bad!';
+  errWarningLevel=' is at warning level';
 
 

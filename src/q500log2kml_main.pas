@@ -86,7 +86,7 @@ uses
   TATransformations, Forms, Controls, Graphics, Dialogs, ExtCtrls, ComCtrls,
   Buttons, XMLPropStorage, Grids, Menus, lclintf, StdCtrls, Spin,
   Zipper, math, TAChartUtils, TAFuncSeries, Clipbrd, anzwerte, TACustomSeries,
-  TATools, graphutil, lazUTF8,
+  TATools, graphutil, ActnList, lazUTF8,
   SynEdit, SynHighlighterMulti, SynHighlighterAny, strutils, dateutils,
   lazsysutils, q5_common, Types, mav_defs, yun_defs, Iphttpbroker, IpHtml;
 
@@ -108,7 +108,10 @@ type
   {TForm1: Main program}
 
   TForm1 = class(TForm)
+    actMAVmessageIDlist: TAction;
+    ActionList1: TActionList;
     AppLog: TSynEdit;
+    btnMAVmessageIDlist: TBitBtn;
     btnAutoCut: TBitBtn;
     btnDeleteLn: TBitBtn;
     btnCombineLogs: TBitBtn;
@@ -347,6 +350,7 @@ type
     TreeView1: TTreeView;
     XMLPropStorage1: TXMLPropStorage;
 
+    procedure actMAVmessageIDlistExecute(Sender: TObject);
     procedure AppLogMouseWheelDown(Sender: TObject; Shift: TShiftState;
       MousePos: TPoint; var Handled: Boolean);
     procedure AppLogMouseWheelUp(Sender: TObject; Shift: TShiftState;
@@ -453,7 +457,6 @@ type
     procedure mnHomepageClick(Sender: TObject);
     procedure mnCopyHistClick(Sender: TObject);
     procedure mnHexdumpClick(Sender: TObject);
-    procedure mnMAVlistClick(Sender: TObject);
     procedure mnSaveAsHistClick(Sender: TObject);
     procedure mnExploreLogClick(Sender: TObject);
     procedure mnSelDirLogClick(Sender: TObject);
@@ -594,7 +597,7 @@ type
     function ColorToKMLColor(const AColor: TColor): string;
     procedure DoForm2Show(p: integer);             {Anzeige zeigen, Breite mit p}
     procedure AnzeigeAddHist(Index: integer);      {Anzeige zusätzlicher Infos}
-    procedure ScreenToBild(fn: string);            {Screenshot}
+    procedure ScreenToBild(filename: string);      {Screenshot}
     function GetFW(var fwout: TarrFW): integer;    {Anzahl FW items}
     procedure KursorAus;                           {Fadenkreuz aus}
     procedure GetDDdata(lab: TLabeledEdit);        {Wert für Schnellanalyse übergeben}
@@ -610,10 +613,10 @@ type
     function FindTP(wlist: TStringList; tp: TDateTime; const vt: byte): integer;
     function CheckE7(const s: string): boolean;    {prüft einen string auf Fehler}
     function ShowSensorPlus(fn: string;            {Sensordatei vom YTH Plus}
-                                   fnz: integer;   {file number, index of file}
-                                   gx, tb,         {gx: Track for kml, tb: fill table gridDetails}
-                                   ov10,           {Overview PX4 Emergency}
-                                   ov11: boolean): boolean; {PX4 Overview Text}
+                            fnz: integer;          {file number, index of file}
+                            gx, tb,                {gx: Track for kml, tb: fill table gridDetails}
+                            ov10,                  {Overview PX4 Emergency}
+                            ov11: boolean): boolean; {PX4 Overview Text}
     procedure AusgabeMessages(const fn: string;
                      var outlist: TStringList);    {Datenausgabe MsgID sortiert}
     function ComplFN(st: string; tp: TDateTime): string;    {Dateinamen mit Nummer ergänzen}
@@ -912,8 +915,8 @@ begin
   mnSlideshow.Caption:=capDiashow;                 {alle Profiles anzeigen}
   mnCleanCSV.Caption:=capCleanCSV;
   mnCleanCSV.Hint:=hntCleanCSV;
-  mnMAVlist.Caption:=capMAVlist;                   {Tools: List of used MAVlink messages}
-  mnMAVlist.Hint:=hntMAVlist;
+  actMAVmessageIDlist.Caption:=capMAVlist;         {Tools: List of used MAVlink messages}
+  actMAVmessageIDlist.Hint:=hntMAVlist;
   mnFlDel.Caption:=capFlDel;
   mnFlDel.Hint:=hntFlDel;
   mnReload.Caption:=capReload;
@@ -2804,12 +2807,10 @@ var msg: TMAVmessage;
     gridDetails.Cells[12, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 10));
     gridDetails.Cells[13, zhl]:='m';
     gridDetails.Cells[14, zhl]:='';
-
     gridDetails.Cells[15, zhl]:='Y_Pos=';
     gridDetails.Cells[16, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 14));
     gridDetails.Cells[17, zhl]:='m';
     gridDetails.Cells[18, zhl]:='';
-
     gridDetails.Cells[19, zhl]:='Z_Pos=';
     gridDetails.Cells[20, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 18));
     gridDetails.Cells[21, zhl]:='m';
@@ -2819,12 +2820,10 @@ var msg: TMAVmessage;
     gridDetails.Cells[24, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 22));
     gridDetails.Cells[25, zhl]:='m/s';
     gridDetails.Cells[26, zhl]:='';
-
     gridDetails.Cells[27, zhl]:='Vy=';
     gridDetails.Cells[28, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 26));
     gridDetails.Cells[29, zhl]:='m/s';
     gridDetails.Cells[30, zhl]:='';
-
     gridDetails.Cells[31, zhl]:='Vz=';
     gridDetails.Cells[32, zhl]:=FormatFloat(ctfl, MavGetFloatFromBuf(msg, 30));
     gridDetails.Cells[33, zhl]:='m/s';
@@ -2862,9 +2861,9 @@ var msg: TMAVmessage;
 
     gridDetails.Cells[27, zhl]:='Vx';
     gridDetails.Cells[28, zhl]:=IntToStr(MavGetint16(msg, 26));
-    gridDetails.Cells[29, zhl]:='Vx';
+    gridDetails.Cells[29, zhl]:='Vy';
     gridDetails.Cells[30, zhl]:=IntToStr(MavGetint16(msg, 28));
-    gridDetails.Cells[31, zhl]:='Vx';
+    gridDetails.Cells[31, zhl]:='Vz';
     gridDetails.Cells[32, zhl]:=IntToStr(MavGetint16(msg, 30));
 
     gridDetails.Cells[33, zhl]:='Hdg';
@@ -3353,7 +3352,7 @@ begin
   end;
 end;
 
-procedure TForm1.mnMAVlistClick(Sender: TObject);  {List MAV messages}
+procedure TForm1.actMAVmessageIDlistExecute(Sender: TObject);  {List MAV messages}
 var mlist: TStringList;
 
 begin
@@ -3848,7 +3847,7 @@ var dsbuf: array[0..YTHPcols] of byte;
   procedure GPSAusgabe;                            {GPS_RAW_INT auswerten}
   var tme: uint64;                                 {unsigned Integer}
       lat, lon, ele: integer;                      {int32}
-      eph, epv, vel, cog, hacc: uint64;
+      eph, epv, vel, cog, hacc: uint32;
       distp, dists, alta: double;                  {Entfernung zum "Start"}
 
   begin
@@ -4442,8 +4441,8 @@ var dsbuf: array[0..YTHPcols] of byte;
         1:   if MAVmsg.Checked[1] then SensorStatus;   {MAV_SYS_STATUS (1)}
         2:   Systemzeit;                           {SYSTEM_TIME (2) AppLog only}
         22:  if MAVmsg.Checked[2] then ParamValue; {PARAM_VALUE ($16)}
-        24:  if MAVmsg.Checked[3] or
-                gx then GPSAusgabe;                {GPS_RAW_INT ($18)}
+        24:  if MAVmsg.Checked[3] or gx then
+               GPSAusgabe;                         {GPS_RAW_INT ($18)}
 //      25:  GPS_Status;                           {GPS_STATUS ($19) only # sats added}
         30:  if MAVmsg.Checked[4] then Attitude;   {ATTITUDE ($1E)}
         32:  if MAVmsg.Checked[5] then LocalPosNed;    {LOCAL_POSITION_NED ($20)}
@@ -4598,6 +4597,7 @@ begin
 
       if tb then
         gridDetails.BeginUpdate;
+
       AppLog.BeginUpdate(false);                   {Without UnDo Block}
       while infn.Position<(infn.Size-lenfixP) do begin {bis zum Ende der Datei}
         len:=0;                                    {Reset for error detection}
@@ -4619,6 +4619,7 @@ begin
         end;
       end;
       AppLog.EndUpdate;
+
       if tb then begin
         gridDetails.RowCount:=zhl+1;
         gridDetails.EndUpdate;
@@ -5126,27 +5127,27 @@ begin
   end;
 end;
 
-procedure TForm1.ScreenToBild(fn: string);         {Screenshot}
+procedure TForm1.ScreenToBild(filename: string);         {Screenshot}
 var
-    bld: TPortableNetworkGraphic;
+    bild: TPortableNetworkGraphic;
     bmp: TBitMap;
     ScreenDC: HDC;
 
 begin
-  bld:=TPortableNetworkGraphic.Create;             {create PNG-picture}
+  bild:=TPortableNetworkGraphic.Create;             {create PNG-picture}
   try
   {$IFDEF LINUX}
     bmp:=GetFormImage;                             {No more working with Windows}
-    bld.Assign(bmp);
+    bild.Assign(bmp);
   {$ELSE}
 //    ScreenDC := GetDC(Panel1.Handle);
     ScreenDC := GetDC(Handle);
-    bld.LoadFromDevice(ScreenDC);                  {Get screenshot xyz.Handle}
+    bild.LoadFromDevice(ScreenDC);                  {Get screenshot xyz.Handle}
     ReleaseDC(0, ScreenDC);
   {$ENDIF}
-    bld.SaveToFile(fn);
+    bild.SaveToFile(filename);
   finally
-    bld.Free;
+    bild.Free;
     {$IFDEF LINUX}
       bmp.Free;
     {$ENDIF}
@@ -6204,7 +6205,7 @@ var vlist, flist, inlist, splitlist: TStringList;
     end;
   end;
 
-  procedure Ausgabe; inline;                       {Liste füllen}
+  procedure AusgabeFileList; inline;               {Fill file list for scanned files if found something}
   begin
     inc(zhl);
     gridScanResult.RowCount:=zhl+1;
@@ -6260,7 +6261,7 @@ begin
                 SuchFile(vlist[i], wldcd+skyext, flist);
               end;
             end;
-      10, 11: for i:=0 to vlist.Count-1 do begin   {PX4 Sensor Dateien}
+      10..12: for i:=0 to vlist.Count-1 do begin   {PX4 Sensor Dateien}
                 SuchFile(vlist[i], wldcd+hext, flist);         {H520}
                 Suchfile(vlist[i], nfile+wldcd+wext, flist);   {H Plus}
                 Suchfile(vlist[i], mfile+wldcd+bext, flist);   {Mantis Q}
@@ -6281,20 +6282,20 @@ begin
       ProgressBarScan.Max:=flist.Count;
       for i:=0 to flist.Count-1 do begin
         case rgErrType.ItemIndex of
-          0: if Emergency12(flist[i]) then Ausgabe;
-          1: if CCWNum(flist[i]) then Ausgabe;
-          2: if CCWTime(flist[i]) then Ausgabe;
-          3: if VoltW2(flist[i]) then Ausgabe;
-          4: if VoltMin(flist[i]) then Ausgabe;
-          5: if StickCali(flist[i]) then Ausgabe;  {Sticks in Remote}
-          6: if TeamMode(flist[i]) then Ausgabe;   {Suche nach 1433.0 in Remote}
-          7: if EditFind(flist[i]) then Ausgabe;
-          8: if FileSize(flist[i])>FWsz then Ausgabe;  {Sensorfile > 6 Byte}
-          9: if FindSensorFW(flist[i]) then Ausgabe;   {Sensorfile mit FW}
+          0: if Emergency12(flist[i]) then AusgabeFileList;
+          1: if CCWNum(flist[i]) then AusgabeFileList;
+          2: if CCWTime(flist[i]) then AusgabeFileList;
+          3: if VoltW2(flist[i]) then AusgabeFileList;
+          4: if VoltMin(flist[i]) then AusgabeFileList;
+          5: if StickCali(flist[i]) then AusgabeFileList;  {Sticks in Remote}
+          6: if TeamMode(flist[i]) then AusgabeFileList;   {Suche nach 1433.0 in Remote}
+          7: if EditFind(flist[i]) then AusgabeFileList;
+          8: if FileSize(flist[i])>FWsz then AusgabeFileList;  {Sensorfile > 6 Byte}
+          9: if FindSensorFW(flist[i]) then AusgabeFileList;   {Sensorfile mit FW}
           10: if ShowSensorPlus(flist[i], 0, false, false, true, false) then
-                Ausgabe;
+                AusgabeFileList;
           11: if ShowSensorPlus(flist[i], 0, false, false, false, true) then
-                Ausgabe;
+                AusgabeFileList;
         end;
         ProgressBarScan.Position:=i;
         Application.ProcessMessages;
@@ -7598,7 +7599,10 @@ end;
 procedure TForm1.mnSaveTabClick(Sender: TObject);           {Save grid details}
 begin
   SaveDialog1.Title:=titSaveTab;
-  SaveDialog1.FileName:='tab'+lbFlights.Items[lbFlights.ItemIndex]+fext;
+  if lbFlights.Items.Count>0 then begin
+    SaveDialog1.FileName:='tab'+lbFlights.Items[lbFlights.ItemIndex]+fext;
+  end else
+    SaveDialog1.FileName:=ChangeFileExt(OpenDialog1.FileName, '')+'tab.csv';
   if SaveDialog1.Execute then begin
     gridDetails.SaveToCSVFile(SaveDialog1.FileName,';');
   end;

@@ -1,3 +1,36 @@
+          {********************************************************}
+          {                                                        }
+          {     Auswertung FlightLog Daten von Yuneec Koptern      }
+          {                                                        }
+          {       Copyright (c) 2015-2024    Helmut Elsner         }
+          {                                                        }
+          {       Compiler: FPC 3.2.3   /    Lazarus 3.3.0         }
+          {                                                        }
+          { Pascal programmers tend to plan ahead, they think      }
+          { before they type. We type a lot because of Pascal      }
+          { verboseness, but usually our code is right from the    }
+          { start. We end up typing less because we fix less bugs. }
+          {           [Jorge Aldo G. de F. Junior]                 }
+          {********************************************************}
+
+(*
+This source is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option)
+any later version.
+
+This code is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details.
+
+A copy of the GNU General Public License is available on the World Wide Web
+at <http://www.gnu.org/copyleft/gpl.html>. You can also obtain it by writing
+to the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
+Boston, MA 02110-1335, USA.
+
+*******************************************************************************)
+
 (*          History:
 
 2015-12-10  V0.1 First try to read telemetry, GUI created, import and data
@@ -199,6 +232,9 @@ const
   tab2='  ';
   tab4='    ';
   tab6='      ';
+  trnrApplog='                      ';
+  trenner='--------------------';
+
   sckey='&';
   suff=': ';                                       {Suffix zur Datenausgabe}
   kma=', ';                                        {Kommaausgabe}
@@ -287,6 +323,7 @@ var timestr: string;
   procedure CellColorSetting(aGrid: TStringGrid; Farbe: TColor); {Zellen einfärben}
   procedure FMcolor(aGrid: TStringGrid; fm, vt: integer);  {Flight mode coloe r settings}
   function testh(const a: double): boolean; inline;  {Datensätze mit unsinniger Höhe ausblenden}
+  function DefaultOuputToAppLog(zhl: integer; time: TDateTime; text: string): string;
 
 
 implementation
@@ -522,6 +559,11 @@ begin
   result:=true;
   if (a<minnh) or                                  {tritt bei VTH Plus als Fehler auf}
      (a>maxxh) then result:=false;
+end;
+
+function DefaultOuputToAppLog(zhl: integer; time: TDateTime; text: string): string;
+begin
+  result:=Format('%6d', [zhl])+tab2+FormatDateTime(zzf+zzz, time)+tab2+text;
 end;
 
 end.
