@@ -856,6 +856,11 @@ begin
   mnSaveAsHist.Visible:=false;                     {PopUp Menu Höhenprofil; geht das nun?}
 {$ENDIF}
 
+{https://forum.lazarus.freepascal.org/index.php?topic=34510.0}
+{$IFDEF WINDOWS}
+    Application.MainFormOnTaskBar := True;
+{$ENDIF}
+
   SizeSpeedBtn(sbtnLogDir, cbxLogDir);             {Anpassen Speedbuttons an Darstellung in verschiedenen Betrienssystemen}
   SizeSpeedBtn(sbtnScanDir, cbxScanDir);
 
@@ -2468,7 +2473,7 @@ begin
       while inf.Position<(inf.Size-20)  do begin   {bis zum Ende der Datei}
         repeat
           b:=inf.ReadByte;
-        until (b=MagicBC) or (inf.Position>=inf.Size-lenfixP);
+        until (b=MagicMAVlinkV2) or (inf.Position>=inf.Size-lenfixP);
         len:=inf.ReadByte;                         {Länge Payload mit CRC}
         if len=HBlen then begin                    {Nur Heartbeat lesen}
           inf.ReadBuffer(dsbuf, HBlen+lenfixP-2);  {Länge Rest-Datensatz mit FixPart}
@@ -2725,9 +2730,6 @@ var msg: TMAVmessage;
   end;
 
   procedure RAW_IMU(data: boolean);                {MsgID 27}
-  var
-    timeboot: uint64;
-
   begin
     TimeSinceBoot_micros(6);
     if data then begin
@@ -3297,18 +3299,13 @@ begin
           msg.msgbytes[0]:=b;
           msg.msglength:=infn.ReadByte;              {Länge Payload mit CRC}
           msg.msgbytes[1]:=msg.msglength;
-          try
-            infn.Position:=infn.Position-2;
-            infn.ReadBuffer(msg.msgbytes, msg.msglength+8);  {Länge Rest-Datensatz mit FixPart und CRC}
-            msg.sysid:=msg.msgbytes[3];
-            msg.targetid:=msg.msgbytes[4];
-            msg.msgid:=msg.msgbytes[5];
-
-            WriteToGrid(msg);
-            DecodeSensorMessages;
-          except
-            AppLog.Lines.Add(fn+': Abrupt sensor file end');  {Msg too short}
-          end;
+          infn.Position:=infn.Position-2;
+          infn.ReadBuffer(msg.msgbytes, msg.msglength+lenfix);  {Länge Rest-Datensatz mit FixPart und CRC}
+          msg.sysid:=msg.msgbytes[3];
+          msg.targetid:=msg.msgbytes[4];
+          msg.msgid:=msg.msgbytes[5];
+          WriteToGrid(msg);
+          DecodeSensorMessages;
         end;
         gridDetails.RowCount:=zhl+1;
       gridDetails.EndUpdate;
@@ -3897,8 +3894,8 @@ var dsbuf: array[0..YTHPcols] of byte;
 
       isGPS:=true;                                 {1. Datensatz erledigt}
       if ele>elemax then elemax:=ele;              {Gipfelhöhe}
-      distp:=DeltaKoord(lat1, lon1, lat2, lon2);   {Entfernung zum 1. Punkt}
-      dists:=DeltaKoord(lat3, lon3, lat2, lon2);   {Entfernung zum vorherigen Punkt}
+      distp:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);   {Entfernung zum 1. Punkt}
+      dists:=DistanceBetweenTwoCoordinates(lat3, lon3, lat2, lon2);   {Entfernung zum vorherigen Punkt}
       if distp>distmax then                        {maximale Entfernung ermitteln}
         distmax:=distp;
       distg:=distg+dists;                          {Länge Route ermitteln}
@@ -4186,8 +4183,8 @@ var dsbuf: array[0..YTHPcols] of byte;
         isGPS:=true;                               {1. Datensatz erledigt}
         if ele>elemax then elemax:=ele;            {Gipfelhöhe MSL}
 
-        distp:=DeltaKoord(lat1, lon1, lat2, lon2); {Entfernung zum 1. Punkt}
-        dists:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum vorherigen Punkt}
+        distp:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2); {Entfernung zum 1. Punkt}
+        dists:=DistanceBetweenTwoCoordinates(lat3, lon3, lat2, lon2); {Entfernung zum vorherigen Punkt}
         if distp>distmax then                      {maximale Entfernung ermitteln}
           distmax:=distp;
         distg:=distg+dists;                        {Länge Route ermitteln}
@@ -4742,19 +4739,65 @@ end;
 
 procedure TForm1.AusgabeMessages(const fn: string; {List of used MsgID in PX4 file}
                  var outlist: TStringList);        {List as CSV}
-var dsbuf: array[0..YTHPcols] of byte;
-        inf: TMemoryStream;
-	b: byte;
-	msglist: TStringList;
-	e, len, i, zhl: integer;
-        s: string;
+var
+  inf: TMemoryStream;
+  msglist: TStringList;
+  e, i, zhl: integer;
+  s: string;
+
+  procedure MsgID_MAV_V2;
+  var
+    i, len: integer;
+    b: byte;
+    dsbuf: array[0..YTHPcols] of byte;
+
+  begin
+    while inf.Position<(inf.Size-lenfixP) do begin {bis zum Ende der Datei}
+      try
+        repeat                                   {Scan whole file for msgIDs}
+          b:=inf.ReadByte;
+        until (b=MagicMAVlinkV2) or (inf.Position>inf.Size-lenfixP);
+        len:=inf.ReadByte;                       {Länge Payload mit CRC}
+        inf.ReadBuffer(dsbuf, len+lenfixP-2);    {Read Rest-Datensatz mit
+                                  FixPart, aber ohne $FD und Längen-Byte (-2)}
+        e:=0;
+        inc(zhl);
+        for i:=0 to 2 do
+          e:=e+dsbuf[lenfix-3+i]*(256**i);       {MsgID 3 Byte als Zahl}
+        if e<512 then                            {assumption highest message ID number}
+          msglist.Add('$'+IntToHex(e, 3));       {list as hex IDs}
+      except
+      end;
+    end;
+  end;
+
+  procedure MsgID_MAV_V1;
+  var
+    len: integer;
+    b: byte;
+    dsbuf: array[0..YTHPcols] of byte;
+
+  begin
+    while inf.Position<(inf.Size-lenfixP) do begin {bis zum Ende der Datei}
+      try
+        repeat                                   {Scan whole file for msgIDs}
+          b:=inf.ReadByte;
+        until (b=MagicBC) or (inf.Position>=inf.Size-lenfix);
+        len:=inf.ReadByte;                       {Länge Payload mit CRC}
+        inf.ReadBuffer(dsbuf, len+lenfix-2);     {-2: two bytes already got}
+        inc(zhl);
+        msglist.Add('$'+IntToHex(dsbuf[3], 3));  {list as hex IDs}
+      except
+      end;
+    end;
+  end;
+
 
 begin
   zhl:=0;
   if FileSize(fn)>lenfixP then begin
     Screen.Cursor:=crHourGlass;
     Application.ProcessMessages;
-    FillChar(dsbuf, length(dsbuf), 0);             {Datenbuffer löschen}
     msglist:=TStringList.Create;
     msglist.Sorted:=true;
     msglist.Duplicates:=dupIgnore;
@@ -4762,24 +4805,11 @@ begin
     inf:=TMemoryStream.Create;
     try
       inf.LoadFromFile(fn);
-
-      while inf.Position<(inf.Size-lenfixP) do begin {bis zum Ende der Datei}
-        try
-          repeat                                   {Scan whole file for msgIDs}
-            b:=inf.ReadByte;
-          until (b=MagicMAVlinkV2) or (inf.Position>inf.Size-lenfixP);
-          len:=inf.ReadByte;                       {Länge Payload mit CRC}
-          inf.ReadBuffer(dsbuf, len+lenfixP-2);    {Read Rest-Datensatz mit
-                                    FixPart, aber ohne $FD und Längen-Byte (-2)}
-          e:=0;
-          inc(zhl);
-          for i:=0 to 2 do
-            e:=e+dsbuf[lenfix-3+i]*(256**i);       {MsgID 3 Byte als Zahl}
-          if e<512 then                            {assumption highest message ID number}
-            msglist.Add('$'+IntToHex(e, 3));       {list as hex IDs}
-        except
-        end;
-      end;
+      s:=ExtractFileName(fn);
+      if (pos(nfile, s)=1) and (pos(sext, s)>10) then
+        MsgID_MAV_V1
+      else
+        MsgID_MAV_V2;
 
       if msglist.Count>0 then begin
         AppLog.Lines.Add(fn);
@@ -5454,8 +5484,8 @@ begin
                   if slat<>'' then begin           {Startpunkt mit GPS}
                     lat2:=StrToFloatN(splitlist[5]);
                     lon2:=StrToFloatN(splitlist[6]);
-                    dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
-                    ddist:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
+                    dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
+                    ddist:=DistanceBetweenTwoCoordinates(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
                     if dist>emax then emax:=dist;
                     strecke:=strecke+ddist;        {Strecke aufaddieren}
                     lat3:=lat2;                    {letzten Punkt speichern}
@@ -5659,8 +5689,8 @@ begin
                 if slat<>'' then begin             {Startpunkt mit GPS}
                   lat2:=StrToFloatN(splitlist[2]);
                   lon2:=StrToFloatN(splitlist[3]);
-                  dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
-                  ddist:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
+                  dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
+                  ddist:=DistanceBetweenTwoCoordinates(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
                   if dist>emax then emax:=dist;
                   strecke:=strecke+ddist;          {Strecke aufaddieren}
                   lat3:=lat2;                      {letzten Punkt speichern}
@@ -5851,8 +5881,8 @@ begin
                   if slat<>'' then begin           {Startpunkt mit GPS}
                     lat2:=BrCoordToFloat(splitlist[12]);
                     lon2:=BrCoordToFloat(splitlist[13]);
-                    dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
-                    ddist:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
+                    dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
+                    ddist:=DistanceBetweenTwoCoordinates(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
                     if dist>emax then emax:=dist;
                     strecke:=strecke+ddist;        {Strecke aufaddieren}
                     lat3:=lat2;                    {letzten Punkt speichern}
@@ -8366,9 +8396,9 @@ const bgid=999999;
                 if slat<>'' then begin               {Startpunkt mit GPS}
                   lat2:=BrCoordToFloat(splitlist[12]);
                   lon2:=BrCoordToFloat(splitlist[13]);
-                  dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
+                  dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
                   if dist>emax then emax:=dist;
-                  ddist:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
+                  ddist:=DistanceBetweenTwoCoordinates(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
                   strecke:=strecke+ddist;            {Strecke aufaddieren}
                   lat3:=lat2;                        {letzten Punkt speichern}
                   lon3:=lon2;
@@ -8452,9 +8482,9 @@ const bgid=999999;
             if slat<>'' then begin                 {Startpunkt mit GPS}
               lat2:=StrToFloatN(splitlist[2]);
               lon2:=StrToFloatN(splitlist[3]);
-              dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
+              dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
               if dist>emax then emax:=dist;
-              ddist:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
+              ddist:=DistanceBetweenTwoCoordinates(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
               strecke:=strecke+ddist;              {Strecke aufaddieren}
               lat3:=lat2;                          {letzten Punkt speichern}
               lon3:=lon2;
@@ -8577,8 +8607,8 @@ const bgid=999999;
                      if slat<>'' then begin        {Startpunkt mit GPS}
                        lat2:=StrToFloatN(splitlist[5]);
                        lon2:=StrToFloatN(splitlist[6]);
-                       dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
-                       ddist:=DeltaKoord(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
+                       dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
+                       ddist:=DistanceBetweenTwoCoordinates(lat3, lon3, lat2, lon2); {Entfernung zum letzten Punkt}
                        if dist>emax then           {größte Entfernung zum Start}
                          emax:=dist;
                        strecke:=strecke+ddist;     {Strecke aufaddieren}
@@ -8764,7 +8794,7 @@ var inlist, splitlist: TStringList;
       splitlist.DelimitedText:=inlist[i];
       lat2:=BrCoordToFloat(splitlist[12]);
       lon2:=BrCoordToFloat(splitlist[13]);
-      dist:=DeltaKoord(lat1, lon1, lat2, lon2);    {Entfernung zum 1. Punkt}
+      dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);    {Entfernung zum 1. Punkt}
       if dist>emax then
         emax:=dist;
     end;
@@ -8789,7 +8819,7 @@ var inlist, splitlist: TStringList;
       splitlist.DelimitedText:=inlist[i];
       lat2:=StrToFloatN(splitlist[5]);
       lon2:=StrToFloatN(splitlist[6]);
-      dist:=DeltaKoord(lat1, lon1, lat2, lon2);    {Entfernung zum Startpunkt}
+      dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);    {Entfernung zum Startpunkt}
       if dist>emax then
         emax:=dist;
     end;
@@ -8814,7 +8844,7 @@ var inlist, splitlist: TStringList;
       splitlist.DelimitedText:=inlist[i];
       lat2:=StrToFloatN(splitlist[2]);
       lon2:=StrToFloatN(splitlist[3]);
-      dist:=DeltaKoord(lat1, lon1, lat2, lon2);    {Entfernung zum Startpunkt}
+      dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);    {Entfernung zum Startpunkt}
       if dist>emax then
         emax:=dist;
     end;
@@ -8845,7 +8875,7 @@ var inlist, splitlist: TStringList;
       splitlist.DelimitedText:=inlist[i];
       lat2:=StrToFloatN(splitlist[2]);
       lon2:=StrToFloatN(splitlist[1]);
-      dist:=DeltaKoord(lat1, lon1, lat2, lon2);    {Entfernung zum 1. Punkt}
+      dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);    {Entfernung zum 1. Punkt}
       if dist>emax then
         emax:=dist;
     end;
@@ -10569,7 +10599,7 @@ const
 
   procedure Timemarker(const lat1, lon1: double);  {Add time marker to KML}
   begin
-    dist:=dist+DeltaKoord(lat, lon, lat1, lon1);   {Distance to previous pos}
+    dist:=dist+DistanceBetweenTwoCoordinates(lat, lon, lat1, lon1);   {Distance to previous pos}
     lat:=lat1;
     lon:=lon1;
     if dist>tbrDistWP.Position then begin          {Time marker}
@@ -11293,7 +11323,7 @@ begin
                   lon1:=lon2;
                   lat1:=lat2;
                 end else begin                     {Distanz zum Startpunkt berechnen}
-                  dist:=DeltaKoord(lat1, lon1, lat2, lon2);   {Entfernung zum Startpunkt}
+                  dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);   {Entfernung zum Startpunkt}
                 end;
               end else begin
                 dist:=0;
@@ -11372,7 +11402,7 @@ var
           lon1:=lon2;
           lat1:=lat2;
         end else begin           {Distanz zum Startpunkt berechnen}
-          dist:=DeltaKoord(lat1, lon1, lat2, lon2); {Entfernung zum Startpunkt}
+          dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2); {Entfernung zum Startpunkt}
         end;
         s:='0';
         if (StatusToByte(trim(splitlist[20])) and 128)>0 then
@@ -11422,7 +11452,7 @@ var
                 lon1:=lon2;
                 lat1:=lat2;
               end else begin                       {Distanz zum Startpunkt berechnen}
-                dist:=DeltaKoord(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
+                dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2);  {Entfernung zum Startpunkt}
               end;
             end else begin
               dist:=0;
@@ -11570,7 +11600,7 @@ begin
                    v_type, true) then begin
           lat2:=StrToFloatN(splitlist[5]);
           lon2:=StrToFloatN(splitlist[6]);
-          dist:=DeltaKoord(lat1, lon1, lat2, lon2); {Entfernung zum letzten Punkt}
+          dist:=DistanceBetweenTwoCoordinates(lat1, lon1, lat2, lon2); {Entfernung zum letzten Punkt}
           dir:=StrToFloatN(splitlist[12]);         {direction (yaw)}
           if (dist>tbrDistWP.Position) or
              (abs(dir-diralt)>deltayaw) then begin
@@ -12388,7 +12418,7 @@ var x: integer;
       12, 13: begin                                {Koordinaten}
                  if ((lat1<>0) or (lon1<>0)) and   {Koordinaten vorhanden}
                     BrGPSfix(gridDetails.Cells[20, x]) then begin {GPS-Fix}
-                   w:=DeltaKoord(lat1, lon1, BrCoordToFloat(gridDetails.Cells[12, x]),
+                   w:=DistanceBetweenTwoCoordinates(lat1, lon1, BrCoordToFloat(gridDetails.Cells[12, x]),
                                              BrCoordToFloat(gridDetails.Cells[13, x]));
                  end else begin                    {keine gültigen Koordinaten}
                    lat1:=BrCoordToFloat(gridDetails.Cells[12, x]);
@@ -12410,7 +12440,7 @@ var x: integer;
       2, 3: begin
               if x>1 then begin                    {Ignore first line}
                 if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
-                  w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
+                  w:=DistanceBetweenTwoCoordinates(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
                                             StrToFloatN(gridDetails.Cells[3, x]));
                 end else begin             {Startpunkt erst setzen}
                   if testh(StrToFloatN(gridDetails.Cells[4, x])) then begin
@@ -12442,7 +12472,7 @@ var x: integer;
                 5, 6: begin
                         if x>1 then begin          {1. Zeile ignorieren}
                           if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
-                            w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
+                            w:=DistanceBetweenTwoCoordinates(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
                                                       StrToFloatN(gridDetails.Cells[6, x]));
                           end else begin           {noch kein Startpunkt, Startpunkt setzen}
                             if testh(StrToFloatN(gridDetails.Cells[4, x])) then begin
@@ -12465,7 +12495,7 @@ var x: integer;
             case p of                              {ST16}
               0: w:=SamplingRegularity;
               1,2: if (lat1<>0) or (lon1<>0) then begin
-                     w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
+                     w:=DistanceBetweenTwoCoordinates(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
                                    StrToFloatN(gridDetails.Cells[1, x]));
                    end else begin
                      if testh(StrToFloatN(gridDetails.Cells[3, x])) then begin
@@ -12510,7 +12540,7 @@ var x: integer;
               5, 6: begin
                       if x>1 then begin            {1. Zeile ignorieren}
                         if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
-                          w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
+                          w:=DistanceBetweenTwoCoordinates(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
                                                     StrToFloatN(gridDetails.Cells[6, x]));
                         end else begin             {Startpunkt erst setzen}
                           if testh(StrToFloatN(gridDetails.Cells[4, x])) then begin
@@ -12527,7 +12557,7 @@ var x: integer;
       1: begin                                     {RemoteGPS}
             case p of                              {ST10/ST16}
               1,2: if (lat1<>0) or (lon1<>0) then begin
-                     w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
+                     w:=DistanceBetweenTwoCoordinates(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
                                    StrToFloatN(gridDetails.Cells[1, x]));
                    end else begin
                      if testh(StrToFloatN(gridDetails.Cells[3, x])) then begin
@@ -12566,7 +12596,7 @@ var x: integer;
               5, 6: begin
                       if x>1 then begin            {1. Zeile ignorieren}
                         if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
-                          w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
+                          w:=DistanceBetweenTwoCoordinates(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
                                                     StrToFloatN(gridDetails.Cells[6, x]));
                         end else begin             {Startpunkt erst setzen}
                           if testh(StrToFloatN(gridDetails.Cells[4, x])) then begin
@@ -12583,7 +12613,7 @@ var x: integer;
       1: begin                                     {RemoteGPS}
             case p of                              {ST16}
               1,2: if (lat1<>0) or (lon1<>0) then begin
-                     w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
+                     w:=DistanceBetweenTwoCoordinates(lat1, lon1, StrToFloatN(gridDetails.Cells[2, x]),
                                    StrToFloatN(gridDetails.Cells[1, x]));
                    end else begin
                      if testh(StrToFloatN(gridDetails.Cells[3, x])) then begin
@@ -12612,7 +12642,7 @@ var x: integer;
            w:=0;                                   {Korrektur unplausibler Höhe}
       5, 6: begin                                  {Entfernung zum Startpunkt}
               if ((lat1<>0) or (lon1<>0)) then begin {Startpunkt vorhanden}
-                w:=DeltaKoord(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
+                w:=DistanceBetweenTwoCoordinates(lat1, lon1, StrToFloatN(gridDetails.Cells[5, x]),
                                           StrToFloatN(gridDetails.Cells[6, x]));
               end else begin                       {Startpunkt erst setzen}
                 if testh(StrToFloatN(gridDetails.Cells[4, x])) then begin
@@ -14200,7 +14230,7 @@ begin
               wrtv:=wrt;
             if tdiff>0 then begin
               if vlat<>'' then begin               {only with valid coordinates}
-                ddist:=DeltaKoord(StrToFloatN(vlat), StrToFloatN(vlon),
+                ddist:=DistanceBetweenTwoCoordinates(StrToFloatN(vlat), StrToFloatN(vlon),
                                   StrToFloatN(splitlist[5]), StrToFloatN(splitlist[6]));
 
                 rslt1:=ddist/tdiff/secpd;          {Ground speed}

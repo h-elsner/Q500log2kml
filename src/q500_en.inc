@@ -127,7 +127,7 @@ resourcestring                                     {english}
   rsLanding='landing';
   rsMotorStarting='Motor starting';
   rsEmergency='Emergency, motors killed';
-  rsInitializing='Ready to fly';
+  rsInitializing='Initializing';
   rsWaitRC='Waiting for RC';
   rsMagCali='Magnetometer';
   rsCali=' calibration';

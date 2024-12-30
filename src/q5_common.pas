@@ -318,7 +318,7 @@ var timestr: string;
   function GetFNr(const s: string): string;        {filter a float from a string}
   function GetFVal(const s: string): double;       {get a float from a string}
   function tabs(const prefix, suffix: string; const t: integer): string;  {Tabulator + suff}
-  function DeltaKoord(const lat1, lon1, lat2, lon2: double): double;      {Entfernung in m}
+  function DistanceBetweenTwoCoordinates(const lat1, lon1, lat2, lon2: double): double;   {in m}
 
   procedure CellColorSetting(aGrid: TStringGrid; Farbe: TColor); {Zellen einfärben}
   procedure FMcolor(aGrid: TStringGrid; fm, vt: integer);  {Flight mode coloe r settings}
@@ -448,32 +448,24 @@ begin                                     {formatiert einen string in Länge t z
   result:=result+suffix;
 end;
 
-{Entfernung zwischen zwei Koordinaten in m
- siehe Haversine formula, Erdradius: 6,371km abh. von Breitengrad
+{Distance between two coordinates in m
+ see Haversine formula, earth radius: 6.371km depending on latitude
  https://rechneronline.de/erdradius/
- 6365.692 optimiert für 50 Breitengrad und 60m Höhe
+ 6365.692 optimized for 50° latitude and 60m altitude }
+function DistanceBetweenTwoCoordinates(const lat1, lon1, lat2, lon2: double): double;
+var
+  hw: double;
 
- D:\Flight_Log_data\_Eigene\YTH\3\FlightLog2019-07-01\Telemetry_00002.csv
- seit Update auf Lazarus 2.0.4 unerwartete Fehlrechnung mit result NaN:
-                    lat1     lon1     lat2      lon2
-Test-3564 : 0.1 von 48.86739 9.366312 48.86739  9.366313
-Test-3565 : Nan von 48.86739 9.366313 48.86739  9.366313
-Test-3566 : 0.1 von 48.86739 9.366313 48.86739  9.366315
-Test-3567 : Nan von 48.86739 9.366315 48.86739  9.366315
-Test-3568 : 0.5 von 48.86739 9.366315 48.867386 9.366317
-
-hier krachtes bei exact gleichen Koordinaten in den Rohdaten.
-Muss unbedingt abgefangen werden.
-}
-function DeltaKoord(const lat1, lon1, lat2, lon2: double): double;
 begin
   result:=0;
   try
     if (lat1<>lat2) or (lon1<>lon2) then begin
-      result:=6365692*arccos(sin(lat1*pi/180)*sin(lat2*pi/180)+
-              cos(lat1*pi/180)*cos(lat2*pi/180)*cos((lon1-lon2)*pi/180));
-      if IsNan(result) or                            {Fehler in Formel ?}
-         (result>30000) or   {> 30km --> unplausible Werte identifizieren}
+      hw:=sin(lat1*pi/180)*sin(lat2*pi/180)+
+          cos(lat1*pi/180)*cos(lat2*pi/180)*cos((lon1-lon2)*pi/180);
+      if not (hw<=1.0) then
+        hw:=1.0;                     {must not be >1}
+      result:=6365692*arccos(hw);
+      if (result>30000) or           {> 30km --> unplausible Werte identifizieren}
          (result<0.005) then                         {Fehler reduzieren, Glättung}
         result:=0;
     end;

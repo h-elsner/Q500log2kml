@@ -1,11 +1,11 @@
-unit yun_defs;                                     {Yuneec definitions and variables}
+unit yun_defs;                                    {Yuneec definitions and variables}
 
 {$mode objfpc}{$H+}
 
 interface
 
 uses
-  sysutils, q5_common;
+  sysutils, StrUtils, q5_common;
 
 const
   mndir='FlightLog';
@@ -119,15 +119,12 @@ begin
   result:=round(w*stkmax/300)+stkntrl;
 end;
 
-function ByteToBin(w: byte): string;               {Byte to Binary string}
+function ByteToBinaryStr(const w: byte): string;   {Byte to Binary string}
 var x: integer;
 
 begin
   SetLength(result, 8);
-  for x:=1 to 8 do begin
-    result[x]:=char(ord('0')+(w shr 7));
-    inc(w, w);
-  end;
+  result:=IntToBin(w, 8);
   insert(tab1, result, 5);
 end;
 
@@ -322,7 +319,7 @@ byte baroMagByte = data[35];
 }
 function IMUstatusToStr(const u: byte): string;   {imu_status}
 begin
-  result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
+  result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBinaryStr(u);
   case u of
       1: result:='IMU';
      33: result:='IMU+GPS';
@@ -372,7 +369,7 @@ end;
 
 function BRIMUstatusToStr(const u: byte): string;  {imu_status breeze}
 begin
-  result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
+  result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBinaryStr(u);
   case u of                                        {Rest ist unbekannt}
     255: result:=rsAllOK;
   end;
@@ -426,7 +423,7 @@ begin
     end;
   end;
   if result='' then
-    result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBin(u);
+    result:=rsUndef+tab1+IntToStr(u)+' = '+ByteToBinaryStr(u);
 end;
 
 function GetPropNum: byte;                         {Number props (4, 6) from vehicle type}
