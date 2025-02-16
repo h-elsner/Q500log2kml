@@ -1,7 +1,7 @@
 object Form4: TForm4
-  Left = 1420
+  Left = 1644
   Height = 292
-  Top = 885
+  Top = 955
   Width = 409
   BorderStyle = bsNone
   Caption = 'Log'

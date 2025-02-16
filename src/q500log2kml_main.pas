@@ -3296,9 +3296,7 @@ begin
           repeat                                     {RecordID suchen $BC}
             b:=infn.ReadByte;
           until (b=MagicBC) or (infn.Position>=infn.Size-lenfix);
-          msg.msgbytes[0]:=b;
           msg.msglength:=infn.ReadByte;              {Länge Payload mit CRC}
-          msg.msgbytes[1]:=msg.msglength;
           infn.Position:=infn.Position-2;
           infn.ReadBuffer(msg.msgbytes, msg.msglength+lenfix);  {Länge Rest-Datensatz mit FixPart und CRC}
           msg.sysid:=msg.msgbytes[3];
@@ -8038,7 +8036,6 @@ begin
   if (v_type=MQid) or                              {nichts tun für MantisQ}
      (v_type=H5id) then                            {nichts tun für H520}
        exit;
-  Merkliste(cbxText, speItems.Value);              {Save type in model list}
   AppLogTimeStamp('');
   DefaultFormatSettings.DecimalSeparator:='.';
   if (pcMain.Tag>0) and

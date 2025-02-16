@@ -73,6 +73,7 @@ type
   function MSTtoStr(const m: byte): string;        {Bitleiste MAV_STATE auswerten}
   function MMFtoStr(const m: byte): string;        {Bitleiste MAV_Mode_FLAG auswerten}
   function SatAzimuthToDeg(const az: byte): single;  {[deg] Direction of satellite, 0: 0 deg, 255: 360 deg}
+  function GetSerialNumber(const msg: TMAVmessage; pos: byte): string;
 
 {$I language.inc}
 
@@ -313,8 +314,15 @@ begin
     $94:  result:='autopilot_version';             {Länge 34, 48, 4C}
     149:  result:='landing_target';
 
+    150: result:='SENSOR_OFFSETS';
     162:  result:='fence_status';
+    163: result:='AHRS';                           {Attitude and Heading Reference System}
+    165: result:='HW_STATUS';
+    172: result:='DATA96';                         {Whatever this is...}
+    173: result:='RANGEFINDER';
+    178: result:='AHRS2';
     192:  result:='mag_cal_report';
+    193: result:='EKF_STATUS_REPORT';              {Extended Kalman Filter}
 
     225:  result:='efi_status';
 
@@ -744,6 +752,14 @@ end;
 function SatAzimuthToDeg(const az: byte): single;  {[deg] Direction of satellite, 0: 0 deg, 255: 360 deg}
 begin
   result:=az*360/255;
+end;
+
+function GetSerialNumber(const msg: TMAVmessage; pos: byte): string;
+begin
+  result:='';
+  result:=IntToHex(MavGetUInt32(msg, pos), 8)+'-'+
+          IntToHex(MavGetUInt32(msg, pos+4), 8)+'-'+
+          IntToHex(MavGetUInt32(msg, pos+8), 8);
 end;
 
 end.

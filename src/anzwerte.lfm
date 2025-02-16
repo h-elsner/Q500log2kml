@@ -1,7 +1,7 @@
 object Form2: TForm2
-  Left = 1774
+  Left = 1833
   Height = 292
-  Top = 1024
+  Top = 991
   Width = 671
   Caption = 'Form2'
   ClientHeight = 292
@@ -12,7 +12,7 @@ object Form2: TForm2
   PopupMenu = PopupMenu1
   Position = poDefaultPosOnly
   ShowInTaskBar = stNever
-  LCLVersion = '3.3.0.0'
+  LCLVersion = '3.7.0.0'
   object gridAnzwerte: TStringGrid
     Left = 8
     Height = 235
