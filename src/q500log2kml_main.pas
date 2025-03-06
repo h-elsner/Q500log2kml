@@ -122,7 +122,6 @@ type
     btnFlugBuch: TBitBtn;
     btnSaveApplog: TBitBtn;
     btnScanErr: TBitBtn;
-    btnScreenshot: TBitBtn;
     btnConv: TBitBtn;
     btnArchive: TBitBtn;
     btnShowHex: TBitBtn;
@@ -286,7 +285,6 @@ type
     mnMainFile: TMenuItem;
     mnMainTools: TMenuItem;
     mnConvert: TMenuItem;
-    mnMainScreenshot: TMenuItem;
     mnMainHelp: TMenuItem;
     mnManual: TMenuItem;
     mnHomepage: TMenuItem;
@@ -359,7 +357,6 @@ type
     procedure btnCombineLogsClick(Sender: TObject);
     procedure btnDefaultProfileClick(Sender: TObject);
     procedure btnDeleteLnClick(Sender: TObject);
-    procedure btnScreenshotClick(Sender: TObject);
     procedure btnCutClick(Sender: TObject);        {Cut flight log}
     procedure btnSplitClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
@@ -597,7 +594,6 @@ type
     function ColorToKMLColor(const AColor: TColor): string;
     procedure DoForm2Show(p: integer);             {Anzeige zeigen, Breite mit p}
     procedure AnzeigeAddHist(Index: integer);      {Anzeige zusätzlicher Infos}
-    procedure ScreenToBild(filename: string);      {Screenshot}
     function GetFW(var fwout: TarrFW): integer;    {Anzahl FW items}
     procedure KursorAus;                           {Fadenkreuz aus}
     procedure GetDDdata(lab: TLabeledEdit);        {Wert für Schnellanalyse übergeben}
@@ -847,12 +843,8 @@ begin
   btnArchive.Caption:=capBitBtn3;
   btnDefaultProfile.Caption:=capBitBtn12;          {Schnellanalyse Defaulteinstellung}
   btnDefaultProfile.Hint:=hntBitBtn12;
-  btnScreenshot.Caption:=rsScreenshot;
-  btnScreenshot.Hint:=hntBitBtn13;
 
 {$IFDEF DARWIN}                                    {MAC OS X}
-  btnScreenshot.Visible:=false;                    {Button Screenshot}
-  mnMainScreenshot.Visible:=false;                 {Main Menu Screenshot}
   mnSaveAsHist.Visible:=false;                     {PopUp Menu Höhenprofil; geht das nun?}
 {$ENDIF}
 
@@ -896,7 +888,6 @@ begin
   mnDelHist.Caption:=rsResetCutBE;
   mnMainFile.Caption:=capDatei;
   mnConvert.Caption:=capBitBtn2;
-  mnMainScreenshot.Caption:=rsScreenshot;
   mnMainHelp.Caption:=capHelp;
   mnManual.Caption:=capLabel7;
   mnInfo.Caption:=capInfo;
@@ -991,7 +982,6 @@ begin
   end else begin
   {$IFDEF DARWIN}
     lblManual.Hint:=manual;                           {für MAC OS X überschreiben}
-    btnScreenshot.Visible:=false;                     {Screenshot is not working good, no need fot that}
   {$ENDIF}
   end;
   lblUpdate.Hint:=homepage+downURL;
@@ -4960,20 +4950,6 @@ begin
   Close;
 end;
 
-procedure TForm1.btnScreenshotClick(Sender: TObject);   {Take screenshot}
-begin
-  SaveDialog1.Title:=rsScreenshot;
-  if pcMain.ActivePageIndex>=0 then begin          {Something selected}
-    SaveDialog1.FileName:=CleanDN(rsScreenshot+pcMain.ActivePage.Caption+pngdef);
-    if (pcMain.ActivePage=tabSettings) and         {Settings}
-       (pcSettings3.ActivePageIndex>=0) then
-      SaveDialog1.FileName:=CleanDN(rsScreenshot+pcSettings3.ActivePage.Caption+pngdef);
-  end else
-    SaveDialog1.FileName:=CleanDN(rsScreenshot+capForm1+pngdef);
-  if SaveDialog1.Execute then
-    ScreenToBild(SaveDialog1.FileName);
-end;
-
 procedure TForm1.btnCutClick(Sender: TObject);     {Cut files for analysis}
 begin
   ManualCut;
@@ -5152,33 +5128,6 @@ begin
       FreeAndNil(inlist);
       FreeAndNil(outlist);
     end;
-  end;
-end;
-
-procedure TForm1.ScreenToBild(filename: string);         {Screenshot}
-var
-    bild: TPortableNetworkGraphic;
-    bmp: TBitMap;
-    ScreenDC: HDC;
-
-begin
-  bild:=TPortableNetworkGraphic.Create;             {create PNG-picture}
-  try
-  {$IFDEF LINUX}
-    bmp:=GetFormImage;                             {No more working with Windows}
-    bild.Assign(bmp);
-  {$ELSE}
-//    ScreenDC := GetDC(Panel1.Handle);
-    ScreenDC := GetDC(Handle);
-    bild.LoadFromDevice(ScreenDC);                  {Get screenshot xyz.Handle}
-    ReleaseDC(0, ScreenDC);
-  {$ENDIF}
-    bild.SaveToFile(filename);
-  finally
-    bild.Free;
-    {$IFDEF LINUX}
-      bmp.Free;
-    {$ENDIF}
   end;
 end;
 

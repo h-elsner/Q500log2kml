@@ -212,18 +212,6 @@ object Form1: TForm1
     OnMouseEnter = lblUpdateMouseEnter
     OnMouseLeave = lblUpdateMouseLeave
   end
-  object btnScreenshot: TBitBtn
-    Left = 847
-    Height = 30
-    Top = 58
-    Width = 107
-    Anchors = [akTop, akRight]
-    Caption = 'Sc'
-    Images = TabImages
-    ImageIndex = 16
-    OnClick = btnScreenshotClick
-    TabOrder = 8
-  end
   object sbtnLogDir: TSpeedButton
     Left = 664
     Height = 25
@@ -240,7 +228,7 @@ object Form1: TForm1
     Top = 38
     Width = 344
     Caption = 'StaticText1'
-    TabOrder = 9
+    TabOrder = 8
   end
   object GroupBox11: TGroupBox
     Left = 11
@@ -250,7 +238,7 @@ object Form1: TForm1
     Caption = 'Find'
     ClientHeight = 29
     ClientWidth = 139
-    TabOrder = 10
+    TabOrder = 9
     object cbxSearch: TComboBox
       Left = 0
       Height = 28
@@ -270,7 +258,7 @@ object Form1: TForm1
     Anchors = [akTop, akLeft, akRight, akBottom]
     ClientHeight = 655
     ClientWidth = 927
-    TabOrder = 11
+    TabOrder = 10
     object pcMain: TPageControl
       Left = 1
       Height = 653
@@ -2478,7 +2466,7 @@ object Form1: TForm1
     Width = 513
     Anchors = [akTop, akLeft, akRight]
     ItemHeight = 0
-    TabOrder = 12
+    TabOrder = 11
     OnChange = cbxLogDirChange
     OnDblClick = cbxLogDirDblClick
     OnMouseUp = cbxLogDirMouseUp
@@ -2702,7 +2690,6 @@ object Form1: TForm1
       object mnMainScreenshot: TMenuItem
         Caption = 'Sc'
         ImageIndex = 16
-        OnClick = btnScreenshotClick
       end
       object mnMainScanRec: TMenuItem
         Caption = 'FB'

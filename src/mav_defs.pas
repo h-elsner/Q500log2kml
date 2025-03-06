@@ -427,6 +427,7 @@ begin
     395:  result:='component_information';
     400:  result:='play_tune v2';
     401:  result:='supported_tunes';
+    5002: result:='Gimbal_calibration';
 
     9000: result:='wheel_distance';                {2328'h}
     9005: result:='winch_status';

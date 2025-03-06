@@ -148,8 +148,6 @@ resourcestring                                     {english}
   capBitBtn12='Default';
   hntBitBtn12='Reset selected columns to default';
   rsCheckSettings='Check settings for ';
-  rsScreenshot='&Screenshot';
-  hntBitBtn13='Save screenshot from the application window as PNG...';
   capCut='Cut files';
   hntCut='Cut FlightLog data for better analysis (Ctrl+n)';
   rsStartTPunkt='Set start';

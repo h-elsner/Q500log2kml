@@ -148,8 +148,6 @@ resourcestring                                     {deutsch}
   capBitBtn12='Default';
   hntBitBtn12='Zurück zu Standardeinstellungen';
   rsCheckSettings='Einstellungen prüfen für ';
-  rsScreenshot='&Screenshot';
-  hntBitBtn13='Abbild vom Anwendungsfenster als PNG speichern...';
   capCut='Ausschneiden';
   hntCut='FlightLog Daten zur besseren Analyse beschneiden (Strg+n)';
   rsStartTPunkt='Startpunkt setzen';

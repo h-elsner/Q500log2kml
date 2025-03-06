@@ -120,9 +120,8 @@ begin
 end;
 
 function ByteToBinaryStr(const w: byte): string;   {Byte to Binary string}
-var x: integer;
-
 begin
+  result:='';
   SetLength(result, 8);
   result:=IntToBin(w, 8);
   insert(tab1, result, 5);
