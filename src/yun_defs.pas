@@ -67,9 +67,10 @@ const
 {Public functions and procedures}
   function StkToProz(const w: double): integer;    {Stick Position to percent}
   function ProzToStk(const w: double): integer;
-  function ChNoToStr(const p: byte): string;       {Bedeutung der Kanäle}
+  function ChNoToStr(const p: byte): string;       {Meaning of the channels}
   function ChToStr(const s: string; const p: byte): string; {Channel CHxx umbenennen}
-  function vTypeToStr(const v: byte): string;      {vehicle type ausgeben}
+  function vTypeToStr(const v: byte): string;      {vehicle type as string}
+  function IsLegacyDrone(v: byte): boolean;        {Vehicle type is legacy drone}
   function Mode350(const f: byte): string;         {Blade 350 QX}
   function ModeYTHP(const f: byte): string;        {neu YTH Plus}
   function ModeLegacy(const f: byte): string;      {Q500, YTH and all other legacy}
@@ -184,6 +185,11 @@ begin
     ThBid: result:=capThunder;                     {H480 Thunderbird}
     H501ID: result:='Tom''s flight data recorder for Hubsan';  {flaretom Hubsan Recorder}
   end;
+end;
+
+function IsLegacyDrone(v: byte): boolean;
+begin
+  result:=v in [1..6, YTHPid, ThBid];
 end;
 
 function Mode350(const f: byte): string;           {Blade 350 QX}

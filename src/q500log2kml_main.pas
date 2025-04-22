@@ -110,7 +110,6 @@ type
   TForm1 = class(TForm)
     actMAVmessageIDlist: TAction;
     ActionList1: TActionList;
-    AppLog: TSynEdit;
     btnMAVmessageIDlist: TBitBtn;
     btnAutoCut: TBitBtn;
     btnDeleteLn: TBitBtn;
@@ -217,6 +216,7 @@ type
     lblMAVcommon: TLabel;
     lblSaturation: TLabel;
     MAVmsg: TCheckGroup;
+    mnMainScreenshot: TMenuItem;
     Separator2: TMenuItem;
     mnAutoCut: TMenuItem;
     mnSaveTab: TMenuItem;
@@ -257,6 +257,7 @@ type
     speLinePath: TSpinEdit;
     speProz: TSpinEdit;
     speStk: TSpinEdit;
+    AppLog: TSynEdit;
     tabAnalyze3: TTabSheet;
     tabAppLog: TTabSheet;
     tabCommon: TTabSheet;
@@ -850,7 +851,7 @@ begin
 
 {https://forum.lazarus.freepascal.org/index.php?topic=34510.0}
 {$IFDEF WINDOWS}
-    Application.MainFormOnTaskBar := True;
+  Application.MainFormOnTaskBar := True;
 {$ENDIF}
 
   SizeSpeedBtn(sbtnLogDir, cbxLogDir);             {Anpassen Speedbuttons an Darstellung in verschiedenen Betrienssystemen}
@@ -2116,24 +2117,24 @@ end;
 procedure TForm1.mnOSMClick(Sender: TObject);      {zeige OSM Karte; lat/lon}
 begin
   if gridDetails.ColCount=csvanz then begin        {Self-dev PX4 CSV format}
-    OpenURL(URLosm(gridDetails.Cells[5,gridDetails.Selection.Top],
-                   gridDetails.Cells[6,gridDetails.Selection.Top]));
+    OpenURL(URLosm(gridDetails.Cells[5, gridDetails.Row],
+                   gridDetails.Cells[6, gridDetails.Row]));
     exit;
   end;
   if lbFlights.Items.Count>0 then begin
     case v_type of
-      brID: OpenURL(URLosm(BrCoordFormat(gridDetails.Cells[12,gridDetails.Selection.Top]),
-                           BrCoordFormat(gridDetails.Cells[13,gridDetails.Selection.Top])));
-      H501ID:  OpenURL(URLosm(gridDetails.Cells[2, gridDetails.Selection.Top],
-                              gridDetails.Cells[3, gridDetails.Selection.Top]));
-      MQcsvID: OpenURL(URLosm(gridDetails.Cells[9, gridDetails.Selection.Top],
-                              gridDetails.Cells[10, gridDetails.Selection.Top]));
+      brID: OpenURL(URLosm(BrCoordFormat(gridDetails.Cells[12, gridDetails.Row]),
+                           BrCoordFormat(gridDetails.Cells[13, gridDetails.Row])));
+      H501ID:  OpenURL(URLosm(gridDetails.Cells[2, gridDetails.Row],
+                              gridDetails.Cells[3, gridDetails.Row]));
+      MQcsvID: OpenURL(URLosm(gridDetails.Cells[9, gridDetails.Row],
+                              gridDetails.Cells[10, gridDetails.Row]));
     else
       case rgQuelle.ItemIndex of
-        0: OpenURL(URLosm(gridDetails.Cells[5, gridDetails.Selection.Top],
-                          gridDetails.Cells[6, gridDetails.Selection.Top]));
-        1: OpenURL(URLosm(KoToStr(StrToFloatN(gridDetails.Cells[2, gridDetails.Selection.Top])),
-                          KoToStr(StrToFloatN(gridDetails.Cells[1, gridDetails.Selection.Top]))));
+        0: OpenURL(URLosm(gridDetails.Cells[5, gridDetails.Row],
+                          gridDetails.Cells[6, gridDetails.Row]));
+        1: OpenURL(URLosm(KoToStr(StrToFloatN(gridDetails.Cells[2, gridDetails.Row])),
+                          KoToStr(StrToFloatN(gridDetails.Cells[1, gridDetails.Row]))));
       end;
     end;
   end;
@@ -5054,7 +5055,6 @@ begin
     outlist.Free;
   end;
 end;
-
 
 procedure TForm1.ManualCut;                        {Cut files for analysis}
 var inlist, outlist: TStringList;
@@ -11721,8 +11721,8 @@ procedure TForm1.gridDetailsClick(Sender: TObject);{Kursor im Diagramm anzeigen}
 var ts, tb, te: TDateTime;
 
 begin
-  Label3.Tag:=gridDetails.Selection.Left;          {selektierte Spalte ermitteln}
-  speDataPoint.Value:=gridDetails.Selection.Top;   {Zeile übernehmen}
+  Label3.Tag:=gridDetails.Col;                     {selektierte Spalte ermitteln}
+  speDataPoint.Value:=gridDetails.Row;             {Zeile übernehmen}
   CellFocus[rgQuelle.ItemIndex, 0]:=gridDetails.Col;   {save cell focus}
   CellFocus[rgQuelle.ItemIndex, 1]:=gridDetails.Row;
   if (rgQuelle.ItemIndex<>3) and
@@ -11746,13 +11746,24 @@ begin
 end;
 
 procedure TForm1.gridDetailsDblClick(Sender: TObject); {Hilfe zum Zelleninhalt}
+var
+  num_matches: integer=0;
+
 begin
-  if (gridDetails.Col=5) or (gridDetails.Col=6) then begin
+  if IsLegacyDrone(v_type) and (rgQuelle.ItemIndex=0) and
+     ((gridDetails.Col=5) or (gridDetails.Col=6)) then begin
     OpenURL(URLGMap(gridDetails.Cells[5,gridDetails.Row],
                     gridDetails.Cells[6,gridDetails.Row]));
   end else begin
     StatusBar1.Panels[5].Text:=GetCellInfo(gridDetails.Col, gridDetails.Row);
     AppLog.Lines.Add(StatusBar1.Panels[5].Text);     {in AppLogHighlighter aufnehmen}
+    if gridDetails.Col>0 then begin
+      num_matches:=FilterColumn(gridDetails, gridDetails.Col, gridDetails.Cells[gridDetails.Col, gridDetails.Row]);
+      StatusBar1.Panels[5].Text:=IntToStr(num_matches)+'/'+
+                                 IntToStr(gridDetails.RowCount-1)+tab4+
+                                 StatusBar1.Panels[5].Text;
+    end else
+      ResetAllFilterColumn(gridDetails);
   end;
 end;
 
@@ -13102,6 +13113,7 @@ begin
     AnzeigeAddHist(Index);
     Label3.Tag:=Index;
   end;
+  ResetAllFilterColumn(gridDetails);
 end;
 
 procedure TForm1.gridDetailsKeyUp(Sender: TObject; var Key: Word; {Taste im StringGrid}
@@ -13414,26 +13426,25 @@ end;
 procedure TForm1.mnGoogleMapClick(Sender: TObject); {Zeige in GoogleMaps}
 begin
   if gridDetails.ColCount=csvanz then begin        {Self-dev PX4 CSV format}
-    OpenURL(URLGMap(gridDetails.Cells[5,gridDetails.Selection.Top],
-                    gridDetails.Cells[6,gridDetails.Selection.Top]));
+    OpenURL(URLGMap(gridDetails.Cells[5, gridDetails.Row],
+                    gridDetails.Cells[6, gridDetails.Row]));
     exit;
   end;
 
   if lbFlights.Items.Count>0 then begin
     case v_type of                                 {Breeze lat/lon Format}
-      brID: OpenURL(URLGMap(BrCoordFormat(gridDetails.Cells[12,gridDetails.Selection.Top]),
-                      BrCoordFormat(gridDetails.Cells[13,gridDetails.Selection.Top])));
+      brID: OpenURL(URLGMap(BrCoordFormat(gridDetails.Cells[12, gridDetails.Row]),
+                      BrCoordFormat(gridDetails.Cells[13, gridDetails.Row])));
 
-      H501ID: OpenURL(URLGMap(gridDetails.Cells[2,gridDetails.Selection.Top],
-                           gridDetails.Cells[3,gridDetails.Selection.Top]));
-    else begin                                     {Andere}
-      case rgQuelle.ItemIndex of
-        0: OpenURL(URLGMap(gridDetails.Cells[5,gridDetails.Selection.Top],
-                           gridDetails.Cells[6,gridDetails.Selection.Top]));
-        1: OpenURL(URLGMap(KoToStr(StrToFloatN(gridDetails.Cells[2,
-                                       gridDetails.Selection.Top])),
-                           KoToStr(StrToFloatN(gridDetails.Cells[1,
-                                       gridDetails.Selection.Top]))));
+      H501ID: OpenURL(URLGMap(gridDetails.Cells[2, gridDetails.Row],
+                              gridDetails.Cells[3, gridDetails.Row]));
+    else
+      begin                                        {Andere}
+        case rgQuelle.ItemIndex of
+          0: OpenURL(URLGMap(gridDetails.Cells[5,gridDetails.Row],
+                             gridDetails.Cells[6,gridDetails.Row]));
+          1: OpenURL(URLGMap(KoToStr(StrToFloatN(gridDetails.Cells[2, gridDetails.Row])),
+                             KoToStr(StrToFloatN(gridDetails.Cells[1, gridDetails.Row]))));
         end;
       end;
     end;

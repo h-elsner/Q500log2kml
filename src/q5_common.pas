@@ -192,6 +192,7 @@ Boston, MA 02110-1335, USA.
 2024-06-18       Add special analysis for IMU status
 2024-09-14       Sensorfile H480 reworked
 2024-10-02  V5.1 Sensor files H480 decoded, displayed as data or as raw hex
+2025-04-21       Filter a column like Autofilter in Excel in Details view
 *)
 
 
@@ -207,8 +208,8 @@ uses
 const
 {public constants}
   AppName=   'Q500log2kml';
-  AppVersion='V5.1 - 10/2024';
-  VersValue=492;                                   {Verion number as Integer to compare}
+  AppVersion='V5.1 - 04/2025';
+  VersValue=511;                                   {Verion number as Integer to compare}
   VersFile='/v';
 
   homepage='http://h-elsner.mooo.com';             {My Homepage}
@@ -273,10 +274,10 @@ const
   clRTH=$005D00F3;                                 {Dark red}
   clSport=clBlue;                                  {Sport, Stabilized}
   clAcro=clRed;                                    {Rattitude, Acro}
-
-  clFairGood=clMoneyGreen;
-  clVeryGood=clGreen;
   clTasks=clMoneyGreen;
+
+  clVeryGood=clGreen;
+  clFairGood=clMoneyGreen;
   clAttention=$008080F0;                           {Farbe Achtung}
   clError=clRed;
 
@@ -324,6 +325,9 @@ var timestr: string;
   procedure FMcolor(aGrid: TStringGrid; fm, vt: integer);  {Flight mode coloe r settings}
   function testh(const a: double): boolean; inline;  {Datensätze mit unsinniger Höhe ausblenden}
   function DefaultOuputToAppLog(zhl: integer; time: TDateTime; text: string): string;
+  function FilterColumn(var aGrid: TStringGrid;    {Filter a column like autofilter in Excel}
+                        const aCol: integer; aText: string): integer;
+  procedure ResetAllFilterColumn(var aGrid: TStringGrid);
 
 
 implementation
@@ -556,6 +560,41 @@ end;
 function DefaultOuputToAppLog(zhl: integer; time: TDateTime; text: string): string;
 begin
   result:=Format('%6d', [zhl])+tab2+FormatDateTime(zzf+zzz, time)+tab2+text;
+end;
+
+function FilterColumn(var aGrid: TStringGrid;
+                      const aCol: integer; aText: string): integer;
+var
+  i: integer;
+
+begin
+  result:=0;
+  aGrid.BeginUpdate;
+  try
+    for i:=aGrid.FixedRows to aGrid.RowCount-1 do begin
+      if aGrid.Cells[aCol, i]=aText then begin
+        aGrid.RowHeights[i]:=aGrid.DefaultRowHeight;
+        result:=result+1;
+      end else
+        aGrid.RowHeights[i]:=0;
+    end;
+  finally
+    aGrid.EndUpdate;
+  end;
+end;
+
+procedure ResetAllFilterColumn(var aGrid: TStringGrid);
+var
+  i: integer;
+
+begin
+  aGrid.BeginUpdate;
+  try
+    for i:=aGrid.FixedRows to aGrid.RowCount-1 do
+      aGrid.RowHeights[i]:=aGrid.DefaultRowHeight;
+  finally
+    aGrid.EndUpdate;
+  end;
 end;
 
 end.
