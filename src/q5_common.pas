@@ -2,9 +2,9 @@
           {                                                        }
           {     Auswertung FlightLog Daten von Yuneec Koptern      }
           {                                                        }
-          {       Copyright (c) 2015-2024    Helmut Elsner         }
+          {       Copyright (c) 2015-2025    Helmut Elsner         }
           {                                                        }
-          {       Compiler: FPC 3.2.3   /    Lazarus 3.3.0         }
+          {       Compiler: FPC 3.2.3   /    Lazarus 4.0           }
           {                                                        }
           { Pascal programmers tend to plan ahead, they think      }
           { before they type. We type a lot because of Pascal      }
@@ -456,7 +456,12 @@ end;
  see Haversine formula, earth radius: 6.371km depending on latitude
  https://rechneronline.de/erdradius/
  6365.692 optimized for 50° latitude and 60m altitude }
+ 
 function DistanceBetweenTwoCoordinates(const lat1, lon1, lat2, lon2: double): double;
+const
+  GeoidRadius=6365692;
+// EARTHS_RADIUS_IN_METERS = 6378137;
+  
 var
   hw: double;
 
@@ -468,12 +473,13 @@ begin
           cos(lat1*pi/180)*cos(lat2*pi/180)*cos((lon1-lon2)*pi/180);
       if not (hw<=1.0) then
         hw:=1.0;                     {must not be >1}
-      result:=6365692*arccos(hw);
+      result:=GeoidRadius*arccos(hw);
       if (result>30000) or           {> 30km --> unplausible Werte identifizieren}
          (result<0.005) then                         {Fehler reduzieren, Glättung}
         result:=0;
     end;
   except
+    result:=0;
   end;
 end;
 

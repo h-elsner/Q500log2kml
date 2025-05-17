@@ -2,9 +2,9 @@
           {                                                        }
           {     Auswertung FlightLog Daten von Yuneec Koptern      }
           {                                                        }
-          {       Copyright (c) 2015-2024    Helmut Elsner         }
+          {       Copyright (c) 2015-2025    Helmut Elsner         }
           {                                                        }
-          {       Compiler: FPC 3.2.3   /    Lazarus 3.3.0         }
+          {       Compiler: FPC 3.2.3   /    Lazarus 4.0           }
           {                                                        }
           { Pascal programmers tend to plan ahead, they think      }
           { before they type. We type a lot because of Pascal      }
