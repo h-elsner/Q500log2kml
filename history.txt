@@ -13,7 +13,6 @@ History:
 2016-02-05  V1.7 Update for Blade 350QX
 2016-02-10  V1.8 Open Street Map added
 2016-02-15  V1.9 Detailed tables and histograms for values in columns added
-
 2016-03-02  V2.0 Update Flight Modes, Vehicle Types, Archive suffix changeable
 2016-03-24  V2.1 Histogram distance at Lon/Lat,
                  IMU_status explanations updated (Pressure init supposed)
@@ -30,7 +29,6 @@ History:
                  Quick analysis and cut files added.
 2017-05-01  V2.9 Main Menu added, source code cleaned, Directory selection
                  with ComboBox that holds last used directories.
-
 2017-05-18  V3.0 Control for CGO3 as test system.
 2017-06-15  V3.1 Overview improved, flight record added. Track of RemoteGPS
                  coordinates in KML/KMZ added (black line).
@@ -81,7 +79,6 @@ History:
 2018-10-28	 Show sensor files faster.
 2018-10-29       Reverse geocoding removed, Bugfix: Mantis Q identification,
                  Check only Heartbeat from AUTOPILOT1
-
 2018-11-03  V4.0 H520 *.tlog files support added similar to Mantis Q.
                  Batch conversion, button 'Convert' to KML/KMZ or GPX files
                  works now also for Mantis Q and H520.
@@ -159,4 +156,5 @@ History:
 2024-06-18       Add special analysis for IMU status
 2024-09-14       Sensorfile H480 reworked
 2024-10-02  V5.1 Sensor files H480 decoded, displayed as data or as raw hex
+2025-04-21       Filter a column like Autofilter in Excel in Details view
 
