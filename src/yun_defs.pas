@@ -575,24 +575,21 @@ begin
          end;
        end;
     9: begin                                       {S1 Gimbal Tilt mode}
-         if stk=stkup then
-           result:='Velocity mode';
-         if stk=stkang then
-           result:=fmAngle;
-         if stk=stkntrl  then
-           result:=rsNeutral;
+         case stk of
+           stkup, 3000: result:='Velocity mode';
+           stkang, 2100: result:=fmAngle;
+           stkntrl: result:=rsNeutral;
+         end;
        end;
    10: begin                                       {S2 Gimbal Pan mode}
-         if stk=stkup then
-           result:='Global mode';
-         if stk=stkntrl then
-           result:=rsNeutral;
-         if stk=m45val then
-           result:=rsTeam;
-         if stk=m45val then
-           result:='Controllable mode';
-         if stk=stkdown then
-           result:='Follow mode';
+         case stk of
+           stkup, 3000: result:=rsGlobalMode;
+           stkntrl: result:=rsNeutral;
+           m45val: result:=rsTeam;
+           stkdown: result:='Follow mode';
+           m40val: result:='Controllable mode';
+           830: result:=fmAngle;
+         end;
        end;
   end;
 end;

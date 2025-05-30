@@ -74,6 +74,7 @@ type
   function MMFtoStr(const m: byte): string;        {Bitleiste MAV_Mode_FLAG auswerten}
   function SatAzimuthToDeg(const az: byte): single;  {[deg] Direction of satellite, 0: 0 deg, 255: 360 deg}
   function GetSerialNumber(const msg: TMAVmessage; pos: byte): string;
+  function UpscaleTo150(const v: integer; upscale: boolean=true): uint16;
 
 {$I language.inc}
 
@@ -761,6 +762,22 @@ begin
   result:=IntToHex(MavGetUInt32(msg, pos), 8)+'-'+
           IntToHex(MavGetUInt32(msg, pos+4), 8)+'-'+
           IntToHex(MavGetUInt32(msg, pos+8), 8);
+end;
+
+{Upscale channel value from 693.. 3412 to 0..4095 (100% to 150%)}
+function UpscaleTo150(const v: integer; upscale: boolean=true): uint16;
+var
+  conv: double;
+
+begin
+  if upscale then begin
+    conv:=v-683;
+    if conv<0 then
+      conv:=0;
+    conv:=conv * 4095.0 / 2729.0;
+    result:=round(conv) and $FFF;
+  end else
+    result:=v and $FFF;
 end;
 
 end.

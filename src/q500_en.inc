@@ -1,13 +1,13 @@
 resourcestring                                     {english}
 
-  manual='Q500log2kml_en.pdf';
+  manual='Q500log2kml.pdf';
   {$IFDEF LINUX}
-    DownURL='/downloads/q500log2kml_en.tar.gz';
+    DownURL='/downloads/q500log2kml.tar.gz';
   {$ELSE}
     {$IFDEF DARWIN}
       DownURL='/downloads/q500log2kml_MAC-english.zip';  {MAC OS X}
     {$ELSE}
-      DownURL='/downloads/q500log2kml_en.zip';
+      DownURL='/downloads/q500log2kml.zip';
     {$ENDIF}
   {$ENDIF}
   gmapURL='https://maps.google.com/maps';
@@ -135,6 +135,7 @@ resourcestring                                     {english}
   GPSlost=' - GPS lost';
   GPSoff=' - GPS off';
   rsNeutral='Center position (neutral)';
+  rsGlobalMode='Global mode';
   capAnalyse='Quick analysis';
   capCheckBox3='All to Dashw';
   hntCheckBox3='Export all data to Dashware, not only from real flight';

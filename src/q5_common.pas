@@ -193,6 +193,7 @@ Boston, MA 02110-1335, USA.
 2024-09-14       Sensorfile H480 reworked
 2024-10-02  V5.1 Sensor files H480 decoded, displayed as data or as raw hex
 2025-04-21       Filter a column like Autofilter in Excel in Details view
+2025-05-30       Pan modes updated, Pan mode Angle added
 *)
 
 
@@ -208,7 +209,7 @@ uses
 const
 {public constants}
   AppName=   'Q500log2kml';
-  AppVersion='V5.1 - 04/2025';
+  AppVersion='V5.1 - 05/2025';
   VersValue=511;                                   {Verion number as Integer to compare}
   VersFile='/v';
 
