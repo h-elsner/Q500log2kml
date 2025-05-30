@@ -1,4 +1,4 @@
-# Q500log2kml
+# Q500log2kml - FlightLog review and analysis for Yuneec drones
 This application was made to display and analyze FlightLog data (including Telemetry) from Yuneec copter Q500, H520, H920, Typhoon H, Typhoon H Plus, H3, Breeze, Mantis Q, but also Blade Chroma or Blade 350QX controlled by ST10).
 Additionally the CSV files from Tom's flight data recorder for Hubsan can be displayed and analyzed.
 
