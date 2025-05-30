@@ -157,4 +157,4 @@ History:
 2024-09-14       Sensorfile H480 reworked
 2024-10-02  V5.1 Sensor files H480 decoded, displayed as data or as raw hex
 2025-04-21       Filter a column like Autofilter in Excel in Details view
-
+2025-05-30       Pan modes updated, Pan mode Angle added
